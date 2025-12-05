@@ -1,0 +1,841 @@
+ssl_style_guide:
+  metadata:
+    title: STARLIMS SSL Style Guide (Tool‑agnostic)
+    version: 1.0.0
+    maintainers:
+    - PaperBull / maho
+    sources:
+    - abbot-starlims-style-guide.md
+    - ssl-ebnf-grammar-complete.md
+    - ssl-syntax-rules.json
+    - keywords.csv
+    - operators.csv
+    - literals.csv
+    - function_counts.csv
+    - string_formats.json
+    - number_formats.json
+    - ssl.tmLanguage.updated.json
+    - tree_sitter_grammar_for_starlims_ssl_v_0.js
+    notes:
+    - This config is deliberately tool‑agnostic. It can be translated to specific
+      linters/formatters later.
+    - All block keywords are colon‑prefixed and case‑insensitive in the language;
+      formatters should standardize to UPPER.
+    - Based on comprehensive analysis of SSL v11 documentation and real-world usage.
+    ssl_version: v11
+    language_completeness: comprehensive
+    last_updated: 2024-12-23
+  files:
+    encoding: utf-8
+    line_endings: lf
+    max_line_length: 90
+    final_newline: true
+    one_procedure_per_file: false
+    include_order:
+      enforce: true
+      rule: top-of-file after header comments; group external before local
+  formatting:
+    indent_style: tab
+    indent_width: 1
+    continuation_indent: 1
+    trim_trailing_whitespace: true
+    spaces:
+      around_assignment: true
+      around_operators: true
+      after_comma: true
+      before_semicolon: false
+      inside_parens: false
+      inside_brackets: false
+      inside_braces: false
+    blank_lines:
+      between_top_level_blocks: 1
+      before_region: 1
+      before_procedure: 1
+    statement_terminator: ;
+    one_statement_per_line: true
+  keywords:
+    case: upper
+    require_colon_prefix: true
+    canonical_forms:
+    - :IF
+    - :ELSE
+    - :ENDIF
+    - :WHILE
+    - :ENDWHILE
+    - :FOR
+    - :TO
+    - :STEP
+    - :NEXT
+    - :EXITFOR
+    - :EXITWHILE
+    - :LOOP
+    - :BEGINCASE
+    - :CASE
+    - :OTHERWISE
+    - :ENDCASE
+    - :EXITCASE
+    - :TRY
+    - :CATCH
+    - :FINALLY
+    - :ENDTRY
+    - :DECLARE
+    - :DEFAULT
+    - :PARAMETERS
+    - :PUBLIC
+    - :INCLUDE
+    - :PROCEDURE
+    - :ENDPROC
+    - :RETURN
+    - :CLASS
+    - :INHERIT
+    - :REGION
+    - :ENDREGION
+    - :BEGININLINECODE
+    - :ENDINLINECODE
+    - :ERROR
+    - :LABEL
+  blocks:
+    if:
+      begin: :IF
+      else: :ELSE
+      end: :ENDIF
+    while:
+      begin: :WHILE
+      end: :ENDWHILE
+      exit: :EXITWHILE
+    for:
+      begin: :FOR
+      to: :TO
+      step: :STEP
+      end: :NEXT
+      exit: :EXITFOR
+      loop: :LOOP
+    case:
+      begin: :BEGINCASE
+      case: :CASE
+      otherwise: :OTHERWISE
+      exit: :EXITCASE
+      end: :ENDCASE
+    try:
+      begin: :TRY
+      catch: :CATCH
+      finally: :FINALLY
+      end: :ENDTRY
+    region:
+      begin: :REGION
+      end: :ENDREGION
+    inline_code:
+      begin: :BEGININLINECODE
+      end: :ENDINLINECODE
+      optional_identifier: true
+    error_marker: :ERROR
+    label: :LABEL
+  comments:
+    block:
+      begin: /*
+      end: ;
+      multiline: true
+      preserves_formatting: true
+      ssl_specific: true
+      description: |
+        Comments start with /* and end at the first semicolon.
+        Everything between /* and ; is the comment content.
+        Newlines and formatting are preserved - no parsing is done.
+        A comment can span multiple lines.
+    rules:
+    - Begin major sections (procedures, classes, regions) with a short summary.
+    - Use sentence‑case and keep comments concise.
+    - Prefer comments that explain 'why' rather than restating 'what'.
+    - All comments must end with semicolon (SSL requirement).
+    - Single-line format: /* comment text here;
+    - Multi-line format: /*\n  line1\n  line2\n;
+    examples:
+      single_line: "/* This is a single-line comment;"
+      multi_line: |
+        /*
+        This is a multi-line comment.
+        All formatting is preserved.
+        ;
+      documentation_header: |
+        /*
+         * Procedure: CalculateTotal
+         * Description: Calculates the total from line items
+         * Parameters: aItems - array of item values
+         * Returns: numeric total
+         ;
+    types:
+      - documentation: for procedures, classes, complex logic
+      - inline: for complex expressions, business rules
+      - folding: IDE region markers
+  naming:
+    case:
+      procedures: PascalCase
+      classes: PascalCase
+      variables: camelCase
+      constants: UPPER_SNAKE_CASE
+    prefixes:
+      array: a
+      boolean: b
+      date: d
+      numeric: n
+      udo: o
+      string: s
+    exceptions:
+      loop_counters: [i, j, k]
+      common_abbreviations: [ID, SQL, URL, XML, HTML]
+      ssl_constants: [NIL, .T., .F.]
+    examples:
+      array: aListFolderNo
+      boolean: bExists
+      date: dDueDate
+      numeric: nRunNo
+      udo: oOleObject
+      string: sUserName
+    naming_rules:
+      procedures: PascalCase
+      classes: PascalCase
+      variables: camelCase
+      constants: UPPER_SNAKE_CASE
+      max_variable_length: 20
+      max_function_length: 30
+      use_underscores: discouraged
+      single_chars_allowed: [i, j, k]  # loop counters
+  expressions:
+    operator_spacing: space-around
+    operator_symbol_map:
+      assignment: ":="
+      add_assign: "+="
+      subtract_assign: "-="
+      multiply_assign: "*="
+      divide_assign: "/="
+      power_assign: "^="
+      modulo_assign: "%="
+      plus: "+"
+      minus: "-"
+      multiply: "*"
+      divide: "/"
+      power: "^"
+      modulo: "%"
+      equals: "="
+      strict_equals: "=="
+      not_equals: "!="
+      not_equals_legacy: "<>"
+      hash: "#"
+      dollar: "$"
+      greater_than: ">"
+      greater_than_or_equal: ">="
+      less_than: "<"
+      less_than_or_equal: "<="
+      and: ".AND."
+      or: ".OR."
+      not: ".NOT."
+      unary_not: "!"
+    assignment_operators:
+    - :=
+    - +=
+    - -=
+    - '*='
+    - '/='
+    - '^='
+    - '%='
+    comparison_operators:
+      equality:
+      - '='    # loose equality
+      - '=='   # strict equality
+      inequality:
+      - '!='   # not equals
+      - '<>'   # not equals
+      - '#'    # not equals (alternative syntax)
+      relational:
+      - '<'    # less than
+      - '>'    # greater than
+      - '<='   # less than or equal
+      - '>='   # greater than or equal
+      containment:
+      - '$'    # substring containment (left string within right string)
+    logical_operators:
+    - .AND.
+    - .OR.
+    - .NOT.
+    - '!'     # unary not
+    string_operators:
+    - '+'  # Use + for string concatenation
+    arithmetic_precedence:
+    - '^'
+    - '*'
+    - /
+    - '%'
+    - +
+    - '-'
+    bitwise_operations:
+      functions:
+      - LimsXOr(val1, val2)  # XOR operation on integers, returns double
+      notes: |
+        SSL uses LimsXOr for bitwise XOR. Other bitwise operations may need
+        to be implemented via .NET interop or custom procedures.
+    boolean_literals:
+    - .T.
+    - .F.
+    nil_literal: NIL
+    literal_symbol_map:
+      true: ".T."
+      false: ".F."
+      nil: "NIL"
+    literal_filename_note: "Element doc filenames use word forms (true/false/nil); canonical tokens are mapped above."
+    date_literals:
+      format: "{year, month, day, hour?, minute?, second?}"
+      example: "{2024, 12, 25, 14, 30, 0}"
+      functions: ["CToD()", "Today()", "Now()"]
+    code_block_literals:
+      syntax: "{|params| expression}"
+      example: "{|x, y| x + y}"
+      lambda_style: true
+    numbers:
+      allow_scientific: true
+      require_decimal_for_scientific: true
+      examples:
+      - '42'
+      - '3.14'
+      - '1.2e-3'
+      invalid_examples:
+      - '7e2'
+      - '.5e1'
+      - '9E+1'
+    indexing:
+      arrays: one_based  # First element is at index 1, not 0
+      string_positions: one_based
+    arithmetic_rules:
+      integer_division: use appropriate functions
+      floating_point: supported
+      overflow_handling: implementation_dependent
+    logical_evaluation:
+      short_circuit: implementation_dependent
+      truth_values: .T. (true), .F. (false)
+      nil_evaluates: false
+    string_concatenation:
+      operator: + (plus)
+      implicit_concatenation: false
+      use_explicit_plus: true
+    strings:
+      double: true
+      single: true
+      bracket: true
+      escape_sequences: true
+      sql_parameter_hints:
+        enabled: true
+        patterns:
+        - ?NAME?
+        - '?'
+        lint_missing_parameters: false
+    arrays:
+      literal_braces: true
+      allow_trailing_comma: false
+      allow_empty_slots: false
+    indexers:
+      allow_multi_index: true
+      chained_indexers: true
+    object_access:
+      property_syntax: object:property
+      method_syntax: object:method(args)
+      space_around_colon: false
+  declarations:
+    declare_rule: :DECLARE a, b, c;
+    parameters_rule: :PARAMETERS a, b;
+    default_rule: :DEFAULT name, value;
+    public_rule: :PUBLIC a, b;
+    include_rule: :INCLUDE "path";
+  procedures:
+    signature:
+      begin: :PROCEDURE Name;
+      parameters: :PARAMETERS var1, var2;
+      defaults:
+      - :DEFAULT name, value;
+      end: :ENDPROC;
+    order:
+    - header_comment
+    - parameters
+    - defaults
+    - local_declarations
+    - body
+    - return
+    return:
+      keyword: :RETURN
+      allow_expression: true
+      require_terminal_semicolon: true
+    common_functions:
+      # Most frequently used functions (1000+ occurrences)
+      - SQLExecute
+      - DoProc
+      - ExecFunction
+      - Empty
+      - Len
+      - usrmes
+      - Chr
+      - aadd
+      - AllTrim
+      - At
+      - Now
+      - Today
+      
+      # High frequency functions (100+ occurrences)
+      - CreateUdObject
+      - buildstring
+      - ascan
+      - alen
+      - arraycalc
+      - buildarray
+      - Directory
+      - CreateGUID
+      - BuildStringForIn
+      - ascanexact
+      - Day
+      - arraynew
+      - DateAdd
+      - DateDiff
+      - Abs
+      
+    # Function recognition pattern
+    generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("
+    
+    # Function naming and casing rules
+    naming_conventions:
+      description: "SSL functions must use their exact documented casing"
+      case_sensitivity: "Functions are case-insensitive but should use documented casing for consistency"
+      rules:
+        - "Always use the exact casing from the function documentation"
+        - "Never substitute alternative function names (e.g., use LimsString not Str)"
+        - "Array functions use lowercase: aadd, alen, ascan, aeval, asort, adel"
+        - "String functions use PascalCase: AllTrim, SubStr, StrTran, Left, Right"
+        - "Date functions use PascalCase: DateAdd, DateDiff, DateFormat, Today, Now"
+        - "Database functions use PascalCase: SQLExecute, RunSQL, GetDataSet"
+        - "Type functions use PascalCase: LimsString, LimsTypeEx, Empty, Val, Chr"
+      common_mistakes:
+        - wrong: "AADD(arr, val)"
+          correct: "aadd(arr, val)"
+          reason: "Array functions use lowercase"
+        - wrong: "Str(123)"
+          correct: "LimsString(123)"
+          reason: "LimsString is the SSL function, Str does not exist"
+        - wrong: "ALLTRIM(s)"
+          correct: "AllTrim(s)"
+          reason: "String functions use PascalCase"
+        - wrong: "DATEADD(...)"
+          correct: "DateAdd(...)"
+          reason: "Date functions use PascalCase"
+      
+    function_categories:
+      string_operations:
+        - AllTrim
+        - At
+        - Left
+        - Right
+        - SubStr
+        - StrTran
+        - Upper
+        - Lower
+        - Trim
+        - LimsString
+      array_operations:
+        - aadd
+        - alen
+        - ascan
+        - aeval
+        - arraynew
+        - buildarray
+        - extractcol
+      database_access:
+        - SQLExecute
+        - RunSQL
+        - LSearch
+        - GetDataSet
+      date_time:
+        - Today
+        - Now
+        - CToD
+        - DateFormat
+        - DateToString
+        - DateFromString
+        - DateAdd
+        - DateDiff
+      file_operations:
+        - GetFromFtp
+        - SendToFtp
+        - ReadFromFtp
+        - WriteToFtp
+        - CopyToFtp
+        - DeleteFromFtp
+        - MoveInFtp
+        - Directory
+      system_utilities:
+        - usrmes
+        - InfoMes
+        - ErrorMes
+        - GetSetting
+        - GetSettings
+        - GetUserData
+        - SetUserData
+      error_handling:
+        - GetLastSSLError
+        - ReturnLastSQLError
+        - FormatErrorMessage
+        - RaiseError
+        - ShowSqlErrors
+      type_conversion:
+        - Val
+        - Chr
+        - Empty
+        - LimsTypeEx
+  classes:
+    signature:
+      begin: :CLASS Name;
+      inherit: :INHERIT Base;
+      members:
+      - :DECLARE ...;
+      - :PROCEDURE ...;
+      end: null
+    methods:
+      - :PROCEDURE ...;
+    fields:
+      - :DECLARE ...;
+    properties:
+      - object:property syntax
+    inheritance:
+      single_inheritance: true
+      base_class_qualified_names: true
+  control_flow:
+    if_else_style: multiline
+    for_loop_style: use :TO and optional :STEP
+    case_style: prefer :OTHERWISE
+    exitcase_usage: allow
+    while_loops: allowed
+    loop_control_statements:
+      - :EXITFOR
+      - :EXITWHILE
+      - :LOOP
+  error_handling:
+    required: true
+    structure:
+      traditional:
+        - :ERROR
+        - error handling code
+      structured:
+        - :TRY
+        - body
+        - :CATCH
+        - handler
+        - (:FINALLY)?
+        - :ENDTRY
+    functions:
+      - GetLastSSLError
+      - ReturnLastSQLError
+      - FormatErrorMessage
+      - RaiseError
+      - ShowSqlErrors
+    logging_guidance: Log errors with contextual identifiers; avoid swallowing errors
+      silently.
+    prefer_structured: true
+    legacy_error_blocks: support
+  function_calls:
+    direct_calls:
+      pattern: FunctionName(arg1, arg2, ...)
+      no_spaces_before_parenthesis: true
+    indirect_calls:
+      pattern: 'DoProc("FunctionName", {param1, param2})'
+      exec_function: 'ExecFunction("FunctionName", {params})'
+      parameter_skipping: "{param1,,param3}"  # empty slots allowed
+    nested_calls: allowed
+    function_resolution: runtime_dispatch
+  property_method_access:
+    object_syntax: object:property
+    method_syntax: object:method(args)
+    no_spaces_around_colon: true
+    chaining: allowed
+    examples:
+      - dataset:Field("COLUMN")
+      - form:ShowMessage("text")
+      - object:Initialize(params)
+  dynamic_code_execution:
+    indirect_execution:
+      - DoProc("ProcedureName", {params})
+      - ExecFunction("FunctionName", {params})
+      - ExecUdf("UdfName", {params})
+    dynamic_procedures: getregion("name")
+    inline_code: getinlinecode("identifier")
+    code_blocks: "{|params| expression}"
+  special_literals:
+    boolean:
+      true: .T.
+      false: .F.
+    null: NIL
+    date_format: "{year, month, day, hour?, minute?, second?}"
+    array_literal: "{expr1, expr2, expr3}"
+    code_block: "{|param1, param2| expression}"
+  database_integration_patterns:
+    parameterized_queries:
+      named: "SELECT * FROM table WHERE id = ?USER_ID?"
+      positional: "SELECT * FROM table WHERE id = ?"
+      array_binding: LSearch(query, , , {param1, param2, param3})
+    common_patterns:
+      - SQLExecute("SELECT field1, field2 FROM table WHERE condition = ?param?")
+      - SQLExecute("SELECT ...")
+      - RunSQL("INSERT INTO ...")
+      - LSearch("SELECT TOP 1 ...")
+  performance_guidelines:
+    sql_optimization:
+      prefer_exists_over_distinct: true
+      use_between_for_ranges: true
+      avoid_select_star: true
+      use_derived_tables: true
+      minimize_database_calls: true
+    array_operations:
+      preallocate_arrays_when_possible: true
+      use_appropriate_array_functions: true
+    variable_naming:
+      hungarian_notation_required: true
+      meaningful_names: true
+      max_length: 20  # variables, 30 for functions
+  security_best_practices:
+    sql_injection_prevention:
+      always_use_parameters: true
+      validate_parameter_count: warn
+      sanitize_dynamic_sql: true
+    input_validation:
+      validate_all_inputs: true
+      use_appropriate_data_types: true
+    error_information_disclosure:
+      avoid_detailed_error_messages: true
+      log_detailed_info_server_side: true
+  regions:
+    usage: Optional but encouraged for long files
+    naming: PascalCase with spaces (e.g., :REGION Validation Helpers;)
+  sql:
+    api: SQLExecute
+    formatting:
+      keyword_case: upper
+      align_clauses: false
+      comma_style: trailing
+    parameters:
+      prefer_named: true
+      placeholder_patterns:
+      - ?NAME?
+      - '?'
+      validate_count_vs_bindings: warn
+    common_patterns:
+      select_queries: use SQLExecute
+      modification_queries: use RunSQL
+      single_value_lookup: use LSearch
+    functions:
+      - SQLExecute
+      - RunSQL
+      - LSearch
+      - GetDataSet
+  database_integration:
+    parameter_types:
+      named: \"?PARAMETER_NAME?\"
+      positional: \"?\"
+    functions:
+      - SQLExecute
+      - RunSQL
+      - LSearch
+      - GetDataSet
+    parameter_hints:
+      enabled: true
+      patterns:
+        - \"?[A-Z_][A-Z0-9_]*?\"
+        - '?'
+  object_oriented:
+    class_definition:
+      begin: :CLASS ClassName;
+      inherit: :INHERIT BaseClass;
+      end: null  # Class ends with file/module
+    property_access:
+      syntax: object:property
+      no_spaces_around_colon: true
+    method_call:
+      syntax: object:method(args)
+      no_spaces_around_colon: true
+    inheritance:
+      single_inheritance: true
+      qualified_names: true  # Category.ClassName format
+    object_creation:
+      builtin_classes:
+        syntax: ClassName{parameters}
+        note: Built-in SSL classes use curly braces for instantiation
+        examples:
+          - oEmail := Email{};
+          - oEmail := Email{.T.};
+          - oAzure := AzureStorage{sConnectionName};
+          - oTable := CDataTable{};
+          - oRegex := SSLRegex{'\d+'};
+        wrong_syntax:
+          - ClassName(parameters)  # Wrong - parentheses are for function calls
+          - New("ClassName")       # Wrong - not valid SSL syntax
+      user_defined_objects:
+        syntax: CreateUdObject("ClassName", {params})
+        note: For objects defined with :CLASS keyword only
+        examples:
+          - oCustom := CreateUdObject("MyClass", {param1, param2});
+  string_literals:
+    formats:
+      - double_quotes: "text"
+      - single_quotes: 'text'
+      - brackets: [text]
+    escape_sequences:
+      - \"
+      - \'
+      - \\"
+      - \n
+      - \r
+      - \t
+    database_parameters:
+      - ?param?  # named parameters
+      - ?        # positional parameters
+    sql_within_strings:
+      highlight_keywords: true
+      parameter_detection: true
+  array_operations:
+    literal_syntax: {expr1, expr2, expr3}
+    one_based_indexing: true
+    functions:
+      - AADD(array, value)
+      - ALEN(array)
+      - ASCAN(array, value)
+      - AEVAL(array, function)
+      - ARRAYNEW(size)
+      - buildarray
+      - extractcol
+    access_patterns:
+      single: array[index]
+      multi: array[index1, index2]
+      chained: array[index1][index2]
+    empty_slots:
+      allowed: true
+      syntax: \"{value1,,value3}\"  # skip middle parameter
+      note: positional parameter skipping
+  lints:
+    disallow_globals: true
+    prefer_positive_logic: true
+    no_nested_ternaries: true
+    limit_block_depth: 4
+    max_params_per_procedure: 8
+    require_else_for_if: false
+    require_otherwise_in_case: true
+    hungarian_notation:
+      enabled: true
+      strict_mode: true
+      prefixes:
+        s: string
+        n: numeric
+        b: boolean
+        d: date
+        a: array
+        o: object
+      exceptions:
+        loop_counters: [i, j, k]
+        ssl_constants: [NIL, .T., .F.]
+        common_abbreviations: [ID, SQL, URL, XML, HTML]
+    security:
+      prevent_sql_injection: true
+      parameterized_queries_required: true
+      validate_database_parameters: warn
+    performance:
+      prefer_exists_over_distinct: true
+      use_between_for_ranges: true
+      avoid_select_star: true
+      prefer_derived_tables: true
+  documentation:
+    procedure_headers:
+      required: true
+      template: |
+        /************************************************************
+        Description.. : [Brief description of procedure purpose]
+        Parameters... : [Parameter descriptions]
+        Returns...... : [Return value description]
+        Author....... : [Author initials]
+        Date......... : YYYY-MM-DD
+        ************************************************************/
+    code_comments:
+      style: SSL_comments  # /* comment; format
+      placement: above_code_or_inline
+      rules:
+        - Explain "why" not "what"
+        - Keep concise
+        - Use sentence case
+        - Terminate with semicolon
+      types:
+        - documentation: for procedures, complex logic
+        - inline: for business rules, complex expressions
+        - section: for code organization
+  module_structure:
+    standard_order:
+      - module_header_comment
+      - :PARAMETERS (if any)
+      - :DEFAULT values (if any)
+      - :DECLARE local_variables
+      - :REGION sections (optional)
+      - procedure_definitions
+      - main_code
+      - :LABEL statements (if any)
+    class_modules:
+      - :CLASS ClassName;
+      - :INHERIT BaseClass; (optional)
+      - :DECLARE class_fields;
+      - :PROCEDURE methods;
+      - end: file_end
+  language_features:
+    version: SSL v11
+    case_sensitivity:
+      keywords: case_insensitive  # Normalized to UPPER
+      identifiers: case_sensitive
+      functions: case_insensitive
+    statement_termination:
+      all_statements: require_semicolon
+      comments: terminate_with_semicolon
+      special_cases: []
+    data_types:
+      implicit: true  # SSL is loosely typed
+      type_hints: hungarian_notation
+      type_conversion: automatic
+  editor_support:
+    code_folding: true
+    regions:
+      - :REGION name; ... :ENDREGION; (functional)
+      - /* region description; ... /* endregion; (IDE folding)
+    syntax_highlighting:
+      keywords: colon_prefixed
+      operators: all_types
+      literals: boolean_string_number
+      comments: block_style
+    indentation:
+      tab_size: 1
+      continuation_indent: 1
+      smart_indent: true
+  formatter_hints:
+    normalize_keyword_case: true
+    align_assignment: 'off'
+    wrap_long_lines:
+      mode: soft
+      break_on:
+      - after_comma
+      - before_operator
+    preserve_comment_blocks: true
+  examples:
+  - title: IF/ELSE block
+    code:
+    - :IF bExists;
+    - "\ta := a + 1;"
+    - :ELSE;
+    - "\ta := 0;"
+    - :ENDIF;
+  - title: Procedure skeleton
+    code:
+    - :PROCEDURE CalculateTotal;
+    - :PARAMETERS nQty, nPrice;
+    - :DEFAULT nQty, 1;
+    - :TRY;
+    - "\tnTotal := nQty * nPrice;"
+    - :CATCH;
+    - "\t/* handle error;"
+    - :ENDTRY;
+    - :RETURN nTotal;
+    - :ENDPROC;
