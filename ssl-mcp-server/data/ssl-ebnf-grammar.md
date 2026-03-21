@@ -133,7 +133,6 @@ Statement ::= (
     InlineCodeBlock |      (* :BEGININLINECODE/:ENDINLINECODE keywords *)
     BranchStatement |
     DatabaseStatement |
-    HashRegionDirective    (* Legacy #region/#endregion directives *)
 ) ";"
 
 (* Class definitions *)
@@ -230,11 +229,6 @@ ArgumentList ::= Expression {"," Expression}
 CommentStatement ::= BlockComment | SingleLineComment
 BlockComment ::= "/*" {Character} ";" (* SSL comments that span multiple lines *)
 SingleLineComment ::= "/*" {Character} ";" (* SSL comments that appear on a single line *)
-
-(* Preprocessor directives - legacy hash regions *)
-HashRegionDirective ::= HashRegionStart | HashRegionEnd
-HashRegionStart ::= "#region" {Character} Newline (* Legacy directive, prefer functional regions *)
-HashRegionEnd ::= "#endregion" (* Legacy directive, prefer functional regions *)
 
 (* Special structures *)
 LabelStatement ::= ":" "LABEL" Identifier (* Used with Branch() *)
@@ -352,7 +346,6 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 9. **Regions**: SSL supports functional regions for code templating:
     - **Functional regions**: `:REGION identifier; ... :ENDREGION;` - stored at runtime for dynamic code retrieval
     - **IDE folding regions**: `/* region description; ... /* endregion;` - editor folding markers, not language constructs
-    - **Deprecated hash regions**: `#region ... #endregion` - legacy artifacts, do not use
 
 10. **Database Integration**: Database queries are typically represented as string literals. Parameters in database statements can be represented as `?PARAMETER?` (named parameters) or simply `?` (positional parameters).
 
