@@ -1,0 +1,49 @@
+{
+  "name": "tree-sitter-ssl",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tree-sitter grammar for STARLIMS Scripting Language (SSL)",
+  "main": "grammar.js",
+  "types": "bindings/node",
+  "keywords": [
+    "tree-sitter",
+    "grammar",
+    "ssl",
+    "starlims"
+  ],
+  "files": [
+    "grammar.js",
+    "binding.gyp",
+    "prebuilds/**",
+    "bindings/node/*",
+    "queries/*",
+    "src/**"
+  ],
+  "scripts": {
+    "gen": "tree-sitter generate",
+    "test": "tree-sitter test",
+    "install": "node-gyp-build",
+    "prebuildify": "prebuildify --napi --strip"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.22.5",
+    "prebuildify": "^6.0.0"
+  },
+  "dependencies": {
+    "node-gyp-build": "^4.8.0"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "tree_sitter": {
+      "optional": true
+    }
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.ssl",
+      "injection-regex": "^ssl$"
+    }
+  ]
+}

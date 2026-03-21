@@ -1,0 +1,105 @@
+---
+name: ssl-review
+description: Review SSL code against the style guide and language rules. Use when asked to review, lint, or check SSL code quality.
+argument-hint: "<file-path> [focus: naming|formatting|error_handling|sql|security|all]"
+allowed-tools: Read, Grep, Glob
+---
+
+Review the SSL file at `$ARGUMENTS` (first token is the file path, optional second token is the focus area).
+
+## Instructions
+
+1. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[focus]` as `$1` (default: `all`).
+   - If no file path is given, ask the user for the file path before continuing.
+
+2. **Read the file** at the given path using the Read tool.
+
+3. **Apply the checks below** according to the focus area. For `all`, run every check.
+
+4. **Use these core SSL rules while reviewing:**
+   - Colon-prefixed keywords must be UPPERCASE
+   - Almost every statement, including comments, must end with `;`
+   - Never place `;` inside comment body text
+   - `:PARAMETERS` must come immediately after `:PROCEDURE`
+   - `:DEFAULT` must come immediately after `:PARAMETERS`
+   - `:DECLARE` must appear before body statements
+   - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation
+   - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
+   - `:TRY` requires at least one `:CATCH` or `:FINALLY`
+   - `:BEGINCASE` requires at least one `:CASE`
+   - `==` is exact string equality; `=` is prefix matching for strings
+
+---
+
+## Check Categories
+
+### `naming` — Hungarian notation and identifier conventions
+- Prefix mismatch: `s` = string, `n` = numeric, `b` = boolean, `d` = date,
+  `a` = array, `o` = object, `fn` = code block, `v` = variant/any
+- Identifiers should be camelCase after the prefix (`sMyVar`, not `s_my_var` or `SMYVAR`)
+- Class names should be PascalCase
+- Procedure names should be PascalCase (e.g., `GetInvoiceTotal`)
+- Constants may be ALL_CAPS
+
+### `formatting` — Syntax and structural formatting
+- Every statement (including comments) must end with `;`
+- Keywords must be UPPERCASE colon-prefixed: `:IF`, `:ENDIF`, `:FOR`, `:NEXT`, `:WHILE`, `:ENDWHILE`, `:BEGINCASE`, `:ENDCASE`, etc.
+- Indentation: prefer tabs; if the file already uses spaces, preserve consistent
+  4-space indentation and flag mixed indentation
+- No space around `:` in member access (`Me:Method()`, not `Me : Method()`)
+- `:DECLARE` and `:PARAMETERS` come before body statements
+- `:DEFAULT` must immediately follow `:PARAMETERS`
+
+### `error_handling` — Error handling patterns
+- Flag use of legacy `:ERROR` / `:RESUME` — prefer `:TRY` / `:CATCH` / `:ENDTRY`
+- Verify `:TRY` blocks have at least one `:CATCH` or `:FINALLY`
+- Flag empty `:CATCH` blocks (swallowed errors) unless intentional
+- Flag missing `:TRY` around external calls (`ExecFunction`, `SQLExecute`, DB functions)
+
+### `sql` — SQL construction and parameterization
+- Flag string concatenation in SQL queries (injection risk): `"SELECT ... " + sVar`
+- `SQLExecute`: must use `?varName?` substitution for parameters
+- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, `GetDataSet`: use positional `?` with explicit parameter arrays
+- Flag direct variable embedding in SQL strings
+- Flag SQL strings that do not uppercase SQL keywords/functions or that
+  uppercase non-keyword identifiers without an external casing requirement
+
+### `security` — Security-relevant patterns
+- SQL injection (see `sql` checks above)
+- Hardcoded credentials, passwords, or connection strings
+- Unvalidated user input passed to DB functions or `ExecFunction`
+- Overly broad error suppression
+
+### `all` — Run all of the above
+
+---
+
+## Additional Checks (always applied)
+
+- **Semicolons in comments:** `/* comment text;` — a `;` inside comment text ends the comment prematurely, turning the rest into executable code. Flag any `/* ... ; ...` where the semicolon is inside the comment body, not at the end.
+- **Missing `:EXITCASE`:** Each `:CASE` / `:OTHERWISE` block should end with `:EXITCASE;` unless multi-match behavior is intentional (without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute, but `:OTHERWISE` stays skipped once any earlier case body has run).
+- **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope.
+- **Bare procedure calls:** Direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
+- **`DoProc` in class methods:** `DoProc` is a compile error inside `:CLASS` methods — use `Me:Method()` instead.
+- **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended.
+
+---
+
+## Output Format
+
+Report findings grouped by category. For each finding:
+
+```
+[CATEGORY] Line N: <description>
+  Code: <the offending line>
+  Fix:  <suggested correction>
+```
+
+At the end, provide a summary:
+```
+Summary: N issues found (X errors, Y warnings, Z suggestions)
+```
+
+Use **error** for compiler violations, **warning** for likely bugs or legacy patterns, **suggestion** for style improvements.
+
+If no issues are found in a category, note "No issues found."
