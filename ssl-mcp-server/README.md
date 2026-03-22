@@ -93,8 +93,8 @@ Windows example:
 
 ## Data Coverage
 
-- 528 total elements (466 developer-facing)
-- 387 functions, 63 classes, 39 keywords, 32 operators, 3 literals, 4 special forms
+- 457 developer-facing elements
+- 354 functions, 26 classes, 38 keywords, 32 operators, 3 literals, 4 special forms
 - 38 function categories
 - 8 Hungarian notation prefixes
 

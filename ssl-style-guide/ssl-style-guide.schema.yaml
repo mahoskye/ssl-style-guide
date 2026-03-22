@@ -1030,7 +1030,7 @@ ssl_style_guide:
       level: advisory
       logging_guidance: Log errors with contextual identifiers; avoid swallowing errors silently.
       prefer_structured: true
-      traditional_error_blocks: supported
+      traditional_error_blocks: supported  # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
   function_calls:
     direct_calls:
       syntax_level: authoritative
@@ -1516,6 +1516,21 @@ ssl_style_guide:
       - rule: include_at_top
         severity: info
         message: ":INCLUDE is an include directive. Place it at the top of the file for clarity."
+    deprecated_keywords:
+      - keyword: :ERROR
+        severity: warning
+        message: ":ERROR is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
+        replacement: ":TRY"
+        autofix: false
+      - keyword: :RESUME
+        severity: warning
+        message: ":RESUME is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
+        replacement: ":TRY"
+        autofix: false
+      - keyword: :LABEL
+        severity: warning
+        message: ":LABEL is legacy flow control (used with Branch()). Prefer structured constructs (:IF/:WHILE/:FOR) in new code."
+        autofix: false
   documentation:
     level: style_only
     procedure_headers:

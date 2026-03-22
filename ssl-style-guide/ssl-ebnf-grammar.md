@@ -132,7 +132,7 @@ Statement ::= (
     RegionBlock |          (* :REGION/:ENDREGION keywords *)
     InlineCodeBlock |      (* :BEGININLINECODE/:ENDINLINECODE keywords *)
     BranchStatement |
-    DatabaseStatement
+    DatabaseStatement |
 ) ";"
 
 (* Class definitions *)
@@ -255,8 +255,9 @@ ObjectPropertyAccess ::= Identifier ":" Identifier (* Object:Property *)
 Expression ::= LogicalExpression
 LogicalExpression ::= ComparisonExpression {LogicalOperator ComparisonExpression}
 LogicalOperator ::= ".AND." | ".OR." (* *)
-ComparisonExpression ::= ArithmeticExpression {ComparisonOperator ArithmeticExpression}
+ComparisonExpression ::= ShiftExpression {ComparisonOperator ShiftExpression}
 ComparisonOperator ::= "==" | "!=" | "<>" | "#" | "<" | ">" | "<=" | ">=" | "=" | "$" (* "#", "<>", "!=" are equivalent not-equals; "$" is containment: left $ right is .T. if left found inside right *)
+ShiftExpression ::= ArithmeticExpression {ShiftOperator ArithmeticExpression}
 ArithmeticExpression ::= Term {AdditiveOperator Term}
 AdditiveOperator ::= "+" | "-"
 Term ::= Factor {MultiplicativeOperator Factor}
@@ -267,7 +268,7 @@ PowerOperand ::= [UnaryOperator] Primary
 UnaryOperator ::= "+" | "-" | "!" | ".NOT."
 
 (* Bitwise operations — SSL uses function call syntax, not infix operators *)
-(* Only << and >> are infix shift operators *)
+(* << and >> are infix shift operators, integrated into the expression precedence chain above *)
 ShiftOperator ::= "<<" | ">>"
 BitwiseOperation ::= "_AND" "(" Expression "," Expression ")" |
                     "_OR" "(" Expression "," Expression ")" |
@@ -305,7 +306,7 @@ BooleanLiteral ::= ".T." | ".F." (* TRUE and FALSE also mentioned in EBNF notes 
 ArrayLiteral ::= "{" [ExpressionList] "}" | "{" ArrayLiteral {"," ArrayLiteral} "}"
 NilLiteral ::= "NIL" (* *)
 DateLiteral ::= "{" NumberLiteral "," NumberLiteral "," NumberLiteral ["," NumberLiteral "," NumberLiteral "," NumberLiteral] "}" (* Specific format; common usage is via CtoD() or Today() *)
-CodeBlockLiteral ::= "{|" [IdentifierList] "|" ExpressionList "}" (* e.g. {|x| x*x} *)
+CodeBlockLiteral ::= "{|" IdentifierList "|" ExpressionList "}" (* At least one parameter required; e.g. {|x| x*x} *)
 
 
 (* Lists *)

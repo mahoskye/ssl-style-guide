@@ -169,7 +169,7 @@ ssl_style_guide:
     region:
       begin: :REGION
       end: :ENDREGION
-      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(cValue, xSrc, xDst, xLocalRegions). Not for code organization."
+      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(cValue, xSrc, xDst, xLocalRegions). For editor grouping, prefer comment regions."
     inline_code:
       begin: :BEGININLINECODE
       end: :ENDINLINECODE
@@ -1009,7 +1009,7 @@ ssl_style_guide:
         keywords:
           - :ERROR
           - :RESUME  # optional — switches to resume mode (each statement wrapped in individual try/catch)
-        note: "Legacy. :ERROR applies to all subsequent code in scope. :RESUME causes significant performance cost. Replace with :TRY/:CATCH/:FINALLY."
+        note: "Legacy scope-based error handling. :ERROR applies to all subsequent code in scope. :RESUME causes significant performance cost because each subsequent statement is wrapped individually."
       structured:
         - :TRY
         - body  # requires at least one statement
@@ -1030,7 +1030,7 @@ ssl_style_guide:
       level: advisory
       logging_guidance: Log errors with contextual identifiers; avoid swallowing errors silently.
       prefer_structured: true
-      legacy_error_blocks: deprecated  # :ERROR/:RESUME should be replaced with :TRY/:CATCH/:FINALLY
+      traditional_error_blocks: supported  # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
   function_calls:
     direct_calls:
       syntax_level: authoritative
@@ -1432,21 +1432,6 @@ ssl_style_guide:
       prefer_exists_over_distinct: true
       use_between_for_ranges: true
       avoid_select_star: true
-    deprecated_keywords:
-      - keyword: :ERROR
-        severity: warning
-        message: ":ERROR is legacy error handling. Replace with :TRY/:CATCH/:FINALLY block."
-        replacement: ":TRY"
-        autofix: false
-      - keyword: :RESUME
-        severity: warning
-        message: ":RESUME is legacy error handling. Replace with :TRY/:CATCH/:FINALLY block."
-        replacement: ":TRY"
-        autofix: false
-      - keyword: :LABEL
-        severity: warning
-        message: ":LABEL is legacy flow control (used with Branch()). Prefer structured constructs (:IF/:WHILE/:FOR) in new code."
-        autofix: false
     not_preferred_operators:
       - operator: "#"
         severity: info
@@ -1531,6 +1516,21 @@ ssl_style_guide:
       - rule: include_at_top
         severity: info
         message: ":INCLUDE is an include directive. Place it at the top of the file for clarity."
+    deprecated_keywords:
+      - keyword: :ERROR
+        severity: warning
+        message: ":ERROR is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
+        replacement: ":TRY"
+        autofix: false
+      - keyword: :RESUME
+        severity: warning
+        message: ":RESUME is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
+        replacement: ":TRY"
+        autofix: false
+      - keyword: :LABEL
+        severity: warning
+        message: ":LABEL is legacy flow control (used with Branch()). Prefer structured constructs (:IF/:WHILE/:FOR) in new code."
+        autofix: false
   documentation:
     level: style_only
     procedure_headers:

@@ -123,7 +123,7 @@ More than 20 parameters on a procedure or method triggers a compiler performance
 
 Group related procedures with `/* region` / `/* endregion` comment conventions:
 
-> **Important:** Do NOT use `:REGION`/`:ENDREGION` for code organization — those are legacy functional constructs that capture body text for later retrieval via `GetRegion()`. Use comment-based regions instead.
+> **Important:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. Prefer comment-based regions for code organization.
 
 ```ssl
 /* region Data Processing;
@@ -160,9 +160,10 @@ These formatting rules are style conventions and match the starlims-lsp formatte
 | Indent unit | 1 tab (or 4 spaces if using spaces) |
 | Block content | Indent one level inside blocks |
 | Nested blocks | Each level adds one indent |
+| Class files | Do not indent the class body solely because of `:CLASS` |
 
 **Block keywords that increase indent:**
-`:IF`, `:ELSE`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:CASE`, `:OTHERWISE`, `:TRY`, `:CATCH`, `:FINALLY`, `:PROCEDURE`, `:CLASS`, `:REGION` (functional), `:BEGININLINECODE`
+`:IF`, `:ELSE`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:CASE`, `:OTHERWISE`, `:TRY`, `:CATCH`, `:FINALLY`, `:PROCEDURE`, `:REGION` (functional), `:BEGININLINECODE`
 
 **Block keywords that decrease indent (before the keyword):**
 `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` (functional), `:ENDINLINECODE`
@@ -172,6 +173,9 @@ These formatting rules are style conventions and match the starlims-lsp formatte
 
 **Regular statement (no indent change):**
 `:EXITCASE` - stays at content level, like a `break` statement
+
+`:CLASS` establishes class context, but because it has no closing keyword and a file
+contains only one class, class members stay at the file's top indentation level.
 
 ### 3.2 Spacing
 
@@ -620,7 +624,7 @@ result := SQLExecute("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
 
 ### 7.6 Legacy Error Handling (:ERROR/:RESUME)
 
-The `:ERROR`/`:RESUME` keywords are legacy error handling. They are still valid, but should be replaced with `:TRY`/`:CATCH`/`:FINALLY` in refactored code.
+The `:ERROR`/`:RESUME` keywords are legacy scope-based error handling. They remain valid, and `:TRY`/`:CATCH`/`:FINALLY` is often easier to target around specific operations in refactoring work.
 
 **How `:ERROR`/`:RESUME` works:**
 - `:ERROR` defines a handler block that applies to all subsequent code in the current scope (no `:ENDERROR` — it runs until scope ends)
@@ -628,13 +632,13 @@ The `:ERROR`/`:RESUME` keywords are legacy error handling. They are still valid,
 - This has significant performance cost since every statement becomes its own try/catch
 
 ```ssl
-/* WRONG - :ERROR/:RESUME is legacy and should be replaced;
+/* Scope-based handler example;
 :ERROR;
     oErr := GetLastSSLError();
     UsrMes("Error: " + oErr:Description);
 :RESUME;
 
-/* CORRECT - Use structured :TRY/:CATCH/:FINALLY;
+/* Structured handler example;
 :TRY;
     /* Code that might error;
 :CATCH;
@@ -645,7 +649,7 @@ The `:ERROR`/`:RESUME` keywords are legacy error handling. They are still valid,
 :ENDTRY;
 ```
 
-**Migration approach:** Identify which statements the `:ERROR`/`:RESUME` was protecting, then wrap those specific statements in targeted `:TRY`/`:CATCH`/`:FINALLY` blocks. This gives better control and better performance than the blanket resume-mode approach.
+**Refactoring approach:** Identify which statements the `:ERROR`/`:RESUME` was protecting, then decide whether that broader scope is intentional or whether targeted `:TRY`/`:CATCH`/`:FINALLY` blocks would express the behavior more clearly.
 
 ### 7.7 String Comparison: `=` vs `==`
 
@@ -802,13 +806,13 @@ When refactoring, maintain a progress block in your notes:
 :BEGINCASE / :CASE / :OTHERWISE / :EXITCASE / :ENDCASE
 :TRY / :CATCH / :FINALLY / :ENDTRY
 :PROCEDURE / :ENDPROC
-:REGION / :ENDREGION                 (legacy functional body-capture — NOT for code organization)
+:REGION / :ENDREGION                 (legacy functional body-capture; prefer comment regions for organization)
 :DECLARE / :PARAMETERS / :DEFAULT / :PUBLIC
 :RETURN / :LABEL / :INCLUDE
 :BEGININLINECODE / :ENDINLINECODE    (legacy named code storage)
 :EXITFOR / :EXITWHILE / :LOOP
 :CLASS / :INHERIT
-:ERROR / :RESUME              (legacy — replace with :TRY/:CATCH/:FINALLY)
+:ERROR / :RESUME                     (legacy scope-based error handling)
 ```
 
 ### Class Rules

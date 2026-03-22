@@ -65,24 +65,6 @@ export function buildIndices(data: LoadedData): Indices {
         hungarianPrefixes.set(prefix, type);
       }
     }
-    // Also check lints section for extended prefix list
-    const lints = guide?.["lints"] as Record<string, unknown> | undefined;
-    const styleRules = lints?.["style_rules"] as Record<string, unknown>[] | undefined;
-    if (styleRules) {
-      for (const rule of styleRules) {
-        const id = rule["id"] as string | undefined;
-        if (id === "hungarian_notation") {
-          const extras = rule["prefixes"] as Record<string, string> | undefined;
-          if (extras) {
-            for (const [pfx, typeName] of Object.entries(extras)) {
-              if (!hungarianPrefixes.has(pfx)) {
-                hungarianPrefixes.set(pfx, typeName);
-              }
-            }
-          }
-        }
-      }
-    }
   } catch {
     // ignore
   }

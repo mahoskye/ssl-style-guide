@@ -102,13 +102,14 @@ npm test       # Run tests
 
 **Agent Guides:** Use the companion references in `agent-guides/` for language rules (`ssl_agent_instructions.md`) and refactoring workflows (`ssl_refactoring_guide.md`).
 
-**Claude Code Skills:** Five slash commands are available in `agent-guides/skills/` for SSL workflows:
+**Claude Code Skills:** Six slash commands are available in `agent-guides/skills/` for SSL workflows:
 
 | Command | Purpose |
 |---------|---------|
 | `/ssl-review <file>` | Review code against the style guide |
 | `/ssl-refactor <file>` | Refactor following the 6-step workflow |
 | `/ssl-lookup <element>` | Look up function, class, or keyword |
+| `/ssl-format <file> [scope]` | Format SSL code and embedded SQL |
 | `/ssl-new-procedure <name> [params]` | Scaffold a procedure |
 | `/ssl-new-class <name> [base]` | Scaffold a class |
 
