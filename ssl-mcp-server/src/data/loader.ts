@@ -12,6 +12,12 @@ function dataPath(filename: string): string {
   return resolve(DATA_DIR, filename);
 }
 
+function formatElementType(type: string): string {
+  if (type === "class") return "classes";
+  if (type === "special_form") return "special forms";
+  return `${type}s`;
+}
+
 export interface LoadedData {
   elements: Element[];
   classMemberValidation: ClassMemberValidationFile;
@@ -40,7 +46,7 @@ export function loadAllData(): LoadedData {
   process.stderr.write(
     `[ssl-mcp-server] Loaded ${elements.length} elements: ` +
       Object.entries(byType)
-        .map(([t, n]) => `${n} ${t}s`)
+        .map(([t, n]) => `${n} ${formatElementType(t)}`)
         .join(", ") +
       "\n"
   );

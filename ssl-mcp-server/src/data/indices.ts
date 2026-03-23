@@ -53,15 +53,18 @@ export function buildIndices(data: LoadedData): Indices {
     classMemberDetail.set(cls.name.toLowerCase(), cls);
   }
 
-  // Hungarian prefixes from naming section
+  // Hungarian prefixes from lints.hungarian_notation
   const hungarianPrefixes = new Map<string, string>();
   try {
     const ssg = styleGuide as Record<string, unknown>;
     const guide = ssg["ssl_style_guide"] as Record<string, unknown> | undefined;
-    const naming = guide?.["naming"] as Record<string, unknown> | undefined;
-    const prefixes = naming?.["prefixes"] as Record<string, string> | undefined;
+    const lints = guide?.["lints"] as Record<string, unknown> | undefined;
+    const hungarianNotation = lints?.["hungarian_notation"] as
+      | Record<string, unknown>
+      | undefined;
+    const prefixes = hungarianNotation?.["prefixes"] as Record<string, string> | undefined;
     if (prefixes) {
-      for (const [type, prefix] of Object.entries(prefixes)) {
+      for (const [prefix, type] of Object.entries(prefixes)) {
         hungarianPrefixes.set(prefix, type);
       }
     }
