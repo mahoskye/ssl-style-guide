@@ -2,6 +2,7 @@
 name: ssl-lookup
 description: Look up SSL function signatures, class members, keyword syntax, or operator behavior. Use when the user asks about an SSL function, class, or language element.
 argument-hint: "<element-name>"
+allowed-tools: Read, Grep, Glob
 ---
 
 Look up the SSL element named `$ARGUMENTS`.
@@ -48,7 +49,7 @@ Look up the SSL element named `$ARGUMENTS`.
 
 ---
 
-## Output Format
+## Output
 
 Present results clearly:
 

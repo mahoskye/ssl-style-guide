@@ -7,6 +7,9 @@ const VALID_TOPICS = [
   "error_handling", "sql", "classes", "procedures", "control_flow",
   "declarations", "expressions", "arrays", "strings", "database",
   "security", "performance", "lints",
+  "function_calls", "property_access", "dynamic_code", "special_literals",
+  "regions", "module_structure", "language_features", "editor_support",
+  "formatter_hints", "examples", "documentation",
 ] as const;
 
 type Topic = typeof VALID_TOPICS[number];
@@ -15,7 +18,7 @@ const StyleRuleSchema = z.object({
   topic: z
     .enum(VALID_TOPICS)
     .describe(
-      "Style guide topic: comments, naming, formatting, keywords, operators, error_handling, sql, classes, procedures, control_flow, declarations, expressions, arrays, strings, database, security, performance, lints"
+      "Style guide topic: comments, naming, formatting, keywords, operators, error_handling, sql, classes, procedures, control_flow, declarations, expressions, arrays, strings, database, security, performance, lints, function_calls, property_access, dynamic_code, special_literals, regions, module_structure, language_features, editor_support, formatter_hints, examples, documentation"
     ),
 });
 
@@ -39,6 +42,17 @@ const TOPIC_KEYS: Record<Topic, string[]> = {
   security: ["security_best_practices"],
   performance: ["performance_guidelines"],
   lints: ["lints"],
+  function_calls: ["function_calls"],
+  property_access: ["property_method_access"],
+  dynamic_code: ["dynamic_code_execution"],
+  special_literals: ["special_literals"],
+  regions: ["regions"],
+  module_structure: ["module_structure"],
+  language_features: ["language_features"],
+  editor_support: ["editor_support"],
+  formatter_hints: ["formatter_hints"],
+  examples: ["examples"],
+  documentation: ["documentation"],
 };
 
 export function registerStyleRule(server: McpServer, indices: Indices): void {

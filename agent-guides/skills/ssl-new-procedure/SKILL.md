@@ -2,6 +2,7 @@
 name: ssl-new-procedure
 description: Scaffold a new SSL procedure with correct structure, naming conventions, and documentation header.
 argument-hint: "<procedure-name> [parameters...]"
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the procedure name, remaining tokens are parameter names).
@@ -115,3 +116,9 @@ Output:
 
 :ENDPROC;
 ```
+
+---
+
+## Output
+
+Present the generated procedure as an SSL code block. Ask the user if they want it written to a specific file path.

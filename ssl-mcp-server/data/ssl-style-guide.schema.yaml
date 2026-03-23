@@ -20,7 +20,7 @@ ssl_style_guide:
       advisory: best-practice guidance (security, maintainability, performance)
     ssl_version: v11
     language_completeness: comprehensive
-    last_updated: 2026-03-14
+    last_updated: 2026-03-21
   authoritative_language:
     note: Sections marked here should track accepted SSL language behavior.
     sections:
@@ -54,7 +54,6 @@ ssl_style_guide:
       - sql.formatting
       - documentation
       - module_structure
-      - formatter_hints
       - lints.style_rules
   advisory_guidance:
     note: These sections describe maintainability, security, and performance guidance rather than syntax constraints.
@@ -147,6 +146,7 @@ ssl_style_guide:
       begin: :WHILE
       end: :ENDWHILE
       exit: :EXITWHILE
+      loop: :LOOP  # :LOOP works in both :FOR and :WHILE loops
     for:
       begin: :FOR
       to: :TO
@@ -160,6 +160,7 @@ ssl_style_guide:
       otherwise: :OTHERWISE  # Only executes when no earlier :CASE body ran
       exit: :EXITCASE  # Without :EXITCASE, later :CASE expressions are still evaluated and additional matching bodies may execute, but :OTHERWISE stays skipped once any case body has run
       end: :ENDCASE
+      constraint: at_least_one_case  # :BEGINCASE requires at least one :CASE block
     try:
       begin: :TRY
       catch: :CATCH
@@ -178,7 +179,14 @@ ssl_style_guide:
         - bare_identifier
         - quoted_identifier
       note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(cValue, aVariables) / DeleteInlineCode(cValue)."
-    error_marker: :ERROR
+    error:
+      marker: :ERROR
+      resume: :RESUME  # optional — switches to resume mode inside :ERROR handler
+      note: "Legacy scope-based handler. :ERROR body requires ≥1 statement. :RESUME wraps each subsequent statement in individual try/catch."
+    class:
+      begin: :CLASS
+      end: null  # no :ENDCLASS — class ends at EOF
+      note: "A class file contains only the class definition; it ends at end-of-file."
     label:
       forms:
         - :LABEL Name;
@@ -232,41 +240,12 @@ ssl_style_guide:
       - folding: IDE region markers
   naming:
     level: style_only
-    case:
-      procedures: PascalCase
-      classes: PascalCase
-      variables: hungarian_camelCase  # prefix + camelCase body, e.g., sUserName, nCount
-      constants: UPPER_SNAKE_CASE
-    prefixes:
-      array: a
-      boolean: b
-      code_block: fn
-      date: d
-      numeric: n
-      udo: o
-      string: s
-      variant: v  # any/variant — for variables whose type is unknown or changes
-    exceptions:
-      loop_counters: [i, j, k, x, y, z]
-      preserve_existing_acronym_casing: true
-      ssl_constants: [NIL, .T., .F.]
-    examples:
-      array: aListFolderNo
-      boolean: bExists
-      date: dDueDate
-      numeric: nRunNo
-      udo: oOleObject
-      string: sUserName
-      variant: vResult
-    naming_rules:
-      procedures: PascalCase
-      classes: PascalCase
-      variables: hungarian_camelCase  # prefix + camelCase body, e.g., sUserName, nCount
-      constants: UPPER_SNAKE_CASE
-      max_variable_length: 20
-      max_function_length: 30
-      use_underscores: discouraged
-      single_chars_allowed: [i, j, k]  # loop counters
+    see: lints.hungarian_notation  # authoritative prefix/exception config; see also lints.coding_standards for length limits
+    procedures: PascalCase
+    classes: PascalCase
+    variables: hungarian_camelCase  # prefix + camelCase body, e.g., sUserName, nCount
+    constants: UPPER_SNAKE_CASE
+    use_underscores: discouraged
   expressions:
     operator_spacing: space-around
     operator_symbol_map:
@@ -312,12 +291,12 @@ ssl_style_guide:
     - '%='
     comparison_operators:
       equality:
-      - '='    # loose equality
-      - '=='   # strict equality
+      - '='    # loose equality (for strings: .T. if right is empty or left starts with right)
+      - '=='   # strict equality (exact match)
       inequality:
-      - '!='   # not equals
-      - '<>'   # not equals
-      - '#'    # not equals (alternative syntax)
+      - '!='   # not equals (negates ==, not =)
+      - '<>'   # not equals (equivalent to !=)
+      - '#'    # not equals (equivalent to !=)
       relational:
       - '<'    # less than
       - '>'    # greater than
@@ -466,7 +445,7 @@ ssl_style_guide:
       - At
       - Now
       - Today
-      
+
       # High frequency functions (100+ occurrences)
       - CreateUdObject
       - BuildString
@@ -483,10 +462,7 @@ ssl_style_guide:
       - DateAdd
       - DateDiff
       - Abs
-      
-    # Function recognition pattern
-    generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("
-    
+
     # Function naming and casing rules
     naming_conventions:
       description: "SSL functions must use their exact documented casing"
@@ -513,7 +489,7 @@ ssl_style_guide:
         - wrong: "DATEADD(...)"
           correct: "DateAdd(...)"
           reason: "Date functions use PascalCase"
-      
+
     function_categories:
       string_operations:
         - AllTrim
@@ -652,7 +628,6 @@ ssl_style_guide:
         - Asc
         - LCase
         - LTrim
-        - Left
         - Len
         - LimsString
         - Replicate
@@ -678,7 +653,6 @@ ssl_style_guide:
         - CompArray
         - DelArray
         - SortArray
-        - ExtractCol
       advanced_date_time:
         - CMonth
         - DOW
@@ -1000,8 +974,8 @@ ssl_style_guide:
       level: style_only
       if_else_style: multiline
       for_loop_style: use :TO and optional :STEP
-      case_style: prefer :OTHERWISE
-      exitcase_usage: preferred
+      case_style: include :OTHERWISE for default handling  # advisory — :OTHERWISE is not required by the language (blocks.case.constraint requires only at least one :CASE)
+      exitcase_usage: end each :CASE/:OTHERWISE with :EXITCASE unless multi-match is intentional
   error_handling:
     structure:
       level: authoritative
@@ -1009,21 +983,21 @@ ssl_style_guide:
         keywords:
           - :ERROR
           - :RESUME  # optional — switches to resume mode (each statement wrapped in individual try/catch)
-        note: "Legacy scope-based error handling. :ERROR applies to all subsequent code in scope. :RESUME causes significant performance cost because each subsequent statement is wrapped individually."
+        note: "Legacy scope-based error handling. :ERROR defines a handler that applies to all subsequent code in the current scope and must contain at least one statement. :RESUME inside the handler switches to resume mode, wrapping each subsequent statement individually — significant performance cost."
       structured:
         - :TRY
         - body  # requires at least one statement
-        - (:CATCH)?
-        - handler
-        - (:FINALLY body)?
+        - (:CATCH handler)?  # handler: zero or more statements (empty CATCH is valid)
+        - (:FINALLY body)?  # body: requires at least one statement if present
         - :ENDTRY
         # :CATCH and :FINALLY are optional individually, but at least one is required.
         # Bare TRY...ENDTRY without :CATCH or :FINALLY is a compile error.
-        # If :FINALLY is present, it must contain at least one statement.
     functions:
       - GetLastSSLError
+      - ClearLastSSLError
       - ReturnLastSQLError
       - FormatErrorMessage
+      - FormatSqlErrorMessage
       - RaiseError
       - ShowSqlErrors
     guidance:
@@ -1044,6 +1018,7 @@ ssl_style_guide:
     indirect_calls:
       level: authoritative
       pattern: 'DoProc("ProcedureName", {param1, param2})'
+      class_method_restriction: DoProc is a compile-time error inside class methods; use Me:Method() or Base:Method() instead
       exec_function:
         entry_point: 'ExecFunction("Category.Script", {params})'
         procedure: 'ExecFunction("Category.Script.Proc", {params})'
@@ -1273,49 +1248,9 @@ ssl_style_guide:
         - GetNETDataSet
         - XmlExportSql
         - GetTables
-  database_integration:
-    parameter_types:
-      named: \"?PARAMETER_NAME?\"
-      positional: \"?\"
-    functions:
-      - SQLExecute
-      - RunSQL
-      - LSearch
-      - GetDataSet
-      - GetDataSetEx
-      - GetDataSetWithSchemaFromSelect
-      - GetDataSetXMLFromSelect
-      - GetNETDataSet
-      - XmlExportSql
-      - GetTables
-    parameter_hints:
-      enabled: true
-      patterns:
-        - \"?[A-Za-z_][A-Za-z0-9_]*(?:\[[^\]]+\]|:[A-Za-z_][A-Za-z0-9_]*)*\?\"
-        - '?'
   object_oriented:
     level: authoritative
-    class_definition:
-      begin: :CLASS [ClassName];
-      inherit: :INHERIT BaseName; or :INHERIT Category.ScriptName;
-      end: null  # Class ends with file/module
-    property_access:
-      syntax_level: authoritative
-      syntax: object:property
-      chaining_style: colon_chained_only
-      spaces_around_colon_accepted: true
-      formatting_level: style_only
-      no_spaces_around_colon: preferred
-    method_call:
-      syntax_level: authoritative
-      syntax: object:method(args)
-      chaining_style: colon_chained_only
-      spaces_around_colon_accepted: true
-      formatting_level: style_only
-      no_spaces_around_colon: preferred
-    inheritance:
-      single_inheritance: true
-      qualified_names: true  # bare or qualified identifiers are accepted; qualified names are common
+    note: "Class definition, inheritance, property/method access rules are defined in the 'classes' and 'property_method_access' sections. This section covers object creation patterns."
     object_creation:
       builtin_classes:
         syntax: ClassName{parameters}
@@ -1323,6 +1258,7 @@ ssl_style_guide:
         all_classes:
           - AzureStorage
           - BatchSupport
+          - CDataTable
           - Email
           - EnterpriseExporter
           - FtpsClient
@@ -1396,7 +1332,7 @@ ssl_style_guide:
       chained: array[index1][index2]
     empty_slots:
       allowed: true
-      syntax: \"{value1,,value3}\"  # skip middle parameter
+      syntax: "{value1,,value3}"  # skip middle parameter
       note: positional parameter skipping
   lints:
     level: advisory
@@ -1407,7 +1343,6 @@ ssl_style_guide:
       limit_block_depth: 4
       max_params_per_procedure: 8
       require_else_for_if: false
-      require_otherwise_in_case: true
     hungarian_notation:
       enabled: true
       strict_mode: true
@@ -1464,12 +1399,10 @@ ssl_style_guide:
       - rule: class_or_script
         message: "A file is either a :CLASS definition or a script, never both."
       - rule: doproc_in_class
+        severity: error
         message: "Inside class methods, call sibling/inherited methods with Me:MethodName() / Base:MethodName(). Simple DoProc(\"ProcName\", ...) calls are rejected in class context."
       - rule: constructor_return_value
         message: ":RETURN inside a Constructor cannot return a value."
-      - rule: constructor_outside_class
-        severity: warning
-        message: "Constructor syntax is only meaningful inside a :CLASS definition."
     type_safety:
       - rule: for_numeric_values
         severity: warning
@@ -1488,7 +1421,7 @@ ssl_style_guide:
         message: "NIL is not the same as empty string, zero, or .F. — all declared variables initialize to empty string, not NIL."
       - rule: equals_vs_strict_equals
         severity: info
-        message: "For strings, = does prefix matching (returns .T. if left starts with right) while == does exact matching. For other types, both delegate to the same comparison. Prefer == for string comparisons where exact match is needed."
+        message: "For strings, = is loose equality (returns .T. if right is empty or if left starts with right) while == does exact matching. != negates == (strict), not = (loose), so = and != are not logical opposites for strings. For other types, both delegate to the same comparison. Prefer == for string comparisons where exact match is needed."
     class_rules:
       - rule: class_member_order
         severity: info
@@ -1516,6 +1449,9 @@ ssl_style_guide:
       - rule: include_at_top
         severity: info
         message: ":INCLUDE is an include directive. Place it at the top of the file for clarity."
+      - rule: constructor_outside_class
+        severity: warning
+        message: "Constructor syntax is only meaningful inside a :CLASS definition."
     deprecated_keywords:
       - keyword: :ERROR
         severity: warning
@@ -1536,13 +1472,13 @@ ssl_style_guide:
     procedure_headers:
       required: true
       template: |
-        /************************************************************
+        /* ********************************************************************************
         Description.. : [Brief description of procedure purpose]
         Parameters... : [Parameter descriptions]
         Returns...... : [Return value description]
         Author....... : [Author initials]
         Date......... : YYYY-MM-DD
-        ************************************************************;
+        ********************************************************************************;
     code_comments:
       style: SSL_comments  # /* comment; format
       placement: above_code_or_inline
@@ -1568,10 +1504,14 @@ ssl_style_guide:
       - :LABEL statements (if any)
     class_modules:
       - :CLASS [ClassName];
-      - :INHERIT BaseName; or :INHERIT Category.ScriptName; (optional)
-      - :DECLARE class_fields;
-      - :PROCEDURE methods;
-      - end: file_end
+      - :INHERIT BaseName; or :INHERIT Category.ScriptName; (optional — must precede :DECLARE)
+      - :DECLARE class_fields; (must follow :INHERIT, must precede methods)
+      - :PROCEDURE regular_methods; (must precede Constructor)
+      - :PROCEDURE Constructor; (must be last procedure in class)
+      - end: file_end  # no :ENDCLASS keyword; class ends at EOF
+    class_file_constraint:
+      level: authoritative
+      rule: one_class_or_script_per_file  # A class file contains only the class definition; a script file contains only procedures
   language_features:
     version: SSL v11
     case_sensitivity:
@@ -1586,6 +1526,7 @@ ssl_style_guide:
       implicit: true  # SSL is loosely typed
       style_hint_reference: hungarian_notation
       type_conversion: automatic
+    generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("  # regex for function name recognition in the lexer
   editor_support:
     level: advisory
     code_folding: true
@@ -1624,6 +1565,7 @@ ssl_style_guide:
     - :PROCEDURE CalculateTotal;
     - :PARAMETERS nQty, nPrice;
     - :DEFAULT nQty, 1;
+    - :DECLARE nTotal;
     - :TRY;
     - "\tnTotal := nQty * nPrice;"
     - :CATCH;

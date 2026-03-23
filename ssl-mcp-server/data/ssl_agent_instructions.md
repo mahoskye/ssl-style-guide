@@ -77,7 +77,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 * **Case Blocks (Strict Structure):**
     * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
-    * **Style Guidance:** End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+    * **Style Guidance:** Include `:OTHERWISE` for default handling (advisory — not required by the language). End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
     * Syntax:
       ```ssl
       :BEGINCASE;
@@ -271,7 +271,7 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 ### Primitive Types & Literals
 
 * **Boolean:** `.T.` (True) and `.F.` (False).
-* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` function to check if a value is null, empty string, or zero. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. Do not call instance methods on a `NIL` value (raises an error).
+* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` function to check if a value is null, empty string, zero, or `.F.`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. Do not call instance methods on a `NIL` value (raises an error).
 * **Strings:**
     * Double quotes: `"Text"`
     * Single quotes: `'Text'`
@@ -543,6 +543,10 @@ Variables must be prefixed to indicate type:
 | `fn` | Code Block | `fnFilter`, `fnTransform` |
 | `v` | Any/Variant | `vResult`, `vParam` |
 
+**Length limits:**
+- Variable names: maximum 20 characters (excluding prefix)
+- Function/procedure names: maximum 30 characters
+
 **Exceptions to Hungarian Notation:**
 * Loop counters: `i`, `j`, `k`, `x`, `y`, `z` (single letters allowed)
 * Global constants: `ALL_CAPS_NAMING` (e.g., `MAX_COUNT`, `DEFAULT_PATH`)
@@ -712,7 +716,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 14. **Procedure References:** Procedure names should only be matched in execution contexts (`DoProc`, `ExecFunction`), not in comments, strings, or unrelated identifiers.
 15. **Comment Toggle:** SSL uses `/* ... ;` comment syntax. Toggling comments should add/remove this pattern, not `//` style comments.
 16. **:STEP Keyword Spacing:** The `:STEP` keyword in FOR loops should have a space before it: `:FOR i := 1 :TO 10 :STEP 2;` not `:FOR i := 1 :TO 10:STEP 2;`
-17. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match.
+17. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match. **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=`.
 18. **Default Variable Value:** All declared variables start as empty string `""`, not `NIL`.
 19. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
 20. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
@@ -765,7 +769,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 **Object-Oriented:**
 - `:CLASS`, `:INHERIT`
 
-### Complete Operator List (34 Operators)
+### Complete Operator List (32 Operators)
 
 **Assignment Operators (7):**
 - `:=` - Assignment
@@ -805,7 +809,8 @@ Note: These are legacy functional body-capture constructs. They store content fo
 **Bitwise Built-ins (4 functions, integer operands only):**
 - `_AND(a, b)`, `_OR(a, b)`, `_XOR(a, b)`, `_NOT(a)` - Bitwise operations (function call syntax, not infix)
 
-**Structural Syntax (2):**
+### Structural Syntax
+
 - `:` - Member access (object property or method)
 - `/*` - Comment delimiter (must run until `;`)
 

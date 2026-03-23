@@ -1,6 +1,6 @@
 # ssl-mcp-server
 
-MCP server for SSL (STARLIMS Scripting Language v11) reference data. Exposes 528 SSL elements, style guide rules, grammar, and language reference to any MCP-compatible client.
+MCP server for SSL (STARLIMS Scripting Language v11) reference data. Exposes 457 SSL elements, style guide rules, grammar, and language reference to any MCP-compatible client.
 
 ## Quick Start
 

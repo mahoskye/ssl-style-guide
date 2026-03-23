@@ -110,16 +110,17 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 ```ebnf
 (*
     SSL (STARLIMS Scripting Language) Version 11 EBNF Grammar
-    Last updated: 2026-03-14
+    Last updated: 2026-03-21
     Documents the authoritative syntax of SSL v11.
 *)
 
 (* Top-level structure *)
 Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements *)
 
-(* Statement types *)
-Statement ::= (
-    ProcedureStatement |
+(* Statement types — each statement is terminated by ";" *)
+(* CommentStatement includes its own terminating ";" as part of the comment syntax *)
+Statement ::=
+    (ProcedureStatement |
     ConditionalStatement |
     LoopStatement |
     SwitchStatement |
@@ -127,13 +128,12 @@ Statement ::= (
     ErrorBlockStanza |     (* :ERROR blocks *)
     DeclarationStatement |
     LogicStatement |
-    CommentStatement |
     LabelStatement |
     RegionBlock |          (* :REGION/:ENDREGION keywords *)
     InlineCodeBlock |      (* :BEGININLINECODE/:ENDINLINECODE keywords *)
     BranchStatement |
-    DatabaseStatement |
-) ";"
+    DatabaseStatement) ";" |
+    CommentStatement       (* Comment already includes its terminating ";" *)
 
 (* Class definitions *)
 ClassDefinition ::= ClassDeclaration [InheritStatement] {ClassMember}
@@ -144,7 +144,7 @@ ClassFieldDeclaration ::= ":" "DECLARE" IdentifierList (* Used for class fields 
 MethodDeclaration ::= ProcedureStatement (* Methods are defined like procedures within a class context *)
 
 (* Procedure declarations *)
-ProcedureStatement ::= ProcedureStart [ParameterDeclaration] [DefaultParameterDeclaration] {Statement} ProcedureEnd
+ProcedureStatement ::= ProcedureStart [ParameterDeclaration] {DefaultParameterDeclaration} {Statement} ProcedureEnd
 ProcedureStart ::= ":" "PROCEDURE" Identifier
 ProcedureEnd ::= ":" "ENDPROC"
 
@@ -173,8 +173,6 @@ ForStatement ::= ":" "FOR" Identifier ":=" Expression ":" "TO" Expression [":" "
 NextStatement ::= ":" "NEXT"
 ExitForStatement ::= ":" "EXITFOR"
 LoopContinue ::= ":" "LOOP" (* Represents a 'continue' for the current loop iteration *)
-ResumeStatement ::= ":" "RESUME" (* Resume execution from a particular point *)
-StepStatement ::= ":" "STEP" (* Step execution for debugging *)
 
 (* Switch case statements *)
 SwitchStatement ::= BeginCaseStatement CaseBlock {CaseBlock} [OtherwiseBlock] EndCaseStatement (* At least one CASE is required *)
@@ -196,8 +194,9 @@ FinallyBlock ::= FinallyStatement Statement {Statement} (* FINALLY body requires
 FinallyStatement ::= ":" "FINALLY"
 EndTryStatement ::= ":" "ENDTRY"
 
-ErrorBlockStanza ::= ErrorMarker {Statement} (* For :ERROR structure *)
+ErrorBlockStanza ::= ErrorMarker Statement {Statement} [ResumeStatement] (* For :ERROR structure — body requires ≥1 statement; optional :RESUME switches to resume mode *)
 ErrorMarker ::= ":" "ERROR"
+ResumeStatement ::= ":" "RESUME" (* Inside :ERROR handler — switches to resume mode, wrapping each subsequent statement in individual try/catch *)
 
 (* Declaration statements *)
 DeclarationStatement ::= (
@@ -226,9 +225,7 @@ IndirectFunctionCall ::= Identifier "(" StringLiteral "," ArrayLiteral ")" (* Ge
 ArgumentList ::= Expression {"," Expression}
 
 (* Comment statements *)
-CommentStatement ::= BlockComment | SingleLineComment
-BlockComment ::= "/*" {Character} ";" (* SSL comments that span multiple lines *)
-SingleLineComment ::= "/*" {Character} ";" (* SSL comments that appear on a single line *)
+CommentStatement ::= "/*" {Character} ";" (* All SSL comments use the same syntax: /* ... ; The lexer does not distinguish single-line from multi-line — both forms are syntactically identical. Multi-line comments simply contain embedded newlines within the character sequence. *)
 
 (* Special structures *)
 LabelStatement ::= ":" "LABEL" Identifier (* Used with Branch() *)
@@ -236,7 +233,7 @@ RegionBlock ::= RegionStart {Character} RegionEnd (* Keyword-based regions :REGI
 RegionStart ::= ":" "REGION" Identifier ";"
 RegionEnd ::= ":" "ENDREGION" ";"
 InlineCodeBlock ::= InlineCodeStart {Statement} InlineCodeEnd (* *)
-InlineCodeStart ::= ":" "BEGININLINECODE" [StringLiteral | Identifier] ";"
+InlineCodeStart ::= ":" "BEGININLINECODE" (StringLiteral | Identifier) ";" (* Name is required — bare or quoted *)
 InlineCodeEnd ::= ":" "ENDINLINECODE" ";"
 DynamicCodeExecution ::= Identifier "(" StringLiteral ["," ArrayLiteral] ")" (* Generic dynamic code execution pattern *)
 BranchStatement ::= Identifier "(" StringLiteral ")" (* Generic branch/control flow pattern *)
@@ -256,7 +253,7 @@ Expression ::= LogicalExpression
 LogicalExpression ::= ComparisonExpression {LogicalOperator ComparisonExpression}
 LogicalOperator ::= ".AND." | ".OR." (* *)
 ComparisonExpression ::= ShiftExpression {ComparisonOperator ShiftExpression}
-ComparisonOperator ::= "==" | "!=" | "<>" | "#" | "<" | ">" | "<=" | ">=" | "=" | "$" (* "#", "<>", "!=" are equivalent not-equals; "$" is containment: left $ right is .T. if left found inside right *)
+ComparisonOperator ::= "==" | "!=" | "<>" | "#" | "<" | ">" | "<=" | ">=" | "=" | "$" (* "=" is loose equality (prefix match for strings); "==" is strict equality; "#", "<>", "!=" are equivalent not-equals (negate ==, not =); "$" is containment: left $ right is .T. if left found inside right *)
 ShiftExpression ::= ArithmeticExpression {ShiftOperator ArithmeticExpression}
 ArithmeticExpression ::= Term {AdditiveOperator Term}
 AdditiveOperator ::= "+" | "-"
@@ -265,7 +262,7 @@ MultiplicativeOperator ::= "*" | "/" | "%"
 Factor ::= PowerOperand {PowerOperator PowerOperand}
 PowerOperator ::= "^" | "**" (* Both forms are equivalent for exponentiation *)
 PowerOperand ::= [UnaryOperator] Primary
-UnaryOperator ::= "+" | "-" | "!" | ".NOT."
+UnaryOperator ::= "-" | "!" | ".NOT."
 
 (* Bitwise operations — SSL uses function call syntax, not infix operators *)
 (* << and >> are infix shift operators, integrated into the expression precedence chain above *)
@@ -296,7 +293,7 @@ ArraySubscript ::= "[" Expression {"," Expression} "]" | "[" Expression "]" {("[
 
 (* Literals *)
 Literal ::= NumberLiteral | StringLiteral | BooleanLiteral | ArrayLiteral | NilLiteral | DateLiteral | CodeBlockLiteral
-NumberLiteral ::= IntegerPart ( DecimalPart Exponent? )? | IntegerPart (* Revised based on '7e2' not working, '7.0e2' working *)
+NumberLiteral ::= IntegerPart [DecimalPart [Exponent]] (* Scientific notation requires a decimal part: '7.0e2' works, '7e2' does not *)
 IntegerPart ::= Digit {Digit}
 DecimalPart ::= "." Digit {Digit} (* Ensures at least one digit after the decimal point *)
 Exponent    ::= ("e" | "E") ["-"] Digit {Digit}
@@ -305,7 +302,7 @@ StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | "[" {Character} "]
 BooleanLiteral ::= ".T." | ".F." (* TRUE and FALSE also mentioned in EBNF notes but .T./.F. are canonical *)
 ArrayLiteral ::= "{" [ExpressionList] "}" | "{" ArrayLiteral {"," ArrayLiteral} "}"
 NilLiteral ::= "NIL" (* *)
-DateLiteral ::= "{" NumberLiteral "," NumberLiteral "," NumberLiteral ["," NumberLiteral "," NumberLiteral "," NumberLiteral] "}" (* Specific format; common usage is via CtoD() or Today() *)
+DateLiteral ::= "{" NumberLiteral "," NumberLiteral "," NumberLiteral ["," NumberLiteral "," NumberLiteral "," NumberLiteral] "}" (* Specific format; common usage is via CToD() or Today() *)
 CodeBlockLiteral ::= "{|" IdentifierList "|" ExpressionList "}" (* At least one parameter required; e.g. {|x| x*x} *)
 
 
@@ -350,7 +347,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 10. **Database Integration**: Database queries are typically represented as string literals. Parameters in database statements can be represented as `?PARAMETER?` (named parameters) or simply `?` (positional parameters).
 
-11. **For Loop Structure**: For loops require an immediate iterator assignment (`:FOR i := 1 :TO 10;`) which cannot be set outside the loop declaration.
+11. **For Loop Structure**: For loops require an immediate iterator assignment (`:FOR i := 1 :TO 10;`) which cannot be set outside the loop declaration. The loop terminator is `:NEXT`, not `:ENDFOR`. Although `:ENDFOR` is a recognized keyword, it is not accepted in practice — using it causes a parse error.
 
 12. **Array Access**: Multi-dimensional arrays can be accessed using comma notation `array[1,2]` or chained bracket notation `array[1][2]`. Array indexing is 1-based (the first element is at index 1, not 0).
 
@@ -383,7 +380,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 25. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by compiler). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
 
-26. **Comparison Operators**: `=` is loose equality (for strings: prefix match — returns `.T.` if right starts with left; for numbers: exact). `==` is strict equality. The operators `===` and `!==` are not supported. `$` is containment: `left $ right` returns `.T.` if left is found inside right.
+26. **Comparison Operators**: `=` is loose equality (for strings: returns `.T.` if right is empty or if left starts with right; for numbers: exact). `==` is strict equality. `!=`, `<>`, and `#` are equivalent not-equals operators that negate `==` (strict), not `=` (loose) — so for strings, `=` and `!=` are **not logical opposites**. The operators `===` and `!==` are not supported. `$` is containment: `left $ right` returns `.T.` if left is found inside right.
 
 27. **Bitwise Operations**: Bitwise operations are performed using function call syntax (`_AND()`, `_OR()`, `_XOR()`, `_NOT()`), not infix operators. Only `<<` and `>>` are infix shift operators.
 

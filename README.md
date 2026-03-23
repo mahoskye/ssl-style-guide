@@ -132,9 +132,7 @@ Get-ChildItem agent-guides\skills -Directory | ForEach-Object {
 ```
 
 ## Related Projects
-- `starlims-lsp/` — LSP server with formatter, diagnostics, and hover info (most actively updated)
-- `vs-code-ssl-formatter/` — VS Code extension that uses the LSP server
-- `ssl-api-documentation/` — Work in progress; API reference documentation for SSL built-in classes and functions
+- `ssl-api-documentation/` — API reference documentation for SSL built-in classes and functions (sibling repo at `../ssl-api-documentation/`)
 
 ## Metadata
 

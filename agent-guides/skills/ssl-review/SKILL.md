@@ -85,7 +85,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 ---
 
-## Output Format
+## Output
 
 Report findings grouped by category. For each finding:
 

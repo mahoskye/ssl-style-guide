@@ -2,6 +2,7 @@
 name: ssl-new-class
 description: Scaffold a new SSL class with correct member ordering, constructor, and conventions.
 argument-hint: "<class-name> [base-class]"
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class name, optional second token is the base class).
@@ -35,6 +36,8 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    ```
 
 4. **Generate the class** following this structure:
+
+---
 
 **With base class (`/ssl-new-class InvoiceManager Category.BaseClass`):**
 ```ssl
@@ -130,6 +133,8 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 
 ```
 
+---
+
 5. **Apply these rules:**
    - Class name: PascalCase
    - Fields declared with `:DECLARE` at class level (not inside methods)
@@ -146,6 +151,63 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - Indentation: use tabs by default
 
 6. **Output:** Present the generated class as an SSL code block. Remind the user:
-   - Save to a file named after the class in the appropriate STARLIMS category
+   - Save to a file named after the class in the appropriate SSL category
    - Instantiate with `CreateUdObject("Category.InvoiceManager")` or `CreateUdObject("Category.InvoiceManager", {args})`
    - Ask if they want it written to a specific file path
+
+---
+
+## Example
+
+Input: `/ssl-new-class InvoiceManager`
+
+Output:
+```ssl
+/* =============================================================================;
+/* CLASS:   InvoiceManager;
+/* PURPOSE: [Describe the class purpose];
+/* =============================================================================;
+:CLASS InvoiceManager;
+
+:DECLARE _sPrivateField;
+:DECLARE sPublicField;
+
+/* -----------------------------------------------------------------------------;
+/* METHOD: GetField;
+/* PURPOSE: [Describe method purpose];
+/* RETURNS: [Return value description];
+/* -----------------------------------------------------------------------------;
+:PROCEDURE GetField;
+:DECLARE sValue;
+
+:TRY;
+   sValue := Me:sPublicField;
+   :RETURN sValue;
+:CATCH;
+   :RETURN NIL;
+:ENDTRY;
+
+:ENDPROC;
+
+/* -----------------------------------------------------------------------------;
+/* Constructor;
+/* PURPOSE: Initialize the InvoiceManager instance;
+/* -----------------------------------------------------------------------------;
+:PROCEDURE Constructor;
+
+:TRY;
+   /* Initialize fields;
+   Me:sPublicField := "";
+   Me:_sPrivateField := "";
+:CATCH;
+   /* Initialization error;
+:ENDTRY;
+
+:ENDPROC;
+```
+
+---
+
+## Output
+
+Present the generated class as an SSL code block. Remind the user to save the file and how to instantiate the class.

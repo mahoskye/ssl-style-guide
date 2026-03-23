@@ -273,6 +273,10 @@ aResults := SQLExecute("
 | Code Block | `fn` | `fnFilter`, `fnCallback` |
 | Any/Variant | `v` | `vResult`, `vParam` |
 
+**Length limits:**
+- Variable names: maximum 20 characters (excluding prefix)
+- Function/procedure names: maximum 30 characters
+
 **Exceptions:**
 - Loop counters: `i`, `j`, `k`, `x`, `y`, `z`
 - Constants: `ALL_CAPS_WITH_UNDERSCORES`
@@ -716,6 +720,7 @@ Run through this checklist after refactoring:
 - [ ] All variables declared before use
 - [ ] Procedures defined after main logic
 - [ ] Related procedures grouped in regions
+- [ ] Script-level visibility annotations (`/*@private;` / `/*@protected;`) placed on own line before `:PROCEDURE` if used — note these have **no effect on class methods** (class methods are always Public)
 
 ### Formatting
 - [ ] Consistent indentation (tabs or 4 spaces)
@@ -734,6 +739,7 @@ Run through this checklist after refactoring:
 ### Logic
 - [ ] All script procedure calls use DoProc or ExecFunction; inside classes, sibling/inherited methods use `Me:` / `Base:`
 - [ ] :CASE blocks use :EXITCASE unless multiple matching cases are intentional
+- [ ] :BEGINCASE includes :OTHERWISE for default handling (advisory — the language only requires at least one :CASE)
 - [ ] All blocks properly closed (:IF/:ENDIF, etc.)
 - [ ] No stubs or placeholders remain
 - [ ] Error handling present where appropriate

@@ -1,429 +1,429 @@
 {
-    "name": "STARLIMS Scripting Language",
-    "scopeName": "source.ssl",
-    "patterns": [
-        {
-            "include": "#comment"
-        },
-        {
-            "include": "#inline-code-name"
-        },
-        {
-            "include": "#constructor-declaration"
-        },
-        {
-            "include": "#procedure-declaration"
-        },
-        {
-            "include": "#class-declaration"
-        },
-        {
-            "include": "#include-declaration"
-        },
-        {
-            "include": "#inherit-declaration"
-        },
-        {
-            "include": "#functional-region"
-        },
-        {
-            "include": "#keywords-colon"
-        },
-        {
-            "include": "#string-double"
-        },
-        {
-            "include": "#string-single"
-        },
-        {
-            "include": "#string-bracket"
-        },
-        {
-            "include": "#number"
-        },
-        {
-            "include": "#ssl-literals"
-        },
-        {
-            "include": "#class-context-forms"
-        },
-        {
-            "include": "#method-call"
-        },
-        {
-            "include": "#property-access"
-        },
-        {
-            "include": "#builtInFunctions"
-        },
-        {
-            "include": "#builtInClassInstantiation"
-        },
-        {
-            "include": "#code-block"
-        },
-        {
-            "include": "#array-literal"
-        },
-        {
-            "include": "#indexer"
-        },
-        {
-            "include": "#operators"
-        },
-        {
-            "include": "#identifier"
-        }
-    ],
-    "repository": {
-        "comment": {
-            "name": "comment.block.ssl",
-            "begin": "/\\*",
-            "end": ";"
-        },
-        "string-double": {
-            "name": "string.quoted.double.ssl",
-            "begin": "\"",
-            "end": "\""
-        },
-        "string-single": {
-            "name": "string.quoted.single.ssl",
-            "begin": "'",
-            "end": "'"
-        },
-        "string-bracket": {
-            "name": "string.quoted.other.bracket.ssl",
-            "match": "(?<![:\\w\\)\\}\\]])\\[(?:[^\\[\\]]|\\[[^\\]]*\\])*\\]"
-        },
-        "builtInFunctions": {
-            "patterns": [
-                {
-                    "name": "support.function.ssl",
-                    "match": "(?i)\\b(AAdd|AEval|AEvalA|AFill|ALen|AScan|AScanExact|Abs|AddColDelimiters|AddNameDelimiters|AddProperty|AddToSession|AllTrim|ArrayCalc|ArrayNew|ArrayToTVP|Asc|At|BeginLimsTransaction|Branch|BuildArray|BuildArray2|BuildString|BuildString2|BuildStringForIn|CMonth|CToD|CheckOnFtp|ChkNewPassword|ChkPassword|Chr|ClearLastSSLError|ClearSession|ClientEndOfDay|ClientStartOfDay|CombineFiles|CompArray|Compress|ConvertReport|CopyToFtp|CreateGUID|CreateLocal|CreateORMSession|CreatePublic|CreateUdObject|CreateZip|DOW|DOY|DToC|DToS|DateAdd|DateDiff|DateDiffEx|DateFormat|DateFromNumbers|DateFromString|DateToString|Day|Decompress|DecryptData|DelArray|DeleteDirOnFtp|DeleteFromFtp|DeleteInlineCode|DetectSqlInjections|Directory|DoProc|DocAcquireWorkitem|DocAddUsersToGroup|DocCancelCheckout|DocCheckinDocument|DocCheckoutDocument|DocCommandFailed|DocCompleteWorkitem|DocCreateACL|DocCreateCabinet|DocCreateFolder|DocCreateGroup|DocCreateUser|DocDelegateWorkitem|DocDelete|DocDeleteCabinet|DocDeleteFolder|DocDeleteUser|DocEndDocumentumInterface|DocExists|DocExistsUser|DocExportDocument|DocGetCabinets|DocGetDocuments|DocGetErrorMessage|DocGetFolders|DocGetMetadata|DocGetTasks|DocGetTasksCount|DocGetTypeAttributes|DocGetTypeAttributesAsDataset|DocGetWorkflowStatus|DocGetWorkitemProperties|DocImportDocument|DocInitDocumentumInterface|DocLoginToDocumentum|DocPauseWorkflow|DocRemoveAllUsersFromGroup|DocRemoveUsersFromGroup|DocRepeatWorkitem|DocResumeWorkflow|DocSearchAsDataset|DocSearchFullText|DocSearchUsingDql|DocSetMetadata|DocStartWorkflow|DocStopWorkflow|DocUpdateUser|DosSupport|Empty|Eval|EncryptData|EndLimsOleConnect|EndLimsTransaction|ErrorMes|ExecFunction|ExecInternal|ExecUdf|ExtractCol|ExtractZip|FileSupport|FormatErrorMessage|FormatSqlErrorMessage|FromJson|FromXml|GetAppBaseFolder|GetAppWorkPathFolder|GetByName|GetConnectionByName|GetConnectionStrings|GetDBMSName|GetDBMSProviderName|GetDSParameters|GetDataSet|GetDataSetEx|GetDataSetFromArray|GetDataSetFromArrayEx|GetDataSetWithSchemaFromSelect|GetDataSetXMLFromArray|GetDataSetXMLFromSelect|GetDecimalSep|GetDecimalSeparator|GetDefaultConnection|GetDirFromFtp|GetExecutionTrace|GetFeaturesAndNumbers|GetFileVersion|GetForbiddenAppIDs|GetForbiddenDesignerAppIDs|GetFromApplication|GetFromFtp|GetFromSession|GetGroupSeparator|GetInlineCode|GetInstallationKey|GetInternal|GetInternalC|GetLastSQLError|GetLastSSLError|GetLicenseInfoAsText|GetLogsFolder|GetNETDataSet|GetNoLock|GetNumberOfInstrumentConnections|GetNumberOfNamedConcurrentUsers|GetNumberOfNamedUsers|GetPrinters|GetRdbmsDelimiter|GetRegion|GetRegionEx|GetSSLDataset|GetSetting|GetSettings|GetTables|GetTransactionsCount|GetUserData|GetWebFolder|HasProperty|HashData|Hour|HtmlDecode|HtmlEncode|IIf|IgnoreSqlErrors|In64BitMode|InBatchProcess|InfoMes|Integer|IsDBConnected|IsDefined|IsDemoLicense|IsFeatureAuthorized|IsFeatureBasedLicense|IsGuid|IsHex|IsInTransaction|IsInvariantDate|IsNumeric|IsProductionModeOn|IsTable|IsTableFld|JDay|LCase|LDAPAuth|LDAPAuthEX|LDir|LFromHex|LHex2Dec|LIMSDate|LKill|LLower|LPrint|LSearch|LSelect|LSelect1|LSelectC|LStr|LToHex|LTransform|LTrim|LWait|Left|Len|LimsAt|LimsExec|LimsGetDateFormat|LimsNETCast|LimsNETConnect|LimsNETTypeOf|LimsOleConnect|LimsRecordsAffected|LimsSetCounter|LimsSqlConnect|LimsSqlDisconnect|LimsString|LimsTime|LimsType|LimsTypeEx|LimsXOr|Lower|MakeDateInvariant|MakeDateLocal|MakeDirOnFtp|MakeNETObject|MatFunc|Max|MimeDecode|MimeEncode|Min|Minute|Month|MoveInFtp|NetFrameworkVersion|NoOfDays|Nothing|Now|PrepareArrayForIn|PrmCount|RaiseError|Rand|Rat|ReadBytesBase64|ReadFromFtp|ReadText|RenameOnFtp|Replace|Replicate|ResetFeatures|RetrieveLong|ReturnLastSQLError|Right|Round|RoundPoint5|RunApp|RunDS|RunSQL|SQLExecute|SQLRemoveComments|Scient|SearchLDAPUser|Second|Seconds|SendFromOutbox|SendLimsEmail|SendOutlookReminder|SendToFtp|SendToOutbox|ServerEndOfDay|ServerStartOfDay|ServerTimeZone|SetByName|SetDecimalSeparator|SetDefaultConnection|SetGroupSeparator|SetInternal|SetInternalC|SetLocationOracle|SetLocationSQLServer|SetSqlTimeout|SetUserData|SetUserPassword|ShowSqlErrors|SigFig|SortArray|SqlTraceOff|SqlTraceOn|Sqrt|StationName|StdRound|Str|StrSrch|StrTran|StrZero|StringToDate|SubStr|SubmitToBatch|SubmitToBatchEx|TableFldLst|Time|ToJson|ToNumeric|ToScientific|ToXml|Today|TraceOff|TraceOn|Trim|UndeclaredVars|UpdLong|Upper|UrlDecode|UrlEncode|UserTimeZone|UsrMes|Val|ValidateDate|ValidateNumeric|VerifySignature|WriteBytesBase64|WriteText|WriteToFtp|XmlDomToUdObject|XmlExportSql|Year|_AND|_NOT|_OR|_XOR)\\b"
-                }
-            ]
-        },
-        "builtInClassInstantiation": {
-            "patterns": [
-                {
-                    "match": "(?i)\\b(AzureStorage|BatchSupport|CDataTable|Email|EnterpriseExporter|FtpsClient|HtmlConverter|PatcherSupport|PdfSupport|RegSetup|SDMS|SDMSDocUploader|SSLBaseDictionary|SSLCodeProvider|SSLDataset|SSLExpando|SSLIntDictionary|SSLRegex|SSLStringDictionary|Sequence|TablesImport|WebServices)\\b(?=\\s*\\{)",
-                    "name": "support.class.ssl"
-                }
-            ]
-        },
-        "operators": {
-            "name": "keyword.operator.ssl",
-            "match": "(?:\\:=|\\+=|-=|\\*=|/=|\\^=|%=|==|!=|<>|#|<=|>=|<<|>>|\\*\\*|\\+\\+|--|<|>|=|\\+|-|\\*|/|%|\\^|\\.AND\\.|\\.OR\\.|\\.NOT\\.|\\$|!)"
-        },
-        "number": {
-            "name": "constant.numeric.ssl",
-            "match": "\\b\\d+(?:\\.\\d+[eE][+-]?\\d+|\\.\\d+)?\\b"
-        },
-        "keywords-colon": {
-            "name": "keyword.control.ssl",
-            "match": ":(?:LABEL(?:\\b[\\t ]+[A-Za-z_][A-Za-z0-9_]*(?:[\\t ]+[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*)|BEGINCASE|BEGININLINECODE|CASE|CATCH|CLASS|DECLARE|DEFAULT|ELSE|ENDCASE|ENDIF|ENDINLINECODE|ENDPROC|ENDREGION|ENDTRY|ENDWHILE|ERROR|EXITCASE|EXITFOR|EXITWHILE|FINALLY|FOR|IF|INCLUDE|INHERIT|LOOP|NEXT|OTHERWISE|PARAMETERS|PROCEDURE|PUBLIC|REGION|RESUME|RETURN|STEP|TO|TRY|WHILE)\\b"
-        },
-        "identifier": {
-            "name": "variable.other.ssl",
-            "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
-        },
-        "property-access": {
-            "begin": "\\b((?:Me|Base|[A-Za-z_][A-Za-z0-9_]*)(?:\\s*\\[[^\\]]+\\])*(?:\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*\\s*\\([^)]*\\)|\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*|\\s*\\([^)]*\\))*)\\s*(:)\\s*([A-Za-z_][A-Za-z0-9_]*)\\b(?!\\s*\\()",
-            "beginCaptures": {
-                "1": {
-                    "name": "variable.other.object.ssl"
-                },
-                "2": {
-                    "name": "punctuation.accessor.colon.ssl"
-                },
-                "3": {
-                    "name": "variable.other.property.ssl"
-                }
-            },
-            "end": "(?=\\s|;|,|\\)|\\]|\\})"
-        },
-        "method-call": {
-            "begin": "\\b((?:Me|Base|[A-Za-z_][A-Za-z0-9_]*)(?:\\s*\\[[^\\]]+\\])*(?:\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*\\s*\\([^)]*\\)|\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*|\\s*\\([^)]*\\))*)\\s*(:)\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(\\()",
-            "beginCaptures": {
-                "1": {
-                    "name": "variable.other.object.ssl"
-                },
-                "2": {
-                    "name": "punctuation.accessor.colon.ssl"
-                },
-                "3": {
-                    "name": "support.function.method.ssl"
-                },
-                "4": {
-                    "name": "punctuation.section.arguments.begin.ssl"
-                }
-            },
-            "end": "\\)",
-            "endCaptures": {
-                "0": {
-                    "name": "punctuation.section.arguments.end.ssl"
-                }
-            },
-            "patterns": [
-                {
-                    "include": "#expressions"
-                }
-            ]
-        },
-        "code-block": {
-            "begin": "(\\{)(\\|)",
-            "beginCaptures": {
-                "1": {
-                    "name": "punctuation.section.codeblock.begin.ssl"
-                },
-                "2": {
-                    "name": "punctuation.separator.parameters.ssl"
-                }
-            },
-            "end": "\\}",
-            "endCaptures": {
-                "0": {
-                    "name": "punctuation.section.codeblock.end.ssl"
-                }
-            },
-            "patterns": [
-                {
-                    "begin": "(?<=\\|)",
-                    "end": "(\\|)",
-                    "endCaptures": {
-                        "1": {
-                            "name": "punctuation.separator.parameters.ssl"
-                        }
-                    },
-                    "patterns": [
-                        {
-                            "name": "variable.parameter.ssl",
-                            "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
-                        }
-                    ]
-                },
-                {
-                    "include": "#expressions"
-                }
-            ],
-            "name": "meta.code-block.ssl"
-        },
-        "array-literal": {
-            "begin": "\\{",
-            "beginCaptures": {
-                "0": {
-                    "name": "punctuation.section.array.begin.ssl"
-                }
-            },
-            "end": "\\}",
-            "endCaptures": {
-                "0": {
-                    "name": "punctuation.section.array.end.ssl"
-                }
-            },
-            "patterns": [
-                {
-                    "include": "#expressions"
-                }
-            ]
-        },
-        "indexer": {
-            "begin": "\\[",
-            "beginCaptures": {
-                "0": {
-                    "name": "punctuation.section.brackets.begin.ssl"
-                }
-            },
-            "end": "\\]",
-            "endCaptures": {
-                "0": {
-                    "name": "punctuation.section.brackets.end.ssl"
-                }
-            },
-            "patterns": [
-                {
-                    "include": "#expressions"
-                }
-            ]
-        },
-        "expressions": {
-            "patterns": [
-                {
-                    "include": "#comment"
-                },
-                {
-                    "include": "#string-double"
-                },
-                {
-                    "include": "#string-single"
-                },
-                {
-                    "include": "#string-bracket"
-                },
-                {
-                    "include": "#number"
-                },
-                {
-                    "include": "#ssl-literals"
-                },
-                {
-                    "include": "#class-context-forms"
-                },
-                {
-                    "include": "#method-call"
-                },
-                {
-                    "include": "#property-access"
-                },
-                {
-                    "include": "#builtInFunctions"
-                },
-                {
-                    "include": "#builtInClassInstantiation"
-                },
-                {
-                    "include": "#code-block"
-                },
-                {
-                    "include": "#array-literal"
-                },
-                {
-                    "include": "#indexer"
-                },
-                {
-                    "include": "#operators"
-                },
-                {
-                    "include": "#identifier"
-                }
-            ]
-        },
-        "inline-code-name": {
-            "begin": "(:BEGININLINECODE)(\\s+)",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                }
-            },
-            "end": "(?=;)",
-            "patterns": [
-                {
-                    "name": "string.quoted.double.identifier.ssl",
-                    "match": "\"[A-Za-z_][A-Za-z0-9_]*\""
-                },
-                {
-                    "name": "variable.other.ssl",
-                    "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
-                }
-            ]
-        },
-        "procedure-declaration": {
-            "begin": "(:PROCEDURE)(\\s+)(?![Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt][Oo][Rr]\\b)([A-Za-z_][A-Za-z0-9_]*)\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                },
-                "3": {
-                    "name": "entity.name.function.ssl"
-                }
-            },
-            "end": "(?=;)",
-            "patterns": []
-        },
-        "class-declaration": {
-            "begin": "(:CLASS)(?:(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b)?",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                },
-                "3": {
-                    "name": "entity.name.type.class.ssl"
-                }
-            },
-            "end": "(?=;)",
-            "patterns": []
-        },
-        "include-declaration": {
-            "begin": "(:INCLUDE)(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                },
-                "3": {
-                    "name": "entity.name.module.ssl"
-                }
-            },
-            "end": "(?=;)",
-            "patterns": []
-        },
-        "inherit-declaration": {
-            "begin": "(:INHERIT)(\\s+)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                },
-                "3": {
-                    "name": "entity.other.inherited-class.ssl"
-                }
-            },
-            "end": "(?=;)",
-            "patterns": []
-        },
-        "functional-region": {
-            "begin": "(:REGION)(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b(?=\\s*;)",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                },
-                "3": {
-                    "name": "entity.name.label.ssl"
-                }
-            },
-            "contentName": "meta.region.body.ssl",
-            "end": "(:ENDREGION)\\b(?=\\s*;)",
-            "endCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                }
-            },
-            "patterns": []
-        },
-        "constructor-declaration": {
-            "begin": "(:PROCEDURE)(\\s+)([Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt][Oo][Rr])\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.control.ssl"
-                },
-                "3": {
-                    "name": "entity.name.function.constructor.ssl"
-                }
-            },
-            "end": "(?=;)",
-            "patterns": []
-        },
-        "ssl-literals": {
-            "patterns": [
-                {
-                    "name": "constant.language.boolean.ssl",
-                    "match": "\\.[Tt]\\.|\\.[Ff]\\."
-                },
-                {
-                    "name": "constant.language.nil.ssl",
-                    "match": "(?i)\\bNIL\\b"
-                }
-            ]
-        },
-        "class-context-forms": {
-            "patterns": [
-                {
-                    "name": "variable.language.class-context.ssl",
-                    "match": "(?i)\\bME\\b"
-                },
-                {
-                    "name": "variable.language.class-context.ssl",
-                    "match": "(?i)\\bBASE(?=\\s*:)"
-                }
-            ]
-        }
+  "name": "STARLIMS Scripting Language",
+  "scopeName": "source.ssl",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#inline-code-name"
+    },
+    {
+      "include": "#constructor-declaration"
+    },
+    {
+      "include": "#procedure-declaration"
+    },
+    {
+      "include": "#class-declaration"
+    },
+    {
+      "include": "#include-declaration"
+    },
+    {
+      "include": "#inherit-declaration"
+    },
+    {
+      "include": "#functional-region"
+    },
+    {
+      "include": "#keywords-colon"
+    },
+    {
+      "include": "#string-double"
+    },
+    {
+      "include": "#string-single"
+    },
+    {
+      "include": "#string-bracket"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#ssl-literals"
+    },
+    {
+      "include": "#class-context-forms"
+    },
+    {
+      "include": "#method-call"
+    },
+    {
+      "include": "#property-access"
+    },
+    {
+      "include": "#builtInFunctions"
+    },
+    {
+      "include": "#builtInClassInstantiation"
+    },
+    {
+      "include": "#code-block"
+    },
+    {
+      "include": "#array-literal"
+    },
+    {
+      "include": "#indexer"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#identifier"
     }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.block.ssl",
+      "begin": "/\\*",
+      "end": ";"
+    },
+    "string-double": {
+      "name": "string.quoted.double.ssl",
+      "begin": "\"",
+      "end": "\""
+    },
+    "string-single": {
+      "name": "string.quoted.single.ssl",
+      "begin": "'",
+      "end": "'"
+    },
+    "string-bracket": {
+      "name": "string.quoted.other.bracket.ssl",
+      "match": "(?<![:\\w\\)\\}\\]])\\[(?:[^\\[\\]]|\\[[^\\]]*\\])*\\]"
+    },
+    "builtInFunctions": {
+      "patterns": [
+        {
+          "name": "support.function.ssl",
+          "match": "(?i)\\b(AAdd|AEval|AEvalA|AFill|ALen|AScan|AScanExact|Abs|AddColDelimiters|AddNameDelimiters|AddProperty|AddToSession|AllTrim|ArrayCalc|ArrayNew|ArrayToTVP|Asc|At|BeginLimsTransaction|Branch|BuildArray|BuildArray2|BuildString|BuildString2|BuildStringForIn|CMonth|CToD|CheckOnFtp|ChkNewPassword|ChkPassword|Chr|ClearLastSSLError|ClearSession|ClientEndOfDay|ClientStartOfDay|CombineFiles|CompArray|Compress|ConvertReport|CopyToFtp|CreateGUID|CreateLocal|CreateORMSession|CreatePublic|CreateUdObject|CreateZip|DOW|DOY|DToC|DToS|DateAdd|DateDiff|DateDiffEx|DateFormat|DateFromNumbers|DateFromString|DateToString|Day|Decompress|DecryptData|DelArray|DeleteDirOnFtp|DeleteFromFtp|DeleteInlineCode|DetectSqlInjections|Directory|DoProc|DocAcquireWorkitem|DocAddUsersToGroup|DocCancelCheckout|DocCheckinDocument|DocCheckoutDocument|DocCommandFailed|DocCompleteWorkitem|DocCreateACL|DocCreateCabinet|DocCreateFolder|DocCreateGroup|DocCreateUser|DocDelegateWorkitem|DocDelete|DocDeleteCabinet|DocDeleteFolder|DocDeleteUser|DocEndDocumentumInterface|DocExists|DocExistsUser|DocExportDocument|DocGetCabinets|DocGetDocuments|DocGetErrorMessage|DocGetFolders|DocGetMetadata|DocGetTasks|DocGetTasksCount|DocGetTypeAttributes|DocGetTypeAttributesAsDataset|DocGetWorkflowStatus|DocGetWorkitemProperties|DocImportDocument|DocInitDocumentumInterface|DocLoginToDocumentum|DocPauseWorkflow|DocRemoveAllUsersFromGroup|DocRemoveUsersFromGroup|DocRepeatWorkitem|DocResumeWorkflow|DocSearchAsDataset|DocSearchFullText|DocSearchUsingDql|DocSetMetadata|DocStartWorkflow|DocStopWorkflow|DocUpdateUser|DosSupport|Empty|Eval|EncryptData|EndLimsOleConnect|EndLimsTransaction|ErrorMes|ExecFunction|ExecInternal|ExecUdf|ExtractCol|ExtractZip|FileSupport|FormatErrorMessage|FormatSqlErrorMessage|FromJson|FromXml|GetAppBaseFolder|GetAppWorkPathFolder|GetByName|GetConnectionByName|GetConnectionStrings|GetDBMSName|GetDBMSProviderName|GetDSParameters|GetDataSet|GetDataSetEx|GetDataSetFromArray|GetDataSetFromArrayEx|GetDataSetWithSchemaFromSelect|GetDataSetXMLFromArray|GetDataSetXMLFromSelect|GetDecimalSep|GetDecimalSeparator|GetDefaultConnection|GetDirFromFtp|GetExecutionTrace|GetFeaturesAndNumbers|GetFileVersion|GetForbiddenAppIDs|GetForbiddenDesignerAppIDs|GetFromApplication|GetFromFtp|GetFromSession|GetGroupSeparator|GetInlineCode|GetInstallationKey|GetInternal|GetInternalC|GetLastSQLError|GetLastSSLError|GetLicenseInfoAsText|GetLogsFolder|GetNETDataSet|GetNoLock|GetNumberOfInstrumentConnections|GetNumberOfNamedConcurrentUsers|GetNumberOfNamedUsers|GetPrinters|GetRdbmsDelimiter|GetRegion|GetRegionEx|GetSSLDataset|GetSetting|GetSettings|GetTables|GetTransactionsCount|GetUserData|GetWebFolder|HasProperty|HashData|Hour|HtmlDecode|HtmlEncode|IIf|IgnoreSqlErrors|In64BitMode|InBatchProcess|InfoMes|Integer|IsDBConnected|IsDefined|IsDemoLicense|IsFeatureAuthorized|IsFeatureBasedLicense|IsGuid|IsHex|IsInTransaction|IsInvariantDate|IsNumeric|IsProductionModeOn|IsTable|IsTableFld|JDay|LCase|LDAPAuth|LDAPAuthEX|LDir|LFromHex|LHex2Dec|LIMSDate|LKill|LLower|LPrint|LSearch|LSelect|LSelect1|LSelectC|LStr|LToHex|LTransform|LTrim|LWait|Left|Len|LimsAt|LimsExec|LimsGetDateFormat|LimsNETCast|LimsNETConnect|LimsNETTypeOf|LimsOleConnect|LimsRecordsAffected|LimsSetCounter|LimsSqlConnect|LimsSqlDisconnect|LimsString|LimsTime|LimsType|LimsTypeEx|LimsXOr|Lower|MakeDateInvariant|MakeDateLocal|MakeDirOnFtp|MakeNETObject|MatFunc|Max|MimeDecode|MimeEncode|Min|Minute|Month|MoveInFtp|NetFrameworkVersion|NoOfDays|Nothing|Now|PrepareArrayForIn|PrmCount|RaiseError|Rand|Rat|ReadBytesBase64|ReadFromFtp|ReadText|RenameOnFtp|Replace|Replicate|ResetFeatures|RetrieveLong|ReturnLastSQLError|Right|Round|RoundPoint5|RunApp|RunDS|RunSQL|SQLExecute|SQLRemoveComments|Scient|SearchLDAPUser|Second|Seconds|SendFromOutbox|SendLimsEmail|SendOutlookReminder|SendToFtp|SendToOutbox|ServerEndOfDay|ServerStartOfDay|ServerTimeZone|SetByName|SetDecimalSeparator|SetDefaultConnection|SetGroupSeparator|SetInternal|SetInternalC|SetLocationOracle|SetLocationSQLServer|SetSqlTimeout|SetUserData|SetUserPassword|ShowSqlErrors|SigFig|SortArray|SqlTraceOff|SqlTraceOn|Sqrt|StationName|StdRound|Str|StrSrch|StrTran|StrZero|StringToDate|SubStr|SubmitToBatch|SubmitToBatchEx|TableFldLst|Time|ToJson|ToNumeric|ToScientific|ToXml|Today|TraceOff|TraceOn|Trim|UndeclaredVars|UpdLong|Upper|UrlDecode|UrlEncode|UserTimeZone|UsrMes|Val|ValidateDate|ValidateNumeric|VerifySignature|WriteBytesBase64|WriteText|WriteToFtp|XmlDomToUdObject|XmlExportSql|Year|_AND|_NOT|_OR|_XOR)\\b"
+        }
+      ]
+    },
+    "builtInClassInstantiation": {
+      "patterns": [
+        {
+          "match": "(?i)\\b(AzureStorage|BatchSupport|CDataTable|Email|EnterpriseExporter|FtpsClient|HtmlConverter|PatcherSupport|PdfSupport|RegSetup|SDMS|SDMSDocUploader|SSLBaseDictionary|SSLCodeProvider|SSLDataset|SSLExpando|SSLIntDictionary|SSLRegex|SSLStringDictionary|Sequence|TablesImport|WebServices)\\b(?=\\s*\\{)",
+          "name": "support.class.ssl"
+        }
+      ]
+    },
+    "operators": {
+      "name": "keyword.operator.ssl",
+      "match": "(?:\\:=|\\+=|-=|\\*=|/=|\\^=|%=|==|!=|<>|#|<=|>=|<<|>>|\\*\\*|\\+\\+|--|<|>|=|\\+|-|\\*|/|%|\\^|\\.AND\\.|\\.OR\\.|\\.NOT\\.|\\$|!)"
+    },
+    "number": {
+      "name": "constant.numeric.ssl",
+      "match": "\\b\\d+(?:\\.\\d+[eE][+-]?\\d+|\\.\\d+)?\\b"
+    },
+    "keywords-colon": {
+      "name": "keyword.control.ssl",
+      "match": ":(?:LABEL(?:\\b[\\t ]+[A-Za-z_][A-Za-z0-9_]*(?:[\\t ]+[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*)|BEGINCASE|BEGININLINECODE|CASE|CATCH|CLASS|DECLARE|DEFAULT|ELSE|ENDCASE|ENDIF|ENDINLINECODE|ENDPROC|ENDREGION|ENDTRY|ENDWHILE|ERROR|EXITCASE|EXITFOR|EXITWHILE|FINALLY|FOR|IF|INCLUDE|INHERIT|LOOP|NEXT|OTHERWISE|PARAMETERS|PROCEDURE|PUBLIC|REGION|RESUME|RETURN|STEP|TO|TRY|WHILE)\\b"
+    },
+    "identifier": {
+      "name": "variable.other.ssl",
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+    },
+    "property-access": {
+      "begin": "\\b((?:Me|Base|[A-Za-z_][A-Za-z0-9_]*)(?:\\s*\\[[^\\]]+\\])*(?:\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*\\s*\\([^)]*\\)|\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*|\\s*\\([^)]*\\))*)\\s*(:)\\s*([A-Za-z_][A-Za-z0-9_]*)\\b(?!\\s*\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "variable.other.object.ssl"
+        },
+        "2": {
+          "name": "punctuation.accessor.colon.ssl"
+        },
+        "3": {
+          "name": "variable.other.property.ssl"
+        }
+      },
+      "end": "(?=\\s|;|,|\\)|\\]|\\})"
+    },
+    "method-call": {
+      "begin": "\\b((?:Me|Base|[A-Za-z_][A-Za-z0-9_]*)(?:\\s*\\[[^\\]]+\\])*(?:\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*\\s*\\([^)]*\\)|\\s*:\\s*[A-Za-z_][A-Za-z0-9_]*|\\s*\\([^)]*\\))*)\\s*(:)\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "variable.other.object.ssl"
+        },
+        "2": {
+          "name": "punctuation.accessor.colon.ssl"
+        },
+        "3": {
+          "name": "support.function.method.ssl"
+        },
+        "4": {
+          "name": "punctuation.section.arguments.begin.ssl"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.arguments.end.ssl"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#expressions"
+        }
+      ]
+    },
+    "code-block": {
+      "begin": "(\\{)(\\|)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.section.codeblock.begin.ssl"
+        },
+        "2": {
+          "name": "punctuation.separator.parameters.ssl"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.codeblock.end.ssl"
+        }
+      },
+      "patterns": [
+        {
+          "begin": "(?<=\\|)",
+          "end": "(\\|)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.separator.parameters.ssl"
+            }
+          },
+          "patterns": [
+            {
+              "name": "variable.parameter.ssl",
+              "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+            }
+          ]
+        },
+        {
+          "include": "#expressions"
+        }
+      ],
+      "name": "meta.code-block.ssl"
+    },
+    "array-literal": {
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.array.begin.ssl"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.array.end.ssl"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#expressions"
+        }
+      ]
+    },
+    "indexer": {
+      "begin": "\\[",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.brackets.begin.ssl"
+        }
+      },
+      "end": "\\]",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.brackets.end.ssl"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#expressions"
+        }
+      ]
+    },
+    "expressions": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string-double"
+        },
+        {
+          "include": "#string-single"
+        },
+        {
+          "include": "#string-bracket"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#ssl-literals"
+        },
+        {
+          "include": "#class-context-forms"
+        },
+        {
+          "include": "#method-call"
+        },
+        {
+          "include": "#property-access"
+        },
+        {
+          "include": "#builtInFunctions"
+        },
+        {
+          "include": "#builtInClassInstantiation"
+        },
+        {
+          "include": "#code-block"
+        },
+        {
+          "include": "#array-literal"
+        },
+        {
+          "include": "#indexer"
+        },
+        {
+          "include": "#operators"
+        },
+        {
+          "include": "#identifier"
+        }
+      ]
+    },
+    "inline-code-name": {
+      "begin": "(:BEGININLINECODE)(\\s+)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        }
+      },
+      "end": "(?=;)",
+      "patterns": [
+        {
+          "name": "string.quoted.double.identifier.ssl",
+          "match": "\"[A-Za-z_][A-Za-z0-9_]*\""
+        },
+        {
+          "name": "variable.other.ssl",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "procedure-declaration": {
+      "begin": "(:PROCEDURE)(\\s+)(?![Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt][Oo][Rr]\\b)([A-Za-z_][A-Za-z0-9_]*)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "3": {
+          "name": "entity.name.function.ssl"
+        }
+      },
+      "end": "(?=;)",
+      "patterns": []
+    },
+    "class-declaration": {
+      "begin": "(:CLASS)(?:(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b)?",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "3": {
+          "name": "entity.name.type.class.ssl"
+        }
+      },
+      "end": "(?=;)",
+      "patterns": []
+    },
+    "include-declaration": {
+      "begin": "(:INCLUDE)(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "3": {
+          "name": "entity.name.module.ssl"
+        }
+      },
+      "end": "(?=;)",
+      "patterns": []
+    },
+    "inherit-declaration": {
+      "begin": "(:INHERIT)(\\s+)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "3": {
+          "name": "entity.other.inherited-class.ssl"
+        }
+      },
+      "end": "(?=;)",
+      "patterns": []
+    },
+    "functional-region": {
+      "begin": "(:REGION)(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b(?=\\s*;)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "3": {
+          "name": "entity.name.label.ssl"
+        }
+      },
+      "contentName": "meta.region.body.ssl",
+      "end": "(:ENDREGION)\\b(?=\\s*;)",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        }
+      },
+      "patterns": []
+    },
+    "constructor-declaration": {
+      "begin": "(:PROCEDURE)(\\s+)([Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt][Oo][Rr])\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "3": {
+          "name": "entity.name.function.constructor.ssl"
+        }
+      },
+      "end": "(?=;)",
+      "patterns": []
+    },
+    "ssl-literals": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.ssl",
+          "match": "\\.[Tt]\\.|\\.[Ff]\\."
+        },
+        {
+          "name": "constant.language.nil.ssl",
+          "match": "(?i)\\bNIL\\b"
+        }
+      ]
+    },
+    "class-context-forms": {
+      "patterns": [
+        {
+          "name": "variable.language.class-context.ssl",
+          "match": "(?i)\\bME\\b"
+        },
+        {
+          "name": "variable.language.class-context.ssl",
+          "match": "(?i)\\bBASE(?=\\s*:)"
+        }
+      ]
+    }
+  }
 }
