@@ -150,10 +150,10 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - Inside `:CATCH`, use `GetLastSSLError()` if you need error details
    - Indentation: use tabs by default
 
-6. **Output:** Present the generated class as an SSL code block. Remind the user:
-   - Save to a file named after the class in the appropriate SSL category
+6. **Output:** Present the generated class as an SSL code block. Include:
+   - The class file should be named after the class in the appropriate SSL category
    - Instantiate with `CreateUdObject("Category.InvoiceManager")` or `CreateUdObject("Category.InvoiceManager", {args})`
-   - Ask if they want it written to a specific file path
+   - If the user provided a target file path, write the scaffold there; otherwise return the scaffold directly
 
 ---
 
@@ -210,4 +210,6 @@ Output:
 
 ## Output
 
-Present the generated class as an SSL code block. Remind the user to save the file and how to instantiate the class.
+Present the generated class as an SSL code block. Include the expected file
+naming and instantiation guidance. If the user provided a target file path,
+write the scaffold there.

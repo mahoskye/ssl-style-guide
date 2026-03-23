@@ -13,11 +13,12 @@ import { registerStyleGuideResources } from "./resources/style-guide.js";
 import { registerReferenceResources } from "./resources/reference.js";
 import { registerCodeReviewPrompt } from "./prompts/code-review.js";
 import { registerRefactoringPrompt } from "./prompts/refactoring.js";
+import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from "./constants.js";
 
 export function createServer(indices: Indices): McpServer {
   const server = new McpServer({
-    name: "ssl-reference",
-    version: "1.2.0",
+    name: MCP_SERVER_NAME,
+    version: MCP_SERVER_VERSION,
   });
 
   // Tools

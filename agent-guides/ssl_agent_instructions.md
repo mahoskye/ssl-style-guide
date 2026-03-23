@@ -138,7 +138,9 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Same File:** Use `DoProc("ProcedureName", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Entry Point:** Use `ExecFunction("Category.Script", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
-    * **Skip Parameters:** Use adjacent commas with no space: `DoProc("MyProc", {param1,, param3,, param5});`
+    * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
+      `DoProc("MyProc", {param1,, param3,, param5});` is valid, but
+      `DoProc("MyProc", {param1, , param3, , param5});` is not.
     * **Omit trailing optional parameters** rather than passing empty values. For example, write `DoProc("MyProc")` not `DoProc("MyProc", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
     * **Built-in Functions:** Can be called directly with standard syntax (e.g., `Len(sString)`).
 
@@ -497,7 +499,8 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - `SELECT` continuations aligned to first column (col 7)
 - Trailing commas, ~90 char line target
 
-**Casing:** Keywords and functions UPPERCASE; identifiers lowercase; preserve external casing when required.
+**Casing:** SQL keywords and SQL functions UPPERCASE; identifiers lowercase;
+preserve external casing when required.
 
 **INSERT:** Opening `(` on the `INSERT INTO` line, columns indented 4 spaces, closing `)` on its own line. Same pattern for `VALUES`.
 

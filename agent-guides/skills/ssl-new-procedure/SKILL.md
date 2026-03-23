@@ -83,7 +83,9 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
 
 6. **If no parameters are provided:** omit `:PARAMETERS` and `:DEFAULT` blocks entirely.
 
-7. **Output:** Present the generated procedure as an SSL code block. Ask the user if they want it written to a file.
+7. **Output:** Present the generated procedure as an SSL code block. If the user
+   provided a target file path, write it there; otherwise return the scaffold
+   directly.
 
 ---
 
@@ -122,4 +124,5 @@ Output:
 
 ## Output
 
-Present the generated procedure as an SSL code block. Ask the user if they want it written to a specific file path.
+Present the generated procedure as an SSL code block. If the user provided a
+target file path, write it there.
