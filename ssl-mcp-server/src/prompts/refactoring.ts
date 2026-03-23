@@ -19,7 +19,7 @@ export function registerRefactoringPrompt(server: McpServer, indices: Indices): 
         | undefined;
 
       // Include key style sections for refactoring
-      const keys = ["naming", "formatting", "error_handling", "control_flow", "procedures", "sql"];
+      const keys = ["naming", "formatting", "error_handling", "control_flow", "procedures", "sql", "classes"];
       const relevantRules: Record<string, unknown> = {};
       if (guide) {
         for (const k of keys) {

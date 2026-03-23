@@ -25,4 +25,16 @@ export function registerReferenceResources(server: McpServer, indices: Indices):
       };
     }
   );
+
+  // ssl://refactoring-guide
+  server.resource(
+    "ssl-refactoring-guide",
+    "ssl://refactoring-guide",
+    { description: "SSL refactoring guide with workflow and formatting rules" },
+    async (uri) => {
+      return {
+        contents: [{ uri: uri.href, mimeType: "text/markdown", text: indices.refactoringGuide }],
+      };
+    }
+  );
 }

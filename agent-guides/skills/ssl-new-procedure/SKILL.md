@@ -25,6 +25,7 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - Use one statement per line
    - Use `==` for exact string equality
    - Use `DoProc("ProcName", {args})` for same-file script procedure calls
+   - `:TRY` requires at least one `:CATCH` or `:FINALLY`
 
 3. **Infer parameter types from Hungarian notation prefixes:**
    - If a parameter already has a prefix (`sName`, `nQty`, `bFlag`, `dDate`,

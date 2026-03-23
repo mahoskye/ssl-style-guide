@@ -490,6 +490,8 @@ ssl_style_guide:
           correct: "DateAdd(...)"
           reason: "Date functions use PascalCase"
 
+    # Functions may appear in multiple categories when they span domains
+    # (e.g., FTP functions in both file_operations and ftp_operations).
     function_categories:
       string_operations:
         - AllTrim

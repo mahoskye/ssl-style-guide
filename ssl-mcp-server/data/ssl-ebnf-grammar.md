@@ -245,15 +245,17 @@ DatabaseParameter ::= "?" Identifier "?" | "?" (* Common parameter patterns in d
 
 (* Object-oriented statements specific to SSL classes/UDOs *)
 ObjectCreation ::= Identifier "(" [StringLiteral] ")" (* Generic object creation pattern *)
-MethodCall ::= Identifier ":" Identifier (* Object:Method *)
-ObjectPropertyAccess ::= Identifier ":" Identifier (* Object:Property *)
+MethodCall ::= Identifier ":" Identifier "(" [ArgumentList] ")" (* Object:Method() *)
+ObjectPropertyAccess ::= Identifier ":" Identifier (* Object:Property — distinguished from MethodCall by absence of parentheses *)
 
 (* Expressions *)
 Expression ::= LogicalExpression
 LogicalExpression ::= ComparisonExpression {LogicalOperator ComparisonExpression}
 LogicalOperator ::= ".AND." | ".OR." (* *)
-ComparisonExpression ::= ShiftExpression {ComparisonOperator ShiftExpression}
-ComparisonOperator ::= "==" | "!=" | "<>" | "#" | "<" | ">" | "<=" | ">=" | "=" | "$" (* "=" is loose equality (prefix match for strings); "==" is strict equality; "#", "<>", "!=" are equivalent not-equals (negate ==, not =); "$" is containment: left $ right is .T. if left found inside right *)
+ComparisonExpression ::= RelationalExpression {EqualityOperator RelationalExpression}
+EqualityOperator ::= "=" | "==" | "!=" | "<>" | "#" | "$" (* "=" is loose equality (prefix match for strings); "==" is strict equality; "#", "<>", "!=" are equivalent not-equals (negate ==, not =); "$" is containment: left $ right is .T. if left found inside right *)
+RelationalExpression ::= ShiftExpression {RelationalOperator ShiftExpression}
+RelationalOperator ::= "<" | ">" | "<=" | ">="
 ShiftExpression ::= ArithmeticExpression {ShiftOperator ArithmeticExpression}
 ArithmeticExpression ::= Term {AdditiveOperator Term}
 AdditiveOperator ::= "+" | "-"
@@ -283,10 +285,14 @@ Primary ::=
     BitwiseOperation |
     "(" Expression ")" |
     IncrementExpression |
+    MeLiteral |          (* Me — reference to the current class instance *)
+    BaseAccess |         (* Base — reference to the parent class for inherited method calls *)
     MethodCall (* Object:Method() syntax *)
 
 IncrementExpression ::= Identifier ("++" | "--") | ("++" | "--") Identifier (* *)
 VariableAccess ::= Identifier
+MeLiteral ::= "Me" (* Reference to the current class instance; used as Me:Method() or Me:Property *)
+BaseAccess ::= "Base" (* Reference to the parent class; used as Base:Method() to call inherited methods *)
 PropertyAccess ::= Identifier ":" Identifier (* SSL uses colon for property access of UDOs and system objects *)
 ArrayAccess ::= Identifier ArraySubscript
 ArraySubscript ::= "[" Expression {"," Expression} "]" | "[" Expression "]" {("[" Expression "]")} (* Supports arr[1,2] and arr[1][2] *)
@@ -298,7 +304,7 @@ IntegerPart ::= Digit {Digit}
 DecimalPart ::= "." Digit {Digit} (* Ensures at least one digit after the decimal point *)
 Exponent    ::= ("e" | "E") ["-"] Digit {Digit}
 
-StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | "[" {Character} "]" (* Double-quoted, single-quoted, or bracket strings; no escape sequences — backslashes are literal *)
+StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | "[" {Character} "]" (* Double-quoted, single-quoted, or bracket strings; no escape sequences — backslashes are literal. Bracket strings support one level of nested brackets, e.g., [[a]b] → [a]b *)
 BooleanLiteral ::= ".T." | ".F." (* TRUE and FALSE also mentioned in EBNF notes but .T./.F. are canonical *)
 ArrayLiteral ::= "{" [ExpressionList] "}" | "{" ArrayLiteral {"," ArrayLiteral} "}"
 NilLiteral ::= "NIL" (* *)
@@ -376,7 +382,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 23. **String Delimiters**: Strings can be delimited using double quotes (`"`), single quotes (`'`), or brackets (`[text]`). SSL has no escape sequences — backslashes are literal characters.
 
-24. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `^=`).
+24. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`, `^=`).
 
 25. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by compiler). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
 

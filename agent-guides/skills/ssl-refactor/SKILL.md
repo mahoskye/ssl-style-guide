@@ -27,6 +27,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
      `ExecFunction("Category.Script.Proc", {args})` for external entry points
    - `:TRY` requires at least one `:CATCH` or `:FINALLY`
    - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional
+   - `:BEGINCASE` requires at least one `:CASE` block
    - Use `==` for exact string equality; `=` is prefix matching for strings
    - Inside SQL strings, use uppercase SQL keywords and functions; keep other SQL
      identifiers lowercase unless external schema/object casing must be preserved

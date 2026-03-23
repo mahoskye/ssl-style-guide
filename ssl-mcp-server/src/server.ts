@@ -17,7 +17,7 @@ import { registerRefactoringPrompt } from "./prompts/refactoring.js";
 export function createServer(indices: Indices): McpServer {
   const server = new McpServer({
     name: "ssl-reference",
-    version: "1.0.0",
+    version: "1.2.0",
   });
 
   // Tools

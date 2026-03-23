@@ -1148,6 +1148,8 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `GetRegion` | `GetRegion(sValue, vSrc, vDst, vLocalRegions)` |
 | `GetRegionEx` | `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` |
 | `IsProductionModeOn` | `IsProductionModeOn()` |
+| `GetForbiddenAppIDs` | `GetForbiddenAppIDs()` |
+| `GetForbiddenDesignerAppIDs` | `GetForbiddenDesignerAppIDs()` |
 
 `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` extracts text between two marker strings in an arbitrary string. It is a pure string utility — it does not require a compiled `:REGION` block. Use it in preference to `GetRegion` when working with string content rather than named code regions.
 

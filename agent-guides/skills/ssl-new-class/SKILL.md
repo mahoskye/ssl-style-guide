@@ -53,7 +53,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 :DECLARE sPublicField;
 
 /* -----------------------------------------------------------------------------;
-/* METHOD: GetField;
+/* PROCEDURE: GetField;
 /* PURPOSE: [Describe method purpose];
 /* RETURNS: [Return value description];
 /* -----------------------------------------------------------------------------;
@@ -99,7 +99,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 :DECLARE sPublicField;
 
 /* -----------------------------------------------------------------------------;
-/* METHOD: GetField;
+/* PROCEDURE: GetField;
 /* PURPOSE: [Describe method purpose];
 /* RETURNS: [Return value description];
 /* -----------------------------------------------------------------------------;
@@ -173,7 +173,7 @@ Output:
 :DECLARE sPublicField;
 
 /* -----------------------------------------------------------------------------;
-/* METHOD: GetField;
+/* PROCEDURE: GetField;
 /* PURPOSE: [Describe method purpose];
 /* RETURNS: [Return value description];
 /* -----------------------------------------------------------------------------;

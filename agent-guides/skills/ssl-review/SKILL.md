@@ -27,6 +27,10 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
    - `:TRY` requires at least one `:CATCH` or `:FINALLY`
    - `:BEGINCASE` requires at least one `:CASE`
+   - Use one statement per line
+   - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
+   - Inside SQL strings, uppercase SQL keywords; keep other identifiers lowercase
+   - End each `:CASE` / `:OTHERWISE` with `:EXITCASE;` unless multi-match is intentional
    - `==` is exact string equality; `=` is prefix matching for strings
 
 ---

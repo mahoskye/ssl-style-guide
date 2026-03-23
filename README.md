@@ -63,7 +63,7 @@ The style guide enforces a strict set of rules to ensure readability and maintai
         ```
       - For other database functions, use placeholders and an array of parameters:
         ```ssl
-        RunSql("SELECT * FROM Users WHERE ID = ?", {nUserId});
+        RunSQL("SELECT * FROM Users WHERE ID = ?", {nUserId});
         ```
       - Direct concatenation for parameter values in `SQLExecute` is also allowed but discouraged due to potential SQL injection risks if input is not properly sanitized:
         ```ssl

@@ -3,7 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Indices } from "../data/indices.js";
 import { stringify as yamlStringify } from "yaml";
 
-const VALID_FOCUS = ["naming", "formatting", "error_handling", "sql", "security", "all"] as const;
+const VALID_FOCUS = ["naming", "formatting", "error_handling", "sql", "security", "lints", "all"] as const;
 
 const CodeReviewSchema = z.object({
   code: z.string().describe("SSL code to review"),
@@ -11,7 +11,7 @@ const CodeReviewSchema = z.object({
     .enum(VALID_FOCUS)
     .optional()
     .default("all")
-    .describe("Review focus area: naming, formatting, error_handling, sql, security, all"),
+    .describe("Review focus area: naming, formatting, error_handling, sql, security, lints, all"),
 });
 
 export function registerCodeReviewPrompt(server: McpServer, indices: Indices): void {
@@ -30,7 +30,8 @@ export function registerCodeReviewPrompt(server: McpServer, indices: Indices): v
         error_handling: ["error_handling"],
         sql: ["sql"],
         security: ["security_best_practices"],
-        all: ["naming", "formatting", "error_handling", "sql", "security_best_practices", "lints"],
+        lints: ["lints"],
+        all: ["naming", "formatting", "error_handling", "sql", "security_best_practices", "lints", "classes"],
       };
 
       const keys = focusKeys[focus ?? "all"] ?? focusKeys["all"];
@@ -45,14 +46,21 @@ export function registerCodeReviewPrompt(server: McpServer, indices: Indices): v
 
       const reviewInstructions = `Review the SSL code below for the following issues:
 - Naming: Hungarian notation compliance (prefixes: ${Array.from(indices.hungarianPrefixes.entries()).map(([p, t]) => `${p}=${t}`).join(", ")})
-- Semicolons: Each statement ends with ; (not inside comment text)
+- Semicolons: Each statement ends with ; — never put a semicolon inside comment text (it terminates the comment and the rest becomes executable code)
 - Keyword casing: All block keywords must be colon-prefixed UPPERCASE (:IF, :WHILE, :FOR, etc.)
-- :EXITCASE: Every :CASE block should end with :EXITCASE to prevent fallthrough
+- String equality: Use == for exact string equality; = is prefix-match for strings
+- :EXITCASE: Every :CASE block should end with :EXITCASE to prevent fallthrough, unless multi-match behavior is intentional
+- :BEGINCASE: Must contain at least one :CASE block
+- :TRY: Requires at least one of :CATCH or :FINALLY; bare :TRY...:ENDTRY is a compile error
+- Declaration placement: :PARAMETERS must come immediately after :PROCEDURE; :DEFAULT immediately after :PARAMETERS; :DECLARE before use
+- Indentation: Prefer tabs; preserve 4-space indentation in files that already use spaces
+- One statement per line
 - SQL injection: Parameterized queries preferred; no string concatenation in SQL
 - SQL casing: Inside SQL strings, SQL keywords/functions should be UPPERCASE and other identifiers lowercase unless external casing must be preserved
 - Legacy patterns: Flag :ERROR/:RESUME usage (prefer :TRY/:CATCH)
 - Variable declarations: Variables must be declared before use; local declarations are preferred over caller-scope lookup
-- Procedure calls: Flag bare custom procedure calls; same-file procedures must use DoProc and external entry points must use ExecFunction
+- Procedure calls: Flag bare custom procedure calls; same-file procedures must use DoProc and external entry points must use ExecFunction; DoProc is a compile-time error inside class methods
+- Security: Flag hardcoded credentials, unvalidated user input in SQL or system calls
 - Focus: ${focus}`;
 
       return {

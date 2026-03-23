@@ -109,10 +109,12 @@ _______________________________________________________________________________
 /* Brief description of what this procedure does;
 :PROCEDURE ProcedureName;
 :PARAMETERS sParam1, nParam2;
+:DEFAULT sParam1, "";
+:DEFAULT nParam2, 0;
 :DECLARE nLocalVar, sResult;
 
     /* Procedure logic here;
-    
+
     :RETURN sResult;
 :ENDPROC;
 ```
@@ -823,7 +825,7 @@ When refactoring, maintain a progress block in your notes:
 
 ### Class Rules
 - `:CLASS` has **no closing keyword** — the class definition extends to the end of the file.
-- **One class per file** — only one `:CLASS` is allowed per script file.
+- **One class per file** — only one `:CLASS` is allowed per file.
 - A file is either a class definition or a script, never both.
 - `:CLASS` may omit the class name, but new and refactored code should always provide one explicitly.
 - **Member order:** Successful class code requires `:INHERIT` first, then `:DECLARE` fields, then regular methods, then `Constructor` last.

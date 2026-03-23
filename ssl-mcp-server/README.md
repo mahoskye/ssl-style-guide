@@ -83,6 +83,7 @@ Windows example:
 | `ssl://style-guide/{section}` | Specific style guide section |
 | `ssl://grammar` | EBNF grammar markdown |
 | `ssl://language-reference` | Agent instructions / language reference |
+| `ssl://refactoring-guide` | Refactoring guide markdown |
 
 ## Prompts
 
@@ -94,7 +95,7 @@ Windows example:
 ## Data Coverage
 
 - 457 developer-facing elements
-- 354 functions, 26 classes, 38 keywords, 32 operators, 3 literals, 4 special forms
+- 354 functions, 26 classes (22 instantiable, 4 return-value-only), 38 keywords, 32 operators, 3 literals, 4 special forms
 - 38 function categories
 - 8 Hungarian notation prefixes
 
