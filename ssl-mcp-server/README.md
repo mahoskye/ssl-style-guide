@@ -77,7 +77,12 @@ Bundled runtime files:
 - `data/ssl_refactoring_guide.md`
 - `data/ssl-ebnf-grammar.md`
 
-Refresh the mirrored data after canonical doc updates:
+The two JSON inventories are checked-in external snapshots. This repository does
+not regenerate them; `bundle-data.mjs` only normalizes their formatting and
+refreshes the mirrored canonical docs.
+
+Refresh the mirrored data after canonical doc updates or after updating those
+checked-in external snapshots:
 
 ```bash
 bun scripts/bundle-data.mjs

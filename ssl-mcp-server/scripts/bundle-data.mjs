@@ -2,8 +2,13 @@
 /**
  * Sync data files into ssl-mcp-server/data/ for self-contained operation.
  *
- * This is a maintainer-only operation — run manually when upstream data changes.
- * The data/ directory is the runtime source used by the MCP server.
+ * This is a maintainer-only operation — run manually when canonical docs change
+ * or when checked-in external inventory snapshots are updated. The data/
+ * directory is the runtime source used by the MCP server.
+ *
+ * The JSON inventories in data/ are not regenerated in this repo. This script
+ * only normalizes those checked-in snapshots and refreshes the mirrored
+ * canonical docs.
  */
 
 import { readFileSync, writeFileSync, copyFileSync } from 'fs';
@@ -15,50 +20,24 @@ const SERVER_ROOT = resolve(__dirname, '..');
 const REPO_ROOT = resolve(SERVER_ROOT, '..');
 const DATA_DIR = resolve(SERVER_ROOT, 'data');
 
-const PUBLIC_STATUSES = new Set(['validated', 'source_validated', 'indirectly_accessible']);
-
-const refDir = resolve(REPO_ROOT, '..', 'ssl-api-documentation', 'ssl-reference');
-try {
-  readFileSync(resolve(refDir, 'ssl-element-list.json'));
-} catch {
-  console.error(
-    'Error: ssl-api-documentation sibling repo not found.\n' +
-    'This is a maintainer-only operation. The data/ directory is the runtime source.'
-  );
-  process.exit(1);
+function readBundledJson(filename) {
+  return JSON.parse(readFileSync(resolve(DATA_DIR, filename), 'utf8'));
 }
 
-// 1. ssl-element-list.json — developer-facing elements, public fields only
-const rawElements = JSON.parse(readFileSync(resolve(refDir, 'ssl-element-list.json'), 'utf-8'));
-const elements = rawElements
-  .filter((el) => el.developer_facing && PUBLIC_STATUSES.has(el.validation?.status))
-  .map(({ type, name, symbol, syntax, members, related }) => ({
-    type, name, symbol, syntax, members, related,
-  }));
-writeFileSync(resolve(DATA_DIR, 'ssl-element-list.json'), JSON.stringify(elements, null, 2) + '\n');
-console.log(`Bundled ssl-element-list.json (${elements.length} elements)`);
+function writeBundledJson(filename, value) {
+  writeFileSync(resolve(DATA_DIR, filename), JSON.stringify(value, null, 2) + '\n');
+}
 
-// 2. class-member-validation.json — class and member names only
-const rawClassVal = JSON.parse(readFileSync(resolve(refDir, 'class-member-validation.json'), 'utf-8'));
-const classVal = {
-  classes: rawClassVal.classes
-    .filter((cls) => cls.developer_facing)
-    .map((cls) => {
-      const entry = {
-        name: cls.name,
-        members: {
-          methods: (cls.members.methods ?? []).map((m) => ({ name: m.name })),
-        },
-      };
-      const props = (cls.members.properties ?? []).map((p) => ({ name: p.name }));
-      if (props.length > 0) entry.members.properties = props;
-      return entry;
-    }),
-};
-writeFileSync(resolve(DATA_DIR, 'class-member-validation.json'), JSON.stringify(classVal, null, 2) + '\n');
-console.log(`Bundled class-member-validation.json (${classVal.classes.length} classes)`);
+// 1. Inventory snapshots — normalize checked-in external JSON snapshots.
+const elements = readBundledJson('ssl-element-list.json');
+writeBundledJson('ssl-element-list.json', elements);
+console.log(`Normalized ssl-element-list.json (${elements.length} elements)`);
 
-// 3. Supporting files — copy from canonical locations
+const classVal = readBundledJson('class-member-validation.json');
+writeBundledJson('class-member-validation.json', classVal);
+console.log(`Normalized class-member-validation.json (${classVal.classes.length} classes)`);
+
+// 2. Supporting files — copy from canonical locations in this repo.
 const supportingFiles = [
   { src: 'ssl-style-guide/ssl-style-guide.schema.yaml', dest: 'ssl-style-guide.schema.yaml' },
   { src: 'agent-guides/ssl_agent_instructions.md', dest: 'ssl_agent_instructions.md' },
@@ -71,4 +50,4 @@ for (const { src, dest } of supportingFiles) {
   console.log(`Copied ${dest}`);
 }
 
-console.log('\nDone. All files synced to ssl-mcp-server/data/');
+console.log('\nDone. All files synced to ssl-mcp-server/data/ from this repository.');

@@ -1118,7 +1118,7 @@ ssl_style_guide:
       level: style_only
       usage: Encouraged for organizing and grouping procedures in long files
       syntax: "/* region Name; ... /* endregion;"
-      naming: PascalCase with spaces (e.g., /* region Validation Helpers;)
+      naming: Title Case words (e.g., /* region Validation Helpers;)
     functional_regions:
       level: authoritative
       usage: "Legacy text storage/retrieval via GetRegion()"

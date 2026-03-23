@@ -81,9 +81,10 @@ highlights.
 
 `ssl-mcp-server/` exposes the bundled SSL reference through MCP. Its runtime
 data under `ssl-mcp-server/data/` is a mirror of the canonical public docs plus
-the bundled element inventories.
+checked-in external inventory snapshots.
 
-When canonical docs change, refresh the mirrored MCP data with:
+When canonical docs change, or when checked-in external inventory snapshots are
+updated, refresh the mirrored MCP data with:
 
 ```bash
 cd ssl-mcp-server
@@ -103,12 +104,6 @@ bun scripts/bundle-data.mjs
 
 These skills should follow the schema and agent guides rather than introducing
 alternative rules or wording.
-
-## Related Repo
-
-- `../ssl-api-documentation/`
-  Sibling repository for generated inventories, source excerpts, validation
-  assets, and related reference material.
 
 ## Metadata
 
