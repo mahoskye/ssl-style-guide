@@ -229,7 +229,7 @@ Authoritative rules describe documented language behavior; style recommendations
   :RETURN ret;
   ```
 * **Preferred Alternative:** `:PROCEDURE` + `DoProc`/`ExecFunction` (or `Me:` / `Base:` inside classes) provides normal callable SSL units when that structure fits the task.
-* **Named Regions (Legacy Functional Text Blocks):** `:REGION <name>;` ... `:ENDREGION;` defines a named block whose body is stored as raw text. Unlike `:BEGININLINECODE`, the body is not validated as SSL code. The content is stored and retrieved later via `GetRegion(sValue, vSrc, vDst, vLocalRegions)`.
+* **Named Regions (Legacy Functional Text Blocks):** `:REGION <name>;` ... `:ENDREGION;` defines a named block whose body is stored as raw text. Unlike `:BEGININLINECODE`, the body is not validated as SSL code. The content is stored and retrieved later via `GetRegion(sValue, vSrc, vDst)`.
 * **Code Organization:** For organizing and grouping procedures in the IDE, use `/* region` / `/* endregion` comment conventions instead (see the **Code Organization** section above).
 
 ### Comments
@@ -1148,7 +1148,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `GetExecutionTrace` | `GetExecutionTrace()` |
 | `GetInlineCode` | `GetInlineCode(sValue, aVariables)` |
 | `DeleteInlineCode` | `DeleteInlineCode(sValue)` |
-| `GetRegion` | `GetRegion(sValue, vSrc, vDst, vLocalRegions)` |
+| `GetRegion` | `GetRegion(sValue, vSrc, vDst)` |
 | `GetRegionEx` | `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` |
 | `IsProductionModeOn` | `IsProductionModeOn()` |
 | `GetForbiddenAppIDs` | `GetForbiddenAppIDs()` |

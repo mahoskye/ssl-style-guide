@@ -395,7 +395,7 @@ UsrMes("This is the user message.", {{1, 2, 3}, "Treeflower", 245});
     bValid := .T.;
     :IF !Empty(sOrderNo);
         :IF DoProc("OrderExists", {sOrderNo});
-            :IF DoProc("GetOrderStatus", {sOrderNo}) = "Active";
+            :IF DoProc("GetOrderStatus", {sOrderNo}) == "Active";
                 /* Long processing logic here;
             :ELSE;
                 bValid := .F.;
@@ -424,7 +424,7 @@ UsrMes("This is the user message.", {{1, 2, 3}, "Treeflower", 245});
         :RETURN .F.;
     :ENDIF;
 
-    :IF DoProc("GetOrderStatus", {sOrderNo}) != "Active";
+    :IF !(DoProc("GetOrderStatus", {sOrderNo}) == "Active");
         :RETURN .F.;
     :ENDIF;
     

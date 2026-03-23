@@ -12,6 +12,7 @@
     "bundle-data": "bun scripts/bundle-data.mjs",
     "build": "bunx tsc",
     "check": "bunx tsc --noEmit",
+    "check:consistency": "bun scripts/check-consistency.mjs",
     "dev": "bun --watch bin/ssl-mcp-server.ts",
     "start": "bun bin/ssl-mcp-server.ts",
     "start:dist": "bun dist/index.js"

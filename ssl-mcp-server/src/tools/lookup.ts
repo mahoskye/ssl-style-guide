@@ -31,7 +31,12 @@ export function registerLookup(server: McpServer, indices: Indices): void {
     }
 
     return {
-      content: [{ type: "text", text: JSON.stringify(el, null, 2) }],
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(el, null, 2),
+        },
+      ],
     };
   });
 }

@@ -17,7 +17,11 @@ export function registerElementResources(server: McpServer, indices: Indices): v
       }
       return {
         contents: [
-          { uri: uri.href, mimeType: "application/json", text: JSON.stringify(el, null, 2) },
+          {
+            uri: uri.href,
+            mimeType: "application/json",
+            text: JSON.stringify(el, null, 2),
+          },
         ],
       };
     }

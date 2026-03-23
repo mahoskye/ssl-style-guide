@@ -170,7 +170,7 @@ ssl_style_guide:
     region:
       begin: :REGION
       end: :ENDREGION
-      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(cValue, xSrc, xDst, xLocalRegions). For editor grouping, prefer comment regions."
+      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(cValue, xSrc, xDst). For editor grouping, prefer comment regions."
     inline_code:
       begin: :BEGININLINECODE
       end: :ENDINLINECODE
@@ -1057,7 +1057,7 @@ ssl_style_guide:
       - ExecUdf("UdfName", {params})
       - Eval(xCode[, xArg1[, xArg2 ...]])
       - Branch(xTarget)
-    dynamic_procedures: GetRegion(cValue, xSrc, xDst, xLocalRegions)
+    dynamic_procedures: GetRegion(cValue, xSrc, xDst)
     inline_code: GetInlineCode(cValue, aVariables)
     code_blocks: "{|params| expression}"
   special_literals:
