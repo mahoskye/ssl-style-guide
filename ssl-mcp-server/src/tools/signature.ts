@@ -9,7 +9,7 @@ const SignatureSchema = z.object({
 export function registerSignature(server: McpServer, indices: Indices): void {
   server.tool(
     "ssl_signature",
-    "Get full signature and parameter details for a function or class.",
+    "Get documented syntax and related details for a function or class.",
     SignatureSchema.shape,
     async ({ name }) => {
       const key = name.toLowerCase().trim();

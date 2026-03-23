@@ -117,23 +117,28 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 (* Top-level structure *)
 Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements *)
 
-(* Statement types — each statement is terminated by ";" *)
+(* Statement types *)
 (* CommentStatement includes its own terminating ";" as part of the comment syntax *)
-Statement ::=
-    (ProcedureStatement |
-    ConditionalStatement |
-    LoopStatement |
-    SwitchStatement |
-    ErrorHandlingStatement | (* :TRY/:CATCH blocks *)
-    ErrorBlockStanza |     (* :ERROR blocks *)
+Statement ::= CommentStatement | SimpleStatement ";" | BlockStatement
+SimpleStatement ::=
     DeclarationStatement |
     LogicStatement |
     LabelStatement |
-    RegionBlock |          (* :REGION/:ENDREGION keywords *)
-    InlineCodeBlock |      (* :BEGININLINECODE/:ENDINLINECODE keywords *)
     BranchStatement |
-    DatabaseStatement) ";" |
-    CommentStatement       (* Comment already includes its terminating ";" *)
+    DatabaseStatement |
+    ExitWhileStatement |
+    ExitForStatement |
+    LoopContinue
+BlockStatement ::=
+    ProcedureStatement |
+    ConditionalStatement |
+    WhileLoop |
+    ForLoop |
+    SwitchStatement |
+    ErrorHandlingStatement | (* :TRY/:CATCH blocks *)
+    ErrorBlockStanza |       (* :ERROR blocks *)
+    RegionBlock |            (* :REGION/:ENDREGION keywords *)
+    InlineCodeBlock          (* :BEGININLINECODE/:ENDINLINECODE keywords *)
 
 (* Class definitions *)
 ClassDefinition ::= ClassDeclaration [InheritStatement] {ClassMember}
@@ -157,45 +162,45 @@ ParameterList ::= Identifier {"," Identifier}
 DefaultParameterList ::= Identifier "," Expression
 
 (* Conditional statements *)
-ConditionalStatement ::= IfStatement | ElseStatement | EndIfStatement
-IfStatement ::= ":" "IF" Expression
-ElseStatement ::= ":" "ELSE"
-EndIfStatement ::= ":" "ENDIF"
+ConditionalStatement ::= IfStatement {Statement} [ElseBlock] EndIfStatement
+IfStatement ::= ":" "IF" Expression ";"
+ElseBlock ::= ":" "ELSE" ";" {Statement}
+EndIfStatement ::= ":" "ENDIF" ";"
 
 (* Loop statements *)
-LoopStatement ::= WhileLoop | ForLoop | ExitWhileStatement | ExitForStatement | LoopContinue
+LoopStatement ::= WhileLoop | ForLoop
 WhileLoop ::= WhileStatement {Statement} EndWhileStatement
-WhileStatement ::= ":" "WHILE" Expression
-EndWhileStatement ::= ":" "ENDWHILE"
+WhileStatement ::= ":" "WHILE" Expression ";"
+EndWhileStatement ::= ":" "ENDWHILE" ";"
 ExitWhileStatement ::= ":" "EXITWHILE"
 ForLoop ::= ForStatement {Statement} NextStatement
-ForStatement ::= ":" "FOR" Identifier ":=" Expression ":" "TO" Expression [":" "STEP" Expression]
-NextStatement ::= ":" "NEXT"
+ForStatement ::= ":" "FOR" Identifier ":=" Expression ":" "TO" Expression [":" "STEP" Expression] ";"
+NextStatement ::= ":" "NEXT" ";"
 ExitForStatement ::= ":" "EXITFOR"
 LoopContinue ::= ":" "LOOP" (* Represents a 'continue' for the current loop iteration *)
 
 (* Switch case statements *)
 SwitchStatement ::= BeginCaseStatement CaseBlock {CaseBlock} [OtherwiseBlock] EndCaseStatement (* At least one CASE is required *)
-BeginCaseStatement ::= ":" "BEGINCASE"
+BeginCaseStatement ::= ":" "BEGINCASE" ";"
 CaseBlock ::= CaseStatement {Statement} [ExitCaseStatement]
-CaseStatement ::= ":" "CASE" Expression
-OtherwiseBlock ::= OtherwiseStatement {Statement}
-OtherwiseStatement ::= ":" "OTHERWISE"
-EndCaseStatement ::= ":" "ENDCASE"
-ExitCaseStatement ::= ":" "EXITCASE"
+CaseStatement ::= ":" "CASE" Expression ";"
+OtherwiseBlock ::= OtherwiseStatement {Statement} [ExitCaseStatement]
+OtherwiseStatement ::= ":" "OTHERWISE" ";"
+EndCaseStatement ::= ":" "ENDCASE" ";"
+ExitCaseStatement ::= ":" "EXITCASE" ";"
 
 (* Error handling statements *)
 ErrorHandlingStatement ::= TryBlock (* For :TRY/:CATCH/:FINALLY structure *)
-TryBlock ::= TryStatement Statement {Statement} (CatchBlock [FinallyBlock] | FinallyBlock) EndTryStatement (* TRY body requires ≥1 statement; at least one of CATCH or FINALLY is required *)
-TryStatement ::= ":" "TRY"
+TryBlock ::= TryStatement Statement {Statement} (CatchBlock [FinallyBlock] | FinallyBlock) EndTryStatement (* TRY body requires >=1 statement; at least one of CATCH or FINALLY is required *)
+TryStatement ::= ":" "TRY" ";"
 CatchBlock ::= CatchStatement {Statement} (* CATCH body allows zero or more statements *)
-CatchStatement ::= ":" "CATCH"
-FinallyBlock ::= FinallyStatement Statement {Statement} (* FINALLY body requires ≥1 statement *)
-FinallyStatement ::= ":" "FINALLY"
-EndTryStatement ::= ":" "ENDTRY"
+CatchStatement ::= ":" "CATCH" ";"
+FinallyBlock ::= FinallyStatement Statement {Statement} (* FINALLY body requires >=1 statement *)
+FinallyStatement ::= ":" "FINALLY" ";"
+EndTryStatement ::= ":" "ENDTRY" ";"
 
-ErrorBlockStanza ::= ErrorMarker Statement {Statement} [ResumeStatement] (* For :ERROR structure — body requires ≥1 statement; optional :RESUME switches to resume mode *)
-ErrorMarker ::= ":" "ERROR"
+ErrorBlockStanza ::= ErrorMarker Statement {Statement} [ResumeStatement] (* For :ERROR structure — body requires >=1 statement; optional :RESUME switches to resume mode *)
+ErrorMarker ::= ":" "ERROR" ";"
 ResumeStatement ::= ":" "RESUME" (* Inside :ERROR handler — switches to resume mode, wrapping each subsequent statement in individual try/catch *)
 
 (* Declaration statements *)
@@ -210,7 +215,8 @@ ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Parameters are comma-
 DeclareStatement ::= ":" "DECLARE" IdentifierList
 DefaultStatement ::= ":" "DEFAULT" DefaultParameterList (* Default values for parameters *)
 PublicStatement ::= ":" "PUBLIC" IdentifierList
-IncludeStatement ::= ":" "INCLUDE" StringLiteral (* StringLiteral usually contains a script path/name *)
+IncludeStatement ::= ":" "INCLUDE" IncludeTarget
+IncludeTarget ::= Identifier | QualifiedIdentifier
 
 (* Logic statements *)
 LogicStatement ::= Assignment | FunctionCall | Expression | ReturnStatement
@@ -221,30 +227,34 @@ ReturnStatement ::= ":" "RETURN" [Expression]
 (* Function calls *)
 FunctionCall ::= DirectFunctionCall | IndirectFunctionCall
 DirectFunctionCall ::= Identifier "(" [ArgumentList] ")"
-IndirectFunctionCall ::= Identifier "(" StringLiteral "," ArrayLiteral ")" (* Generic pattern for DoProc, ExecFunction, etc. *)
+IndirectFunctionCall ::= Identifier "(" StringLiteral ["," ArrayLiteral] ")" (* Canonical indirect call pattern for DoProc / ExecFunction *)
 ArgumentList ::= Expression {"," Expression}
 
 (* Comment statements *)
 CommentStatement ::= "/*" {Character} ";" (* All SSL comments use the same syntax: /* ... ; The lexer does not distinguish single-line from multi-line — both forms are syntactically identical. Multi-line comments simply contain embedded newlines within the character sequence. *)
 
 (* Special structures *)
-LabelStatement ::= ":" "LABEL" Identifier (* Used with Branch() *)
+LabelStatement ::= ":" ("LABEL" Identifier {Identifier} | MashedLabelName) (* Accepted forms include :LABEL Name; and :LABELName; *)
+MashedLabelName ::= "LABEL" Identifier
 RegionBlock ::= RegionStart {Character} RegionEnd (* Keyword-based regions :REGION / :ENDREGION *)
 RegionStart ::= ":" "REGION" Identifier ";"
 RegionEnd ::= ":" "ENDREGION" ";"
 InlineCodeBlock ::= InlineCodeStart {Statement} InlineCodeEnd (* *)
 InlineCodeStart ::= ":" "BEGININLINECODE" (StringLiteral | Identifier) ";" (* Name is required — bare or quoted *)
 InlineCodeEnd ::= ":" "ENDINLINECODE" ";"
-DynamicCodeExecution ::= Identifier "(" StringLiteral ["," ArrayLiteral] ")" (* Generic dynamic code execution pattern *)
 BranchStatement ::= Identifier "(" StringLiteral ")" (* Generic branch/control flow pattern *)
 
 (* Database Integration *)
 DatabaseStatement ::= DatabaseFunctionCall
-DatabaseFunctionCall ::= Identifier "(" StringLiteral ["," Expression | "," ArrayLiteral] {"," Expression | "," ArrayLiteral} ")" (* Generic database function calls *)
+DatabaseFunctionCall ::= Identifier "(" StringLiteral ["," Expression] {"," Expression} ")" (* Database functions take a SQL string plus optional additional arguments such as friendly names, flags, and parameter arrays *)
 DatabaseParameter ::= "?" Identifier "?" | "?" (* Common parameter patterns in database strings *)
 
 (* Object-oriented statements specific to SSL classes/UDOs *)
-ObjectCreation ::= Identifier "(" [StringLiteral] ")" (* Generic object creation pattern *)
+ObjectCreation ::= BuiltInClassInstantiation | DynamicObjectCreation | UserDefinedObjectCreation | AnonymousObjectCreation
+BuiltInClassInstantiation ::= Identifier "{" [ArgumentList] "}"
+DynamicObjectCreation ::= "CreateUdObject" "(" ")"
+UserDefinedObjectCreation ::= "CreateUdObject" "(" StringLiteral ["," ArrayLiteral] ")"
+AnonymousObjectCreation ::= "CreateUdObject" "(" ArrayLiteral ")"
 MethodCall ::= Identifier ":" Identifier "(" [ArgumentList] ")" (* Object:Method() *)
 ObjectPropertyAccess ::= Identifier ":" Identifier (* Object:Property — distinguished from MethodCall by absence of parentheses *)
 
@@ -286,19 +296,19 @@ Primary ::=
     "(" Expression ")" |
     IncrementExpression |
     MeLiteral |          (* Me — reference to the current class instance *)
-    BaseAccess |         (* Base — reference to the parent class for inherited method calls *)
+    BaseAccess |         (* Base:Member — reference to the parent class for inherited member access *)
     MethodCall (* Object:Method() syntax *)
 
 IncrementExpression ::= Identifier ("++" | "--") | ("++" | "--") Identifier (* *)
 VariableAccess ::= Identifier
 MeLiteral ::= "Me" (* Reference to the current class instance; used as Me:Method() or Me:Property *)
-BaseAccess ::= "Base" (* Reference to the parent class; used as Base:Method() to call inherited methods *)
+BaseAccess ::= "Base" ":" Identifier ["(" [ArgumentList] ")"] (* Base must always be followed by a member name; it cannot stand alone *)
 PropertyAccess ::= Identifier ":" Identifier (* SSL uses colon for property access of UDOs and system objects *)
 ArrayAccess ::= Identifier ArraySubscript
 ArraySubscript ::= "[" Expression {"," Expression} "]" | "[" Expression "]" {("[" Expression "]")} (* Supports arr[1,2] and arr[1][2] *)
 
 (* Literals *)
-Literal ::= NumberLiteral | StringLiteral | BooleanLiteral | ArrayLiteral | NilLiteral | DateLiteral | CodeBlockLiteral
+Literal ::= NumberLiteral | StringLiteral | BooleanLiteral | ArrayLiteral | NilLiteral | CodeBlockLiteral
 NumberLiteral ::= IntegerPart [DecimalPart [Exponent]] (* Scientific notation requires a decimal part: '7.0e2' works, '7e2' does not *)
 IntegerPart ::= Digit {Digit}
 DecimalPart ::= "." Digit {Digit} (* Ensures at least one digit after the decimal point *)
@@ -308,8 +318,7 @@ StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | "[" {Character} "]
 BooleanLiteral ::= ".T." | ".F." (* TRUE and FALSE also mentioned in EBNF notes but .T./.F. are canonical *)
 ArrayLiteral ::= "{" [ExpressionList] "}" | "{" ArrayLiteral {"," ArrayLiteral} "}"
 NilLiteral ::= "NIL" (* *)
-DateLiteral ::= "{" NumberLiteral "," NumberLiteral "," NumberLiteral ["," NumberLiteral "," NumberLiteral "," NumberLiteral] "}" (* Specific format; common usage is via CToD() or Today() *)
-CodeBlockLiteral ::= "{|" IdentifierList "|" ExpressionList "}" (* At least one parameter required; e.g. {|x| x*x} *)
+CodeBlockLiteral ::= "{|" IdentifierList "|" Expression "}" (* At least one parameter required; e.g. {|x| x*x} *)
 
 
 (* Lists *)

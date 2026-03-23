@@ -26,12 +26,12 @@ Look up the SSL element named `$ARGUMENTS`.
    - Present the alternatives and ask the user which they meant
 
 4. **If found and the element is a class:**
-   - Also call MCP tool `ssl_signature` with the class name to retrieve member signatures
+   - Also call MCP tool `ssl_signature` with the class name to retrieve documented syntax and member lists
    - If MCP is unavailable, summarize class members from local bundled data if present
    - List constructors, methods, and properties
 
 5. **If found and the element is a function:**
-   - Show signature, parameter types, return type
+   - Show documented syntax/signature text from the bundled reference
    - Show any notes about parameterization, side effects, or common pitfalls
 
 6. **If found and the element is a keyword:**
@@ -60,7 +60,7 @@ Type:    <function|class|keyword|operator|constant>
 
 For functions:
 ```
-Signature: FunctionName(param1Type param1, param2Type param2, ...) → ReturnType
+Signature: FunctionName(...)
 Notes:     <any important caveats>
 ```
 
@@ -70,7 +70,7 @@ Members:
   Constructor(...)
   Method1(...)
   Method2(...)
-  Property1: Type
+  Property1
 ```
 
 For keywords:

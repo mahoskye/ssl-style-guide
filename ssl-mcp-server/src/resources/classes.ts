@@ -6,7 +6,7 @@ export function registerClassResources(server: McpServer, indices: Indices): voi
   server.resource(
     "ssl-class-members",
     "ssl://classes/{name}/members",
-    { description: "Class methods and properties" },
+    { description: "Class methods and properties, plus bundled member-name validation data" },
     async (uri) => {
       // pathname: /classes/Email/members
       const parts = uri.pathname.split("/");

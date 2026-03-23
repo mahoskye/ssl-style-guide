@@ -43,7 +43,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - Identifiers should be camelCase after the prefix (`sMyVar`, not `s_my_var` or `SMYVAR`)
 - Class names should be PascalCase
 - Procedure names should be PascalCase (e.g., `GetInvoiceTotal`)
-- Constants may be ALL_CAPS
+- Constants should use UPPER_SNAKE_CASE
 
 ### `formatting` — Syntax and structural formatting
 - Every statement (including comments) must end with `;`

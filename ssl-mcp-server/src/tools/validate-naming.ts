@@ -13,6 +13,7 @@ const ValidateNamingSchema = z.object({
 
 const SSL_CONSTANTS = new Set([".T.", ".F.", "NIL"]);
 const LOOP_COUNTERS = new Set(["i", "j", "k", "x", "y", "z"]);
+const UPPER_SNAKE_CASE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
 
 function isCamelCase(body: string): boolean {
   if (!body) return false;
@@ -52,6 +53,18 @@ export function registerValidateNaming(server: McpServer, indices: Indices): voi
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       }
 
+      // Exempt documented constant style
+      if (UPPER_SNAKE_CASE.test(name)) {
+        const result: NamingValidationResult = {
+          valid: true,
+          prefix: "",
+          inferred_type: "constant",
+          body: name,
+          issues: [],
+        };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
+
       // Find matching prefix — try longest match first
       let matchedPrefix = "";
       let inferredType: string | null = null;
@@ -76,7 +89,7 @@ export function registerValidateNaming(server: McpServer, indices: Indices): voi
       }
 
       if (matchedPrefix && !isCamelCase(body)) {
-        issues.push(`Body "${body}" should start with an uppercase letter (camelCase body required).`);
+        issues.push(`Body "${body}" should start with an uppercase letter after the prefix (for example, sUserName).`);
       }
 
       if (expected_type && inferredType && inferredType !== expected_type) {

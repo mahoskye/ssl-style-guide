@@ -49,7 +49,7 @@ export function registerCodeReviewPrompt(server: McpServer, indices: Indices): v
 - Semicolons: Each statement ends with ; — never put a semicolon inside comment text (it terminates the comment and the rest becomes executable code)
 - Keyword casing: All block keywords must be colon-prefixed UPPERCASE (:IF, :WHILE, :FOR, etc.)
 - String equality: Use == for exact string equality; = is prefix-match for strings
-- :EXITCASE: Every :CASE block should end with :EXITCASE to prevent fallthrough, unless multi-match behavior is intentional
+- :EXITCASE: Every :CASE and :OTHERWISE block should end with :EXITCASE to prevent fallthrough, unless multi-match behavior is intentional
 - :BEGINCASE: Must contain at least one :CASE block
 - :TRY: Requires at least one of :CATCH or :FINALLY; bare :TRY...:ENDTRY is a compile error
 - Declaration placement: :PARAMETERS must come immediately after :PROCEDURE; :DEFAULT immediately after :PARAMETERS; :DECLARE before use

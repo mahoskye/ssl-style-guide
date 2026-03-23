@@ -240,11 +240,14 @@ ssl_style_guide:
       - folding: IDE region markers
   naming:
     level: style_only
-    see: lints.hungarian_notation  # authoritative prefix/exception config; see also lints.coding_standards for length limits
+    see: lints.hungarian_notation  # authoritative prefix/exception config
     procedures: PascalCase
     classes: PascalCase
     variables: hungarian_camelCase  # prefix + camelCase body, e.g., sUserName, nCount
     constants: UPPER_SNAKE_CASE
+    length_limits:
+      variable_body_max: 20
+      procedure_name_max: 30
     use_underscores: discouraged
   expressions:
     operator_spacing: space-around
@@ -349,6 +352,7 @@ ssl_style_guide:
     literal_filename_note: "Element doc filenames use word forms (true/false/nil); canonical tokens and reserved special forms are mapped above."
     date_values:
       functions: ["CToD(cDateString)", "DateFromNumbers([xYear[, xMonth[, xDay[, xHour[, xMinute[, xSecond[, xMillisecond[, xMakeInvariant]]]]]]]])", "Today()", "Now()"]
+      note: Brace-delimited forms such as "{2026, 3, 23}" are arrays, not date literals.
     code_block_literals:
       syntax: "{|params| expression}"
       example: "{|x, y| x + y}"
@@ -480,9 +484,9 @@ ssl_style_guide:
         - wrong: "AADD(arr, val)"
           correct: "AAdd(arr, val)"
           reason: "Function casing exactly matches the documentation (PascalCase)"
-        - wrong: "Str(123)"
-          correct: "LimsString(123)"
-          reason: "Use LimsString for general value-to-string conversion; Str is a separate formatted numeric-output function"
+        - wrong: "LIMSSTRING(value)"
+          correct: "LimsString(value)"
+          reason: "Type/helper functions use documented casing"
         - wrong: "ALLTRIM(s)"
           correct: "AllTrim(s)"
           reason: "String functions use PascalCase"
@@ -1417,7 +1421,7 @@ ssl_style_guide:
         message: "Using NIL in arithmetic or string operations causes error. Use Empty() to check for NIL first."
       - rule: code_block_comparison
         severity: warning
-        message: "Code blocks (lambdas) cannot be compared with = or ==. This causes a error."
+        message: "Code blocks (lambdas) cannot be compared with = or ==. This causes an error."
       - rule: nil_not_empty_string
         severity: info
         message: "NIL is not the same as empty string, zero, or .F. — all declared variables initialize to empty string, not NIL."

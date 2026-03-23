@@ -61,10 +61,10 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 :DECLARE sValue;
 
 :TRY;
-   sValue := Me:sPublicField;
-   :RETURN sValue;
+    sValue := Me:sPublicField;
+    :RETURN sValue;
 :CATCH;
-   :RETURN NIL;
+    :RETURN NIL;
 :ENDTRY;
 
 :ENDPROC;
@@ -76,11 +76,11 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 :PROCEDURE Constructor;
 
 :TRY;
-   /* Initialize fields;
-   Me:sPublicField := "";
-   Me:_sPrivateField := "";
+    /* Initialize fields;
+    Me:sPublicField := "";
+    Me:_sPrivateField := "";
 :CATCH;
-   /* Initialization error;
+    /* Initialization error;
 :ENDTRY;
 
 :ENDPROC;
@@ -107,10 +107,10 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 :DECLARE sValue;
 
 :TRY;
-   sValue := Me:sPublicField;
-   :RETURN sValue;
+    sValue := Me:sPublicField;
+    :RETURN sValue;
 :CATCH;
-   :RETURN NIL;
+    :RETURN NIL;
 :ENDTRY;
 
 :ENDPROC;
@@ -122,11 +122,11 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 :PROCEDURE Constructor;
 
 :TRY;
-   /* Initialize fields;
-   Me:sPublicField := "";
-   Me:_sPrivateField := "";
+    /* Initialize fields;
+    Me:sPublicField := "";
+    Me:_sPrivateField := "";
 :CATCH;
-   /* Initialization error;
+    /* Initialization error;
 :ENDTRY;
 
 :ENDPROC;
@@ -181,10 +181,10 @@ Output:
 :DECLARE sValue;
 
 :TRY;
-   sValue := Me:sPublicField;
-   :RETURN sValue;
+    sValue := Me:sPublicField;
+    :RETURN sValue;
 :CATCH;
-   :RETURN NIL;
+    :RETURN NIL;
 :ENDTRY;
 
 :ENDPROC;
@@ -196,11 +196,11 @@ Output:
 :PROCEDURE Constructor;
 
 :TRY;
-   /* Initialize fields;
-   Me:sPublicField := "";
-   Me:_sPrivateField := "";
+    /* Initialize fields;
+    Me:sPublicField := "";
+    Me:_sPrivateField := "";
 :CATCH;
-   /* Initialization error;
+    /* Initialization error;
 :ENDTRY;
 
 :ENDPROC;

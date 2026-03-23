@@ -89,7 +89,7 @@ bun scripts/bundle-data.mjs
 |------|-------------|
 | `ssl_lookup` | Look up an SSL element by exact name or symbol |
 | `ssl_search` | Search by partial name or keyword, with optional type filter |
-| `ssl_signature` | Return signature and parameter details for functions and classes |
+| `ssl_signature` | Return documented syntax and related details for functions and classes |
 | `ssl_validate_naming` | Check Hungarian notation compliance for a variable name |
 | `ssl_style_rule` | Return style guide rules for a topic |
 | `ssl_category` | List functions by category, or list all categories |
@@ -99,7 +99,7 @@ bun scripts/bundle-data.mjs
 | URI | Content |
 |-----|---------|
 | `ssl://elements/{name}` | Full element record as JSON |
-| `ssl://classes/{name}/members` | Class methods and properties with validation detail |
+| `ssl://classes/{name}/members` | Class methods and properties, plus bundled member-name validation data |
 | `ssl://categories` | All category names |
 | `ssl://categories/{category}` | Functions in a category |
 | `ssl://keywords` | All keyword elements |

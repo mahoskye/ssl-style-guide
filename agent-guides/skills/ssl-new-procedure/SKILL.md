@@ -49,12 +49,12 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
 :DECLARE sResult;
 
 :TRY;
-   /* Procedure body here;
+    /* Procedure body here;
 
-   :RETURN sResult;
+    :RETURN sResult;
 :CATCH;
-   /* Log or handle the error;
-   :RETURN NIL;
+    /* Log or handle the error;
+    :RETURN NIL;
 :ENDTRY;
 
 :ENDPROC;
@@ -109,12 +109,12 @@ Output:
 :DECLARE nTotal;
 
 :TRY;
-   nTotal := nQty * nPrice;
+    nTotal := nQty * nPrice;
 
-   :RETURN nTotal;
+    :RETURN nTotal;
 :CATCH;
-   /* Log or handle the error;
-   :RETURN 0;
+    /* Log or handle the error;
+    :RETURN 0;
 :ENDTRY;
 
 :ENDPROC;

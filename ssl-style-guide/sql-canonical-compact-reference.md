@@ -1,6 +1,8 @@
 # Oracle SQL Canonical Compact Formatting Reference
 
-This document is the authoritative formatting specification for Oracle SQL embedded in SSL code. It defines the **canonical compact** style — a space-efficient format optimized for readability within SSL string literals.
+This document defines the **canonical compact** formatting style for Oracle SQL
+embedded in SSL code. It is a repository formatting convention optimized for
+readability within SSL string literals.
 
 ---
 
