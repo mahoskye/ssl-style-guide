@@ -139,7 +139,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Different File / Entry Point:** Use `ExecFunction("Category.Script", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
     * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
-      `DoProc("MyProc", {param1,, param3,, param5});` is valid, but
+      `DoProc("MyProc", {param1,,param3,,param5});` is valid, but
       `DoProc("MyProc", {param1, , param3, , param5});` is not.
     * **Omit trailing optional parameters** rather than passing empty values. For example, write `DoProc("MyProc")` not `DoProc("MyProc", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
     * **Built-in Functions:** Can be called directly with standard syntax (e.g., `Len(sString)`).

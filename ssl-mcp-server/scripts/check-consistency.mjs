@@ -50,6 +50,12 @@ function assertArrayEqual(left, right, label) {
   }
 }
 
+function assertIncludes(text, snippet, label) {
+  if (!text.includes(snippet)) {
+    fail(`${label}: missing expected snippet ${JSON.stringify(snippet)}`);
+  }
+}
+
 for (const [sourcePath, mirrorPath] of mirrorPairs) {
   const source = readRepoFile(sourcePath);
   const mirror = readRepoFile(mirrorPath);
@@ -60,6 +66,10 @@ for (const [sourcePath, mirrorPath] of mirrorPairs) {
 
 const highlights = readRepoFile('ssl-style-guide/tree-sitter-ssl/queries/highlights.scm');
 const textMate = JSON.parse(readRepoFile('ssl-style-guide/ssl.tmLanguage.updated.json'));
+const rootReadme = readRepoFile('README.md');
+const mcpReadme = readRepoFile('ssl-mcp-server/README.md');
+const agentInstructions = readRepoFile('agent-guides/ssl_agent_instructions.md');
+const ebnfGrammar = readRepoFile('ssl-style-guide/ssl-ebnf-grammar.md');
 const loadedData = loadAllData();
 const styleGuide = loadedData.styleGuide.ssl_style_guide;
 
@@ -67,22 +77,22 @@ const highlightFunctions = extractPipeList(
   highlights,
   /\(\?i\)\^\(([^)]*)\)\$"\)\)\n\n; Built-in SSL class names/s,
   'Tree-sitter built-in functions'
-);
+).sort();
 const highlightClasses = extractPipeList(
   highlights,
   /Built-in SSL class names.*?\(\?i\)\^\(([^)]*)\)\$"\)\)/s,
   'Tree-sitter built-in classes'
-);
+).sort();
 const textMateFunctions = extractPipeList(
   textMate.repository.builtInFunctions.patterns[0].match,
   /\(\?i\)\\b\((.*)\)\\b/,
   'TextMate built-in functions'
-);
+).sort();
 const textMateClasses = extractPipeList(
   textMate.repository.builtInClassInstantiation.patterns[0].match,
   /\(\?i\)\\b\((.*)\)\\b\(\?=\\s\*\\\{\)/,
   'TextMate built-in classes'
-);
+).sort();
 const schemaBuiltinClasses = styleGuide.object_oriented.object_creation.builtin_classes.all_classes;
 const elementFunctions = loadedData.elements
   .filter((element) => element.type === 'function')
@@ -97,11 +107,38 @@ assertEqual(schemaBuiltinClasses.length, 22, 'Schema built-in class count');
 assertEqual(elementFunctions.length, 354, 'Element inventory function count');
 
 assertArrayEqual(highlightFunctions, textMateFunctions, 'Tree-sitter/TextMate function inventory');
+assertArrayEqual(highlightFunctions, elementFunctions, 'Tree-sitter/element function inventory');
 assertArrayEqual(highlightClasses, textMateClasses, 'Tree-sitter/TextMate class inventory');
 assertArrayEqual(schemaBuiltinClasses, textMateClasses, 'Schema/TextMate built-in classes');
 
 if (!highlights.includes('Built-in SSL function inventory (synchronized with TextMate highlighting)')) {
   fail('Tree-sitter highlights comment drifted from the synchronized inventory wording.');
 }
+
+assertIncludes(
+  agentInstructions,
+  'DoProc("MyProc", {param1,,param3,,param5});',
+  'Agent instructions skipped-parameter example'
+);
+assertIncludes(
+  ebnfGrammar,
+  'indirectFunction("function", {param1,,param3})',
+  'EBNF skipped-parameter example'
+);
+assertIncludes(
+  rootReadme,
+  'Built-in function\ninventories should stay aligned with Tree-sitter highlighting and the checked-in\nelement inventory.',
+  'Root README function inventory wording'
+);
+assertIncludes(
+  rootReadme,
+  'bun run check:consistency',
+  'Root README consistency command'
+);
+assertIncludes(
+  mcpReadme,
+  'bun run check:consistency',
+  'MCP README consistency command'
+);
 
 console.log('Consistency checks passed.');

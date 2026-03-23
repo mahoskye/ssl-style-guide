@@ -13,6 +13,7 @@ the repository root plus bundled reference inventories.
 cd ssl-mcp-server
 bun install
 bun run check
+bun run check:consistency
 ```
 
 Run the server through the Bun CLI entrypoint:
@@ -86,6 +87,7 @@ checked-in external snapshots:
 
 ```bash
 bun scripts/bundle-data.mjs
+bun run check:consistency
 ```
 
 ## Tools
@@ -143,5 +145,6 @@ return-value-only types.
 
 ```bash
 bun run check
+bun run check:consistency
 bunx @modelcontextprotocol/inspector bun bin/ssl-mcp-server.ts
 ```

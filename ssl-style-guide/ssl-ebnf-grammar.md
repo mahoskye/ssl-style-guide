@@ -10,7 +10,7 @@ This EBNF (Extended Backus-Naur Form) grammar serves as a formal definition of t
 2. **Parser Implementation**: Building parsers that can validate and process SSL code.
 3. **Reference Documentation**: Providing a definitive reference for valid language constructs.
 
-While this grammar defines what is syntactically valid in SSL, it does not prescribe specific formatting preferences or coding conventions - those are covered in the separate SSL Style Guide. For instance, the preferred formatting for skipped parameters in lists (e.g., `param1,,param3`) is to not include a space after the first comma. Such stylistic choices are handled by the formatter.
+While this grammar defines what is syntactically valid in SSL, it does not prescribe specific formatting preferences or coding conventions - those are covered in the separate SSL Style Guide. For instance, the preferred formatting for skipped parameters in lists (e.g., `param1,,param3`) is to keep skipped-argument commas adjacent with no intervening spaces. Such stylistic choices are handled by the formatter.
 
 ## Common SSL Code Patterns
 
@@ -375,7 +375,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
     - Direct call: `functionName(param1, param2)`
     - Indirect call: `indirectFunction("functionName", {param1, param2})`
 
-16. **Parameter Passing**: Parameters are passed positionally as an array. To skip parameters, use adjacent commas with no space: `indirectFunction("function", {param1,,param3})`. Trailing optional parameters can be omitted entirely.
+16. **Parameter Passing**: Parameters are passed positionally as an array. To skip parameters, use adjacent commas with no intervening spaces: `indirectFunction("function", {param1,,param3})`. Trailing optional parameters can be omitted entirely.
 
 17. **Default Parameters**: Default values for parameters can be specified using the `:DEFAULT` keyword after the `:PARAMETERS` declaration.
 

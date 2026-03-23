@@ -6,7 +6,9 @@ Language (SSL) v11**.
 This repository keeps the authoritative SSL rule set, parser-facing grammar,
 editor-support files, and agent-facing guidance aligned. When files disagree,
 prefer the machine-readable schema and the checked-in canonical guides over
-summary documentation.
+summary documentation. Alignment is partly enforced by the checked-in
+consistency scripts and partly maintained by review; not every prose surface is
+validated automatically.
 
 ## Canonical Sources
 
@@ -22,8 +24,8 @@ summary documentation.
 ## Repo Contents
 
 - `ssl-style-guide/ssl-style-guide.schema.yaml`
-  Canonical SSL rules, formatting preferences, naming guidance, and synchronized
-  language inventories.
+  Canonical SSL rules, formatting preferences, naming guidance, and the
+  directly-instantiable built-in class inventory.
 - `ssl-style-guide/ssl-ebnf-grammar.md`
   Formal EBNF for SSL v11.
 - `ssl-style-guide/tree-sitter-ssl/`
@@ -73,9 +75,10 @@ npm test
 ### TextMate Grammar
 
 `ssl-style-guide/ssl.tmLanguage.updated.json` carries the syntax-highlighting
-inventory for editors that rely on TextMate grammars. Built-in function and
-class inventories should stay aligned with the schema and Tree-sitter
-highlights.
+inventory for editors that rely on TextMate grammars. Built-in function
+inventories should stay aligned with Tree-sitter highlighting and the checked-in
+element inventory. Built-in class inventories should stay aligned with the
+schema and Tree-sitter highlights.
 
 ### MCP Server
 
@@ -89,6 +92,7 @@ updated, refresh the mirrored MCP data with:
 ```bash
 cd ssl-mcp-server
 bun scripts/bundle-data.mjs
+bun run check:consistency
 ```
 
 ## Agent Skills
