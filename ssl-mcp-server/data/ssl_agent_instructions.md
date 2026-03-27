@@ -11,7 +11,7 @@ Authoritative rules describe documented language behavior; style recommendations
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
 4. **Parameter placement matters.** Script-level `:PARAMETERS` must appear before script statements, though leading `:PROCEDURE` definitions may come first. Inside a procedure, `:PARAMETERS` must appear immediately after `:PROCEDURE`. `:DEFAULT` must immediately follow `:PARAMETERS`.
-5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` instead of simple same-class `DoProc("ProcName", ...)` calls.
+5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is a compile-time error inside class methods.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
 8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
@@ -76,7 +76,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Loop Control:** `:EXITFOR;`, `:EXITWHILE;`, `:LOOP;` (continues to next iteration).
 
 * **Case Blocks (Strict Structure):**
-    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
+    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is a compile error). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
     * **Style Guidance:** Include `:OTHERWISE` for default handling (advisory — not required by the language). End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
     * Syntax:
       ```ssl
@@ -90,7 +90,8 @@ Authoritative rules describe documented language behavior; style recommendations
       :ENDCASE;
       ```
 
-* **Labels & Branching (Legacy):**
+* **Labels & Branching (Legacy — prefer `:IF`/`:WHILE`/`:FOR` in new code):**
+    * `:LABEL` and `Branch()` are legacy flow control. Prefer structured constructs in new and refactored code.
     * The token text for a label includes the word `LABEL` — so `Branch` must include it. `:LABEL SKIP;` produces token text `"LABEL SKIP"` and `:LABELSKIP;` produces `"LABELSKIP"`. Omitting `LABEL` from the Branch target string causes a runtime error.
     * Example:
       ```ssl
@@ -107,6 +108,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 * **Error Handling:**
     * **Try/Catch/Finally:** Structured exception handling (preferred). `:CATCH` and `:FINALLY` are both optional individually, but at least one must be present. Valid forms: `TRY...CATCH...ENDTRY`, `TRY...FINALLY...ENDTRY`, `TRY...CATCH...FINALLY...ENDTRY`.
+      **Body requirements:** The `:TRY` body requires **at least one statement**. The `:CATCH` body allows **zero or more statements** (an empty `:CATCH` block is valid). The `:FINALLY` body, if present, requires **at least one statement**.
       **Only one `:CATCH` block is allowed per `:TRY`** — there is no multi-catch.
       **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Message`, `:Description`, `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx`, `:InnerException`, and `:NETException`.
       **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **compile-time errors**.
@@ -117,7 +119,7 @@ Authoritative rules describe documented language behavior; style recommendations
           oErr := GetLastSSLError();
           UsrMes(oErr:Message);
       :FINALLY;
-          /* Cleanup (optional);
+          /* Cleanup runs here;
       :ENDTRY;
       ```
     * **Error/Resume (Legacy):** `:ERROR` defines a handler for all subsequent code in the current scope and must contain at least one statement. `:RESUME` inside the handler switches execution to resume mode, which wraps each subsequent statement in its own individual try/catch to allow execution to continue after failures — this has significant performance cost. Prefer `:TRY/:CATCH/:FINALLY` when narrower block-scoped handling fits the code.
@@ -131,7 +133,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Functions & Procedures
 
-* **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`.
+* **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`. More than 20 parameters on a procedure or method triggers a compiler performance warning; prefer grouping related state into arrays/objects.
 * **Return Values:** Use `:RETURN value;` to return a value from a procedure. Without `:RETURN`, procedures return no value / an empty result.
 * **Calling Convention (CRITICAL):**
     * **Custom Procedures:** You **cannot** call custom procedures directly (e.g., `MyProc()`).
@@ -147,7 +149,7 @@ Authoritative rules describe documented language behavior; style recommendations
 ### Objects & User-Defined Types
 
 * **Object Creation:**
-    * **Built-in Class:** `oObject := ClassName{};` (instantiates built-in class like `Email{}`, `PdfSupport{}`) — built-in classes cannot be instantiated via `CreateUdObject`
+    * **Built-in Class:** `oObject := ClassName{};` — built-in classes cannot be instantiated via `CreateUdObject`. Known built-in classes: `AzureStorage`, `BatchSupport`, `CDataTable`, `Email`, `EnterpriseExporter`, `FtpsClient`, `HtmlConverter`, `PatcherSupport`, `PdfSupport`, `RegSetup`, `SDMS`, `SDMSDocUploader`, `SSLBaseDictionary`, `SSLCodeProvider`, `SSLDataset`, `SSLExpando`, `SSLIntDictionary`, `SSLRegex`, `SSLStringDictionary`, `Sequence`, `TablesImport`, `WebServices`.
     * **Dynamic Object:** `oExp := CreateUdObject();` (creates an empty `SSLExpando`)
     * **User-Defined Class:** `oCustom := CreateUdObject("MyClass");` or `oCustom := CreateUdObject("MyClass", {arg1, arg2});` — for user-defined `:CLASS` files only
     * **Anonymous Object:** `oAnon := CreateUdObject({{"PropName", value}, ...});` (creates `SSLExpando` with properties)
@@ -167,9 +169,9 @@ Authoritative rules describe documented language behavior; style recommendations
     * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value.
-    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. Simple same-class `DoProc("ProcName", ...)` calls are rejected in class context.
+    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. `DoProc` is a compile-time error inside class methods — all forms are rejected, not just same-class calls.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
-    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public).
+    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
       ```ssl
       /*@private;
       :PROCEDURE InternalHelper;
@@ -320,7 +322,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 | Power | `^` | Raises left to power of right |
 | Bitwise AND | `_AND(a, b)` | Bitwise AND — function call syntax (integer operands only) |
 | Bitwise OR | `_OR(a, b)` | Bitwise OR — function call syntax (integer operands only) |
-| Bitwise XOR | `_XOR(a, b)` | Bitwise XOR — function call syntax (integer operands only) |
+| Bitwise XOR | `_XOR(a, b)` | Bitwise XOR — function call syntax (integer operands only). `LimsXOr(a, b)` is also available. |
 | Bitwise NOT | `_NOT(a)` | Bitwise complement — function call syntax (integer operands only) |
 | Left Shift | `<<` | Shifts bits left |
 | Right Shift | `>>` | Shifts bits right |
@@ -329,6 +331,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 - `Empty()` returns `.T.` if value equals 0
 - `_AND`, `_OR`, `_XOR`, `_NOT` use function call syntax, not infix: `_AND(a, b)` not `a _AND b`
 - Bitwise functions require integer operands; fractional values raise errors
+- **Scientific notation** requires a decimal point before the exponent: `1.2e-3`, `9.0E1` are valid; `7e2`, `.5e1`, `9E+1` are not
 
 ### Boolean Details
 
@@ -368,7 +371,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 
 * **Assignment:** `:=`
 * **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=`
-* **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=`
+* **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=` — prefer `!=` over `<>` or `#` for not-equals
 * **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`)
 * **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `**` (power), `%` (modulo)
 * **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value.
@@ -704,7 +707,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 ## 8. Edge Cases & Gotchas
 
 1.  **Implicit Concatenation Error:** Do not try to put `:DEFAULT` on a `:DECLARE` line. They are separate steps.
-2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods call sibling/inherited methods with `Me:Method()` / `Base:Method()` instead of simple same-class `DoProc("ProcName", ...)` calls.
+2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — `DoProc` is a compile-time error inside class methods (all forms, not just same-class calls).
 3.  **Case Sensitivity Inversion:** Unlike many languages where keywords are lower (`if`) and vars are sensitive, SSL is the opposite: Keywords are strict (`:IF`), identifiers are loose (`sVar` == `SVAR`).
 4.  **Semicolons:** Almost every line (including comments) must end with `;`.
 5.  **1-Based Arrays:** SSL arrays are 1-based, not 0-based. First element is `aArray[1]`.
@@ -719,11 +722,12 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 14. **Procedure References:** Procedure names should only be matched in execution contexts (`DoProc`, `ExecFunction`), not in comments, strings, or unrelated identifiers.
 15. **Comment Toggle:** SSL uses `/* ... ;` comment syntax. Toggling comments should add/remove this pattern, not `//` style comments.
 16. **:STEP Keyword Spacing:** The `:STEP` keyword in FOR loops should have a space before it: `:FOR i := 1 :TO 10 :STEP 2;` not `:FOR i := 1 :TO 10:STEP 2;`
-17. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match. **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=`.
-18. **Default Variable Value:** All declared variables start as empty string `""`, not `NIL`.
-19. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
-20. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
-21. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
+17. **:ENDFOR Is Not Valid:** Although `:ENDFOR` exists as a recognized token in the lexer, it is **not a usable keyword**. FOR loops must be terminated with `:NEXT`, not `:ENDFOR` — using `:ENDFOR` causes a parse error.
+18. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match. **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=` but `!=` is preferred.
+19. **Default Variable Value:** All declared variables start as empty string `""`, not `NIL`.
+20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
+21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
+22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
 
 ---
 
@@ -772,7 +776,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 **Object-Oriented:**
 - `:CLASS`, `:INHERIT`
 
-### Complete Operator List (32 Operators)
+### Complete Operator List (32 Operators + 4 Bitwise Functions)
 
 **Assignment Operators (7):**
 - `:=` - Assignment
@@ -781,7 +785,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 **Comparison Operators (9):**
 - `=` - Equality (for strings: true if right is empty OR left starts with right)
 - `==` - Exact string equality; otherwise generally parallels `=`
-- `!=`, `<>`, `#` - Not equal (three equivalent forms)
+- `!=` - Not equal (preferred); `<>`, `#` are equivalent but not preferred
 - `<`, `>`, `<=`, `>=` - Relational operators
 
 **Logical Operators (4):**
@@ -810,7 +814,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 - `<<`, `>>` - Shift operators
 
 **Bitwise Built-ins (4 functions, integer operands only):**
-- `_AND(a, b)`, `_OR(a, b)`, `_XOR(a, b)`, `_NOT(a)` - Bitwise operations (function call syntax, not infix)
+- `_AND(a, b)`, `_OR(a, b)`, `_XOR(a, b)`, `_NOT(a)` - Bitwise operations (function call syntax, not infix). `LimsXOr(a, b)` is also available as an XOR function.
 
 ### Structural Syntax
 
@@ -1334,6 +1338,7 @@ developer-accessible classes that are only reached indirectly as return values
 | `SSLBaseDictionary` | `SSLBaseDictionary{}` | Base dictionary class |
 | `SSLCodeProvider` | `SSLCodeProvider{}` | Code compilation utility |
 | `SSLDataset` | `SSLDataset{}` / `SSLDataset{vData, vNullAsBlank}` | Dataset wrapper |
+| `SSLError` | Returned by `GetLastSSLError()` | Exception object (`:Message`, `:Description`, `:Code`, `:GenCode`, `:Operation`, `:FullDescription`, `:FullDescriptionEx`, `:InnerException`, `:NETException`) |
 | `SSLExpando` | `SSLExpando{}` | Dynamic object |
 | `SSLIntDictionary` | `SSLIntDictionary{}` / `SSLIntDictionary{nLength}` | Numeric-keyed dictionary |
 | `SSLRegex` | `SSLRegex{sPattern}` / `SSLRegex{sPattern, bCaseSensitive}` | Regular expressions |

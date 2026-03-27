@@ -25,7 +25,9 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - Use one statement per line
    - Use `==` for exact string equality
    - Use `DoProc("ProcName", {args})` for same-file script procedure calls
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`
+   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
+   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
 
 3. **Infer parameter types from Hungarian notation prefixes:**
    - If a parameter already has a prefix (`sName`, `nQty`, `bFlag`, `dDate`,

@@ -68,7 +68,7 @@ ssl_style_guide:
     line_endings: lf
     max_line_length: 90
     final_newline: true
-    one_procedure_per_file: false
+    one_procedure_per_file: false  # multiple procedures per script file; class files enforce one class per file
     include_order:
       level: style_only
       enforce: true
@@ -78,14 +78,15 @@ ssl_style_guide:
     indent_style: tabs_preferred
     allow_space_indentation: true
     space_indent_width: 4
-    indent_width: 1
-    continuation_indent: 1
+    indent_width: 1            # 1 tab per nesting level (or 4 spaces when using space indentation)
+    continuation_indent: 1     # 1 tab (or 4 spaces) for continuation lines
     trim_trailing_whitespace: true
     spaces:
       around_assignment: true
       around_operators: true
       after_comma: true
       before_semicolon: false
+      before_step_keyword: true  # :FOR i := 1 :TO 10 :STEP 2; (space before :STEP)
       inside_parens: false
       inside_brackets: false
       inside_braces: false
@@ -151,7 +152,7 @@ ssl_style_guide:
       begin: :FOR
       to: :TO
       step: :STEP
-      end: :NEXT
+      end: :NEXT  # :ENDFOR is a recognized keyword but NOT usable — using it causes a parse error
       exit: :EXITFOR
       loop: :LOOP
     case:
@@ -170,7 +171,7 @@ ssl_style_guide:
     region:
       begin: :REGION
       end: :ENDREGION
-      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(cValue, xSrc, xDst). For editor grouping, prefer comment regions."
+      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(sValue, vSrc, vDst). For editor grouping, prefer comment regions."
     inline_code:
       begin: :BEGININLINECODE
       end: :ENDINLINECODE
@@ -178,7 +179,7 @@ ssl_style_guide:
       accepted_name_forms:
         - bare_identifier
         - quoted_identifier
-      note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(cValue, aVariables) / DeleteInlineCode(cValue)."
+      note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue)."
     error:
       marker: :ERROR
       resume: :RESUME  # optional — switches to resume mode inside :ERROR handler
@@ -227,7 +228,7 @@ ssl_style_guide:
         This is a multi-line comment.
         All formatting is preserved.
         ;
-      documentation_header: |
+      documentation_header: |  # compact form — see documentation.procedure_headers for the full formal template
         /*
          * Procedure: CalculateTotal
          * Description: Calculates the total from line items
@@ -248,7 +249,7 @@ ssl_style_guide:
     length_limits:
       variable_body_max: 20
       procedure_name_max: 30
-    use_underscores: discouraged
+    use_underscores: discouraged  # in variable/procedure names; file-level suffixes (_Core, _Batch, etc.) are standard
   expressions:
     operator_spacing: space-around
     operator_symbol_map:
@@ -292,20 +293,23 @@ ssl_style_guide:
     - '/='
     - '^='
     - '%='
+    # Full precedence (low → high): .OR., .AND., equality/containment, relational,
+    # shift, additive, multiplicative, power (right-assoc), unary.
+    # See ssl-ebnf-grammar.md for the canonical production chain.
     comparison_operators:
-      equality:
-      - '='    # loose equality (for strings: .T. if right is empty or left starts with right)
+      equality:                    # precedence: same level as containment (below relational)
+      - '='    # loose equality (for strings: .T. if right is empty or left starts with right; for other types: exact match)
       - '=='   # strict equality (exact match)
-      inequality:
+      inequality:                  # precedence: same level as equality
       - '!='   # not equals (negates ==, not =)
       - '<>'   # not equals (equivalent to !=)
       - '#'    # not equals (equivalent to !=)
-      relational:
+      relational:                  # precedence: above equality/containment
       - '<'    # less than
       - '>'    # greater than
       - '<='   # less than or equal
       - '>='   # greater than or equal
-      containment:
+      containment:                 # precedence: same level as equality (below relational)
       - '$'    # substring containment (left string within right string)
     logical_operators:
     - .AND.
@@ -314,14 +318,11 @@ ssl_style_guide:
     - '!'     # unary not
     string_operators:
     - '+'  # Use + for string concatenation
+    - '-'  # Trims trailing spaces from left operand, then concatenates
     arithmetic_precedence:
-    - '^'     # power (also written as **)
-    - '**'    # power (alias for ^)
-    - '*'
-    - /
-    - '%'
-    - +
-    - '-'
+      power: ['^', '**']           # highest — right-associative
+      multiplicative: ['*', '/', '%']  # same level, left-to-right
+      additive: ['+', '-']         # lowest arithmetic, left-to-right
     bitwise_operations:
       builtin_functions:
       - _AND(a, b)   # bitwise AND (function call syntax)
@@ -351,12 +352,14 @@ ssl_style_guide:
       constructor: "Constructor"
     literal_filename_note: "Element doc filenames use word forms (true/false/nil); canonical tokens and reserved special forms are mapped above."
     date_values:
-      functions: ["CToD(cDateString)", "DateFromNumbers([xYear[, xMonth[, xDay[, xHour[, xMinute[, xSecond[, xMillisecond[, xMakeInvariant]]]]]]]])", "Today()", "Now()"]
+      functions: ["CToD(sDateString)", "DateFromNumbers([vYear[, vMonth[, vDay[, vHour[, vMinute[, vSecond[, vMillisecond[, vMakeInvariant]]]]]]]])", "Today()", "Now()"]
       note: Brace-delimited forms such as "{2026, 3, 23}" are arrays, not date literals.
     code_block_literals:
       syntax: "{|params| expression}"
       example: "{|x, y| x + y}"
       lambda_style: true
+      min_parameters: 1  # at least one bound variable is required
+      body: single_expression  # body is a single expression, not multiple statements
     numbers:
       allow_scientific: true
       require_decimal_for_scientific: true
@@ -368,7 +371,7 @@ ssl_style_guide:
       invalid_examples:
       - '7e2'
       - '.5e1'
-      - '9E+1'  # invalid because scientific notation requires a decimal point before the exponent
+      - '9E+1'  # invalid because (a) scientific notation requires a decimal point before the exponent, and (b) explicit plus signs in the exponent are not supported
     indexing:
       arrays: one_based  # First element is at index 1, not 0
       string_positions: one_based
@@ -429,6 +432,14 @@ ssl_style_guide:
       - local_declarations
       - body
       - return
+    visibility_annotations:
+      level: authoritative
+      syntax:
+        - "/*@private;"
+        - "/*@protected;"
+      placement: own line immediately before :PROCEDURE
+      effect: "Both make the procedure inaccessible via DoProc/ExecFunction"
+      class_restriction: "These annotations have no effect on class methods — class methods are always Public|Virtual"
     return:
       keyword: :RETURN
       allow_expression: true
@@ -956,6 +967,7 @@ ssl_style_guide:
       - :DECLARE ...;
       - :PROCEDURE ...;
       end: null
+      indentation: top_level  # :CLASS does not increase indent level; class members stay at file-level indentation
       notes:
       - Class name is optional in the parser, but explicit names are preferred for maintained code.
       - Constructor must be declared after regular methods.
@@ -993,11 +1005,12 @@ ssl_style_guide:
       structured:
         - :TRY
         - body  # requires at least one statement
-        - (:CATCH handler)?  # handler: zero or more statements (empty CATCH is valid)
-        - (:FINALLY body)?  # body: requires at least one statement if present
+        - (:CATCH handler | :FINALLY body | :CATCH handler :FINALLY body)  # at least one is required; bare TRY...ENDTRY is a compile error
         - :ENDTRY
-        # :CATCH and :FINALLY are optional individually, but at least one is required.
-        # Bare TRY...ENDTRY without :CATCH or :FINALLY is a compile error.
+        # Only one :CATCH block is allowed per :TRY — there is no multi-catch.
+        # :CATCH body allows zero or more statements (empty CATCH is valid).
+        # :FINALLY body requires at least one statement if present.
+        # :CATCH does not name the exception — use GetLastSSLError() to retrieve the SSLError object.
     functions:
       - GetLastSSLError
       - ClearLastSSLError
@@ -1006,6 +1019,19 @@ ssl_style_guide:
       - FormatSqlErrorMessage
       - RaiseError
       - ShowSqlErrors
+    ssl_error_object:
+      level: authoritative
+      note: "GetLastSSLError() returns an SSLError object with these members:"
+      members:
+        - ":Message        # short error message"
+        - ":Description    # detailed description"
+        - ":Operation      # operation that caused the error"
+        - ":Code           # numeric error code"
+        - ":GenCode        # general/category error code"
+        - ":FullDescription      # combined message + description"
+        - ":FullDescriptionEx    # extended full description with inner exceptions"
+        - ":InnerException       # nested SSLError from a chained exception"
+        - ":NETException         # underlying .NET exception object (if available)"
     guidance:
       level: advisory
       logging_guidance: Log errors with contextual identifiers; avoid swallowing errors silently.
@@ -1055,10 +1081,10 @@ ssl_style_guide:
       - ExecFunction("Category.Script", {params})
       - ExecFunction("Category.Script.Proc", {params})
       - ExecUdf("UdfName", {params})
-      - Eval(xCode[, xArg1[, xArg2 ...]])
-      - Branch(xTarget)
-    dynamic_procedures: GetRegion(cValue, xSrc, xDst)
-    inline_code: GetInlineCode(cValue, aVariables)
+      - Eval(vCode[, vArg1[, vArg2 ...]])
+      - Branch(vTarget)
+    dynamic_procedures: GetRegion(sValue, vSrc, vDst)
+    inline_code: GetInlineCode(sValue, aVariables)
     code_blocks: "{|params| expression}"
   special_literals:
     level: authoritative
@@ -1082,7 +1108,7 @@ ssl_style_guide:
     parameterized_queries:
       named: "SELECT * FROM table WHERE id = ?USER_ID?"
       positional: "SELECT * FROM table WHERE id = ?"
-      array_binding: LSearch(query, , , {param1, param2, param3})
+      array_binding: LSearch(query,,, {param1, param2, param3})
     common_patterns:
       - SQLExecute("SELECT field1, field2 FROM table WHERE condition = ?param?")
       - SQLExecute("SELECT ...")
@@ -1135,7 +1161,7 @@ ssl_style_guide:
       identifier_case: lower
       preserve_external_casing: true
       align_clauses: false
-      comma_style: trailing
+      comma_style: trailing   # SQL SELECT-list commas at end of line; unrelated to arrays.allow_trailing_comma
       max_line_length: 90
       ssl_embedding:
         indent: 4
@@ -1347,7 +1373,7 @@ ssl_style_guide:
       prefer_positive_logic: true
       no_nested_ternaries: true
       limit_block_depth: 4
-      max_params_per_procedure: 8
+      max_params_per_procedure: 8  # style recommendation; the compiler warns at 20
       require_else_for_if: false
     hungarian_notation:
       enabled: true
@@ -1406,7 +1432,7 @@ ssl_style_guide:
         message: "A file is either a :CLASS definition or a script, never both."
       - rule: doproc_in_class
         severity: error
-        message: "Inside class methods, call sibling/inherited methods with Me:MethodName() / Base:MethodName(). Simple DoProc(\"ProcName\", ...) calls are rejected in class context."
+        message: "DoProc is a compile-time error inside class methods — all forms are rejected. Use Me:MethodName() / Base:MethodName() instead."
       - rule: constructor_return_value
         message: ":RETURN inside a Constructor cannot return a value."
     type_safety:
@@ -1424,10 +1450,26 @@ ssl_style_guide:
         message: "Code blocks (lambdas) cannot be compared with = or ==. This causes an error."
       - rule: nil_not_empty_string
         severity: info
-        message: "NIL is not the same as empty string, zero, or .F. — all declared variables initialize to empty string, not NIL."
+        message: "NIL is not the same as empty string, zero, or .F. — all declared variables initialize to empty string, not NIL. NIL = NIL is .T., NIL = \"\" is .F."
       - rule: equals_vs_strict_equals
         severity: info
         message: "For strings, = is loose equality (returns .T. if right is empty or if left starts with right) while == does exact matching. != negates == (strict), not = (loose), so = and != are not logical opposites for strings. For other types, both delegate to the same comparison. Prefer == for string comparisons where exact match is needed."
+    variable_behavior:
+      level: authoritative
+      rules:
+      - rule: redeclare_is_noop
+        message: "Re-declaring an existing variable with :DECLARE is silently ignored — no error, existing value preserved."
+      - rule: variable_lookup_order
+        message: "Variable lookup: local scope → caller scopes (up call stack) → public variables (:PUBLIC)."
+      - rule: numeric_type
+        message: "All numbers are stored as 64-bit floating-point (double). There is no separate integer type."
+    label_behavior:
+      level: authoritative
+      token_text: "The token text includes the word LABEL — :LABEL SKIP; produces \"LABEL SKIP\". Branch() targets must include \"LABEL\" in the string."
+    parameter_skipping_style:
+      level: style_only
+      rule: "Skipped-argument commas must be adjacent with no intervening spaces: {param1,,param3} not {param1, , param3}."
+      trailing_params: "Omit trailing optional parameters rather than passing empty values."
     class_rules:
       - rule: class_member_order
         severity: info
@@ -1477,7 +1519,7 @@ ssl_style_guide:
     level: style_only
     procedure_headers:
       required: true
-      template: |
+      template: |  # full formal template — see comments.rules.examples.documentation_header for the compact form
         /* ********************************************************************************
         Description.. : [Brief description of procedure purpose]
         Parameters... : [Parameter descriptions]

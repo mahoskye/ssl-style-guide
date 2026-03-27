@@ -25,7 +25,9 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - `:DECLARE` must appear before body statements
    - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation
    - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`
+   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY` (no multi-catch)
+   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement; `:CATCH` body allows zero or more statements
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
    - `:BEGINCASE` requires at least one `:CASE`
    - Use one statement per line
    - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
@@ -57,6 +59,8 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 ### `error_handling` — Error handling patterns
 - Flag use of legacy `:ERROR` / `:RESUME` — prefer `:TRY` / `:CATCH` / `:ENDTRY`
 - Verify `:TRY` blocks have at least one `:CATCH` or `:FINALLY`
+- Flag multiple `:CATCH` blocks on a single `:TRY` (only one allowed)
+- Flag `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside a `:FINALLY` block (compile error)
 - Flag empty `:CATCH` blocks (swallowed errors) unless intentional
 - Flag missing `:TRY` around external calls (`ExecFunction`, `SQLExecute`, DB functions)
 
@@ -85,7 +89,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope.
 - **Bare procedure calls:** Direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
 - **`DoProc` in class methods:** `DoProc` is a compile error inside `:CLASS` methods — use `Me:Method()` instead.
-- **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended.
+- **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended. Note: `!=` negates `==` (strict), not `=` (prefix), so `=` and `!=` are **not** logical opposites for strings.
 
 ---
 

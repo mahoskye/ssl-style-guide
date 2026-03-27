@@ -164,13 +164,13 @@ These formatting rules are style conventions and match the starlims-lsp formatte
 | Nested blocks | Each level adds one indent |
 | Class files | Do not indent the class body solely because of `:CLASS` |
 
-**Block keywords that increase indent:**
-`:IF`, `:ELSE`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:CASE`, `:OTHERWISE`, `:TRY`, `:CATCH`, `:FINALLY`, `:PROCEDURE`, `:REGION` (functional), `:BEGININLINECODE`
+**Block keywords that open an indented body:**
+`:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, `:PROCEDURE`, `:REGION` (functional), `:BEGININLINECODE`
 
-**Block keywords that decrease indent (before the keyword):**
+**Block keywords that close an indented body (dedent before the keyword):**
 `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` (functional), `:ENDINLINECODE`
 
-**Same-level keywords (dedent then re-indent):**
+**Same-level keywords (dedent to parent level, then open a new indented body):**
 `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH`, `:FINALLY`
 
 **Regular statement (no indent change):**
@@ -559,7 +559,7 @@ result := ExecFunction("Category.Script.Proc", {arg1, arg2});
 ### 7.2 DoProc Inside Class Methods
 
 ```ssl
-/* WRONG - Simple same-class DoProc("HelperMethod", ...) calls are rejected inside :CLASS methods;
+/* WRONG - All DoProc calls are rejected inside :CLASS methods (not just same-class calls);
 :CLASS MyClass;
 :PROCEDURE DoWork;
     DoProc("HelperMethod");
@@ -633,7 +633,7 @@ result := SQLExecute("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
 The `:ERROR`/`:RESUME` keywords are legacy scope-based error handling. They remain valid, and `:TRY`/`:CATCH`/`:FINALLY` is often easier to target around specific operations in refactoring work.
 
 **How `:ERROR`/`:RESUME` works:**
-- `:ERROR` defines a handler block that applies to all subsequent code in the current scope (no `:ENDERROR` — it runs until scope ends)
+- `:ERROR` defines a handler block that applies to all subsequent code in the current scope (no `:ENDERROR` — it runs until scope ends). The `:ERROR` body must contain at least one statement
 - `:RESUME` inside the handler switches to resume mode — each subsequent statement is individually wrapped in a try/catch so execution continues after failures
 - This has significant performance cost since every statement becomes its own try/catch
 
@@ -671,9 +671,9 @@ The `:ERROR`/`:RESUME` keywords are legacy scope-based error handling. They rema
 :ENDIF;
 ```
 
-> **Key difference:** For strings, `=` returns `.T.` if the left operand *starts with* the right operand (prefix match). `==` returns `.T.` only if both strings are exactly equal. For most other value types, `==` generally parallels `=`. **Always use `==` for string comparisons where exact match is needed.**
+> **Key difference:** For strings, `=` returns `.T.` if the right operand is empty string OR if the left operand *starts with* the right operand (prefix match). `==` returns `.T.` only if both strings are exactly equal. For most other value types, `==` generally parallels `=`. **Always use `==` for string comparisons where exact match is needed.**
 
-> **`!=` asymmetry warning:** The `!=` operator negates `==` (exact match), NOT `=` (prefix match). This means `=` and `!=` are **not logical opposites** for strings. For example, `"Logged" = "Log"` is `.T.` (prefix match) AND `"Logged" != "Log"` is also `.T.` (not an exact match) — both true for the same operands. The `<>` and `#` operators behave identically to `!=`.
+> **`!=` asymmetry warning:** The `!=` operator negates `==` (exact match), NOT `=` (prefix match). This means `=` and `!=` are **not logical opposites** for strings. For example, `"Logged" = "Log"` is `.T.` (prefix match) AND `"Logged" != "Log"` is also `.T.` (not an exact match) — both true for the same operands. The `<>` and `#` operators behave identically to `!=` but `!=` is preferred.
 
 ### 7.8 Membership Tests
 
@@ -722,7 +722,7 @@ Run through this checklist after refactoring:
 - [ ] All variables declared before use
 - [ ] Procedures defined after main logic
 - [ ] Related procedures grouped in regions
-- [ ] Script-level visibility annotations (`/*@private;` / `/*@protected;`) placed on own line before `:PROCEDURE` if used — note these have **no effect on class methods** (class methods are always Public)
+- [ ] Script-level visibility annotations (`/*@private;` / `/*@protected;`) placed on own line before `:PROCEDURE` if used — note these have **no effect on class methods** (class methods are always Public|Virtual)
 
 ### Formatting
 - [ ] Consistent indentation (tabs or 4 spaces)

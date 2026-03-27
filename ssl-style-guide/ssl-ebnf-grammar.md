@@ -104,6 +104,7 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 -   Parentheses are used for grouping: `(A | B) C`
 -   The definition symbol is `::=`
 -   Comments are preceded by `(* ` and followed by ` *)`
+-   Colon-keyword pairs (e.g., `":" "FOR"`) are single units with no intervening whitespace — they are written as two terminals here for readability only
 
 ## Grammar Definition
 
@@ -115,25 +116,21 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 *)
 
 (* Top-level structure *)
-Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements *)
+Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. Script-level :PARAMETERS must appear before script statements, though leading :PROCEDURE definitions may come first. *)
 
 (* Statement types *)
 (* CommentStatement includes its own terminating ";" as part of the comment syntax *)
-Statement ::= CommentStatement | SimpleStatement ";" | BlockStatement
+Statement ::= CommentStatement | SimpleStatement ";" | BlockStatement | ExitWhileStatement | ExitForStatement | LoopContinue (* Loop-control statements include their own ";". Note: :EXITFOR, :EXITWHILE, and :LOOP are compile errors outside their respective loop contexts — they appear here for grammar completeness but are context-restricted by the compiler *)
 SimpleStatement ::=
     DeclarationStatement |
     LogicStatement |
     LabelStatement |
     BranchStatement |
-    DatabaseStatement |
-    ExitWhileStatement |
-    ExitForStatement |
-    LoopContinue
+    DatabaseStatement
 BlockStatement ::=
     ProcedureStatement |
     ConditionalStatement |
-    WhileLoop |
-    ForLoop |
+    LoopStatement |
     SwitchStatement |
     ErrorHandlingStatement | (* :TRY/:CATCH blocks *)
     ErrorBlockStanza |       (* :ERROR blocks *)
@@ -141,25 +138,24 @@ BlockStatement ::=
     InlineCodeBlock          (* :BEGININLINECODE/:ENDINLINECODE keywords *)
 
 (* Class definitions *)
-ClassDefinition ::= ClassDeclaration [InheritStatement] {ClassMember}
-ClassDeclaration ::= ":" "CLASS" [Identifier] (* Class name is optional in the parser *)
-InheritStatement ::= ":" "INHERIT" Identifier (* Identifier should handle qualified names like "Category.ClassName" *)
-ClassMember ::= ClassFieldDeclaration | MethodDeclaration
-ClassFieldDeclaration ::= ":" "DECLARE" IdentifierList (* Used for class fields *)
+ClassDefinition ::= ClassDeclaration [InheritStatement] {ClassFieldDeclaration} {MethodDeclaration} [ConstructorDeclaration] (* Compiler enforces this ordering: INHERIT, fields, methods, then Constructor *)
+ClassDeclaration ::= ":" "CLASS" [Identifier] ";" (* Class name is optional in the parser *)
+InheritStatement ::= ":" "INHERIT" (Identifier | QualifiedIdentifier) ";" (* Supports qualified names like "Category.ClassName" *)
+ClassFieldDeclaration ::= ":" "DECLARE" IdentifierList ";" (* Used for class fields *)
 MethodDeclaration ::= ProcedureStatement (* Methods are defined like procedures within a class context *)
+ConstructorDeclaration ::= ProcedureStatement (* Must be named "Constructor" (case-insensitive); if omitted, an empty zero-argument constructor is auto-generated *)
 
 (* Procedure declarations *)
 ProcedureStatement ::= ProcedureStart [ParameterDeclaration] {DefaultParameterDeclaration} {Statement} ProcedureEnd
-ProcedureStart ::= ":" "PROCEDURE" Identifier
-ProcedureEnd ::= ":" "ENDPROC"
+ProcedureStart ::= ":" "PROCEDURE" Identifier ";"
+ProcedureEnd ::= ":" "ENDPROC" ";"
 
-(* Parameter declarations *)
-ParameterDeclaration ::= ":" "PARAMETERS" ParameterList
-DefaultParameterDeclaration ::= ":" "DEFAULT" DefaultParameterList
+(* Parameter declarations — procedure-level; semicolons are explicit here because these are not wrapped by the Statement production *)
+ParameterDeclaration ::= ":" "PARAMETERS" IdentifierList ";"
+DefaultParameterDeclaration ::= ":" "DEFAULT" DefaultParameterPair ";"
 
-(* Parameter lists *)
-ParameterList ::= Identifier {"," Identifier}
-DefaultParameterList ::= Identifier "," Expression
+(* Parameter default values — one identifier/expression pair per :DEFAULT line *)
+DefaultParameterPair ::= Identifier "," Expression
 
 (* Conditional statements *)
 ConditionalStatement ::= IfStatement {Statement} [ElseBlock] EndIfStatement
@@ -172,12 +168,12 @@ LoopStatement ::= WhileLoop | ForLoop
 WhileLoop ::= WhileStatement {Statement} EndWhileStatement
 WhileStatement ::= ":" "WHILE" Expression ";"
 EndWhileStatement ::= ":" "ENDWHILE" ";"
-ExitWhileStatement ::= ":" "EXITWHILE"
+ExitWhileStatement ::= ":" "EXITWHILE" ";"
 ForLoop ::= ForStatement {Statement} NextStatement
 ForStatement ::= ":" "FOR" Identifier ":=" Expression ":" "TO" Expression [":" "STEP" Expression] ";"
 NextStatement ::= ":" "NEXT" ";"
-ExitForStatement ::= ":" "EXITFOR"
-LoopContinue ::= ":" "LOOP" (* Represents a 'continue' for the current loop iteration *)
+ExitForStatement ::= ":" "EXITFOR" ";"
+LoopContinue ::= ":" "LOOP" ";" (* Represents a 'continue' for the current loop iteration *)
 
 (* Switch case statements *)
 SwitchStatement ::= BeginCaseStatement CaseBlock {CaseBlock} [OtherwiseBlock] EndCaseStatement (* At least one CASE is required *)
@@ -201,7 +197,7 @@ EndTryStatement ::= ":" "ENDTRY" ";"
 
 ErrorBlockStanza ::= ErrorMarker Statement {Statement} [ResumeStatement] (* For :ERROR structure — body requires >=1 statement; optional :RESUME switches to resume mode *)
 ErrorMarker ::= ":" "ERROR" ";"
-ResumeStatement ::= ":" "RESUME" (* Inside :ERROR handler — switches to resume mode, wrapping each subsequent statement in individual try/catch *)
+ResumeStatement ::= ":" "RESUME" ";" (* Inside :ERROR handler — switches to resume mode, wrapping each subsequent statement in individual try/catch *)
 
 (* Declaration statements *)
 DeclarationStatement ::= (
@@ -213,16 +209,17 @@ DeclarationStatement ::= (
 )
 ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Parameters are comma-separated *)
 DeclareStatement ::= ":" "DECLARE" IdentifierList
-DefaultStatement ::= ":" "DEFAULT" DefaultParameterList (* Default values for parameters *)
+DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Default values for parameters — one identifier/expression pair per :DEFAULT line *)
 PublicStatement ::= ":" "PUBLIC" IdentifierList
 IncludeStatement ::= ":" "INCLUDE" IncludeTarget
 IncludeTarget ::= Identifier | QualifiedIdentifier
+QualifiedIdentifier ::= Identifier {"." Identifier}
 
 (* Logic statements *)
 LogicStatement ::= Assignment | FunctionCall | Expression | ReturnStatement
 Assignment ::= (VariableAccess | PropertyAccess) AssignmentOperator Expression
 AssignmentOperator ::= ":=" | "+=" | "-=" | "*=" | "/=" | "^=" | "%="
-ReturnStatement ::= ":" "RETURN" [Expression]
+ReturnStatement ::= ":" "RETURN" [Expression] (* Inside a Constructor, :RETURN cannot include an expression — bare :RETURN; only *)
 
 (* Function calls *)
 FunctionCall ::= DirectFunctionCall | IndirectFunctionCall
@@ -239,15 +236,16 @@ MashedLabelName ::= "LABEL" Identifier
 RegionBlock ::= RegionStart {Character} RegionEnd (* Keyword-based regions :REGION / :ENDREGION *)
 RegionStart ::= ":" "REGION" Identifier ";"
 RegionEnd ::= ":" "ENDREGION" ";"
-InlineCodeBlock ::= InlineCodeStart {Statement} InlineCodeEnd (* *)
-InlineCodeStart ::= ":" "BEGININLINECODE" (StringLiteral | Identifier) ";" (* Name is required — bare or quoted *)
+InlineCodeBlock ::= InlineCodeStart [Program] InlineCodeEnd (* Body is re-parsed as a complete SSL unit — may contain procedures, parameters, classes, etc. *)
+InlineCodeStart ::= ":" "BEGININLINECODE" (Identifier | QuotedIdentifier) ";" (* Name is required — bare identifier or double-quoted identifier only *)
+QuotedIdentifier ::= '"' Identifier '"' (* A double-quoted identifier form; single-quoted and bracket string forms are not accepted as inline code names *)
 InlineCodeEnd ::= ":" "ENDINLINECODE" ";"
 BranchStatement ::= Identifier "(" StringLiteral ")" (* Generic branch/control flow pattern *)
 
 (* Database Integration *)
 DatabaseStatement ::= DatabaseFunctionCall
 DatabaseFunctionCall ::= Identifier "(" StringLiteral ["," Expression] {"," Expression} ")" (* Database functions take a SQL string plus optional additional arguments such as friendly names, flags, and parameter arrays *)
-DatabaseParameter ::= "?" Identifier "?" | "?" (* Common parameter patterns in database strings *)
+DatabaseParameter ::= "?" Identifier "?" | "?" (* Parameter placeholders inside SQL string arguments of DatabaseFunctionCall — ?Name? for SQLExecute named params, ? for positional params in RunSQL/LSearch/etc. *)
 
 (* Object-oriented statements specific to SSL classes/UDOs *)
 ObjectCreation ::= BuiltInClassInstantiation | DynamicObjectCreation | UserDefinedObjectCreation | AnonymousObjectCreation
@@ -255,15 +253,17 @@ BuiltInClassInstantiation ::= Identifier "{" [ArgumentList] "}"
 DynamicObjectCreation ::= "CreateUdObject" "(" ")"
 UserDefinedObjectCreation ::= "CreateUdObject" "(" StringLiteral ["," ArrayLiteral] ")"
 AnonymousObjectCreation ::= "CreateUdObject" "(" ArrayLiteral ")"
-MethodCall ::= Identifier ":" Identifier "(" [ArgumentList] ")" (* Object:Method() *)
-ObjectPropertyAccess ::= Identifier ":" Identifier (* Object:Property — distinguished from MethodCall by absence of parentheses *)
+MemberReceiver ::= Identifier | PropertyAccess | MethodCall | ArrayAccess | FunctionCall | MeLiteral | BaseAccess | "(" Expression ")" (* Any postfix expression that can appear before ":" in member access — this production is left-recursive; implementations resolve via precedence climbing or iterative parsing *)
+MethodCall ::= MemberReceiver ":" Identifier "(" [ArgumentList] ")" (* Object:Method() — distinguished from PropertyAccess by presence of parentheses; receiver can be any postfix expression, enabling chaining like obj:Method():Prop *)
 
 (* Expressions *)
-Expression ::= LogicalExpression
-LogicalExpression ::= ComparisonExpression {LogicalOperator ComparisonExpression}
-LogicalOperator ::= ".AND." | ".OR." (* *)
-ComparisonExpression ::= RelationalExpression {EqualityOperator RelationalExpression}
-EqualityOperator ::= "=" | "==" | "!=" | "<>" | "#" | "$" (* "=" is loose equality (prefix match for strings); "==" is strict equality; "#", "<>", "!=" are equivalent not-equals (negate ==, not =); "$" is containment: left $ right is .T. if left found inside right *)
+(* Note: The tree-sitter grammar extends Expression to include Assignment for editor chaining support. This EBNF keeps them separate to reflect the canonical grammar where assignment is a statement, not an expression. *)
+Expression ::= OrExpression
+OrExpression ::= AndExpression {".OR." AndExpression} (* .OR. — lowest logical precedence *)
+AndExpression ::= ComparisonExpression {".AND." ComparisonExpression} (* .AND. — binds tighter than .OR. *)
+ComparisonExpression ::= RelationalExpression {(EqualityOperator | ContainmentOperator) RelationalExpression}
+EqualityOperator ::= "=" | "==" | "!=" | "<>" | "#" (* "=" is loose equality (prefix match for strings); "==" is strict equality; "#", "<>", "!=" are equivalent not-equals (negate ==, not =) *)
+ContainmentOperator ::= "$" (* containment: left $ right is .T. if left found inside right *)
 RelationalExpression ::= ShiftExpression {RelationalOperator ShiftExpression}
 RelationalOperator ::= "<" | ">" | "<=" | ">="
 ShiftExpression ::= ArithmeticExpression {ShiftOperator ArithmeticExpression}
@@ -271,7 +271,7 @@ ArithmeticExpression ::= Term {AdditiveOperator Term}
 AdditiveOperator ::= "+" | "-"
 Term ::= Factor {MultiplicativeOperator Factor}
 MultiplicativeOperator ::= "*" | "/" | "%"
-Factor ::= PowerOperand {PowerOperator PowerOperand}
+Factor ::= PowerOperand [PowerOperator Factor] (* Right-associative: 2^3^2 = 2^(3^2) = 512 *)
 PowerOperator ::= "^" | "**" (* Both forms are equivalent for exponentiation *)
 PowerOperand ::= [UnaryOperator] Primary
 UnaryOperator ::= "-" | "!" | ".NOT."
@@ -288,8 +288,7 @@ BitwiseOperation ::= "_AND" "(" Expression "," Expression ")" |
 Primary ::=
     Literal |
     VariableAccess |
-    PropertyAccess |     (* Object:Property syntax for UDOs *)
-    ObjectPropertyAccess | (* For clarity, may be merged with PropertyAccess depending on context *)
+    PropertyAccess |     (* Object:Property syntax for UDOs and system objects *)
     ArrayAccess |
     FunctionCall |
     BitwiseOperation |
@@ -297,13 +296,15 @@ Primary ::=
     IncrementExpression |
     MeLiteral |          (* Me — reference to the current class instance *)
     BaseAccess |         (* Base:Member — reference to the parent class for inherited member access *)
-    MethodCall (* Object:Method() syntax *)
+    MethodCall |         (* Object:Method() syntax *)
+    ObjectCreation       (* CreateUdObject() and built-in class instantiation *)
 
-IncrementExpression ::= Identifier ("++" | "--") | ("++" | "--") Identifier (* *)
+IncrementExpression ::= IncrementTarget ("++" | "--") | ("++" | "--") IncrementTarget (* Applies to variables, properties, and array elements *)
+IncrementTarget ::= Identifier | PropertyAccess | ArrayAccess
 VariableAccess ::= Identifier
-MeLiteral ::= "Me" (* Reference to the current class instance; used as Me:Method() or Me:Property *)
-BaseAccess ::= "Base" ":" Identifier ["(" [ArgumentList] ")"] (* Base must always be followed by a member name; it cannot stand alone *)
-PropertyAccess ::= Identifier ":" Identifier (* SSL uses colon for property access of UDOs and system objects *)
+MeLiteral ::= "Me" (* Case-insensitive; reference to the current class instance; used as Me:Method() or Me:Property *)
+BaseAccess ::= "Base" ":" Identifier ["(" [ArgumentList] ")"] (* Case-insensitive; Base must always be followed by a member name; it cannot stand alone *)
+PropertyAccess ::= MemberReceiver ":" Identifier (* SSL uses colon for property access — receiver can be any postfix expression, enabling chaining like obj:prop:subprop *)
 ArrayAccess ::= Identifier ArraySubscript
 ArraySubscript ::= "[" Expression {"," Expression} "]" | "[" Expression "]" {("[" Expression "]")} (* Supports arr[1,2] and arr[1][2] *)
 
@@ -314,10 +315,11 @@ IntegerPart ::= Digit {Digit}
 DecimalPart ::= "." Digit {Digit} (* Ensures at least one digit after the decimal point *)
 Exponent    ::= ("e" | "E") ["-"] Digit {Digit}
 
-StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | "[" {Character} "]" (* Double-quoted, single-quoted, or bracket strings; no escape sequences — backslashes are literal. Bracket strings support one level of nested brackets, e.g., [[a]b] → [a]b *)
-BooleanLiteral ::= ".T." | ".F." (* TRUE and FALSE also mentioned in EBNF notes but .T./.F. are canonical *)
-ArrayLiteral ::= "{" [ExpressionList] "}" | "{" ArrayLiteral {"," ArrayLiteral} "}"
-NilLiteral ::= "NIL" (* *)
+StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | BracketString (* Double-quoted, single-quoted, or bracket strings; no escape sequences — backslashes are literal *)
+BracketString ::= "[" {BracketChar} "]" (* The lexer supports one level of nested brackets: [[a]b] yields the string [a]b. An inner "[" opens a nested span that consumes characters until its paired "]", then the outer "]" closes the string. Deeper nesting is not supported. *)
+BooleanLiteral ::= ".T." | ".F." (* Case-insensitive: .t. and .f. are also valid. .T./.F. are the canonical forms *)
+ArrayLiteral ::= "{" [ExpressionList] "}" (* Nested arrays are naturally supported since Expression includes ArrayLiteral; mixed content like {1, {2,3}, "x"} is valid *)
+NilLiteral ::= "NIL" (* Case-insensitive: nil, Nil, etc. are also valid *)
 CodeBlockLiteral ::= "{|" IdentifierList "|" Expression "}" (* At least one parameter required; e.g. {|x| x*x} *)
 
 
@@ -338,7 +340,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 1. **Hungarian Notation**: While not explicitly defined in the grammar, SSL uses Hungarian notation for variable naming (e.g., `sName`, `nValue`, `bIsValid`).
 
-2. **Case Sensitivity**: SSL keywords are case-sensitive and must be UPPERCASE (e.g., `:IF` not `:if`). Identifiers and function names are case-insensitive.
+2. **Case Sensitivity**: SSL keywords are case-sensitive and must be UPPERCASE (e.g., `:IF` not `:if`). Identifiers and function names are case-insensitive. SSL literals (`.T.`, `.F.`, `NIL`) and class-context forms (`Me`, `Base`, `Constructor`) are also case-insensitive.
 
 3. **Statement Termination**: All statements in SSL are terminated with a semicolon (`;`).
 
@@ -366,7 +368,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 12. **Array Access**: Multi-dimensional arrays can be accessed using comma notation `array[1,2]` or chained bracket notation `array[1][2]`. Array indexing is 1-based (the first element is at index 1, not 0).
 
-13. **Date Literals**: Dates can be represented using special array-like notation with components for year, month, day, and optionally hour, minute, second. The `Now()` function returns current date in MM/DD/YYYY HH:MM:SS format.
+13. **Date Values**: SSL has no date literal syntax. Dates are created via functions such as `CToD(sDateString)`, `DateFromNumbers(vYear, vMonth, vDay, ...)`, `Today()`, and `Now()`. Brace-delimited forms like `{2026, 3, 23}` are array literals, not dates.
 
 14. **Scientific Notation**: Number literals can include scientific notation using 'e' or 'E' followed by an optional negative sign and exponent. The formats `1.23e5`, `4.56E-3`, and `0.5e1` are supported, while formats with an explicit plus sign (`9E+1`), without a decimal point before the 'e' (`7e2`), or with a leading decimal point without a zero (`.5e1`) are not supported.
 
@@ -391,17 +393,19 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 23. **String Delimiters**: Strings can be delimited using double quotes (`"`), single quotes (`'`), or brackets (`[text]`). SSL has no escape sequences — backslashes are literal characters.
 
-24. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`, `^=`).
+24. **String Operators**: `+` concatenates two strings. `-` trims trailing spaces from the left operand, then concatenates. `$` tests containment (`left $ right` returns `.T.` if left is found inside right). `=` is loose (prefix) equality and `==` is exact equality (see note 26).
 
-25. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by compiler). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
+25. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`, `^=`).
 
-26. **Comparison Operators**: `=` is loose equality (for strings: returns `.T.` if right is empty or if left starts with right; for numbers: exact). `==` is strict equality. `!=`, `<>`, and `#` are equivalent not-equals operators that negate `==` (strict), not `=` (loose) — so for strings, `=` and `!=` are **not logical opposites**. The operators `===` and `!==` are not supported. `$` is containment: `left $ right` returns `.T.` if left is found inside right.
+26. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by compiler). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
 
-27. **Bitwise Operations**: Bitwise operations are performed using function call syntax (`_AND()`, `_OR()`, `_XOR()`, `_NOT()`), not infix operators. Only `<<` and `>>` are infix shift operators.
+27. **Comparison Operators**: `=` is loose equality (for strings: returns `.T.` if right is empty or if left starts with right; for numbers: exact). `==` is strict equality. `!=` is the preferred not-equals operator; `<>` and `#` are equivalent but not preferred. All three negate `==` (strict), not `=` (loose) — so for strings, `=` and `!=` are **not logical opposites**. The operators `===` and `!==` are not supported. `$` is containment: `left $ right` returns `.T.` if left is found inside right.
 
-28. **BEGINCASE Multi-Match Behavior**: `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` executes only if no earlier `:CASE` body ran, even if a matching `:CASE` omitted `:EXITCASE`. At least one `:CASE` block is required.
+28. **Bitwise Operations**: Bitwise operations are performed using function call syntax (`_AND()`, `_OR()`, `_XOR()`, `_NOT()`), not infix operators. Only `<<` and `>>` are infix shift operators.
 
-29. **TRY/CATCH/FINALLY**: At least one of `:CATCH` or `:FINALLY` is required. Bare `:TRY`...`:ENDTRY` without either is a compile error. `:EXITFOR`, `:EXITWHILE`, `:LOOP`, and `:RETURN` are compile errors inside `:FINALLY` blocks.
+29. **BEGINCASE Multi-Match Behavior**: `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` executes only if no earlier `:CASE` body ran, even if a matching `:CASE` omitted `:EXITCASE`. At least one `:CASE` block is required.
+
+30. **TRY/CATCH/FINALLY**: At least one of `:CATCH` or `:FINALLY` is required. Bare `:TRY`...`:ENDTRY` without either is a compile error. `:EXITFOR`, `:EXITWHILE`, `:LOOP`, and `:RETURN` are compile errors inside `:FINALLY` blocks.
 
 ## Implementation Considerations for Formatting Tools
 

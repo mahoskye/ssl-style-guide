@@ -23,9 +23,12 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - Prefer tabs for indentation; if adapting to an existing space-indented file,
      preserve 4-space indentation
    - Use one statement per line
-   - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
+   - `DoProc` is invalid inside class methods (all forms, not just same-class); use `Me:` / `Base:`
    - Built-in classes use `{}`; user-defined classes instantiate with
      `CreateUdObject("Category.ClassName")`
+   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
+   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
 
 3. **Apply enforced member ordering** (compiler requirement):
    ```
@@ -139,7 +142,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - Class name: PascalCase
    - Fields declared with `:DECLARE` at class level (not inside methods)
    - Underscore-prefixed fields (`_sField`) are private by convention — excluded from reflection
-   - `/*@private;` and `/*@protected;` annotations have NO effect on class methods (class methods are always Public) — do not use them
+   - `/*@private;` and `/*@protected;` annotations have NO effect on class methods (class methods are always Public|Virtual) — do not use them
    - `DoProc` cannot be used inside class methods — use `Me:Method()` for same-class calls, `Base:Method()` for inherited
    - `:CLASS` continues to end of file; do not add `:ENDCLASS`
    - Constructor must be the **last** procedure in the class

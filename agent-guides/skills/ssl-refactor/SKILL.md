@@ -25,7 +25,9 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - Use `DoProc("ProcName", {args})` for same-file script procedures
    - Use `ExecFunction("Category.Script", {args})` or
      `ExecFunction("Category.Script.Proc", {args})` for external entry points
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`
+   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
+   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
    - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional
    - `:BEGINCASE` requires at least one `:CASE` block
    - Use `==` for exact string equality; `=` is prefix matching for strings
@@ -93,7 +95,8 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 
 ### Step 5 — VALIDATE
 - Confirm all procedures are complete — no stubs or `// TODO` placeholders
-- Verify `:TRY` blocks each have at least one `:CATCH` or `:FINALLY`
+- Verify `:TRY` blocks each have at least one `:CATCH` or `:FINALLY` (and at most one `:CATCH`)
+   - Verify no `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY` blocks
 - Verify `:BEGINCASE` blocks have at least one `:CASE`
 - Verify behavior is preserved (same external interface, same logic)
 

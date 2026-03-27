@@ -47,14 +47,13 @@ function makeTryCatchBlock($, bodyRule, finallyRule) {
 }
 
 function makeErrorBlock($, statementRule) {
-  return seq($.kw_error, ';', repeat1(statementRule))
+  return seq($.kw_error, ';', repeat1(statementRule), optional($.resume_statement))
 }
 
 function makeStatementChoice($, context) {
   const shared = [
     $.declaration_statement_declare,
     $.declaration_statement_public,
-    $.resume_statement,
     $.region_block,
     $.inline_code_block,
     $.label_statement,
@@ -239,7 +238,7 @@ module.exports = grammar({
     quoted_identifier: _ => token(seq('"', /[A-Za-z_][A-Za-z0-9_]*/, '"')),
 
     number: _ => token(choice(
-      /[0-9]+\.[0-9]+(?:[eE][+-]?[0-9]+)?/,
+      /[0-9]+\.[0-9]+(?:[eE]-?[0-9]+)?/,
       /[0-9]+/
     )),
 
@@ -468,10 +467,9 @@ module.exports = grammar({
     return_statement: $ => seq($.kw_return, optional($.expression), ';'),
     constructor_return_statement: $ => seq($.kw_return, ';'),
 
-    // Legacy label forms accept both mashed and spaced variants.
-    //   :LABELName;
-    //   :LABEL Name;
-    //   :LABEL Name Alias;
+    // Legacy label — spaced form only (:LABEL Name;  :LABEL Name Alias;).
+    // The compiler also accepts a mashed form (:LABELName;), but this grammar
+    // does not implement it because the lexer would need to split the token.
     label_statement: $ => seq(
       $.kw_label,
       field('name', $.identifier),
@@ -512,8 +510,9 @@ module.exports = grammar({
     error_block_constructor: $ => makeErrorBlock($, $._constructor_statement),
     error_block_constructor_loop: $ => makeErrorBlock($, $._constructor_loop_statement),
 
-    // :RESUME; (legacy — switches to resume mode: wraps each subsequent statement
-    // in its own individual try/catch for fault-tolerant execution)
+    // :RESUME; (legacy — only valid inside an :ERROR block; switches to resume
+    // mode, wrapping each subsequent statement in its own individual try/catch
+    // for fault-tolerant execution)
     resume_statement: $ => seq($.kw_resume, ';'),
 
     // :DECLARE a, b, c;
@@ -533,7 +532,7 @@ module.exports = grammar({
     declaration_statement_parameters: $ => seq($.kw_parameters, commaSep1($, field('parameter', $.identifier)), ';'),
     declaration_statement_default: $ => seq($.kw_default, field('default_var', $.identifier), ',', $.expression, ';'),
     declaration_statement_public: $ => seq($.kw_public, commaSep1($, field('public', $.identifier)), ';'),
-    declaration_statement_include: $ => seq($.kw_include, field('path', $.identifier), ';'),
+    declaration_statement_include: $ => seq($.kw_include, field('path', choice($.identifier, $.qualified_identifier)), ';'),
 
     parameter_section: $ => seq(
       $.declaration_statement_parameters,
