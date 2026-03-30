@@ -6,6 +6,8 @@ import { registerSignature } from "./tools/signature.js";
 import { registerValidateNaming } from "./tools/validate-naming.js";
 import { registerStyleRule } from "./tools/style-rule.js";
 import { registerCategory } from "./tools/category.js";
+import { registerDiagnose } from "./tools/diagnose.js";
+import { registerFormat } from "./tools/format.js";
 import { registerElementResources } from "./resources/elements.js";
 import { registerClassResources } from "./resources/classes.js";
 import { registerCategoryResources } from "./resources/categories.js";
@@ -28,6 +30,8 @@ export function createServer(indices: Indices): McpServer {
   registerValidateNaming(server, indices);
   registerStyleRule(server, indices);
   registerCategory(server, indices);
+  registerDiagnose(server);
+  registerFormat(server);
 
   // Resources
   registerElementResources(server, indices);

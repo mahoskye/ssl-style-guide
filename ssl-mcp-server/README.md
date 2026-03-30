@@ -12,9 +12,15 @@ the repository root plus bundled reference inventories.
 ```bash
 cd ssl-mcp-server
 bun install
+bun run bundle-lsp   # build and bundle starlims-lsp binaries (requires Go)
 bun run check
 bun run check:consistency
 ```
+
+The `ssl_diagnose` and `ssl_format` tools require the bundled `starlims-lsp`
+binary in `bin/lsp/`. Run `bun run bundle-lsp` to build from the sibling
+`starlims-lsp` repo, or `bun run bundle-lsp --copy` to copy pre-built
+binaries without rebuilding.
 
 Run the server through the Bun CLI entrypoint:
 
@@ -100,6 +106,8 @@ bun run check:consistency
 | `ssl_validate_naming` | Check Hungarian notation compliance for a variable name |
 | `ssl_style_rule` | Return style guide rules for a topic |
 | `ssl_category` | List functions by category, or list all categories |
+| `ssl_diagnose` | Validate SSL code for syntax errors, style violations, and common mistakes |
+| `ssl_format` | Format SSL code using canonical style-guide rules |
 
 ## Resources
 

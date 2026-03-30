@@ -1,6 +1,6 @@
 {
   "name": "ssl-mcp-server",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "MCP server for SSL (STARLIMS Scripting Language v11) reference data",
   "packageManager": "bun@1.3.3",
   "type": "module",
@@ -10,6 +10,7 @@
   },
   "scripts": {
     "bundle-data": "bun scripts/bundle-data.mjs",
+    "bundle-lsp": "bun scripts/bundle-lsp.mjs",
     "build": "bunx tsc",
     "check": "bunx tsc --noEmit",
     "check:consistency": "bun scripts/check-consistency.mjs",
