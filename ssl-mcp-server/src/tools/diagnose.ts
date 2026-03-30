@@ -3,18 +3,26 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { validateSsl } from "../lsp/runner.js";
 
 const DiagnoseSchema = z.object({
-  code: z.string().describe("SSL source code to validate"),
+  code: z.string().optional().describe("SSL source code to validate (provide this or file, not both)"),
+  file: z.string().optional().describe("Absolute path to an SSL file to validate (avoids piping large files through stdin)"),
 });
 
 export function registerDiagnose(server: McpServer): void {
   server.tool(
     "ssl_diagnose",
-    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, and message.",
+    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, and message. Pass code directly or a file path for large files.",
     DiagnoseSchema.shape,
-    async ({ code }) => {
+    async ({ code, file }) => {
+      if (!code && !file) {
+        return {
+          content: [{ type: "text" as const, text: "Provide either 'code' or 'file' parameter" }],
+          isError: true,
+        };
+      }
+
       let result;
       try {
-        result = await validateSsl(code);
+        result = await validateSsl(file ? { file } : { code: code! });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         return {
@@ -42,7 +50,7 @@ export function registerDiagnose(server: McpServer): void {
       // Parse and re-serialize for consistent formatting
       try {
         const parsed = JSON.parse(output);
-        // The validator returns an array; for --stdin there's exactly one entry
+        // The validator returns an array; for single input there's exactly one entry
         const entry = Array.isArray(parsed) ? parsed[0] : parsed;
         return {
           content: [
