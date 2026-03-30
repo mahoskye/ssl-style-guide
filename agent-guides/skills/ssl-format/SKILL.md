@@ -15,9 +15,14 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 2. **Read the file** at the given path.
 
-3. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
+3. **Identify the file type.** If the file is a data source (SSL or SQL), be aware that:
+   - `:PARAMETERS` uses inline `:=` defaults — do not split into separate `:DEFAULT` statements
+   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — format these consistently but do not flag or remove them
+   - The SQL query body within data source files still follows canonical compact formatting rules
 
-4. **Apply the rules below** according to scope, then write the file back.
+4. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
+
+5. **Apply the rules below** according to scope, then write the file back.
 
 ---
 

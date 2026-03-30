@@ -23,6 +23,7 @@ Before starting any refactoring:
 Before modifying any file:
 
 - [ ] Read the entire file to understand current structure and behavior
+- [ ] Identify the file type: server script, class, SSL data source, or SQL data source (data sources use different parameter syntax — see §2.4)
 - [ ] Identify all procedures and their calling relationships
 - [ ] Note any external calls (ExecFunction) and internal calls (DoProc)
 - [ ] Search for usages of the file/procedures in other files
@@ -80,6 +81,8 @@ Refactored SSL scripts should follow this target structure in order:
 └────────────────────────────────────────┘
 ```
 
+> **Data source files do not follow this layout.** SSL and SQL data source files are preprocessed before compilation and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain builder directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the SSL grammar. See `ssl_agent_instructions.md` §4A for details.
+
 ### 2.2 Header Template
 
 ```ssl
@@ -121,7 +124,49 @@ _______________________________________________________________________________
 
 More than 20 parameters on a procedure or method triggers a compiler performance warning; prefer grouping related state into arrays/objects or using wrapper-core patterns.
 
-### 2.4 Regions for Organization
+### 2.4 Data Source File Structure
+
+Data source files have a different structure from scripts and classes. Do not apply the standard script layout (§2.1) to data source files.
+
+**SSL Data Source layout:**
+```
+┌────────────────────────────────────────┐
+│ 1. HEADER COMMENT (optional)           │
+├────────────────────────────────────────┤
+│ 2. PARAMETERS (inline := defaults)     │
+│    :PARAMETERS p1 := val, p2 := val;   │
+├────────────────────────────────────────┤
+│ 3. SSL SCRIPT BODY                     │
+│    (Standard SSL code)                 │
+└────────────────────────────────────────┘
+```
+
+**SQL Data Source layout:**
+```
+┌────────────────────────────────────────┐
+│ 1. HEADER COMMENT (optional)           │
+├────────────────────────────────────────┤
+│ 2. BUILDER DIRECTIVES                  │
+│    :DSN := connectionName;             │
+│    :TABLENAME := tableName;            │
+│    :NULLASBLANK := true;               │
+│    :INVARIANTDATECOLUMNS := col1, col2;│
+├────────────────────────────────────────┤
+│ 3. PARAMETERS (inline := defaults)     │
+│    :PARAMETERS p1 := val, p2 := val;   │
+├────────────────────────────────────────┤
+│ 4. SQL QUERY                           │
+│    SELECT ... FROM ... WHERE ...       │
+└────────────────────────────────────────┘
+```
+
+**Key differences when refactoring data source files:**
+- Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
+- Every parameter must have a default value
+- Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
+- The builder rewrites everything into standard SSL before compilation
+
+### 2.5 Regions for Organization
 
 Group related procedures with `/* region` / `/* endregion` comment conventions:
 

@@ -23,6 +23,12 @@ out the approximation explicitly.
   legacy constructs such as `:REGION` and `:BEGININLINECODE`.
 - Top-level parsing distinguishes scripts from class definitions so queries can
   treat them differently.
+- **Data source files are not covered by this grammar.** SSL and SQL data source
+  files are preprocessed by server-side builders before compilation. Their
+  parameter syntax (`:PARAMETERS p1 := val;` with inline defaults) and builder
+  directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`)
+  exist only in the preprocessing layer. This grammar targets the runtime SSL
+  language as seen by the compiler.
 
 ## Known Approximations
 

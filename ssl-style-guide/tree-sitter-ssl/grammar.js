@@ -1,3 +1,8 @@
+// Tree-sitter grammar for SSL (STARLIMS Scripting Language) v11.
+// Scope: runtime SSL as seen by the compiler — server scripts and class files.
+// Data source files (SSL and SQL) are preprocessed before compilation and use
+// syntax not covered here (inline := parameter defaults, builder directives).
+
 function makeIfBlock($, statementRule) {
   return seq(
     $.kw_if, $.expression, ';',

@@ -14,6 +14,9 @@ ssl_style_guide:
     - All block keywords are colon‑prefixed and must be UPPERCASE; formatters
       should enforce UPPER.
     - Rules and function lists reflect verified SSL v11 behavior from live environment testing.
+    - Grammar and formatting rules apply to SSL scripts and class files. Data source
+      files (SSL and SQL) are preprocessed before compilation and use distinct parameter
+      syntax and builder directives — see data_source_modules under module_structure.
     rule_levels:
       authoritative: documented language behavior that must match accepted SSL parsing and execution
       style_only: formatting and readability conventions; configurable by team preference
@@ -1559,7 +1562,54 @@ ssl_style_guide:
       - end: file_end  # no :ENDCLASS keyword; class ends at EOF
     class_file_constraint:
       level: authoritative
-      rule: one_class_or_script_per_file  # A class file contains only the class definition; a script file contains only procedures
+      rule: one_class_or_script_per_file  # A file is one of: class, script, or data source — never a mix
+    data_source_modules:
+      level: authoritative
+      note: >
+        Data source files are preprocessed by server-side builders before SSL compilation.
+        They use different parameter syntax and may contain builder-specific directives
+        that are not part of the SSL grammar.
+      file_types:
+        ssl_data_source:
+          preprocessor: SSLDataSourceBuilder
+          parameters:
+            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+            inline_defaults: true  # := assignment, not separate :DEFAULT
+            default_required: true  # every parameter must have a default
+            empty_parameters_error: true  # :PARAMETERS; with no params is an error
+            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
+          structure:
+            - header_comment (optional)
+            - ":PARAMETERS with inline := defaults"
+            - ssl_script_body
+        sql_data_source:
+          preprocessor: SqlDataSourceBuilder
+          parameters:
+            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+            inline_defaults: true
+            default_required: true
+            empty_parameters_error: true
+          directives:
+            - ":DSN := connectionName;  # database connection"
+            - ":TABLENAME := name;  # dataset table name"
+            - ":NULLASBLANK := true;  # null-to-blank conversion"
+            - ":INVARIANTDATECOLUMNS := col1, col2;  # invariant date columns"
+          structure:
+            - header_comment (optional)
+            - builder_directives (optional)
+            - ":PARAMETERS with inline := defaults (optional)"
+            - sql_query
+          rewritten_to: "SSL script calling GetSSLDataset()"
+      lint_rules:
+        - rule: no_default_statements_in_datasource
+          severity: error
+          message: "Data source files use inline := defaults in :PARAMETERS, not separate :DEFAULT statements."
+        - rule: no_flag_builder_directives
+          severity: info
+          message: ":DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS are valid builder directives in SQL data source files."
+        - rule: datasource_default_required
+          severity: error
+          message: "Every parameter in a data source :PARAMETERS declaration must have an inline := default value."
   language_features:
     version: SSL v11
     case_sensitivity:

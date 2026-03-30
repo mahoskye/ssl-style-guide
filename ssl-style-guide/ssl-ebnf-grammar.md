@@ -12,6 +12,8 @@ This EBNF (Extended Backus-Naur Form) grammar serves as a formal definition of t
 
 While this grammar defines what is syntactically valid in SSL, it does not prescribe specific formatting preferences or coding conventions - those are covered in the separate SSL Style Guide. For instance, the preferred formatting for skipped parameters in lists (e.g., `param1,,param3`) is to keep skipped-argument commas adjacent with no intervening spaces. Such stylistic choices are handled by the formatter.
 
+**Scope:** This grammar covers the SSL language as seen by the compiler — server scripts and class files. Data source files (SSL and SQL data sources) are preprocessed by server-side builders before compilation. The preprocessing syntax — inline `:=` parameter defaults (`:PARAMETERS p1 := val;`) and builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — is not part of this grammar. See `ssl_agent_instructions.md` §4A for data source syntax.
+
 ## Common SSL Code Patterns
 
 The following patterns are frequently seen in SSL code and represent idiomatic usage:

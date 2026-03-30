@@ -16,7 +16,13 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 3. **Apply the checks below** according to the focus area. For `all`, run every check.
 
-4. **Use these core SSL rules while reviewing:**
+4. **Identify the file type** before applying rules. If the file is a data source (SSL or SQL),
+   parameter syntax and structure rules differ — see `ssl_agent_instructions.md` §4A:
+   - Data sources use `:PARAMETERS p1 := val;` (inline defaults), not separate `:DEFAULT` statements
+   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — do not flag these
+   - Do not apply the standard script layout order to data source files
+
+5. **Use these core SSL rules while reviewing** (for server scripts and class files):
    - Colon-prefixed keywords must be UPPERCASE
    - Almost every statement, including comments, must end with `;`
    - Never place `;` inside comment body text

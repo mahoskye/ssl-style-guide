@@ -12,7 +12,14 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
 1. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[goal]` as the remaining text (e.g., "modernize error handling", "fix naming", "all").
    - If no file path is given, ask the user before continuing.
 
-2. **Use these core SSL rules throughout the refactor:**
+2. **Identify the file type** before refactoring. If the file is a data source (SSL or SQL),
+   it uses different parameter syntax and structure — see `ssl_agent_instructions.md` §4A
+   and `ssl_refactoring_guide.md` §2.4:
+   - Data sources use `:PARAMETERS p1 := val;` (inline defaults), not separate `:DEFAULT`
+   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, etc.)
+   - Do not apply the standard script layout (§2.1) to data source files
+
+3. **Use these core SSL rules throughout the refactor** (for server scripts and class files):
    - Colon-prefixed keywords must be UPPERCASE: `:IF`, `:TRY`, `:PROCEDURE`, etc.
    - Almost every statement, including comments, must end with `;`
    - Never place `;` inside comment body text; it ends the comment early
@@ -34,7 +41,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - Inside SQL strings, use uppercase SQL keywords and functions; keep other SQL
      identifiers lowercase unless external schema/object casing must be preserved
 
-3. **Apply the 6-step workflow:**
+4. **Apply the 6-step workflow:**
 
 ---
 

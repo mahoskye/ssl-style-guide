@@ -57,6 +57,16 @@ Examples of style guidance include tabs preferred for indentation, no spaces
 around member-access colons, one statement per line, and comment-region usage
 for editor folding.
 
+### Data Source Files
+
+SSL and SQL data source files are preprocessed by server-side builders before
+SSL compilation. They use inline `:=` parameter defaults and (for SQL data
+sources) builder directives such as `:DSN` and `:TABLENAME` that are not part of
+the SSL grammar. The grammar, parser, and formatting rules in this repository
+target the runtime SSL language; data source differences are documented in
+`agent-guides/ssl_agent_instructions.md` §4A and
+`agent-guides/ssl_refactoring_guide.md` §2.4.
+
 ## Tooling Surfaces
 
 ### Tree-sitter Grammar

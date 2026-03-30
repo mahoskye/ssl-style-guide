@@ -10,7 +10,7 @@ Authoritative rules describe documented language behavior; style recommendations
 1. **Colon-prefixed keywords are case-sensitive** and must be UPPERCASE (e.g., `:IF`, `:FOR`). **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
-4. **Parameter placement matters.** Script-level `:PARAMETERS` must appear before script statements, though leading `:PROCEDURE` definitions may come first. Inside a procedure, `:PARAMETERS` must appear immediately after `:PROCEDURE`. `:DEFAULT` must immediately follow `:PARAMETERS`.
+4. **Parameter placement matters.** Script-level `:PARAMETERS` must appear before script statements, though leading `:PROCEDURE` definitions may come first. Inside a procedure, `:PARAMETERS` must appear immediately after `:PROCEDURE`. `:DEFAULT` must immediately follow `:PARAMETERS`. **Data source files use different syntax** — see §4A.
 5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is a compile-time error inside class methods.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
@@ -63,6 +63,7 @@ Authoritative rules describe documented language behavior; style recommendations
       :DEFAULT sName, "Unknown";
       :DECLARE sLocalVar;
       ```
+    * **Data source files use different syntax.** In data source files, parameters use inline `:=` assignment and are preprocessed before compilation — see §4A for details.
 
 ### Control Flow
 
@@ -532,6 +533,91 @@ aData := SQLExecute("
 
 ---
 
+## 4A. Data Source Files (Preprocessed Syntax)
+
+Data source files are **not compiled directly** by the SSL compiler. They are preprocessed by server-side builders that rewrite them into compiler-compatible SSL before compilation. This means data source files use syntax that does not exist in the SSL grammar.
+
+### File Types
+
+STARLIMS has three kinds of executable SSL files:
+
+| File Type | Compiler-Handled | Parameter Syntax | Notes |
+|-----------|-----------------|------------------|-------|
+| **Server Script** | Yes | `:PARAMETERS p1, p2;` + `:DEFAULT p1, val;` | Standard SSL — all grammar rules apply |
+| **SSL Data Source** | Preprocessed first | `:PARAMETERS p1 := val1, p2 := val2;` | `SSLDataSourceBuilder` rewrites to script form |
+| **SQL Data Source** | Preprocessed first | `:PARAMETERS p1 := val1, p2 := val2;` | `SqlDataSourceBuilder` rewrites to `GetSSLDataset()` call |
+
+### SSL Data Source Parameter Syntax
+
+In SSL data source files, `:PARAMETERS` uses inline `:=` assignment for defaults:
+
+```ssl
+:PARAMETERS sStatus := "A", nMaxRows := 100;
+```
+
+**Rules:**
+- Every parameter **must** have a default value (the builder throws an error otherwise)
+- `:PARAMETERS;` with no parameters is an error
+- There is no separate `:DEFAULT` statement — defaults are inline
+- The builder rewrites the above into compiler-compatible form before compilation:
+  ```ssl
+  :PARAMETERS sStatus, nMaxRows;
+  :DEFAULT sStatus, "A";
+  :DEFAULT nMaxRows, 100;
+  ```
+
+### SQL Data Source Directives
+
+SQL data source files support additional directives that are also preprocessed (not part of the SSL grammar):
+
+```ssl
+:DSN := connectionName;
+:TABLENAME := tableName;
+:NULLASBLANK := true;
+:INVARIANTDATECOLUMNS := col1, col2;
+:PARAMETERS sStatus := "A", nLimit := 50;
+
+SELECT *
+FROM sample
+WHERE status = ?sStatus?
+```
+
+| Directive | Purpose |
+|-----------|---------|
+| `:DSN := name;` | Specifies the database connection to use |
+| `:TABLENAME := name;` | Specifies the table name for the resulting dataset |
+| `:NULLASBLANK := true;` | Controls null-to-blank conversion |
+| `:INVARIANTDATECOLUMNS := col1, col2;` | Columns treated as invariant dates |
+
+The `SqlDataSourceBuilder` rewrites the entire file into an SSL script that calls `GetSSLDataset()` with the appropriate arguments.
+
+### Calling Data Sources
+
+Data sources are invoked at runtime via `RunDS`:
+
+```ssl
+/* Call with default parameters;
+oResult := RunDS("Category.DataSourceName");
+
+/* Call with parameter overrides (array of {name, value} pairs);
+oResult := RunDS("Category.DataSourceName", {{"sStatus", "P"}, {"nLimit", 25}});
+
+/* Return as SSLDataset;
+oDs := RunDS("Category.DataSourceName",, "ssldataset");
+```
+
+Use `GetDSParameters(sDsName)` to introspect a data source's parameter metadata at runtime.
+
+### Key Takeaways for Agents
+
+1. **Do not flag `:=` parameter syntax as incorrect** in data source files — it is the required form
+2. **Do not flag builder directives** (`:DSN`, `:TABLENAME`, etc.) as unknown keywords — they are preprocessed
+3. **Do not use `:DEFAULT` statements** in data source files — use inline `:=` syntax instead
+4. **Do not apply standard script layout rules** to data source files — they have different structure
+5. **The tree-sitter grammar and TextMate grammar do not cover data source syntax** — these constructs exist only in the preprocessing layer
+
+---
+
 ## 5. Style Guidance for New and Refactored Code
 
 ### Hungarian Notation
@@ -701,6 +787,8 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 | **Array Indexing** | `aItems[0]` (0-based) | `aItems[1]` (1-based, first element) |
 | **Object Creation** | `oObj := new MyClass();` | `oObj := BuiltInClass{};` or `oObj := CreateUdObject("UserClass", {args});` |
 | **Object Property** | `oObj.Property` | `oObj:Property` |
+| **DS Parameters** | `:PARAMETERS p1; :DEFAULT p1, "val";` (in data source) | `:PARAMETERS p1 := "val";` (in data source) |
+| **DS Parameters** | `:PARAMETERS;` (empty, in data source) | `:PARAMETERS p1 := "default";` (at least one required) |
 
 ---
 
@@ -728,6 +816,9 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
 21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
 22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
+23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Every parameter must have a default. See §4A.
+24. **Data source directives are not SSL keywords.** `:DSN`, `:TABLENAME`, `:NULLASBLANK`, and `:INVARIANTDATECOLUMNS` only exist in SQL data source files and are processed by `SqlDataSourceBuilder` before compilation. Do not flag them as unknown keywords.
+25. **Data source parameter syntax is preprocessed.** The `:=` inline syntax in data source `:PARAMETERS` is rewritten by the builder into standard `:PARAMETERS` + `:DEFAULT` before the compiler sees it. The compiler never encounters the `:=` form.
 
 ---
 

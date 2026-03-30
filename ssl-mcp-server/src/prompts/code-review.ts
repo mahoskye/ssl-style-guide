@@ -61,6 +61,7 @@ export function registerCodeReviewPrompt(server: McpServer, indices: Indices): v
 - Variable declarations: Variables must be declared before use; local declarations are preferred over caller-scope lookup
 - Procedure calls: Flag bare custom procedure calls; same-file procedures must use DoProc and external entry points must use ExecFunction; DoProc is a compile-time error inside class methods
 - Security: Flag hardcoded credentials, unvalidated user input in SQL or system calls
+- Data source files: If the code uses :PARAMETERS with inline := defaults (e.g., :PARAMETERS p1 := val;), it is a data source file — do not flag this as incorrect syntax, do not expect separate :DEFAULT statements, and do not flag builder directives (:DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS)
 - Focus: ${focus}`;
 
       return {

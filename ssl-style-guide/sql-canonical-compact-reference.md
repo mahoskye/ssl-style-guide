@@ -4,6 +4,13 @@ This document defines the **canonical compact** formatting style for Oracle SQL
 embedded in SSL code. It is a repository formatting convention optimized for
 readability within SSL string literals.
 
+> **Scope:** This reference covers SQL strings embedded in SSL server scripts
+> (via `SQLExecute`, `RunSQL`, `GetDataSet`, etc.). SQL data source files have
+> their own structure with builder directives (`:DSN`, `:TABLENAME`, etc.) and
+> preprocessed parameter syntax — see `ssl_agent_instructions.md` §4A for that
+> context. The SQL formatting rules here still apply to the query body within
+> SQL data source files.
+
 ---
 
 ## 1. Style Rules Summary
