@@ -23,6 +23,7 @@ Before starting any refactoring:
 Before modifying any file:
 
 - [ ] Read the entire file to understand current structure and behavior
+- [ ] Identify the file type: server script, class, SSL data source, or SQL data source (data sources use different parameter syntax — see §2.4)
 - [ ] Identify all procedures and their calling relationships
 - [ ] Note any external calls (ExecFunction) and internal calls (DoProc)
 - [ ] Search for usages of the file/procedures in other files
@@ -67,18 +68,30 @@ Refactored SSL scripts should follow this target structure in order:
 │    :DEFAULT param1, "";                │
 │    :DEFAULT param2, 0;                 │
 ├────────────────────────────────────────┤
-│ 4. DECLARATIONS                        │
-│    :DECLARE nVar1, nVar2;              │
-│    :DECLARE sVar1, sVar2;              │
+│ 4. INCLUDES                            │
+│    :INCLUDE LibraryName;               │
 ├────────────────────────────────────────┤
-│ 5. MAIN SCRIPT LOGIC                   │
+│ 5. PUBLIC / DECLARATIONS               │
+│    :PUBLIC gSharedVar;                 │
+│    :DECLARE nVar1, sVar2;              │
+├────────────────────────────────────────┤
+│ 6. MAIN SCRIPT LOGIC                   │
 │    (Entry point code, procedure calls) │
 ├────────────────────────────────────────┤
-│ 6. PROCEDURE DEFINITIONS               │
+│ 7. PROCEDURE DEFINITIONS               │
 │    (Local procedures, grouped by       │
 │     region if appropriate)             │
 └────────────────────────────────────────┘
 ```
+
+> **Ordering rules:** `:PARAMETERS` must appear before any other statements.
+> `:DEFAULT` must immediately follow `:PARAMETERS`. `:DECLARE` and `:PUBLIC`
+> are regular statements and can appear anywhere. `:INCLUDE` is resolved at
+> the lexer level (textual inclusion) before parsing, so its position is
+> technically flexible, but it should appear early. Recommended conventional
+> order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
+
+> **Data source files do not follow this layout.** SSL and SQL data source files are preprocessed before compilation and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain builder directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the SSL grammar. See `ssl_agent_instructions.md` §4A for details.
 
 ### 2.2 Header Template
 
@@ -121,7 +134,49 @@ _______________________________________________________________________________
 
 More than 20 parameters on a procedure or method triggers a compiler performance warning; prefer grouping related state into arrays/objects or using wrapper-core patterns.
 
-### 2.4 Regions for Organization
+### 2.4 Data Source File Structure
+
+Data source files have a different structure from scripts and classes. Do not apply the standard script layout (§2.1) to data source files.
+
+**SSL Data Source layout:**
+```
+┌────────────────────────────────────────┐
+│ 1. HEADER COMMENT (optional)           │
+├────────────────────────────────────────┤
+│ 2. PARAMETERS (inline := defaults)     │
+│    :PARAMETERS p1 := val, p2 := val;   │
+├────────────────────────────────────────┤
+│ 3. SSL SCRIPT BODY                     │
+│    (Standard SSL code)                 │
+└────────────────────────────────────────┘
+```
+
+**SQL Data Source layout:**
+```
+┌────────────────────────────────────────┐
+│ 1. HEADER COMMENT (optional)           │
+├────────────────────────────────────────┤
+│ 2. BUILDER DIRECTIVES                  │
+│    :DSN := connectionName;             │
+│    :TABLENAME := tableName;            │
+│    :NULLASBLANK := true;               │
+│    :INVARIANTDATECOLUMNS := col1, col2;│
+├────────────────────────────────────────┤
+│ 3. PARAMETERS (inline := defaults)     │
+│    :PARAMETERS p1 := val, p2 := val;   │
+├────────────────────────────────────────┤
+│ 4. SQL QUERY                           │
+│    SELECT ... FROM ... WHERE ...       │
+└────────────────────────────────────────┘
+```
+
+**Key differences when refactoring data source files:**
+- Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
+- Every parameter must have a default value
+- Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
+- The builder rewrites everything into standard SSL before compilation
+
+### 2.5 Regions for Organization
 
 Group related procedures with `/* region` / `/* endregion` comment conventions:
 

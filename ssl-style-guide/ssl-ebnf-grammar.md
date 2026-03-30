@@ -118,7 +118,7 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 *)
 
 (* Top-level structure *)
-Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. Script-level :PARAMETERS must appear before script statements, though leading :PROCEDURE definitions may come first. *)
+Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. :PARAMETERS must appear before any other statements. :DEFAULT must immediately follow :PARAMETERS. :INCLUDE is resolved at the lexer level before parsing. :DECLARE and :PUBLIC can appear anywhere. Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE. *)
 
 (* Statement types *)
 (* CommentStatement includes its own terminating ";" as part of the comment syntax *)
@@ -209,11 +209,11 @@ DeclarationStatement ::= (
     PublicStatement |
     IncludeStatement
 )
-ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Parameters are comma-separated *)
-DeclareStatement ::= ":" "DECLARE" IdentifierList
-DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Default values for parameters — one identifier/expression pair per :DEFAULT line *)
-PublicStatement ::= ":" "PUBLIC" IdentifierList
-IncludeStatement ::= ":" "INCLUDE" IncludeTarget
+ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Must appear before any other statements *)
+DeclareStatement ::= ":" "DECLARE" IdentifierList (* Regular statement — can appear anywhere *)
+DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Must immediately follow :PARAMETERS *)
+PublicStatement ::= ":" "PUBLIC" IdentifierList (* Regular statement — can appear anywhere *)
+IncludeStatement ::= ":" "INCLUDE" IncludeTarget (* Lexer-level textual inclusion; place early for clarity *)
 IncludeTarget ::= Identifier | QualifiedIdentifier
 QualifiedIdentifier ::= Identifier {"." Identifier}
 

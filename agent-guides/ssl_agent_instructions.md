@@ -10,7 +10,7 @@ Authoritative rules describe documented language behavior; style recommendations
 1. **Colon-prefixed keywords are case-sensitive** and must be UPPERCASE (e.g., `:IF`, `:FOR`). **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
-4. **Parameter placement matters.** Script-level `:PARAMETERS` must appear before script statements, though leading `:PROCEDURE` definitions may come first. Inside a procedure, `:PARAMETERS` must appear immediately after `:PROCEDURE`. `:DEFAULT` must immediately follow `:PARAMETERS`. **Data source files use different syntax** — see §4A.
+4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved at the lexer level (textual inclusion) before parsing, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
 5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is a compile-time error inside class methods.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
@@ -54,8 +54,10 @@ Authoritative rules describe documented language behavior; style recommendations
 * **Variable Lookup Order:** When a variable is referenced, lookup proceeds as **local scope** (current procedure) → **caller scopes** (up the call stack) → **public variables** (`:PUBLIC`). Accessing a caller's variable works but generates a warning — always declare variables locally with `:DECLARE`.
 
 * **Parameters & Defaults:**
-    * **Placement:** Script-level parameters must appear before script statements, though leading `:PROCEDURE` blocks may precede them. Inside a procedure, `:PARAMETERS` must immediately follow the `:PROCEDURE` line.
-    * **Defaults:** `:DEFAULT` statements must immediately follow the `:PARAMETERS` statement.
+    * **Placement:** `:PARAMETERS` must appear before any other statements in a script or procedure body. Inside a procedure, `:PARAMETERS` must immediately follow the `:PROCEDURE` line.
+    * **Defaults:** `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`).
+    * **`:INCLUDE`** is resolved at the lexer level (textual inclusion) before parsing; it should appear early. **`:DECLARE`** and **`:PUBLIC`** are regular statements and can appear anywhere.
+    * **Recommended conventional order:** `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
     * Syntax:
       ```ssl
       :PROCEDURE MyProc;
@@ -213,8 +215,8 @@ Authoritative rules describe documented language behavior; style recommendations
       /* Code here;
   /* endregion;
   ```
-* **Includes:** `:INCLUDE LibraryName;` to include external SSL files.
-* **Public Variables:** `:PUBLIC varName1, varName2;` to declare global/public variables.
+* **Includes:** `:INCLUDE LibraryName;` or `:INCLUDE Category.ScriptName;` to include external SSL files. Resolved at the lexer level (textual inclusion); place early in the file after `:PARAMETERS`/`:DEFAULT`.
+* **Public Variables:** `:PUBLIC varName1, varName2;` to declare global/public variables. Can appear anywhere in the statement flow.
 
 ### Inline Code & Regions (Functional Constructs)
 

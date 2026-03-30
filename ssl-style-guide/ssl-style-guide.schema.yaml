@@ -75,7 +75,7 @@ ssl_style_guide:
     include_order:
       level: style_only
       enforce: true
-      rule: top-of-file after header comments; group external before local
+      rule: after :PARAMETERS/:DEFAULT, before :PUBLIC/:DECLARE; group external before local
   formatting:
     level: style_only
     indent_style: tabs_preferred
@@ -1494,12 +1494,15 @@ ssl_style_guide:
       - rule: prefer_exitcase
         severity: warning
         message: ":EXITCASE is syntactically optional, but without it later :CASE expressions are still evaluated and additional matching bodies may execute. :OTHERWISE still stays skipped once any earlier case body has run. Always include :EXITCASE unless multi-match behavior is intentional."
+      - rule: parameters_first
+        severity: error
+        message: ":PARAMETERS must appear before any other statements in a script or procedure body."
       - rule: default_after_parameters
         severity: error
-        message: ":DEFAULT must appear immediately after its corresponding :PARAMETERS block."
-      - rule: include_at_top
+        message: ":DEFAULT must immediately follow :PARAMETERS (zero or more :DEFAULT lines, but only after :PARAMETERS)."
+      - rule: include_early
         severity: info
-        message: ":INCLUDE is an include directive. Place it at the top of the file for clarity."
+        message: ":INCLUDE is resolved at the lexer level (textual inclusion) before parsing, so its position is technically flexible, but it should appear early to ensure expanded content is available."
       - rule: constructor_outside_class
         severity: warning
         message: "Constructor syntax is only meaningful inside a :CLASS definition."
@@ -1547,12 +1550,21 @@ ssl_style_guide:
     standard_order:
       - module_header_comment
       - :PARAMETERS (if any)
-      - :DEFAULT values (if any)
+      - :DEFAULT values (if any, immediately after :PARAMETERS)
+      - :INCLUDE (if any, early to ensure expanded content is available)
+      - :PUBLIC (if any)
       - :DECLARE local_variables
       - main_code
       - "/* region sections (optional, for code organization)"
       - procedure_definitions
       - :LABEL statements (if any)
+    declaration_ordering_note: >
+      :PARAMETERS must appear before any other statements. :DEFAULT must
+      immediately follow :PARAMETERS. :DECLARE and :PUBLIC are regular
+      statements and can appear anywhere in the statement flow. :INCLUDE is
+      resolved at the lexer level (textual inclusion) before parsing, so its
+      position is technically flexible, but it should appear early.
+      Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.
     class_modules:
       - :CLASS [ClassName];
       - :INHERIT BaseName; or :INHERIT Category.ScriptName; (optional — must precede :DECLARE)
