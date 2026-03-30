@@ -12,6 +12,8 @@ This EBNF (Extended Backus-Naur Form) grammar serves as a formal definition of t
 
 While this grammar defines what is syntactically valid in SSL, it does not prescribe specific formatting preferences or coding conventions - those are covered in the separate SSL Style Guide. For instance, the preferred formatting for skipped parameters in lists (e.g., `param1,,param3`) is to keep skipped-argument commas adjacent with no intervening spaces. Such stylistic choices are handled by the formatter.
 
+**Scope:** This grammar covers the SSL language as seen by the compiler — server scripts and class files. Data source files (SSL and SQL data sources) are preprocessed by server-side builders before compilation. The preprocessing syntax — inline `:=` parameter defaults (`:PARAMETERS p1 := val;`) and builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — is not part of this grammar. See `ssl_agent_instructions.md` §4A for data source syntax.
+
 ## Common SSL Code Patterns
 
 The following patterns are frequently seen in SSL code and represent idiomatic usage:
@@ -116,7 +118,7 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 *)
 
 (* Top-level structure *)
-Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. Script-level :PARAMETERS must appear before script statements, though leading :PROCEDURE definitions may come first. *)
+Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. :PARAMETERS must appear before any other statements. :DEFAULT must immediately follow :PARAMETERS. :INCLUDE is resolved at the lexer level before parsing. :DECLARE and :PUBLIC can appear anywhere. Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE. *)
 
 (* Statement types *)
 (* CommentStatement includes its own terminating ";" as part of the comment syntax *)
@@ -207,11 +209,11 @@ DeclarationStatement ::= (
     PublicStatement |
     IncludeStatement
 )
-ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Parameters are comma-separated *)
-DeclareStatement ::= ":" "DECLARE" IdentifierList
-DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Default values for parameters — one identifier/expression pair per :DEFAULT line *)
-PublicStatement ::= ":" "PUBLIC" IdentifierList
-IncludeStatement ::= ":" "INCLUDE" IncludeTarget
+ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Must appear before any other statements *)
+DeclareStatement ::= ":" "DECLARE" IdentifierList (* Regular statement — can appear anywhere *)
+DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Must immediately follow :PARAMETERS *)
+PublicStatement ::= ":" "PUBLIC" IdentifierList (* Regular statement — can appear anywhere *)
+IncludeStatement ::= ":" "INCLUDE" IncludeTarget (* Lexer-level textual inclusion; place early for clarity *)
 IncludeTarget ::= Identifier | QualifiedIdentifier
 QualifiedIdentifier ::= Identifier {"." Identifier}
 

@@ -68,18 +68,28 @@ Refactored SSL scripts should follow this target structure in order:
 │    :DEFAULT param1, "";                │
 │    :DEFAULT param2, 0;                 │
 ├────────────────────────────────────────┤
-│ 4. DECLARATIONS                        │
-│    :DECLARE nVar1, nVar2;              │
-│    :DECLARE sVar1, sVar2;              │
+│ 4. INCLUDES                            │
+│    :INCLUDE LibraryName;               │
 ├────────────────────────────────────────┤
-│ 5. MAIN SCRIPT LOGIC                   │
+│ 5. PUBLIC / DECLARATIONS               │
+│    :PUBLIC gSharedVar;                 │
+│    :DECLARE nVar1, sVar2;              │
+├────────────────────────────────────────┤
+│ 6. MAIN SCRIPT LOGIC                   │
 │    (Entry point code, procedure calls) │
 ├────────────────────────────────────────┤
-│ 6. PROCEDURE DEFINITIONS               │
+│ 7. PROCEDURE DEFINITIONS               │
 │    (Local procedures, grouped by       │
 │     region if appropriate)             │
 └────────────────────────────────────────┘
 ```
+
+> **Ordering rules:** `:PARAMETERS` must appear before any other statements.
+> `:DEFAULT` must immediately follow `:PARAMETERS`. `:DECLARE` and `:PUBLIC`
+> are regular statements and can appear anywhere. `:INCLUDE` is resolved at
+> the lexer level (textual inclusion) before parsing, so its position is
+> technically flexible, but it should appear early. Recommended conventional
+> order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
 
 > **Data source files do not follow this layout.** SSL and SQL data source files are preprocessed before compilation and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain builder directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the SSL grammar. See `ssl_agent_instructions.md` §4A for details.
 
