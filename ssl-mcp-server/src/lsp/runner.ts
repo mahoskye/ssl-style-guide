@@ -101,21 +101,33 @@ export function runLsp(
       });
     });
 
-    child.stdin.write(input);
+    if (input) {
+      child.stdin.write(input);
+    }
     child.stdin.end();
   });
 }
 
 /**
- * Validate SSL code. Returns parsed JSON diagnostics.
+ * Validate SSL code. Pass code as a string, or a file path to read directly.
  */
-export async function validateSsl(code: string): Promise<LspRunResult> {
-  return runLsp(["--validate", "--stdin"], code);
+export async function validateSsl(
+  input: { code: string } | { file: string }
+): Promise<LspRunResult> {
+  if ("file" in input) {
+    return runLsp(["--validate", input.file], "");
+  }
+  return runLsp(["--validate", "--stdin"], input.code);
 }
 
 /**
- * Format SSL code. Returns the formatted source on stdout.
+ * Format SSL code. Pass code as a string, or a file path to read directly.
  */
-export async function formatSsl(code: string): Promise<LspRunResult> {
-  return runLsp(["--format", "--stdin"], code);
+export async function formatSsl(
+  input: { code: string } | { file: string }
+): Promise<LspRunResult> {
+  if ("file" in input) {
+    return runLsp(["--format", input.file], "");
+  }
+  return runLsp(["--format", "--stdin"], input.code);
 }
