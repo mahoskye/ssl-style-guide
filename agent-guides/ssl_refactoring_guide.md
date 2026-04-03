@@ -640,6 +640,18 @@ result := RunSQL("UPDATE table SET col = ? WHERE id = ?",, {sValue, nId});
 result := SQLExecute("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
 ```
 
+### 7.3a UDObject Array Property in IN Clause
+
+```ssl
+/* WRONG - runtime error: "The current array has more than 1 dimmension.";
+oFilter:StatusCodes := {"A", "P", "C"};
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:StatusCodes?)");
+
+/* CORRECT - copy UDObject array property to a local variable first;
+aStatusCodes := oFilter:StatusCodes;
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
+```
+
 ### 7.4 Missing EXITCASE
 
 ```ssl

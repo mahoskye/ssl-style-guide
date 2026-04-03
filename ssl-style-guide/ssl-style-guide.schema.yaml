@@ -1255,6 +1255,7 @@ ssl_style_guide:
         - LSelectC
         - GetDataSet
       note: Only SQLExecute supports ?name? substitution; other DB functions use positional ? with parameter arrays. Current validated behavior has `LSelect` matching `LSelect1` when `aFieldList` is omitted or NIL, while `LSelectC` delegates to `LSelect` and explicit field lists are not implemented in this validated snapshot.
+      array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
       placeholder_patterns:
       - ?name?
       - ?obj:Prop?

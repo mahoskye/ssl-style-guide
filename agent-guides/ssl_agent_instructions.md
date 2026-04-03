@@ -394,7 +394,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 | Type | Pattern | Example |
 |------|---------|---------|
 | Local Variable | `?varName?` | `?sStatus?` |
-| Array Expansion | `?arrayVar?` | `?aStatusCodes?` becomes `?,?,?` for 3-element array |
+| Array Expansion | `?arrayVar?` | `?aStatusCodes?` becomes `?,?,?` for 3-element array (local variables only — see caveat below) |
 | Array Index | `?arr[i]?` or `?arr[i,j]?` | `?aMatrix[nRow, 1]?` |
 | Object Property | `?obj:prop?` | `?oUser:ID?` |
 | Object Method | `?obj:method()?` | `?oUser:GetID()?` (parameterless only) |
@@ -414,6 +414,7 @@ nRow := 2;
 sSQL := "SELECT * FROM Sample WHERE Status = ?sStatus?";
 
 /* 2. Array expansion - ?aArray? becomes ?,?,? for 3-element array;
+/* IMPORTANT: array must be a local variable, not a UDObject property (see caveat below);
 sSQL := "SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)";
 
 /* 3. Object property access;
@@ -478,11 +479,26 @@ sXml := GetDataSet("SELECT * FROM Sample WHERE Status = ?", {sStatus});
 | `LSelectC` | Multi-row SELECT queries (delegates to `LSelect`) | 2D Array |
 | `GetDataSet` | XML dataset output | XML String |
 
+### UDObject Array Property Caveat
+
+When using **array expansion** (`IN (?arrayVar?)`) with `SQLExecute`, the array **must be a local variable**. If the array is stored as a UDObject property, passing it directly causes a runtime error: `"The current array has more than 1 dimmension."` Scalar UDObject properties (e.g., `?oObj:ID?`) are not affected — only arrays used for `IN` expansion.
+
+```ssl
+/* WRONG - runtime error: "The current array has more than 1 dimmension.";
+oFilter:StatusCodes := {"A", "P", "C"};
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:StatusCodes?)");
+
+/* CORRECT - copy to a local variable first;
+oFilter:StatusCodes := {"A", "P", "C"};
+aStatusCodes := oFilter:StatusCodes;
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
+```
+
 ### SQL Guidance (Style/Advisory)
 
 1. **Use simple variables** for best performance
 2. **Pre-compute complex expressions** into variables before the SQL
-3. **Use array expansion** for dynamic `IN` clauses instead of string building
+3. **Use array expansion** for dynamic `IN` clauses instead of string building — **always from a local variable, not a UDObject property**
 4. **Avoid complex expressions** in production code
 5. **Use `RunSQL`** for DML statements (INSERT, UPDATE, DELETE)
 6. **Use `LSearch`** for single-value lookups with explicit parameters
