@@ -74,6 +74,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - Flag string concatenation in SQL queries (injection risk): `"SELECT ... " + sVar`
 - `SQLExecute`: must use `?varName?` substitution for parameters
 - `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, `GetDataSet`: use positional `?` with explicit parameter arrays
+- Flag UDObject array properties used directly in `IN (?obj:prop?)` expansion — must copy to local variable first (runtime error: "The current array has more than 1 dimmension.")
 - Flag direct variable embedding in SQL strings
 - Flag SQL strings that do not uppercase SQL keywords/functions or that
   uppercase non-keyword identifiers without an external casing requirement

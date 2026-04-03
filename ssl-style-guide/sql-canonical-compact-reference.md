@@ -1283,10 +1283,12 @@ aRanked := SQLExecute("
 
 | Function | Parameter Style | Example |
 |----------|----------------|---------|
-| `SQLExecute` | Named `?varName?` | `?sOrdNo?`, `?oObj:prop?`, `?aArr[1]?` |
+| `SQLExecute` | Named `?varName?` | `?sOrdNo?`, `?oObj:prop?`, `?aArr[1]?` (see note below) |
 | `RunSQL` | Positional `?` with array | `RunSQL(sSQL,, {val1, val2})` |
 | `LSearch` | Positional `?` with array | `LSearch(sSQL,, {val1})` |
 | `LSelect` | Positional `?` with array | `LSelect(sSQL,, {val1, val2})` |
 | `LSelect1` | Positional `?` with array | `LSelect1(sSQL,, {val1})` |
 | `LSelectC` | Positional `?` with array | `LSelectC(sSQL,, {val1})` |
 | `GetDataSet` | Positional `?` with array | `GetDataSet(sSQL,, {val1})` |
+
+> **Caveat:** Array expansion for `IN` clauses (`?arrayVar?`) requires a local variable. UDObject array properties used directly (e.g., `?oObj:ArrayProp?`) cause a runtime error: *"The current array has more than 1 dimmension."* Copy the array to a local variable first. Scalar UDObject properties are not affected.
