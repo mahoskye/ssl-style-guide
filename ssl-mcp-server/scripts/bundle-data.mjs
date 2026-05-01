@@ -28,6 +28,10 @@ const filesToBundle = [
     dest: 'ssl-element-reference.json',
   },
   {
+    src: 'ssl-style-guide/ssl-element-meta.json',
+    dest: 'ssl-element-meta.json',
+  },
+  {
     src: 'ssl-style-guide/ssl-style-guide.schema.yaml',
     dest: 'ssl-style-guide.schema.yaml',
   },
