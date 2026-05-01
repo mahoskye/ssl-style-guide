@@ -6,7 +6,7 @@ import type { Element, SearchResult } from "../types.js";
 const SearchSchema = z.object({
   query: z.string().describe("Search term (partial name or keyword)"),
   type: z
-    .enum(["class", "function", "keyword", "operator", "literal", "special_form"])
+    .enum(["class", "function", "keyword", "operator", "literal", "type", "special_form"])
     .optional()
     .describe("Filter by element type"),
   limit: z.number().int().min(1).max(100).default(20).describe("Max results (default 20)"),
@@ -17,11 +17,22 @@ function includesQuery(value: string | null | undefined, q: string): boolean {
 }
 
 function membersMatch(el: Element, q: string): boolean {
-  if (!el.members) return false;
-  return (
-    el.members.methods.some((member) => includesQuery(member, q)) ||
-    el.members.properties.some((member) => includesQuery(member, q))
-  );
+  const buckets = [el.methods, el.properties, el.members];
+  for (const bucket of buckets) {
+    if (!bucket) continue;
+    for (const row of bucket) {
+      for (const value of Object.values(row)) {
+        if (includesQuery(value, q)) return true;
+      }
+    }
+  }
+  if (el.constructors) {
+    for (const c of el.constructors) {
+      if (includesQuery(c.signature, q)) return true;
+      if (includesQuery(c.description, q)) return true;
+    }
+  }
+  return false;
 }
 
 function score(el: Element, q: string, indices: Indices): number {
@@ -30,13 +41,10 @@ function score(el: Element, q: string, indices: Indices): number {
   if (name.startsWith(q)) return 3;
   if (name.includes(q)) return 2;
   if (includesQuery(el.symbol, q)) return 2;
-  if (el.syntax.some((syntax) => includesQuery(syntax, q))) return 1;
+  if (includesQuery(el.signature, q)) return 1;
+  if (includesQuery(el.syntax, q)) return 1;
+  if (includesQuery(el.title, q)) return 1;
   if (membersMatch(el, q)) return 1;
-
-  if (el.related) {
-    const relatedValues = Object.values(el.related).flat();
-    if (relatedValues.some((value) => includesQuery(value, q))) return 1;
-  }
 
   if (el.type === "function") {
     const categoryMatch = Array.from(indices.elementsByCategory.entries()).some(
@@ -48,6 +56,10 @@ function score(el: Element, q: string, indices: Indices): number {
   }
 
   return 0;
+}
+
+function syntaxPreview(el: Element): string {
+  return el.signature ?? el.syntax ?? el.symbol ?? "";
 }
 
 export function registerSearch(server: McpServer, indices: Indices): void {
@@ -73,7 +85,7 @@ export function registerSearch(server: McpServer, indices: Indices): void {
       const results: SearchResult[] = scored.slice(0, limit).map(({ el }) => ({
         name: el.name,
         type: el.type,
-        syntax: el.syntax[0] ?? "",
+        syntax: syntaxPreview(el),
       }));
 
       if (results.length === 0) {

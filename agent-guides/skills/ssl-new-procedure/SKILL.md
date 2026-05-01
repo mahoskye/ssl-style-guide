@@ -13,7 +13,15 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - `<procedure-name>` = `$0` — the procedure name (use as-is if already PascalCase; convert if not)
    - `[parameters...]` = remaining tokens — each becomes a `:PARAMETERS` entry
 
-2. **Use these core SSL rules in the scaffold:**
+2. **Validate the proposed procedure name against the built-in inventory.**
+   Check `ssl-style-guide/ssl-element-reference.json` (or MCP `ssl_lookup`)
+   to see whether `<procedure-name>` collides with one of the 330 built-in
+   functions. If it does, warn the user — calling the user-defined
+   procedure via `DoProc("Name", ...)` will work, but a bare `Name(...)`
+   call would resolve to the built-in. Suggest a non-colliding alternative
+   name unless the user explicitly wants to shadow the built-in.
+
+3. **Use these core SSL rules in the scaffold:**
    - Colon-prefixed keywords must be UPPERCASE
    - Almost every statement, including comments, must end with `;`
    - Never place `;` inside comment body text
@@ -29,12 +37,12 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
    - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
 
-3. **Infer parameter types from Hungarian notation prefixes:**
+4. **Infer parameter types from Hungarian notation prefixes:**
    - If a parameter already has a prefix (`sName`, `nQty`, `bFlag`, `dDate`,
      `aItems`, `oObj`, `fnFilter`, `vValue`) — keep it as-is
    - If no prefix is recognizable, default to `s` prefix (string) and note the assumption
 
-4. **Generate the procedure** following this structure:
+5. **Generate the procedure** following this structure:
 
 ```ssl
 /* =============================================================================;
@@ -62,7 +70,7 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
 :ENDPROC;
 ```
 
-5. **Apply these rules:**
+6. **Apply these rules:**
    - Procedure name: PascalCase (e.g., `CalculateTotal`, `GetInvoiceData`)
    - Parameter names: Hungarian notation (`sName`, `nQty`, `bFlag`, `dDate`,
      `aItems`, `oObj`, `fnFilter`, `vValue`)
@@ -83,9 +91,9 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - All statements must end with `;`
    - Indentation: use tabs by default
 
-6. **If no parameters are provided:** omit `:PARAMETERS` and `:DEFAULT` blocks entirely.
+7. **If no parameters are provided:** omit `:PARAMETERS` and `:DEFAULT` blocks entirely.
 
-7. **Output:** Present the generated procedure as an SSL code block. If the user
+8. **Output:** Present the generated procedure as an SSL code block. If the user
    provided a target file path, write it there; otherwise return the scaffold
    directly.
 

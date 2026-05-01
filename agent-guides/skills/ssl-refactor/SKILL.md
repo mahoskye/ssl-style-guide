@@ -94,6 +94,24 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 - Fix comments that contain `;` in the comment body text (move semicolon to end only)
 - Ensure all statements (including comments) end with `;`
 
+**Inventory cross-check:**
+- Cross-reference built-in function calls against
+  `ssl-style-guide/ssl-element-reference.json` (or MCP `ssl_lookup`).
+- Flag any call to a function that does not appear in the inventory's
+  `functions` bucket. The published reference no longer documents these
+  functions: `LPrint`, `TraceOn` / `TraceOff`, `SqlTraceOn` / `SqlTraceOff`,
+  `StationName`, `UndeclaredVars`, `In64BitMode`, `NetFrameworkVersion`,
+  `GetExecutionTrace`, `SetLocationOracle` / `SetLocationSQLServer`,
+  `GetForbiddenAppIDs` / `GetForbiddenDesignerAppIDs`, and the licensing
+  helpers (`IsFeatureAuthorized`, `IsFeatureBasedLicense`, `IsDemoLicense`,
+  `GetLicenseInfoAsText`, `ResetFeatures`, `GetInstallationKey`,
+  `GetFeaturesAndNumbers`, `GetNumberOfInstrumentConnections`,
+  `GetNumberOfNamedConcurrentUsers`, `GetNumberOfNamedUsers`).
+- Do not silently rewrite or delete these calls — surface them to the user
+  as flagged TODOs with a note that the function is no longer in the
+  published reference and may have been removed from current STARLIMS
+  versions.
+
 ### Step 4 — FORMAT
 - Verify all statements end with `;`
 - Preserve the file's indentation style: prefer tabs, or preserve existing

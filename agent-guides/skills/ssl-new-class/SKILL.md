@@ -13,7 +13,27 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - `<class-name>` = `$0` — the class name (PascalCase)
    - `[base-class]` = `$1` — optional, fully qualified base class name (e.g., `Category.Script`)
 
-2. **Use these core SSL rules in the scaffold:**
+2. **Validate the proposed class name against the built-in inventory.**
+   Check `ssl-style-guide/ssl-element-reference.json` (or MCP `ssl_lookup`)
+   to ensure `<class-name>` does not collide with one of the 29 built-in
+   classes: AzureStorage, BatchSupport, CDataColumn, CDataColumns,
+   CDataField, CDataRow, CDataTable, Email, EnterpriseExporter, FtpsClient,
+   HtmlConverter, PatcherSupport, PdfSupport, RegSetup, SDMS,
+   SDMSDocUploader, SQLConnection, SSLBaseDictionary, SSLCodeProvider,
+   SSLDataset, SSLError, SSLExpando, SSLIntDictionary, SSLRegex,
+   SSLSQLError, SSLStringDictionary, Sequence, TablesImport, WebServices.
+   If the user-supplied name collides with one of these, stop and ask the
+   user to pick a different name (do not auto-rename).
+
+3. **If a `[base-class]` is supplied,** confirm it exists. If the base
+   class name (without category prefix) matches a built-in class from the
+   inventory, treat that as a likely error — built-in classes are not
+   intended to be inherited. Surface this to the user before generating
+   the scaffold. If it doesn't match a built-in, treat it as a user-
+   defined class — the category-qualified path (`Category.BaseClass`)
+   should resolve in the user's project.
+
+4. **Use these core SSL rules in the scaffold:**
    - Colon-prefixed keywords must be UPPERCASE
    - Almost every statement, including comments, must end with `;`
    - Never place `;` inside comment body text
@@ -30,7 +50,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
    - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
 
-3. **Apply enforced member ordering** (compiler requirement):
+5. **Apply enforced member ordering** (compiler requirement):
    ```
    :INHERIT  (if base class provided)
    :DECLARE  (field declarations)
@@ -38,7 +58,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    Constructor procedure (must be last)
    ```
 
-4. **Generate the class** following this structure:
+6. **Generate the class** following this structure:
 
 ---
 
@@ -138,7 +158,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 
 ---
 
-5. **Apply these rules:**
+7. **Apply these rules:**
    - Class name: PascalCase
    - Fields declared with `:DECLARE` at class level (not inside methods)
    - Underscore-prefixed fields (`_sField`) are private by convention — excluded from reflection
@@ -153,7 +173,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - Inside `:CATCH`, use `GetLastSSLError()` if you need error details
    - Indentation: use tabs by default
 
-6. **Output:** Present the generated class as an SSL code block. Include:
+8. **Output:** Present the generated class as an SSL code block. Include:
    - The class file should be named after the class in the appropriate SSL category
    - Instantiate with `CreateUdObject("Category.InvoiceManager")` or `CreateUdObject("Category.InvoiceManager", {args})`
    - If the user provided a target file path, write the scaffold there; otherwise return the scaffold directly

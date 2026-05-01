@@ -99,12 +99,13 @@ const elementFunctions = loadedData.elements
   .map((element) => element.name)
   .sort();
 
-assertEqual(highlightFunctions.length, 354, 'Tree-sitter built-in function count');
-assertEqual(textMateFunctions.length, 354, 'TextMate built-in function count');
-assertEqual(highlightClasses.length, 22, 'Tree-sitter built-in class count');
-assertEqual(textMateClasses.length, 22, 'TextMate built-in class count');
-assertEqual(schemaBuiltinClasses.length, 22, 'Schema built-in class count');
-assertEqual(elementFunctions.length, 354, 'Element inventory function count');
+// Counts match the published ssl-docs reference (../ssl-docs/content/reference/).
+assertEqual(highlightFunctions.length, 330, 'Tree-sitter built-in function count');
+assertEqual(textMateFunctions.length, 330, 'TextMate built-in function count');
+assertEqual(highlightClasses.length, 29, 'Tree-sitter built-in class count');
+assertEqual(textMateClasses.length, 29, 'TextMate built-in class count');
+assertEqual(schemaBuiltinClasses.length, 29, 'Schema built-in class count');
+assertEqual(elementFunctions.length, 330, 'Element inventory function count');
 
 assertArrayEqual(highlightFunctions, textMateFunctions, 'Tree-sitter/TextMate function inventory');
 assertArrayEqual(highlightFunctions, elementFunctions, 'Tree-sitter/element function inventory');

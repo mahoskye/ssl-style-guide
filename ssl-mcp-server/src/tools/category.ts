@@ -50,7 +50,7 @@ export function registerCategory(server: McpServer, indices: Indices): void {
         const el = indices.elementsByName.get(name.toLowerCase());
         return {
           name,
-          syntax: el?.syntax[0] ?? name,
+          syntax: el?.signature ?? el?.syntax ?? name,
         };
       });
 
