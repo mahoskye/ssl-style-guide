@@ -140,20 +140,18 @@ bun run check:consistency
 
 ## Data Coverage
 
-Current bundled coverage:
+Current bundled coverage (sourced from `data/ssl-element-reference.json`):
 
-- 457 developer-facing elements
-- 354 functions
-- 26 classes
+- 446 developer-facing elements
+- 330 functions
+- 29 classes
 - 38 keywords
 - 32 operators
 - 3 literals
-- 4 special forms
-- 38 function categories
+- 8 types
+- 6 special forms
+- 37 function categories
 - 8 Hungarian notation prefixes
-
-Of the 26 classes, 22 are directly instantiable built-ins and 4 are
-return-value-only types.
 
 ## Testing
 
