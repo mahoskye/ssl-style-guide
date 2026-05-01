@@ -35,7 +35,7 @@ export function registerCategoryResources(server: McpServer, indices: Indices): 
       const names = indices.elementsByCategory.get(key) ?? [];
       const functions = names.map((name) => {
         const el = indices.elementsByName.get(name.toLowerCase());
-        return { name, syntax: el?.syntax[0] ?? name };
+        return { name, syntax: el?.signature ?? el?.syntax ?? name };
       });
 
       return {

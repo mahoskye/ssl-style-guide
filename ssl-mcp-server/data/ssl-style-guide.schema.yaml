@@ -158,6 +158,7 @@ ssl_style_guide:
       end: :NEXT  # :ENDFOR is a recognized keyword but NOT usable — using it causes a parse error
       exit: :EXITFOR
       loop: :LOOP
+      semantics: ":TO limit and :STEP expressions are evaluated once before the loop starts. Loop continues while var <= limit (step >= 0) or var >= limit (step < 0). :STEP 0 produces a non-terminating loop if the initial condition is true."
     case:
       begin: :BEGINCASE  # Block opener only — takes no expression
       case: :CASE  # Each :CASE evaluates its own boolean expression; :BEGINCASE is not a value-matching switch
@@ -621,8 +622,6 @@ ssl_style_guide:
         - SubmitToBatch
         - SubmitToBatchEx
         - InBatchProcess
-        - TraceOn
-        - TraceOff
         - DosSupport
         - RunApp
         - LWait
@@ -699,8 +698,6 @@ ssl_style_guide:
       session_application:
         - AddToSession
         - GetFromApplication
-        - GetForbiddenAppIDs
-        - GetForbiddenDesignerAppIDs
         - GetFromSession
         - ClearSession
         - CreateLocal
@@ -749,11 +746,7 @@ ssl_style_guide:
         - IsDBConnected
         - LimsSqlConnect
         - LimsSqlDisconnect
-        - SetLocationOracle
-        - SetLocationSQLServer
         - SetSqlTimeout
-        - SqlTraceOn
-        - SqlTraceOff
       ftp_operations:
         - CheckOnFtp
         - CopyToFtp
@@ -780,7 +773,6 @@ ssl_style_guide:
         - GetWebFolder
         - GetFileVersion
         - LDir
-        - LPrint
         - LKill
       execution_control:
         - DoProc
@@ -832,19 +824,7 @@ ssl_style_guide:
         - MimeEncode
         - MimeDecode
       licensing_features:
-        - GetFeaturesAndNumbers
-        - GetInstallationKey
-        - GetLicenseInfoAsText
-        - GetNumberOfInstrumentConnections
-        - GetNumberOfNamedConcurrentUsers
-        - GetNumberOfNamedUsers
-        - In64BitMode
-        - IsDemoLicense
-        - IsFeatureAuthorized
-        - IsFeatureBasedLicense
         - IsProductionModeOn
-        - NetFrameworkVersion
-        - ResetFeatures
       reporting_conversion:
         - ConvertReport
         - GetPrinters
@@ -894,9 +874,6 @@ ssl_style_guide:
         - Str
         - LStr
         - LTransform
-      debugging:
-        - GetExecutionTrace
-        - UndeclaredVars
       legacy_compatibility:
         - LimsAt
         - LimsExec
@@ -911,7 +888,6 @@ ssl_style_guide:
         - LSelect1
         - LSelectC
         - LWait
-        - StationName
         - IIf
       documentum_integration:
         - DocAcquireWorkitem
@@ -1014,6 +990,7 @@ ssl_style_guide:
         # :CATCH body allows zero or more statements (empty CATCH is valid).
         # :FINALLY body requires at least one statement if present.
         # :CATCH does not name the exception — use GetLastSSLError() to retrieve the SSLError object.
+        # When both :CATCH and :FINALLY are present, :CATCH must precede :FINALLY.
     functions:
       - GetLastSSLError
       - ClearLastSSLError
@@ -1107,6 +1084,74 @@ ssl_style_guide:
       - Now()
     array_literal: "{expr1, expr2, expr3}"
     code_block: "{|param1, param2| expression}"
+  types:
+    level: authoritative
+    note: "SSL has 8 core value types. Type names are reported by LimsTypeEx() in uppercase (e.g. STRING, NUMBER)."
+    core_types:
+      array:
+        summary: Ordered, 1-based collections of SSL values, including nested arrays.
+        runtime_type: ARRAY
+        notes:
+          - 1-based indexing — first element is aValues[1]
+          - May contain mixed value types including NIL and other arrays
+          - Empty() returns .T. only when the array has no top-level elements
+          - Literal syntax {expr1, expr2, ...}; nested {{...}, {...}}
+      boolean:
+        summary: Logical true/false values.
+        runtime_type: LOGIC
+        notes:
+          - Two literal values .T. and .F.
+          - Strict equality only — comparing to non-boolean types raises a runtime error
+          - .AND. and .OR. short-circuit
+          - Empty() on a boolean acts as logical negation, not an "uninitialized" check
+      codeblock:
+        summary: First-class callable expression value.
+        runtime_type: CODEBLOCK
+        notes:
+          - Literal syntax requires at least one parameter and a single-expression body
+          - Used with Eval() and higher-order array helpers
+      date:
+        summary: Calendar value supporting arithmetic, comparison, formatting, and serialization.
+        runtime_type: DATE
+        notes:
+          - No date literal syntax — create via Today(), Now(), CToD(), DateFromNumbers(), StringToDate()
+          - Supports adding/subtracting numeric day offsets and date-difference subtraction
+          - Not indexable
+      netobject:
+        summary: Dynamic wrapper for external .NET objects.
+        runtime_type: NETOBJECT
+        notes:
+          - Created via MakeNETObject(), LimsNETConnect(), LimsNETTypeOf()
+          - Member access through GetProperty(), SetProperty(), IsProperty(), Invoke()
+          - IsEmpty() returns .T. only when the wrapped reference is null
+          - AddProperty() is not supported on netobject
+      number:
+        summary: Single numeric type covering integers and fractional values.
+        runtime_type: NUMBER
+        notes:
+          - All numbers are 64-bit floating-point — no separate integer type
+          - Supports arithmetic, comparison, exponentiation (^ or **), and shift (<<, >>) operators
+          - Bitwise operations through _AND() / _OR() / _XOR() / _NOT() function calls
+          - Scalar — does not support [] indexing
+          - Scientific notation requires a decimal point (1.2e-3 valid; 7e2 invalid)
+      object:
+        summary: SSL value with named members — covers dynamic objects and class instances.
+        runtime_type: OBJECT
+        notes:
+          - Member access via colon syntax (oVal:propName) or GetProperty/SetProperty
+          - Created via CreateLocal(), CreateUdObject(), built-in class instantiation Class{}, or user-class CreateUdObject("ClassName")
+          - XmlType property controls the root element name used by Serialize()
+          - IsEmpty() always returns .F. for objects
+          - Direct [] indexing of object members is not supported
+      string:
+        summary: Text value supporting concatenation, indexing, and JSON serialization.
+        runtime_type: STRING
+        notes:
+          - Three literal forms — double-quoted "text", single-quoted 'text', bracketed [text]
+          - 1-based character indexing — sValue[1] returns the first character as a single-character string
+          - = is loose/prefix equality; == is strict equality
+          - Concatenation via +; trimmed concatenation via -; containment via $
+          - Empty() treats NIL, "", and whitespace-only strings as empty
   database_integration_patterns:
     parameterized_queries:
       named: "SELECT * FROM table WHERE id = ?USER_ID?"
@@ -1294,6 +1339,10 @@ ssl_style_guide:
         all_classes:
           - AzureStorage
           - BatchSupport
+          - CDataColumn
+          - CDataColumns
+          - CDataField
+          - CDataRow
           - CDataTable
           - Email
           - EnterpriseExporter
@@ -1304,12 +1353,15 @@ ssl_style_guide:
           - RegSetup
           - SDMS
           - SDMSDocUploader
+          - SQLConnection
           - SSLBaseDictionary
           - SSLCodeProvider
           - SSLDataset
+          - SSLError
           - SSLExpando
           - SSLIntDictionary
           - SSLRegex
+          - SSLSQLError
           - SSLStringDictionary
           - Sequence
           - TablesImport

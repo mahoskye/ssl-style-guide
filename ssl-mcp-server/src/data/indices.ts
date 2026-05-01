@@ -1,4 +1,4 @@
-import type { Element, ClassValidation } from "../types.js";
+import type { Element } from "../types.js";
 import type { LoadedData } from "./loader.js";
 
 export interface Indices {
@@ -6,7 +6,6 @@ export interface Indices {
   elementsBySymbol: Map<string, Element>;
   elementsByType: Map<string, Element[]>;
   elementsByCategory: Map<string, string[]>;
-  classMemberDetail: Map<string, ClassValidation>;
   hungarianPrefixes: Map<string, string>;
   styleGuide: Record<string, unknown>;
   agentInstructions: string;
@@ -15,7 +14,7 @@ export interface Indices {
 }
 
 export function buildIndices(data: LoadedData): Indices {
-  const { elements, classMemberValidation, styleGuide } = data;
+  const { elements, styleGuide } = data;
 
   const elementsByName = new Map<string, Element>();
   const elementsBySymbol = new Map<string, Element>();
@@ -31,13 +30,15 @@ export function buildIndices(data: LoadedData): Indices {
     elementsByType.set(el.type, arr);
   }
 
-  // Build category index from style guide YAML
+  // Build category index from style guide YAML (procedures.function_categories)
   const elementsByCategory = new Map<string, string[]>();
   try {
     const ssg = styleGuide as Record<string, unknown>;
     const guide = ssg["ssl_style_guide"] as Record<string, unknown> | undefined;
     const procedures = guide?.["procedures"] as Record<string, unknown> | undefined;
-    const categories = procedures?.["function_categories"] as Record<string, string[]> | undefined;
+    const categories = procedures?.["function_categories"] as
+      | Record<string, string[]>
+      | undefined;
     if (categories) {
       for (const [cat, fns] of Object.entries(categories)) {
         elementsByCategory.set(cat, fns);
@@ -45,12 +46,6 @@ export function buildIndices(data: LoadedData): Indices {
     }
   } catch {
     // ignore
-  }
-
-  // Class member detail index
-  const classMemberDetail = new Map<string, ClassValidation>();
-  for (const cls of classMemberValidation.classes) {
-    classMemberDetail.set(cls.name.toLowerCase(), cls);
   }
 
   // Hungarian prefixes from lints.hungarian_notation
@@ -62,7 +57,9 @@ export function buildIndices(data: LoadedData): Indices {
     const hungarianNotation = lints?.["hungarian_notation"] as
       | Record<string, unknown>
       | undefined;
-    const prefixes = hungarianNotation?.["prefixes"] as Record<string, string> | undefined;
+    const prefixes = hungarianNotation?.["prefixes"] as
+      | Record<string, string>
+      | undefined;
     if (prefixes) {
       for (const [prefix, type] of Object.entries(prefixes)) {
         hungarianPrefixes.set(prefix, type);
@@ -83,7 +80,6 @@ export function buildIndices(data: LoadedData): Indices {
     elementsBySymbol,
     elementsByType,
     elementsByCategory,
-    classMemberDetail,
     hungarianPrefixes,
     styleGuide,
     agentInstructions: data.agentInstructions,

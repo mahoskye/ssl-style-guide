@@ -35,16 +35,20 @@ export function registerSignature(server: McpServer, indices: Indices): void {
 
       const result: Record<string, unknown> = {
         name: el.name,
+        title: el.title,
         type: el.type,
-        syntax: el.syntax,
+        summary: el.summary,
       };
 
-      if (el.type === "class") {
-        result["members"] = el.members;
-      }
-
-      if (el.related) {
-        result["related"] = el.related;
+      if (el.type === "function") {
+        if (el.signature) result["signature"] = el.signature;
+        if (el.parameters) result["parameters"] = el.parameters;
+        if (el.returns) result["returns"] = el.returns;
+      } else {
+        if (el.constructors) result["constructors"] = el.constructors;
+        if (el.properties) result["properties"] = el.properties;
+        if (el.methods) result["methods"] = el.methods;
+        if (el.base_class) result["base_class"] = el.base_class;
       }
 
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };

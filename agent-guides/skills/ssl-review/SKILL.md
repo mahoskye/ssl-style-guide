@@ -1,7 +1,7 @@
 ---
 name: ssl-review
 description: Review SSL code against the style guide and language rules. Use when asked to review, lint, or check SSL code quality.
-argument-hint: "<file-path> [focus: naming|formatting|error_handling|sql|security|all]"
+argument-hint: "<file-path> [focus: naming|formatting|error_handling|sql|security|inventory|all]"
 allowed-tools: Read, Grep, Glob
 ---
 
@@ -84,6 +84,38 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - Hardcoded credentials, passwords, or connection strings
 - Unvalidated user input passed to DB functions or `ExecFunction`
 - Overly broad error suppression
+
+### `inventory` — Cross-reference against the published SSL element inventory
+
+Use `ssl-style-guide/ssl-element-reference.json` (or MCP tools `ssl_lookup`
+and `ssl_search` when available) to validate identifiers. The JSON contains
+all 446 published SSL elements: 38 keywords, 32 operators, 3 literals, 8
+types, 29 classes, 6 special forms, 330 functions.
+
+- **Removed/unknown built-in functions:** Flag any call that looks like a
+  built-in function (PascalCase identifier, not preceded by `Me:` / `Base:`,
+  not declared in this file, not invoked via `DoProc` / `ExecFunction`) but
+  that does not appear in the JSON's `functions` bucket. Several previously-
+  documented functions are no longer in the published reference, including:
+  `LPrint`, `TraceOn` / `TraceOff`, `SqlTraceOn` / `SqlTraceOff`,
+  `StationName`, `UndeclaredVars`, `In64BitMode`, `NetFrameworkVersion`,
+  `GetExecutionTrace`, `SetLocationOracle` / `SetLocationSQLServer`,
+  `GetForbiddenAppIDs` / `GetForbiddenDesignerAppIDs`, and the licensing
+  helpers (`IsFeatureAuthorized`, `IsFeatureBasedLicense`, `IsDemoLicense`,
+  `GetLicenseInfoAsText`, `ResetFeatures`, `GetInstallationKey`,
+  `GetFeaturesAndNumbers`, `GetNumberOfInstrumentConnections`,
+  `GetNumberOfNamedConcurrentUsers`, `GetNumberOfNamedUsers`). Flag these
+  as warnings — recommend the user verify the function still exists in
+  their STARLIMS version and find a supported replacement.
+- **Built-in class collisions:** Flag any `:CLASS Foo;` declaration where
+  `Foo` matches a built-in class name (`AzureStorage`, `Email`,
+  `SQLConnection`, `SSLError`, `SSLDataset`, `WebServices`, etc.).
+- **Argument-count mismatches:** For calls to documented built-in functions
+  with a `parameters` table in the JSON, count required vs. optional
+  parameters. Flag calls that pass fewer arguments than required or far
+  more than the documented arity.
+- **Unknown keywords or operator symbols:** Flag colon-prefixed tokens or
+  operator symbols not present in the inventory.
 
 ### `all` — Run all of the above
 
