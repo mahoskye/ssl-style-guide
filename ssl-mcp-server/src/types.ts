@@ -62,11 +62,50 @@ export interface ReferenceFile {
 }
 
 /**
+ * Documented exception row extracted from the `## Exceptions` section of an
+ * ssl-docs page. `trigger` is the prose condition that produces the
+ * exception; `message` is the exact runtime exception text.
+ */
+export interface DocumentedException {
+  trigger: string;
+  message: string;
+}
+
+/**
+ * `## Best practices` Do/Don't lists from ssl-docs, normalized.
+ */
+export interface BestPractices {
+  do?: string[];
+  dont?: string[];
+}
+
+/**
+ * Per-element prose metadata extracted from ssl-docs. Optional everywhere —
+ * not every page documents every section. Populated by the
+ * ssl-element-meta.json bundle; layered on top of `ReferenceEntry` when
+ * the loader flattens elements.
+ */
+export interface ElementMeta {
+  /** Frontmatter `id`, e.g. `"ssl.function.execfunction"`. */
+  doc_id?: string;
+  /** Frontmatter `doc_status`, e.g. `"published"`. */
+  doc_status?: string;
+  /** Repo-relative source path of the ssl-docs page. */
+  doc_source?: string;
+  /** Documented exceptions, parsed from the `## Exceptions` table. */
+  exceptions?: DocumentedException[];
+  /** Documented caveats / quirks. */
+  caveats?: string[];
+  /** Best-practice Do / Don't lists. */
+  best_practices?: BestPractices;
+}
+
+/**
  * Flattened element record used internally by the MCP server. Combines the
  * raw ReferenceEntry with the element type and canonical name (filename stem
  * from ssl-docs).
  */
-export interface Element extends ReferenceEntry {
+export interface Element extends ReferenceEntry, ElementMeta {
   type: ElementType;
   name: string;
   /** Symbol form for operators/literals (e.g. "+=", ".T.") if applicable. */
