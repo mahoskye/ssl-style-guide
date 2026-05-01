@@ -1,29 +1,45 @@
 #!/usr/bin/env python3
-"""Generate ssl-element-reference.md from ssl-docs reference content.
+"""Generate ssl-element-reference.json from ssl-docs reference content.
 
 Reads ../ssl-docs/content/reference/{keywords,operators,literals,types,classes,
-special-forms,functions} and emits a single consolidated reference document at
-ssl-style-guide/ssl-element-reference.md.
+special-forms,functions} and emits a single structured JSON document at
+ssl-style-guide/ssl-element-reference.json suitable for programmatic lookup
+by agent skills, LSPs, and other tooling.
 
 Run from repo root:
     python3 tools/generate_element_reference.py [--ssl-docs ../ssl-docs]
+
+JSON schema (top level):
+    {
+      "version": "1",
+      "source": "<rel path>",
+      "totals": {"keywords": 38, ...},
+      "keywords":      { "<name>": {title, summary, syntax}, ... },
+      "operators":     { "<name>": {title, summary, syntax, type_behavior[]}, ... },
+      "literals":      { "<name>": {title, summary, syntax}, ... },
+      "types":         { "<name>": {title, summary, runtime_type, operators[], members[]}, ... },
+      "classes":       { "<name>": {title, summary, constructors[], properties[], methods[]}, ... },
+      "special_forms": { "<name>": {title, summary, syntax}, ... },
+      "functions":     { "<name>": {title, summary, signature, returns}, ... }
+    }
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 CATEGORIES = [
-    ("Keywords", "keywords"),
-    ("Operators", "operators"),
-    ("Literals", "literals"),
-    ("Types", "types"),
-    ("Classes", "classes"),
-    ("Special Forms", "special-forms"),
-    ("Functions", "functions"),
+    ("keywords", "keywords"),
+    ("operators", "operators"),
+    ("literals", "literals"),
+    ("types", "types"),
+    ("classes", "classes"),
+    ("special_forms", "special-forms"),
+    ("functions", "functions"),
 ]
 
 
@@ -32,7 +48,7 @@ class Element:
     name: str
     title: str
     summary: str
-    body: str  # full markdown body (after frontmatter)
+    body: str
 
 
 # ---------- frontmatter / section parsing ----------
@@ -61,6 +77,18 @@ def split_sections(body: str) -> dict[str, str]:
     return sections
 
 
+def split_h3(text: str) -> list[tuple[str, str]]:
+    parts = re.split(r"^### (.+)$", text, flags=re.MULTILINE)
+    if len(parts) == 1:
+        return [("", parts[0])]
+    out: list[tuple[str, str]] = []
+    if parts[0].strip():
+        out.append(("", parts[0]))
+    for i in range(1, len(parts), 2):
+        out.append((parts[i].strip(), parts[i + 1]))
+    return out
+
+
 def first_ssl_block(text: str) -> str | None:
     m = re.search(r"```ssl\n(.*?)\n```", text, re.DOTALL)
     return m.group(1).strip() if m else None
@@ -72,7 +100,6 @@ def first_code_block(text: str) -> str | None:
 
 
 def strip_md_links(text: str) -> str:
-    """Convert [text](url) → text and `[code](url)` → `code`."""
     return re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
 
 
@@ -84,195 +111,206 @@ def first_paragraph(text: str) -> str:
     return strip_md_links(" ".join(para.split())).strip()
 
 
-# ---------- per-category formatters ----------
+def parse_md_table(text: str) -> list[dict[str, str]]:
+    """Parse the first markdown table found in `text` into a list of dicts.
 
-def fmt_keyword(el: Element) -> str:
-    sections = split_sections(el.body)
-    syntax = first_ssl_block(sections.get("Syntax", ""))
-    out = [f"### `:{el.name}`", "", f"> {strip_md_links(el.summary)}"]
-    if syntax:
-        out.extend(["", "```ssl", syntax, "```"])
-    return "\n".join(out)
-
-
-def fmt_operator(el: Element) -> str:
-    sections = split_sections(el.body)
-    syntax = first_ssl_block(sections.get("Syntax", "")) or first_code_block(sections.get("Syntax", ""))
-    type_table = sections.get("Type behavior", "")
-    out = [f"### `{el.title}`", "", f"> {strip_md_links(el.summary)}"]
-    if syntax:
-        out.extend(["", "```ssl", syntax, "```"])
-    if type_table:
-        # Keep only the markdown table
-        table_lines = [ln for ln in type_table.splitlines() if ln.strip().startswith("|")]
-        if table_lines:
-            out.append("")
-            out.append("**Type behavior:**")
-            out.append("")
-            out.extend(strip_md_links(ln) for ln in table_lines)
-    return "\n".join(out)
-
-
-def fmt_literal(el: Element) -> str:
-    sections = split_sections(el.body)
-    syntax = sections.get("Syntax", "").strip()
-    out = [f"### `{el.title}`", "", f"> {strip_md_links(el.summary)}"]
-    if syntax:
-        # literals tend to use descriptive prose under Syntax, not code blocks
-        intro_para = first_paragraph(syntax)
-        if intro_para:
-            out.extend(["", f"**Syntax:** {intro_para}"])
-    return "\n".join(out)
-
-
-def fmt_special_form(el: Element) -> str:
-    sections = split_sections(el.body)
-    syntax = first_ssl_block(sections.get("Syntax", ""))
-    out = [f"### {el.title}", "", f"> {strip_md_links(el.summary)}"]
-    if syntax:
-        out.extend(["", "```ssl", syntax, "```"])
-    return "\n".join(out)
-
-
-def split_h3_subsections(text: str) -> list[tuple[str, str]]:
-    """Split a section body by H3 headings → [(heading, body), ...].
-
-    If there are no H3 headings, returns [("", text)].
-    """
-    parts = re.split(r"^### (.+)$", text, flags=re.MULTILINE)
-    if len(parts) == 1:
-        return [("", parts[0])]
-    result: list[tuple[str, str]] = []
-    if parts[0].strip():
-        result.append(("", parts[0]))
-    for i in range(1, len(parts), 2):
-        result.append((parts[i].strip(), parts[i + 1]))
-    return result
-
-
-def emit_table_block(lines: list[str], heading: str, section_text: str) -> None:
-    """Emit '**Heading:**' followed by tables, preserving any H3 subsections."""
-    subs = split_h3_subsections(section_text)
-    has_any_table = any(
-        any(ln.strip().startswith("|") for ln in body.splitlines()) for _, body in subs
-    )
-    if not has_any_table:
-        return
-    lines.extend(["", f"**{heading}:**"])
-    for sub_heading, body in subs:
-        table_lines = [ln for ln in body.splitlines() if ln.strip().startswith("|")]
-        if not table_lines:
-            continue
-        lines.append("")
-        if sub_heading:
-            lines.append(f"*{sub_heading}*")
-            lines.append("")
-        lines.extend(strip_md_links(ln) for ln in table_lines)
-
-
-def fmt_type(el: Element) -> str:
-    sections = split_sections(el.body)
-    out = [f"### `{el.name}`", "", f"> {strip_md_links(el.summary)}"]
-
-    rt = re.search(r"Runtime type:\*?\*?\s*`?([A-Z]+)`?", el.body)
-    if rt:
-        out.append("")
-        out.append(f"**Runtime type:** `{rt.group(1)}`")
-
-    if "Operators" in sections:
-        emit_table_block(out, "Operators", sections["Operators"])
-    if "Members" in sections:
-        emit_table_block(out, "Members", sections["Members"])
-
-    return "\n".join(out)
-
-
-def section_top_table(text: str) -> list[str]:
-    """Extract the first markdown table from text, stopping at the first H3.
-
-    Many class sections contain a top-level summary table followed by H3
-    detail subsections; we only want the summary table.
+    Stops at the first H3 boundary so detail subsections don't bleed in.
     """
     lines: list[str] = []
     for line in text.splitlines():
         if line.startswith("### "):
             break
         lines.append(line)
-    return [ln for ln in lines if ln.strip().startswith("|")]
+
+    table_lines = [ln for ln in lines if ln.strip().startswith("|")]
+    if len(table_lines) < 2:
+        return []
+
+    def split_cells(row: str) -> list[str]:
+        cells = [c.strip() for c in row.strip().strip("|").split("|")]
+        cleaned: list[str] = []
+        for c in cells:
+            c = strip_md_links(c)
+            # Strip surrounding/inline backticks for clean programmatic values.
+            c = c.replace("`", "")
+            cleaned.append(c.strip())
+        return cleaned
+
+    headers = [h.lower().replace(" ", "_") for h in split_cells(table_lines[0])]
+    rows: list[dict[str, str]] = []
+    for raw in table_lines[2:]:  # skip separator row
+        cells = split_cells(raw)
+        if len(cells) != len(headers):
+            continue
+        if all(set(c) <= {"-", " "} for c in cells):
+            continue
+        rows.append(dict(zip(headers, cells)))
+    return rows
 
 
-def fmt_class(el: Element) -> str:
+# ---------- per-category extractors ----------
+
+def extract_keyword(el: Element) -> dict:
     sections = split_sections(el.body)
-    out = [f"### `{el.name}`", "", f"> {strip_md_links(el.summary)}"]
+    syntax = first_ssl_block(sections.get("Syntax", ""))
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+    if syntax:
+        out["syntax"] = syntax
+    return out
 
-    # Constructors — H3 subsections inside ## Constructors
+
+def extract_operator(el: Element) -> dict:
+    sections = split_sections(el.body)
+    syntax = first_ssl_block(sections.get("Syntax", "")) or first_code_block(sections.get("Syntax", ""))
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+    if syntax:
+        out["syntax"] = syntax
+    tb = parse_md_table(sections.get("Type behavior", ""))
+    if tb:
+        out["type_behavior"] = tb
+    return out
+
+
+def extract_literal(el: Element) -> dict:
+    sections = split_sections(el.body)
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+    syntax_text = sections.get("Syntax", "").strip()
+    if syntax_text:
+        intro = first_paragraph(syntax_text)
+        if intro:
+            out["syntax"] = intro
+    return out
+
+
+def extract_special_form(el: Element) -> dict:
+    sections = split_sections(el.body)
+    syntax = first_ssl_block(sections.get("Syntax", ""))
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+    if syntax:
+        out["syntax"] = syntax
+    return out
+
+
+def extract_type(el: Element) -> dict:
+    sections = split_sections(el.body)
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+
+    # Runtime type can appear as prose ("**Runtime type:** ARRAY") or as a
+    # table cell ("| Runtime type | `ARRAY` |").
+    rt = re.search(r"Runtime type[:\s|*`]+([A-Z]+)", el.body)
+    if rt:
+        out["runtime_type"] = rt.group(1)
+
+    if "Operators" in sections:
+        ops = parse_md_table(sections["Operators"])
+        if ops:
+            out["operators"] = ops
+
+    members_text = sections.get("Members", "")
+    if members_text:
+        # If the Members section has H3 subsections (e.g. "Properties", "Methods"),
+        # parse each subsection table separately and tag rows with their group.
+        subs = split_h3(members_text)
+        if len(subs) > 1 or (subs and subs[0][0]):
+            members: list[dict] = []
+            for heading, body in subs:
+                rows = parse_md_table(body)
+                for row in rows:
+                    if heading:
+                        row["group"] = heading.lower()
+                    members.append(row)
+            if members:
+                out["members"] = members
+        else:
+            rows = parse_md_table(members_text)
+            if rows:
+                out["members"] = rows
+
+    return out
+
+
+def extract_class(el: Element) -> dict:
+    sections = split_sections(el.body)
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+
     constructors_text = sections.get("Constructors", "")
     if constructors_text:
-        ctor_sigs = re.findall(r"^### `([^`]+)`", constructors_text, re.MULTILINE)
-        if ctor_sigs:
-            out.extend(["", "**Constructors:**", ""])
-            for sig in ctor_sigs:
-                pat = re.compile(
-                    re.escape(f"### `{sig}`") + r"\s*\n\s*(.+?)(?=\n\n|\n###|\n\| |\Z)",
-                    re.DOTALL,
-                )
-                m = pat.search(constructors_text)
-                desc = first_paragraph(m.group(1)) if m else ""
-                out.append(f"- `{sig}`" + (f" — {desc}" if desc else ""))
+        ctors: list[dict] = []
+        for sig, body in split_h3(constructors_text):
+            if not sig:
+                continue
+            desc = first_paragraph(body)
+            entry = {"signature": sig.replace("`", "").strip()}
+            if desc:
+                entry["description"] = desc
+            params = parse_md_table(body)
+            if params:
+                entry["parameters"] = params
+            ctors.append(entry)
+        if ctors:
+            out["constructors"] = ctors
 
-    # Properties (if present at top level)
-    props_text = sections.get("Properties", "")
-    prop_lines = section_top_table(props_text) if props_text else []
-    if prop_lines:
-        out.extend(["", "**Properties:**", ""])
-        out.extend(strip_md_links(ln) for ln in prop_lines)
+    if "Properties" in sections:
+        props = parse_md_table(sections["Properties"])
+        if props:
+            out["properties"] = props
 
-    # Methods — prefer 'Methods Summary'; fall back to top-of-'Methods' table.
-    if "Methods Summary" in sections:
-        method_lines = section_top_table(sections["Methods Summary"])
-    else:
-        method_lines = section_top_table(sections.get("Methods", ""))
-    if method_lines:
-        out.extend(["", "**Methods:**", ""])
-        out.extend(strip_md_links(ln) for ln in method_lines)
+    methods_section = sections.get("Methods Summary") or sections.get("Methods", "")
+    methods = parse_md_table(methods_section)
+    if methods:
+        out["methods"] = methods
 
-    return "\n".join(out)
-
-
-def fmt_function(el: Element) -> str:
-    sections = split_sections(el.body)
-    syntax = first_ssl_block(sections.get("Syntax", "")) or ""
-    returns_section = sections.get("Returns", "")
-    returns_line = ""
-    if returns_section:
-        # Often: "**any** — appended value." Pull the type token at the start.
-        m = re.match(r"\*\*([^*]+)\*\*", returns_section)
+    if "Inheritance" in sections:
+        m = re.search(r"Base class:\*?\*?\s*`?([\w\.]+)`?", sections["Inheritance"])
         if m:
-            returns_line = strip_md_links(m.group(1)).strip()
+            out["base_class"] = m.group(1)
 
-    sig = syntax.split("\n", 1)[0].strip() if syntax else el.name
-    header = f"### `{el.name}`"
-    parts = [header, "", f"`{sig}`" + (f" → {returns_line}" if returns_line else ""), "", f"> {strip_md_links(el.summary)}"]
-    return "\n".join(parts)
+    return out
 
 
-FORMATTERS = {
-    "keywords": fmt_keyword,
-    "operators": fmt_operator,
-    "literals": fmt_literal,
-    "types": fmt_type,
-    "classes": fmt_class,
-    "special-forms": fmt_special_form,
-    "functions": fmt_function,
+def extract_function(el: Element) -> dict:
+    sections = split_sections(el.body)
+    out = {"title": el.title, "summary": strip_md_links(el.summary)}
+
+    syntax = first_ssl_block(sections.get("Syntax", ""))
+    if syntax:
+        out["signature"] = syntax.split("\n", 1)[0].strip()
+
+    returns_section = sections.get("Returns", "")
+    if returns_section:
+        m = re.match(r"\*\*([^*]+)\*\*\s*(?:—\s*(.*))?", returns_section, re.DOTALL)
+        if m:
+            ret_type = strip_md_links(m.group(1)).strip()
+            out["returns"] = {"type": ret_type}
+            if m.group(2):
+                desc = first_paragraph(m.group(2))
+                if desc:
+                    out["returns"]["description"] = desc
+
+    params_section = sections.get("Parameters", "")
+    params = parse_md_table(params_section)
+    if params:
+        out["parameters"] = params
+
+    return out
+
+
+EXTRACTORS = {
+    "keywords": extract_keyword,
+    "operators": extract_operator,
+    "literals": extract_literal,
+    "types": extract_type,
+    "classes": extract_class,
+    "special_forms": extract_special_form,
+    "functions": extract_function,
 }
 
 
 # ---------- main ----------
 
 def load_category(reference_dir: Path, slug: str) -> list[Element]:
-    cat_dir = reference_dir / slug
     elements: list[Element] = []
-    for path in sorted(cat_dir.glob("*.md")):
+    for path in sorted((reference_dir / slug).glob("*.md")):
         if path.name == "index.md":
             continue
         text = path.read_text(encoding="utf-8")
@@ -288,51 +326,21 @@ def load_category(reference_dir: Path, slug: str) -> list[Element]:
     return elements
 
 
-def build_reference(reference_dir: Path) -> str:
-    out: list[str] = []
-    out.append("# SSL Element Reference")
-    out.append("")
-    out.append(
-        "Generated from the published `ssl-docs` reference. To regenerate, run "
-        "`tools/generate_element_reference.py` from the repository root."
-    )
-    out.append("")
-    out.append(
-        "This document is the consolidated, agent-loadable summary of the SSL "
-        "language surface. Each element entry includes its canonical syntax (or "
-        "signature) and a one-line summary; classes and types additionally list "
-        "constructors, methods, and members. For full prose, examples, and edge "
-        "cases, consult `ssl-docs/content/reference/<category>/<element>.md`."
-    )
-    out.append("")
-
-    counts: dict[str, int] = {}
-    sections: dict[str, list[str]] = {}
-    for header, slug in CATEGORIES:
+def build_data(reference_dir: Path) -> dict:
+    data: dict = {
+        "version": "1",
+        "source": str(reference_dir.relative_to(reference_dir.parent.parent.parent.parent))
+        if reference_dir.is_absolute()
+        else str(reference_dir),
+        "totals": {},
+    }
+    for json_key, slug in CATEGORIES:
         elements = load_category(reference_dir, slug)
-        counts[slug] = len(elements)
-        formatter = FORMATTERS[slug]
-        body_parts = [formatter(el) for el in elements]
-        sections[slug] = body_parts
-
-    total = sum(counts.values())
-    out.append(
-        f"**Totals:** {counts['keywords']} keywords, {counts['operators']} "
-        f"operators, {counts['literals']} literals, {counts['types']} types, "
-        f"{counts['classes']} classes, {counts['special-forms']} special forms, "
-        f"{counts['functions']} functions ({total} total)."
-    )
-    out.append("")
-
-    for header, slug in CATEGORIES:
-        out.append("---")
-        out.append("")
-        out.append(f"## {header} ({counts[slug]})")
-        out.append("")
-        out.append("\n\n".join(sections[slug]))
-        out.append("")
-
-    return "\n".join(out).rstrip() + "\n"
+        extractor = EXTRACTORS[json_key]
+        data[json_key] = {el.name: extractor(el) for el in elements}
+        data["totals"][json_key] = len(elements)
+    data["totals"]["all"] = sum(data["totals"].values())
+    return data
 
 
 def main() -> int:
@@ -346,8 +354,8 @@ def main() -> int:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path(__file__).resolve().parent.parent / "ssl-style-guide" / "ssl-element-reference.md",
-        help="Output markdown file (default: ssl-style-guide/ssl-element-reference.md)",
+        default=Path(__file__).resolve().parent.parent / "ssl-style-guide" / "ssl-element-reference.json",
+        help="Output JSON file (default: ssl-style-guide/ssl-element-reference.json)",
     )
     args = parser.parse_args()
 
@@ -355,10 +363,11 @@ def main() -> int:
     if not reference_dir.is_dir():
         parser.error(f"reference directory not found: {reference_dir}")
 
-    text = build_reference(reference_dir)
+    data = build_data(reference_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
     args.out.write_text(text, encoding="utf-8")
-    print(f"Wrote {args.out} ({len(text):,} bytes, {text.count(chr(10))} lines)")
+    print(f"Wrote {args.out} ({len(text):,} bytes, totals: {data['totals']})")
     return 0
 
 
