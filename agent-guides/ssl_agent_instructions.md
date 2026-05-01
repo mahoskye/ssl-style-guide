@@ -75,6 +75,7 @@ Authoritative rules describe documented language behavior; style recommendations
 * **Loops:**
     * **For:** `:FOR i := 1 :TO 10; ... :NEXT;` (`:STEP` is optional, defaults to 1)
         * With step: `:FOR i := 1 :TO 10 :STEP 2; ... :NEXT;`
+        * **Semantics:** The `:TO` limit and `:STEP` expressions are evaluated **once before the loop starts**. The loop continues while `var <= limit` (when step ≥ 0) or `var >= limit` (when step < 0). A `:STEP 0` value produces a non-terminating loop if the initial condition is true. `:NEXT` is the only valid closing keyword — `:ENDFOR` is recognized by the lexer but causes a parse error.
     * **While:** `:WHILE condition; ... :ENDWHILE;`
     * **Loop Control:** `:EXITFOR;`, `:EXITWHILE;`, `:LOOP;` (continues to next iteration).
 
@@ -110,7 +111,7 @@ Authoritative rules describe documented language behavior; style recommendations
       ```
 
 * **Error Handling:**
-    * **Try/Catch/Finally:** Structured exception handling (preferred). `:CATCH` and `:FINALLY` are both optional individually, but at least one must be present. Valid forms: `TRY...CATCH...ENDTRY`, `TRY...FINALLY...ENDTRY`, `TRY...CATCH...FINALLY...ENDTRY`.
+    * **Try/Catch/Finally:** Structured exception handling (preferred). `:CATCH` and `:FINALLY` are both optional individually, but at least one must be present. Valid forms: `TRY...CATCH...ENDTRY`, `TRY...FINALLY...ENDTRY`, `TRY...CATCH...FINALLY...ENDTRY`. When both are present, **`:CATCH` must precede `:FINALLY`**.
       **Body requirements:** The `:TRY` body requires **at least one statement**. The `:CATCH` body allows **zero or more statements** (an empty `:CATCH` block is valid). The `:FINALLY` body, if present, requires **at least one statement**.
       **Only one `:CATCH` block is allowed per `:TRY`** — there is no multi-catch.
       **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Message`, `:Description`, `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx`, `:InnerException`, and `:NETException`.
@@ -1149,8 +1150,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `IgnoreSqlErrors` | `IgnoreSqlErrors(bFlag)` |
 | `DetectSqlInjections` | `DetectSqlInjections(vOnOff, sConnectionName)` |
 | `SQLRemoveComments` | `SQLRemoveComments(vStatement)` |
-| `SqlTraceOn` | `SqlTraceOn()` |
-| `SqlTraceOff` | `SqlTraceOff()` |
 | `SetSqlTimeout` | `SetSqlTimeout(nTimeout, vConnection)` |
 | `LimsSqlConnect` | `LimsSqlConnect(sFriendlyName)` |
 | `LimsSqlDisconnect` | `LimsSqlDisconnect(sFriendlyName)` |
@@ -1167,12 +1166,9 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `IsTable` | `IsTable(sFriendlyName, sTableName)` |
 | `IsTableFld` | `IsTableFld(sFriendlyName, sTableName, sFieldName)` |
 | `TableFldLst` | `TableFldLst(sFriendlyName, sTableName)` |
-| `GetFeaturesAndNumbers` | `GetFeaturesAndNumbers()` |
 | `LimsSetCounter` | `LimsSetCounter(sTableName, sFieldName, sPrefix, aArrayOfFields, aArrayOfValues, vNull)` |
 | `RetrieveLong` | `RetrieveLong(sFriendlyName, sTableName, sColumnName, sWhereCondition, sOutputFilePath, bIsCompressed)` |
 | `UpdLong` | `UpdLong(sFriendlyName, sTableName, sColumnName, sWhereCondition, sInputFilePath, bIsCompressed)` |
-| `SetLocationOracle` | `SetLocationOracle(sFile, sServer, sUser, sPassword, bEncrypted)` |
-| `SetLocationSQLServer` | `SetLocationSQLServer(sFile, sServer, sDatabase, sOwner, sUser, sPassword, bEncrypted)` |
 | `LimsOleConnect` | `LimsOleConnect(vV)` |
 | `EndLimsOleConnect` | `EndLimsOleConnect(vV)` |
 | `LimsExec` | `LimsExec(sApplication, bShow, sArguments)` |
@@ -1194,7 +1190,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `CreatePublic` | `CreatePublic(vVarName, vVarValue)` |
 | `CreateORMSession` | `CreateORMSession()` |
 | `LKill` | `LKill(sVarName)` |
-| `UndeclaredVars` | `UndeclaredVars(bAllowUndeclaredVars)` |
 | `MakeNETObject` | `MakeNETObject(vValue)` |
 
 ### Error Handling Functions
@@ -1219,7 +1214,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `FileSupport` | `FileSupport(vFileIdentifier, vRequest, vArg1, vArg2, sEncoding)` |
 | `CombineFiles` | `CombineFiles(aArFileNames, sSOutFile)` |
 | `GetFileVersion` | `GetFileVersion(sFileName)` |
-| `LPrint` | `LPrint(sSource)` |
 | `GetPrinters` | `GetPrinters()` |
 | `ConvertReport` | `ConvertReport(sFile)` |
 | `GetAppBaseFolder` | `GetAppBaseFolder()` |
@@ -1256,16 +1250,11 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `GetSettings` | `GetSettings(aNames)` |
 | `GetUserData` | `GetUserData()` |
 | `SetUserData` | `SetUserData(vUserName)` |
-| `StationName` | `StationName()` |
-| `GetInstallationKey` | `GetInstallationKey()` |
-| `GetExecutionTrace` | `GetExecutionTrace()` |
 | `GetInlineCode` | `GetInlineCode(sValue, aVariables)` |
 | `DeleteInlineCode` | `DeleteInlineCode(sValue)` |
 | `GetRegion` | `GetRegion(sValue, vSrc, vDst)` |
 | `GetRegionEx` | `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` |
 | `IsProductionModeOn` | `IsProductionModeOn()` |
-| `GetForbiddenAppIDs` | `GetForbiddenAppIDs()` |
-| `GetForbiddenDesignerAppIDs` | `GetForbiddenDesignerAppIDs()` |
 
 `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` extracts text between two marker strings in an arbitrary string. It is a pure string utility — it does not require a compiled `:REGION` block. Use it in preference to `GetRegion` when working with string content rather than named code regions.
 
@@ -1285,14 +1274,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `LDAPAuth` | `LDAPAuth(sLdapHost, nLdapPort, sLdapUserName, sLdapPassword, sLdapDistinctiveName, bSecure)` |
 | `LDAPAuthEX` | `LDAPAuthEX(sLdapHost, nLdapPort, sBindUserName, sBindUserPassword, sSearchUserName, sSearchUserPassword, sLdapDistinguishedName, sLdapDistinguishedNameStartSearch, sSearchFilter, sAuthAttribName, bSecure)` |
 | `SearchLDAPUser` | `SearchLDAPUser(sLdapHost, nLdapPort, sBindUserName, sBindUserPassword, sSearchUserName, sLdapDistinguishedNameStartSearch, sSearchFilter, bSecure)` |
-| `IsFeatureAuthorized` | `IsFeatureAuthorized(sAppGuid)` |
-| `IsFeatureBasedLicense` | `IsFeatureBasedLicense()` |
-| `IsDemoLicense` | `IsDemoLicense()` |
-| `GetLicenseInfoAsText` | `GetLicenseInfoAsText(bBHtml)` |
-| `ResetFeatures` | `ResetFeatures()` |
-| `GetNumberOfInstrumentConnections` | `GetNumberOfInstrumentConnections()` |
-| `GetNumberOfNamedConcurrentUsers` | `GetNumberOfNamedConcurrentUsers()` |
-| `GetNumberOfNamedUsers` | `GetNumberOfNamedUsers()` |
 
 ### Web, XML & JSON Functions
 
@@ -1315,8 +1296,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `LimsNETConnect` | `LimsNETConnect(sAssembly, sTypeName, aArgs, vAsStatic)` |
 | `LimsNETCast` | `LimsNETCast(vValue, sNewType)` |
 | `LimsNETTypeOf` | `LimsNETTypeOf(vTypeName)` |
-| `In64BitMode` | `In64BitMode()` |
-| `NetFrameworkVersion` | `NetFrameworkVersion()` |
 
 ### Email & Messaging Functions
 
@@ -1343,10 +1322,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `SubmitToBatch` | `SubmitToBatch(sCode, vParameters, sMode, sUserName, sPassword)` |
 | `SubmitToBatchEx` | `SubmitToBatchEx(sCode)` |
 | `InBatchProcess` | `InBatchProcess()` |
-| `TraceOn` | `TraceOn()` |
-| `TraceOff` | `TraceOff()` |
-| `SqlTraceOn` | `SqlTraceOn()` |
-| `SqlTraceOff` | `SqlTraceOff()` |
 | `DosSupport` | `DosSupport(sCmd, sPrm, vDbg)` |
 | `RunApp` | `RunApp(sApplication, sArguments)` |
 | `LWait` | `LWait(nSeconds)` |
@@ -1356,8 +1331,6 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `GetDecimalSeparator` | `GetDecimalSeparator()` |
 | `SetGroupSeparator` | `SetGroupSeparator(sGroupSep)` |
 | `GetGroupSeparator` | `GetGroupSeparator()` |
-
-`TraceOn()` and `TraceOff()` toggle `InvokeMethodPerformanceLog` and return the previous `Enabled` state as LOGIC. They silently no-op if `AppConfig.InvokeMethodPerformanceLogEnabled` is `false` (the enable flag is forced off). `SqlTraceOn()` and `SqlTraceOff()` work identically but toggle `SQLPerformanceLog` (gated by `AppConfig.SqlPerformanceLogEnabled`). All four functions are safe to call in any context, but produce no output unless the corresponding config flag is enabled.
 
 ### Documentum (DMS) Functions
 
