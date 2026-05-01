@@ -77,21 +77,27 @@ Windows example:
 
 Bundled runtime files:
 
-- `data/ssl-element-list.json`
-- `data/class-member-validation.json`
+- `data/ssl-element-reference.json` — full element inventory (446 elements:
+  keywords, operators, literals, types, classes, special forms, functions)
+  with signatures, parameters, methods, and related metadata
 - `data/ssl-style-guide.schema.yaml`
 - `data/ssl_agent_instructions.md`
 - `data/ssl_refactoring_guide.md`
 - `data/ssl-ebnf-grammar.md`
 
-The two JSON inventories are checked-in external snapshots. This repository does
-not regenerate them; `bundle-data.mjs` only normalizes their formatting and
-refreshes the mirrored canonical docs.
+`ssl-element-reference.json` is generated from the published `ssl-docs`
+reference (sibling repo) by `tools/generate_element_reference.py` at the
+repository root. The MCP server flattens the per-category buckets into a
+single name-keyed index at startup.
 
-Refresh the mirrored data after canonical doc updates or after updating those
-checked-in external snapshots:
+Refresh the bundled data after canonical doc updates or after regenerating
+the element reference:
 
 ```bash
+# from repo root
+python3 tools/generate_element_reference.py
+
+# from ssl-mcp-server/
 bun scripts/bundle-data.mjs
 bun run check:consistency
 ```

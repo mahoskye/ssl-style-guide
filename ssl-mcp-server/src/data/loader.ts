@@ -2,7 +2,12 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
-import type { Element, ClassMemberValidationFile } from "../types.js";
+import type {
+  Element,
+  ElementType,
+  ReferenceEntry,
+  ReferenceFile,
+} from "../types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // dist/data/loader.js → ../../data/ (i.e. ssl-mcp-server/data/)
@@ -12,32 +17,112 @@ function dataPath(filename: string): string {
   return resolve(DATA_DIR, filename);
 }
 
-function formatElementType(type: string): string {
-  if (type === "class") return "classes";
-  if (type === "special_form") return "special forms";
-  return `${type}s`;
+/**
+ * Symbol forms for operators (file stem → literal symbol) and literals.
+ * Operators are keyed by ssl-docs filename stem; literals by stem too.
+ */
+const OPERATOR_SYMBOLS: Record<string, string> = {
+  "add-assign": "+=",
+  "subtract-assign": "-=",
+  "multiply-assign": "*=",
+  "divide-assign": "/=",
+  "modulo-assign": "%=",
+  "power-assign": "^=",
+  assignment: ":=",
+  plus: "+",
+  minus: "-",
+  multiply: "*",
+  divide: "/",
+  modulo: "%",
+  power: "^",
+  "double-star-power": "**",
+  increment: "++",
+  decrement: "--",
+  equals: "=",
+  "strict-equals": "==",
+  "not-equals": "!=",
+  "not-equals-legacy": "<>",
+  hash: "#",
+  "less-than": "<",
+  "greater-than": ">",
+  "less-than-or-equal": "<=",
+  "greater-than-or-equal": ">=",
+  and: ".AND.",
+  or: ".OR.",
+  not: ".NOT.",
+  bang: "!",
+  dollar: "$",
+  "shift-left": "<<",
+  "shift-right": ">>",
+};
+
+const LITERAL_SYMBOLS: Record<string, string> = {
+  true: ".T.",
+  false: ".F.",
+  nil: "NIL",
+};
+
+const CATEGORIES: { key: keyof ReferenceFile; type: ElementType }[] = [
+  { key: "keywords", type: "keyword" },
+  { key: "operators", type: "operator" },
+  { key: "literals", type: "literal" },
+  { key: "types", type: "type" },
+  { key: "classes", type: "class" },
+  { key: "special_forms", type: "special_form" },
+  { key: "functions", type: "function" },
+];
+
+function symbolFor(type: ElementType, name: string): string | null {
+  if (type === "operator") return OPERATOR_SYMBOLS[name] ?? null;
+  if (type === "literal") return LITERAL_SYMBOLS[name] ?? null;
+  return null;
+}
+
+function flattenReference(ref: ReferenceFile): Element[] {
+  const elements: Element[] = [];
+  for (const { key, type } of CATEGORIES) {
+    const bucket = ref[key] as Record<string, ReferenceEntry> | undefined;
+    if (!bucket) continue;
+    for (const [name, entry] of Object.entries(bucket)) {
+      elements.push({
+        ...entry,
+        type,
+        name,
+        symbol: symbolFor(type, name),
+      });
+    }
+  }
+  return elements;
 }
 
 export interface LoadedData {
   elements: Element[];
-  classMemberValidation: ClassMemberValidationFile;
+  referenceTotals: Record<string, number>;
   styleGuide: Record<string, unknown>;
   agentInstructions: string;
   refactoringGuide: string;
   ebnfGrammar: string;
 }
 
+function formatElementType(type: string): string {
+  if (type === "class") return "classes";
+  if (type === "special_form") return "special forms";
+  return `${type}s`;
+}
+
 export function loadAllData(): LoadedData {
-  const elements: Element[] = JSON.parse(readFileSync(dataPath("ssl-element-list.json"), "utf-8"));
-  const classMemberValidation: ClassMemberValidationFile = JSON.parse(
-    readFileSync(dataPath("class-member-validation.json"), "utf-8")
-  );
-  const styleGuide = parseYaml(readFileSync(dataPath("ssl-style-guide.schema.yaml"), "utf-8")) as Record<string, unknown>;
+  const ref = JSON.parse(
+    readFileSync(dataPath("ssl-element-reference.json"), "utf-8")
+  ) as ReferenceFile;
+  const elements = flattenReference(ref);
+
+  const styleGuide = parseYaml(
+    readFileSync(dataPath("ssl-style-guide.schema.yaml"), "utf-8")
+  ) as Record<string, unknown>;
   const agentInstructions = readFileSync(dataPath("ssl_agent_instructions.md"), "utf-8");
   const refactoringGuide = readFileSync(dataPath("ssl_refactoring_guide.md"), "utf-8");
   const ebnfGrammar = readFileSync(dataPath("ssl-ebnf-grammar.md"), "utf-8");
 
-  // Log counts to stderr for verification
   const byType = elements.reduce<Record<string, number>>((acc, e) => {
     acc[e.type] = (acc[e.type] ?? 0) + 1;
     return acc;
@@ -50,13 +135,10 @@ export function loadAllData(): LoadedData {
         .join(", ") +
       "\n"
   );
-  process.stderr.write(
-    `[ssl-mcp-server] Loaded ${classMemberValidation.classes.length} class member validations\n`
-  );
 
   return {
     elements,
-    classMemberValidation,
+    referenceTotals: ref.totals,
     styleGuide,
     agentInstructions,
     refactoringGuide,

@@ -6,7 +6,7 @@ export function registerClassResources(server: McpServer, indices: Indices): voi
   server.resource(
     "ssl-class-members",
     "ssl://classes/{name}/members",
-    { description: "Class methods and properties, plus bundled member-name validation data" },
+    { description: "Class constructors, properties, and methods." },
     async (uri) => {
       // pathname: /classes/Email/members
       const parts = uri.pathname.split("/");
@@ -20,17 +20,14 @@ export function registerClassResources(server: McpServer, indices: Indices): voi
         };
       }
 
-      const detail = indices.classMemberDetail.get(name);
       const result = {
         name: el.name,
-        syntax: el.syntax,
-        members: el.members,
-        member_detail: detail
-          ? {
-              methods: detail.members.methods.map((m) => ({ name: m.name })),
-              properties: (detail.members.properties ?? []).map((p) => ({ name: p.name })),
-            }
-          : null,
+        title: el.title,
+        summary: el.summary,
+        base_class: el.base_class ?? null,
+        constructors: el.constructors ?? [],
+        properties: el.properties ?? [],
+        methods: el.methods ?? [],
       };
 
       return {
