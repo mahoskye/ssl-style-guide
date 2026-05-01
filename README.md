@@ -121,7 +121,7 @@ alternative rules or wording.
 
 ## Metadata
 
-- Version: `1.2.0`
+- Version: `1.3.0`
 - SSL version: `v11`
 - Maintainers: `PaperBull / maho`
 - License: `MIT`
