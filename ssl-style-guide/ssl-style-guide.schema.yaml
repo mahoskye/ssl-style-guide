@@ -15,7 +15,7 @@ ssl_style_guide:
       should enforce UPPER.
     - Rules and function lists reflect verified SSL v11 behavior from live environment testing.
     - Grammar and formatting rules apply to SSL scripts and class files. Data source
-      files (SSL and SQL) are preprocessed before compilation and use distinct parameter
+      files (SSL and SQL) are preprocessed before they run and use distinct parameter
       syntax and builder directives — see data_source_modules under module_structure.
     rule_levels:
       authoritative: documented language behavior that must match accepted SSL parsing and execution
@@ -155,7 +155,7 @@ ssl_style_guide:
       begin: :FOR
       to: :TO
       step: :STEP
-      end: :NEXT  # :ENDFOR is a recognized keyword but NOT usable — using it causes a parse error
+      end: :NEXT  # :ENDFOR is reserved but NOT usable — writing it is rejected as a syntax error
       exit: :EXITFOR
       loop: :LOOP
       semantics: ":TO limit and :STEP expressions are evaluated once before the loop starts. Loop continues while var <= limit (step >= 0) or var >= limit (step < 0). :STEP 0 produces a non-terminating loop if the initial condition is true."
@@ -171,7 +171,7 @@ ssl_style_guide:
       catch: :CATCH
       finally: :FINALLY
       end: :ENDTRY
-      constraint: at_least_one_of_catch_or_finally  # bare TRY...ENDTRY without :CATCH or :FINALLY is a compile error
+      constraint: at_least_one_of_catch_or_finally  # bare TRY...ENDTRY without :CATCH or :FINALLY is rejected
     region:
       begin: :REGION
       end: :ENDREGION
@@ -948,7 +948,7 @@ ssl_style_guide:
       end: null
       indentation: top_level  # :CLASS does not increase indent level; class members stay at file-level indentation
       notes:
-      - Class name is optional in the parser, but explicit names are preferred for maintained code.
+      - Class name is syntactically optional, but explicit names are preferred for maintained code.
       - Constructor must be declared after regular methods.
     methods:
       - :PROCEDURE ...;
@@ -984,7 +984,7 @@ ssl_style_guide:
       structured:
         - :TRY
         - body  # requires at least one statement
-        - (:CATCH handler | :FINALLY body | :CATCH handler :FINALLY body)  # at least one is required; bare TRY...ENDTRY is a compile error
+        - (:CATCH handler | :FINALLY body | :CATCH handler :FINALLY body)  # at least one is required; bare TRY...ENDTRY is rejected
         - :ENDTRY
         # Only one :CATCH block is allowed per :TRY — there is no multi-catch.
         # :CATCH body allows zero or more statements (empty CATCH is valid).
@@ -1030,7 +1030,7 @@ ssl_style_guide:
     indirect_calls:
       level: authoritative
       pattern: 'DoProc("ProcedureName", {param1, param2})'
-      class_method_restriction: DoProc is a compile-time error inside class methods; use Me:Method() or Base:Method() instead
+      class_method_restriction: DoProc is rejected inside class methods; use Me:Method() or Base:Method() instead
       exec_function:
         entry_point: 'ExecFunction("Category.Script", {params})'
         procedure: 'ExecFunction("Category.Script.Proc", {params})'
@@ -1429,7 +1429,7 @@ ssl_style_guide:
       prefer_positive_logic: true
       no_nested_ternaries: true
       limit_block_depth: 4
-      max_params_per_procedure: 8  # style recommendation; the compiler warns at 20
+      max_params_per_procedure: 8  # style recommendation; STARLIMS warns at 20
       require_else_for_if: false
     hungarian_notation:
       enabled: true
@@ -1469,13 +1469,13 @@ ssl_style_guide:
       rules:
       # These mirror current SSL validation rules — catch them early with clear messages
       - rule: exitfor_in_finally
-        message: ":EXITFOR inside a :FINALLY block is a compile-time error."
+        message: ":EXITFOR inside a :FINALLY block is rejected."
       - rule: exitwhile_in_finally
-        message: ":EXITWHILE inside a :FINALLY block is a compile-time error."
+        message: ":EXITWHILE inside a :FINALLY block is rejected."
       - rule: loop_in_finally
-        message: ":LOOP inside a :FINALLY block is a compile-time error."
+        message: ":LOOP inside a :FINALLY block is rejected."
       - rule: return_in_finally
-        message: ":RETURN inside a :FINALLY block is a compile-time error."
+        message: ":RETURN inside a :FINALLY block is rejected."
       - rule: exitfor_outside_loop
         message: ":EXITFOR must be inside a :FOR loop."
       - rule: exitwhile_outside_loop
@@ -1488,7 +1488,7 @@ ssl_style_guide:
         message: "A file is either a :CLASS definition or a script, never both."
       - rule: doproc_in_class
         severity: error
-        message: "DoProc is a compile-time error inside class methods — all forms are rejected. Use Me:MethodName() / Base:MethodName() instead."
+        message: "DoProc is rejected inside class methods — all forms are rejected. Use Me:MethodName() / Base:MethodName() instead."
       - rule: constructor_return_value
         message: ":RETURN inside a Constructor cannot return a value."
     type_safety:
@@ -1555,7 +1555,7 @@ ssl_style_guide:
         message: ":DEFAULT must immediately follow :PARAMETERS (zero or more :DEFAULT lines, but only after :PARAMETERS)."
       - rule: include_early
         severity: info
-        message: ":INCLUDE is resolved at the lexer level (textual inclusion) before parsing, so its position is technically flexible, but it should appear early to ensure expanded content is available."
+        message: ":INCLUDE is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available."
       - rule: constructor_outside_class
         severity: warning
         message: "Constructor syntax is only meaningful inside a :CLASS definition."
@@ -1615,7 +1615,7 @@ ssl_style_guide:
       :PARAMETERS must appear before any other statements. :DEFAULT must
       immediately follow :PARAMETERS. :DECLARE and :PUBLIC are regular
       statements and can appear anywhere in the statement flow. :INCLUDE is
-      resolved at the lexer level (textual inclusion) before parsing, so its
+      resolved as a textual paste before the rest of the file is read, so its
       position is technically flexible, but it should appear early.
       Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.
     class_modules:
@@ -1636,7 +1636,7 @@ ssl_style_guide:
         that are not part of the SSL grammar.
       file_types:
         ssl_data_source:
-          preprocessor: SSLDataSourceBuilder
+          preprocessor: ssl_data_source_preprocessor
           parameters:
             syntax: ":PARAMETERS p1 := val1, p2 := val2;"
             inline_defaults: true  # := assignment, not separate :DEFAULT
@@ -1648,7 +1648,7 @@ ssl_style_guide:
             - ":PARAMETERS with inline := defaults"
             - ssl_script_body
         sql_data_source:
-          preprocessor: SqlDataSourceBuilder
+          preprocessor: sql_data_source_preprocessor
           parameters:
             syntax: ":PARAMETERS p1 := val1, p2 := val2;"
             inline_defaults: true
@@ -1689,7 +1689,7 @@ ssl_style_guide:
       implicit: true  # SSL is loosely typed
       style_hint_reference: hungarian_notation
       type_conversion: automatic
-    generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("  # regex for function name recognition in the lexer
+    generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("  # regex for recognizing function-name tokens
   editor_support:
     level: advisory
     code_folding: true

@@ -1,6 +1,6 @@
 # Complete SSL Language EBNF Grammar
 
-The following EBNF grammar formally defines the syntax of the STARLIMS Scripting Language (SSL) version 11. It documents the authoritative behavior of the SSL compiler and runtime.
+The following EBNF grammar formally defines the syntax of the STARLIMS Scripting Language (SSL) version 11. It documents the authoritative behavior of the SSL language.
 
 ## Purpose and Usage
 
@@ -12,7 +12,7 @@ This EBNF (Extended Backus-Naur Form) grammar serves as a formal definition of t
 
 While this grammar defines what is syntactically valid in SSL, it does not prescribe specific formatting preferences or coding conventions - those are covered in the separate SSL Style Guide. For instance, the preferred formatting for skipped parameters in lists (e.g., `param1,,param3`) is to keep skipped-argument commas adjacent with no intervening spaces. Such stylistic choices are handled by the formatter.
 
-**Scope:** This grammar covers the SSL language as seen by the compiler — server scripts and class files. Data source files (SSL and SQL data sources) are preprocessed by server-side builders before compilation. The preprocessing syntax — inline `:=` parameter defaults (`:PARAMETERS p1 := val;`) and builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — is not part of this grammar. See `ssl_agent_instructions.md` §4A for data source syntax.
+**Scope:** This grammar covers standard SSL — server scripts and class files. Data source files (SSL and SQL data sources) are preprocessed server-side before they run. The preprocessing syntax — inline `:=` parameter defaults (`:PARAMETERS p1 := val;`) and builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — is not part of this grammar. See `ssl_agent_instructions.md` §4A for data source syntax.
 
 ## Common SSL Code Patterns
 
@@ -118,11 +118,11 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 *)
 
 (* Top-level structure *)
-Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. :PARAMETERS must appear before any other statements. :DEFAULT must immediately follow :PARAMETERS. :INCLUDE is resolved at the lexer level before parsing. :DECLARE and :PUBLIC can appear anywhere. Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE. *)
+Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. :PARAMETERS must appear before any other statements. :DEFAULT must immediately follow :PARAMETERS. :INCLUDE is resolved as a textual paste before the rest of the file is read. :DECLARE and :PUBLIC can appear anywhere. Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE. *)
 
 (* Statement types *)
 (* CommentStatement includes its own terminating ";" as part of the comment syntax *)
-Statement ::= CommentStatement | SimpleStatement ";" | BlockStatement | ExitWhileStatement | ExitForStatement | LoopContinue (* Loop-control statements include their own ";". Note: :EXITFOR, :EXITWHILE, and :LOOP are compile errors outside their respective loop contexts — they appear here for grammar completeness but are context-restricted by the compiler *)
+Statement ::= CommentStatement | SimpleStatement ";" | BlockStatement | ExitWhileStatement | ExitForStatement | LoopContinue (* Loop-control statements include their own ";". Note: :EXITFOR, :EXITWHILE, and :LOOP are rejected outside their respective loop contexts — they appear here for grammar completeness but are context-restricted *)
 SimpleStatement ::=
     DeclarationStatement |
     LogicStatement |
@@ -140,8 +140,8 @@ BlockStatement ::=
     InlineCodeBlock          (* :BEGININLINECODE/:ENDINLINECODE keywords *)
 
 (* Class definitions *)
-ClassDefinition ::= ClassDeclaration [InheritStatement] {ClassFieldDeclaration} {MethodDeclaration} [ConstructorDeclaration] (* Compiler enforces this ordering: INHERIT, fields, methods, then Constructor *)
-ClassDeclaration ::= ":" "CLASS" [Identifier] ";" (* Class name is optional in the parser *)
+ClassDefinition ::= ClassDeclaration [InheritStatement] {ClassFieldDeclaration} {MethodDeclaration} [ConstructorDeclaration] (* This ordering is required: INHERIT, fields, methods, then Constructor *)
+ClassDeclaration ::= ":" "CLASS" [Identifier] ";" (* Class name is syntactically optional *)
 InheritStatement ::= ":" "INHERIT" (Identifier | QualifiedIdentifier) ";" (* Supports qualified names like "Category.ClassName" *)
 ClassFieldDeclaration ::= ":" "DECLARE" IdentifierList ";" (* Used for class fields *)
 MethodDeclaration ::= ProcedureStatement (* Methods are defined like procedures within a class context *)
@@ -213,7 +213,7 @@ ParametersStatement ::= ":" "PARAMETERS" IdentifierList (* Must appear before an
 DeclareStatement ::= ":" "DECLARE" IdentifierList (* Regular statement — can appear anywhere *)
 DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Must immediately follow :PARAMETERS *)
 PublicStatement ::= ":" "PUBLIC" IdentifierList (* Regular statement — can appear anywhere *)
-IncludeStatement ::= ":" "INCLUDE" IncludeTarget (* Lexer-level textual inclusion; place early for clarity *)
+IncludeStatement ::= ":" "INCLUDE" IncludeTarget (* Resolved as a textual paste; place early for clarity *)
 IncludeTarget ::= Identifier | QualifiedIdentifier
 QualifiedIdentifier ::= Identifier {"." Identifier}
 
@@ -230,7 +230,7 @@ IndirectFunctionCall ::= Identifier "(" StringLiteral ["," ArrayLiteral] ")" (* 
 ArgumentList ::= Expression {"," Expression}
 
 (* Comment statements *)
-CommentStatement ::= "/*" {Character} ";" (* All SSL comments use the same syntax: /* ... ; The lexer does not distinguish single-line from multi-line — both forms are syntactically identical. Multi-line comments simply contain embedded newlines within the character sequence. *)
+CommentStatement ::= "/*" {Character} ";" (* All SSL comments use the same syntax: /* ... ; SSL does not distinguish single-line from multi-line — both forms are syntactically identical. Multi-line comments simply contain embedded newlines within the character sequence. *)
 
 (* Special structures *)
 LabelStatement ::= ":" ("LABEL" Identifier {Identifier} | MashedLabelName) (* Accepted forms include :LABEL Name; and :LABELName; *)
@@ -318,7 +318,7 @@ DecimalPart ::= "." Digit {Digit} (* Ensures at least one digit after the decima
 Exponent    ::= ("e" | "E") ["-"] Digit {Digit}
 
 StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | BracketString (* Double-quoted, single-quoted, or bracket strings; no escape sequences — backslashes are literal *)
-BracketString ::= "[" {BracketChar} "]" (* The lexer supports one level of nested brackets: [[a]b] yields the string [a]b. An inner "[" opens a nested span that consumes characters until its paired "]", then the outer "]" closes the string. Deeper nesting is not supported. *)
+BracketString ::= "[" {BracketChar} "]" (* Bracket strings allow one level of nesting: [[a]b] yields the string [a]b. An inner "[" opens a nested span that consumes characters until its paired "]", then the outer "]" closes the string. Deeper nesting is not supported. *)
 BooleanLiteral ::= ".T." | ".F." (* Case-insensitive: .t. and .f. are also valid. .T./.F. are the canonical forms *)
 ArrayLiteral ::= "{" [ExpressionList] "}" (* Nested arrays are naturally supported since Expression includes ArrayLiteral; mixed content like {1, {2,3}, "x"} is valid *)
 NilLiteral ::= "NIL" (* Case-insensitive: nil, Nil, etc. are also valid *)
@@ -366,7 +366,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 10. **Database Integration**: Database queries are typically represented as string literals. Parameters in database statements can be represented as `?PARAMETER?` (named parameters) or simply `?` (positional parameters).
 
-11. **For Loop Structure**: For loops require an immediate iterator assignment (`:FOR i := 1 :TO 10;`) which cannot be set outside the loop declaration. The loop terminator is `:NEXT`, not `:ENDFOR`. Although `:ENDFOR` is a recognized keyword, it is not accepted in practice — using it causes a parse error.
+11. **For Loop Structure**: For loops require an immediate iterator assignment (`:FOR i := 1 :TO 10;`) which cannot be set outside the loop declaration. The loop terminator is `:NEXT`, not `:ENDFOR`. Although `:ENDFOR` is a reserved word, it is not usable — writing it is rejected as a syntax error.
 
 12. **Array Access**: Multi-dimensional arrays can be accessed using comma notation `array[1,2]` or chained bracket notation `array[1][2]`. Array indexing is 1-based (the first element is at index 1, not 0).
 
@@ -399,7 +399,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 25. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`, `^=`).
 
-26. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by compiler). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
+26. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by the language). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
 
 27. **Comparison Operators**: `=` is loose equality (for strings: returns `.T.` if right is empty or if left starts with right; for numbers: exact). `==` is strict equality. `!=` is the preferred not-equals operator; `<>` and `#` are equivalent but not preferred. All three negate `==` (strict), not `=` (loose) — so for strings, `=` and `!=` are **not logical opposites**. The operators `===` and `!==` are not supported. `$` is containment: `left $ right` returns `.T.` if left is found inside right.
 
@@ -407,7 +407,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 29. **BEGINCASE Multi-Match Behavior**: `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` executes only if no earlier `:CASE` body ran, even if a matching `:CASE` omitted `:EXITCASE`. At least one `:CASE` block is required.
 
-30. **TRY/CATCH/FINALLY**: At least one of `:CATCH` or `:FINALLY` is required. Bare `:TRY`...`:ENDTRY` without either is a compile error. `:EXITFOR`, `:EXITWHILE`, `:LOOP`, and `:RETURN` are compile errors inside `:FINALLY` blocks.
+30. **TRY/CATCH/FINALLY**: At least one of `:CATCH` or `:FINALLY` is required. Bare `:TRY`...`:ENDTRY` without either is rejected. `:EXITFOR`, `:EXITWHILE`, `:LOOP`, and `:RETURN` are rejected inside `:FINALLY` blocks.
 
 ## Implementation Considerations for Formatting Tools
 

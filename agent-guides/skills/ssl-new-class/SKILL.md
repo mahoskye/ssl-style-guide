@@ -48,9 +48,9 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
      `CreateUdObject("Category.ClassName")`
    - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
 
-5. **Apply enforced member ordering** (compiler requirement):
+5. **Apply enforced member ordering** (required by the language):
    ```
    :INHERIT  (if base class provided)
    :DECLARE  (field declarations)
@@ -167,7 +167,7 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - `:CLASS` continues to end of file; do not add `:ENDCLASS`
    - Constructor must be the **last** procedure in the class
    - Class files have no script entry point — to instantiate: `CreateUdObject("Category.ClassName")`
-   - One class per file (compiler enforced)
+   - One class per file (enforced by the language)
    - All statements end with `;`
    - If a method has no parameters, omit `:PARAMETERS`
    - Inside `:CATCH`, use `GetLastSSLError()` if you need error details

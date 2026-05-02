@@ -33,7 +33,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
    - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY` (no multi-catch)
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement; `:CATCH` body allows zero or more statements
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
    - `:BEGINCASE` requires at least one `:CASE`
    - Use one statement per line
    - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
@@ -66,7 +66,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - Flag use of legacy `:ERROR` / `:RESUME` — prefer `:TRY` / `:CATCH` / `:ENDTRY`
 - Verify `:TRY` blocks have at least one `:CATCH` or `:FINALLY`
 - Flag multiple `:CATCH` blocks on a single `:TRY` (only one allowed)
-- Flag `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside a `:FINALLY` block (compile error)
+- Flag `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside a `:FINALLY` block (rejected)
 - Flag empty `:CATCH` blocks (swallowed errors) unless intentional
 - Flag missing `:TRY` around external calls (`ExecFunction`, `SQLExecute`, DB functions)
 
@@ -127,7 +127,7 @@ types, 29 classes, 6 special forms, 330 functions.
 - **Missing `:EXITCASE`:** Each `:CASE` / `:OTHERWISE` block should end with `:EXITCASE;` unless multi-match behavior is intentional (without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute, but `:OTHERWISE` stays skipped once any earlier case body has run).
 - **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope.
 - **Bare procedure calls:** Direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
-- **`DoProc` in class methods:** `DoProc` is a compile error inside `:CLASS` methods — use `Me:Method()` instead.
+- **`DoProc` in class methods:** `DoProc` is rejected inside `:CLASS` methods — use `Me:Method()` instead.
 - **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended. Note: `!=` negates `==` (strict), not `=` (prefix), so `=` and `!=` are **not** logical opposites for strings.
 
 ---
@@ -147,6 +147,6 @@ At the end, provide a summary:
 Summary: N issues found (X errors, Y warnings, Z suggestions)
 ```
 
-Use **error** for compiler violations, **warning** for likely bugs or legacy patterns, **suggestion** for style improvements.
+Use **error** for language violations, **warning** for likely bugs or legacy patterns, **suggestion** for style improvements.
 
 If no issues are found in a category, note "No issues found."
