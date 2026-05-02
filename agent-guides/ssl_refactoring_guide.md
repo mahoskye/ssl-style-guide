@@ -86,12 +86,12 @@ Refactored SSL scripts should follow this target structure in order:
 
 > **Ordering rules:** `:PARAMETERS` must appear before any other statements.
 > `:DEFAULT` must immediately follow `:PARAMETERS`. `:DECLARE` and `:PUBLIC`
-> are regular statements and can appear anywhere. `:INCLUDE` is resolved at
-> the lexer level (textual inclusion) before parsing, so its position is
+> are regular statements and can appear anywhere. `:INCLUDE` is resolved as
+> a textual paste before the rest of the file is read, so its position is
 > technically flexible, but it should appear early. Recommended conventional
 > order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
 
-> **Data source files do not follow this layout.** SSL and SQL data source files are preprocessed before compilation and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain builder directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the SSL grammar. See `ssl_agent_instructions.md` §4A for details.
+> **Data source files do not follow this layout.** SSL and SQL data source files are preprocessed before they run and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain preprocessor directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the standard SSL language. See `ssl_agent_instructions.md` §4A for details.
 
 ### 2.2 Header Template
 
@@ -132,7 +132,7 @@ _______________________________________________________________________________
 :ENDPROC;
 ```
 
-More than 20 parameters on a procedure or method triggers a compiler performance warning; prefer grouping related state into arrays/objects or using wrapper-core patterns.
+More than 20 parameters on a procedure or method triggers a performance warning; prefer grouping related state into arrays/objects or using wrapper-core patterns.
 
 ### 2.4 Data Source File Structure
 
@@ -174,7 +174,7 @@ Data source files have a different structure from scripts and classes. Do not ap
 - Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
 - Every parameter must have a default value
 - Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
-- The builder rewrites everything into standard SSL before compilation
+- The preprocessor rewrites everything into standard SSL before the script runs
 
 ### 2.5 Regions for Organization
 
@@ -592,7 +592,7 @@ For operations that need multiple entry points:
 :ENDPROC;
 ```
 
-> **`:FINALLY` restrictions:** The following statements are **compile errors** inside a `:FINALLY` block: `:RETURN`, `:EXITFOR`, `:EXITWHILE`, `:LOOP`. Keep `:FINALLY` blocks limited to cleanup logic only.
+> **`:FINALLY` restrictions:** The following statements are **rejected** inside a `:FINALLY` block: `:RETURN`, `:EXITFOR`, `:EXITWHILE`, `:LOOP`. Keep `:FINALLY` blocks limited to cleanup logic only.
 
 ---
 

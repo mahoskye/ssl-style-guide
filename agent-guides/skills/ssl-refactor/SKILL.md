@@ -34,7 +34,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
      `ExecFunction("Category.Script.Proc", {args})` for external entry points
    - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are compile errors
+   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
    - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional
    - `:BEGINCASE` requires at least one `:CASE` block
    - Use `==` for exact string equality; `=` is prefix matching for strings

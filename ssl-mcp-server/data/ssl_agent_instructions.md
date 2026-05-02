@@ -10,8 +10,8 @@ Authoritative rules describe documented language behavior; style recommendations
 1. **Colon-prefixed keywords are case-sensitive** and must be UPPERCASE (e.g., `:IF`, `:FOR`). **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
-4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved at the lexer level (textual inclusion) before parsing, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
-5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is a compile-time error inside class methods.
+4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
+5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is a rejected inside class methods.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
 8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
@@ -56,7 +56,7 @@ Authoritative rules describe documented language behavior; style recommendations
 * **Parameters & Defaults:**
     * **Placement:** `:PARAMETERS` must appear before any other statements in a script or procedure body. Inside a procedure, `:PARAMETERS` must immediately follow the `:PROCEDURE` line.
     * **Defaults:** `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`).
-    * **`:INCLUDE`** is resolved at the lexer level (textual inclusion) before parsing; it should appear early. **`:DECLARE`** and **`:PUBLIC`** are regular statements and can appear anywhere.
+    * **`:INCLUDE`** is resolved as a textual paste before the rest of the file is read; it should appear early. **`:DECLARE`** and **`:PUBLIC`** are regular statements and can appear anywhere.
     * **Recommended conventional order:** `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
     * Syntax:
       ```ssl
@@ -65,7 +65,7 @@ Authoritative rules describe documented language behavior; style recommendations
       :DEFAULT sName, "Unknown";
       :DECLARE sLocalVar;
       ```
-    * **Data source files use different syntax.** In data source files, parameters use inline `:=` assignment and are preprocessed before compilation — see §4A for details.
+    * **Data source files use different syntax.** In data source files, parameters use inline `:=` assignment and are preprocessed before the script runs — see §4A for details.
 
 ### Control Flow
 
@@ -75,12 +75,12 @@ Authoritative rules describe documented language behavior; style recommendations
 * **Loops:**
     * **For:** `:FOR i := 1 :TO 10; ... :NEXT;` (`:STEP` is optional, defaults to 1)
         * With step: `:FOR i := 1 :TO 10 :STEP 2; ... :NEXT;`
-        * **Semantics:** The `:TO` limit and `:STEP` expressions are evaluated **once before the loop starts**. The loop continues while `var <= limit` (when step ≥ 0) or `var >= limit` (when step < 0). A `:STEP 0` value produces a non-terminating loop if the initial condition is true. `:NEXT` is the only valid closing keyword — `:ENDFOR` is recognized by the lexer but causes a parse error.
+        * **Semantics:** The `:TO` limit and `:STEP` expressions are evaluated **once before the loop starts**. The loop continues while `var <= limit` (when step ≥ 0) or `var >= limit` (when step < 0). A `:STEP 0` value produces a non-terminating loop if the initial condition is true. `:NEXT` is the only valid closing keyword — `:ENDFOR` is reserved but not usable, and writing it is rejected as a syntax error.
     * **While:** `:WHILE condition; ... :ENDWHILE;`
     * **Loop Control:** `:EXITFOR;`, `:EXITWHILE;`, `:LOOP;` (continues to next iteration).
 
 * **Case Blocks (Strict Structure):**
-    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is a compile error). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
+    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is rejected). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
     * **Style Guidance:** Include `:OTHERWISE` for default handling (advisory — not required by the language). End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
     * Syntax:
       ```ssl
@@ -115,7 +115,7 @@ Authoritative rules describe documented language behavior; style recommendations
       **Body requirements:** The `:TRY` body requires **at least one statement**. The `:CATCH` body allows **zero or more statements** (an empty `:CATCH` block is valid). The `:FINALLY` body, if present, requires **at least one statement**.
       **Only one `:CATCH` block is allowed per `:TRY`** — there is no multi-catch.
       **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Message`, `:Description`, `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx`, `:InnerException`, and `:NETException`.
-      **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **compile-time errors**.
+      **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **rejecteds**.
       ```ssl
       :TRY;
           /* Code that might error;
@@ -137,7 +137,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Functions & Procedures
 
-* **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`. More than 20 parameters on a procedure or method triggers a compiler performance warning; prefer grouping related state into arrays/objects.
+* **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`. More than 20 parameters on a procedure or method triggers a performance warning; prefer grouping related state into arrays/objects.
 * **Return Values:** Use `:RETURN value;` to return a value from a procedure. Without `:RETURN`, procedures return no value / an empty result.
 * **Calling Convention (CRITICAL):**
     * **Custom Procedures:** You **cannot** call custom procedures directly (e.g., `MyProc()`).
@@ -169,11 +169,11 @@ Authoritative rules describe documented language behavior; style recommendations
       ```
 
 * **Class Definition:**
-    * `:CLASS [ClassName];` defines a class and continues until end of file (no end keyword). The parser permits unnamed classes, but new and refactored code should provide an explicit class name.
+    * `:CLASS [ClassName];` defines a class and continues until end of file (no end keyword). The class name is syntactically optional, but new and refactored code should always provide an explicit class name.
     * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value.
-    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. `DoProc` is a compile-time error inside class methods — all forms are rejected, not just same-class calls.
+    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. `DoProc` is a rejected inside class methods — all forms are rejected, not just same-class calls.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
     * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
       ```ssl
@@ -216,7 +216,7 @@ Authoritative rules describe documented language behavior; style recommendations
       /* Code here;
   /* endregion;
   ```
-* **Includes:** `:INCLUDE LibraryName;` or `:INCLUDE Category.ScriptName;` to include external SSL files. Resolved at the lexer level (textual inclusion); place early in the file after `:PARAMETERS`/`:DEFAULT`.
+* **Includes:** `:INCLUDE LibraryName;` or `:INCLUDE Category.ScriptName;` to include external SSL files. Resolved as a textual paste; place early in the file after `:PARAMETERS`/`:DEFAULT`.
 * **Public Variables:** `:PUBLIC varName1, varName2;` to declare global/public variables. Can appear anywhere in the statement flow.
 
 ### Inline Code & Regions (Functional Constructs)
@@ -252,7 +252,7 @@ Authoritative rules describe documented language behavior; style recommendations
   ```ssl
   /* Set x := 0; then increment;
   ```
-  This is actually **two** tokens: the comment `/* Set x := 0;` followed by the executable statement `then increment;` (which will cause a compile error). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
+  This is actually **two** tokens: the comment `/* Set x := 0;` followed by the executable statement `then increment;` (which is rejected). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
 
 ---
 
@@ -554,17 +554,17 @@ aData := SQLExecute("
 
 ## 4A. Data Source Files (Preprocessed Syntax)
 
-Data source files are **not compiled directly** by the SSL compiler. They are preprocessed by server-side builders that rewrite them into compiler-compatible SSL before compilation. This means data source files use syntax that does not exist in the SSL grammar.
+Data source files are **not executed directly**. They are preprocessed server-side and rewritten into standard SSL before they run. This means data source files use syntax that does not exist in the standard SSL language.
 
 ### File Types
 
 STARLIMS has three kinds of executable SSL files:
 
-| File Type | Compiler-Handled | Parameter Syntax | Notes |
+| File Type | Runs Directly | Parameter Syntax | Notes |
 |-----------|-----------------|------------------|-------|
-| **Server Script** | Yes | `:PARAMETERS p1, p2;` + `:DEFAULT p1, val;` | Standard SSL — all grammar rules apply |
-| **SSL Data Source** | Preprocessed first | `:PARAMETERS p1 := val1, p2 := val2;` | `SSLDataSourceBuilder` rewrites to script form |
-| **SQL Data Source** | Preprocessed first | `:PARAMETERS p1 := val1, p2 := val2;` | `SqlDataSourceBuilder` rewrites to `GetSSLDataset()` call |
+| **Server Script** | Yes | `:PARAMETERS p1, p2;` + `:DEFAULT p1, val;` | Standard SSL — all language rules apply |
+| **SSL Data Source** | Preprocessed first | `:PARAMETERS p1 := val1, p2 := val2;` | Preprocessor rewrites to script form |
+| **SQL Data Source** | Preprocessed first | `:PARAMETERS p1 := val1, p2 := val2;` | Preprocessor rewrites to a `GetSSLDataset()` call |
 
 ### SSL Data Source Parameter Syntax
 
@@ -578,7 +578,7 @@ In SSL data source files, `:PARAMETERS` uses inline `:=` assignment for defaults
 - Every parameter **must** have a default value (the builder throws an error otherwise)
 - `:PARAMETERS;` with no parameters is an error
 - There is no separate `:DEFAULT` statement — defaults are inline
-- The builder rewrites the above into compiler-compatible form before compilation:
+- The preprocessor rewrites the above into standard form before the script runs:
   ```ssl
   :PARAMETERS sStatus, nMaxRows;
   :DEFAULT sStatus, "A";
@@ -608,7 +608,7 @@ WHERE status = ?sStatus?
 | `:NULLASBLANK := true;` | Controls null-to-blank conversion |
 | `:INVARIANTDATECOLUMNS := col1, col2;` | Columns treated as invariant dates |
 
-The `SqlDataSourceBuilder` rewrites the entire file into an SSL script that calls `GetSSLDataset()` with the appropriate arguments.
+The SQL data source preprocessor rewrites the entire file into an SSL script that calls `GetSSLDataset()` with the appropriate arguments.
 
 ### Calling Data Sources
 
@@ -814,7 +814,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 ## 8. Edge Cases & Gotchas
 
 1.  **Implicit Concatenation Error:** Do not try to put `:DEFAULT` on a `:DECLARE` line. They are separate steps.
-2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — `DoProc` is a compile-time error inside class methods (all forms, not just same-class calls).
+2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — `DoProc` is a rejected inside class methods (all forms, not just same-class calls).
 3.  **Case Sensitivity Inversion:** Unlike many languages where keywords are lower (`if`) and vars are sensitive, SSL is the opposite: Keywords are strict (`:IF`), identifiers are loose (`sVar` == `SVAR`).
 4.  **Semicolons:** Almost every line (including comments) must end with `;`.
 5.  **1-Based Arrays:** SSL arrays are 1-based, not 0-based. First element is `aArray[1]`.
@@ -829,15 +829,15 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 14. **Procedure References:** Procedure names should only be matched in execution contexts (`DoProc`, `ExecFunction`), not in comments, strings, or unrelated identifiers.
 15. **Comment Toggle:** SSL uses `/* ... ;` comment syntax. Toggling comments should add/remove this pattern, not `//` style comments.
 16. **:STEP Keyword Spacing:** The `:STEP` keyword in FOR loops should have a space before it: `:FOR i := 1 :TO 10 :STEP 2;` not `:FOR i := 1 :TO 10:STEP 2;`
-17. **:ENDFOR Is Not Valid:** Although `:ENDFOR` exists as a recognized token in the lexer, it is **not a usable keyword**. FOR loops must be terminated with `:NEXT`, not `:ENDFOR` — using `:ENDFOR` causes a parse error.
+17. **:ENDFOR Is Not Valid:** Although `:ENDFOR` is a reserved word, it is **not a usable keyword**. FOR loops must be terminated with `:NEXT`, not `:ENDFOR` — using `:ENDFOR` is rejected as a syntax error.
 18. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match. **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=` but `!=` is preferred.
 19. **Default Variable Value:** All declared variables start as empty string `""`, not `NIL`.
 20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
 21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
 22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
 23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Every parameter must have a default. See §4A.
-24. **Data source directives are not SSL keywords.** `:DSN`, `:TABLENAME`, `:NULLASBLANK`, and `:INVARIANTDATECOLUMNS` only exist in SQL data source files and are processed by `SqlDataSourceBuilder` before compilation. Do not flag them as unknown keywords.
-25. **Data source parameter syntax is preprocessed.** The `:=` inline syntax in data source `:PARAMETERS` is rewritten by the builder into standard `:PARAMETERS` + `:DEFAULT` before the compiler sees it. The compiler never encounters the `:=` form.
+24. **Data source directives are not SSL keywords.** `:DSN`, `:TABLENAME`, `:NULLASBLANK`, and `:INVARIANTDATECOLUMNS` only exist in SQL data source files and are handled by the data source preprocessor before the script runs. Do not flag them as unknown keywords.
+25. **Data source parameter syntax is preprocessed.** The `:=` inline syntax in data source `:PARAMETERS` is rewritten by the preprocessor into standard `:PARAMETERS` + `:DEFAULT` before the script runs. The runtime never sees the `:=` form.
 
 ---
 
