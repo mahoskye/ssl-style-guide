@@ -119,6 +119,23 @@ bun run check:consistency
 These skills should follow the schema and agent guides rather than introducing
 alternative rules or wording.
 
+## Agent Definitions
+
+`agent-guides/agents/` contains the canonical, tool-neutral definitions for three
+SSL developer agents:
+
+- `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
+- `ssl-reviewer` — review SSL code against the style guide (read-only)
+- `ssl-refactorer` — modernize and clean up SSL code, preserving behavior
+
+Each agent is authored once; `tools/generate-agents.mjs` emits per-tool adapter
+files — `.github/agents/` for GitHub Copilot, `.opencode/agent/` for opencode, and
+`.claude/agents/` for Claude Code. These adapters are git-ignored build
+artifacts: run `bun tools/generate-agents.mjs` after a fresh clone and after
+editing a canonical `*.agent.md` file. See `agent-guides/agents/README.md` for the
+format; `bun run check:consistency` also runs `--check` to flag adapters that have
+drifted from their sources.
+
 ## Metadata
 
 - Version: `1.3.0`
