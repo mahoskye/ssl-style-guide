@@ -89,6 +89,7 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 - Add `:EXITCASE;` at end of `:CASE` and `:OTHERWISE` blocks (unless multi-match behavior is intentional)
 - Replace bare procedure calls with `DoProc("ProcName", {args})`
 - Inside class methods, replace any `DoProc` with `Me:Method()`
+- Inside class methods, qualify unqualified reads/writes of `:DECLARE` class fields with `Me:fieldName` (or `Base:fieldName` for inherited fields). A bare identifier creates a local instead of touching the field.
 
 **Comments:**
 - Fix comments that contain `;` in the comment body text (move semicolon to end only)

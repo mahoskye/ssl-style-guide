@@ -11,7 +11,7 @@ Authoritative rules describe documented language behavior; style recommendations
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
 4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
-5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is a rejected inside class methods.
+5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is rejected inside class methods.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
 8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
@@ -115,7 +115,7 @@ Authoritative rules describe documented language behavior; style recommendations
       **Body requirements:** The `:TRY` body requires **at least one statement**. The `:CATCH` body allows **zero or more statements** (an empty `:CATCH` block is valid). The `:FINALLY` body, if present, requires **at least one statement**.
       **Only one `:CATCH` block is allowed per `:TRY`** — there is no multi-catch.
       **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Message`, `:Description`, `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx`, `:InnerException`, and `:NETException`.
-      **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **rejecteds**.
+      **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **rejected**.
       ```ssl
       :TRY;
           /* Code that might error;
@@ -173,7 +173,8 @@ Authoritative rules describe documented language behavior; style recommendations
     * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value.
-    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. `DoProc` is a rejected inside class methods — all forms are rejected, not just same-class calls.
+    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. `DoProc` is rejected inside class methods — all forms are rejected, not just same-class calls.
+    * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
     * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
       ```ssl
@@ -182,19 +183,20 @@ Authoritative rules describe documented language behavior; style recommendations
           /* This procedure cannot be called from other scripts;
       :ENDPROC;
       ```
-    * **`Me` form:** Self-reference to the current class instance. Use `Me:PropertyName` or `Me:MethodName(args)`. Can only be used inside a `:CLASS` definition.
-    * **`Base` form:** Reference to the parent class in a `:CLASS` with `:INHERIT`. Must always be followed by `:MemberName` — cannot stand alone. Use `Base:MethodName(args)` to call overridden parent methods.
+    * **`Me` form:** Self-reference to the current class instance. Use `Me:fieldName` or `Me:MethodName(args)`. Can only be used inside a `:CLASS` definition.
+    * **`Base` form:** Reference to the parent class in a `:CLASS` with `:INHERIT`. Must always be followed by `:MemberName` — cannot stand alone. Use `Base:MethodName(args)` to call overridden parent methods, or `Base:fieldName` to access an inherited field.
+    * **Terminology:** `:DECLARE` slots on a class are **fields**. Reserve "property" for `SSLExpando` / `AddProperty` / `CreateUdObject` anonymous-object members, which are a separate runtime mechanism.
     * Example:
       ```ssl
       :CLASS MyClass;
           :INHERIT Lab.BaseClass;
 
-      :DECLARE sProperty, nValue;
+      :DECLARE sName, nValue;
 
       :PROCEDURE Initialize;
-          :PARAMETERS sName;
-          sProperty := sName;
-          Base:Initialize(sName);
+          :PARAMETERS sNewName;
+          Me:sName := sNewName;       /* writes the class field;
+          Base:Initialize(sNewName);  /* call inherited method;
       :ENDPROC;
 
       :PROCEDURE GetSelf;
@@ -202,11 +204,13 @@ Authoritative rules describe documented language behavior; style recommendations
       :ENDPROC;
 
       :PROCEDURE Constructor;
-          :PARAMETERS sName;
-          sProperty := sName;
-          nValue := 0;
+          :PARAMETERS sNewName;
+          Me:sName := sNewName;
+          Me:nValue := 0;
       :ENDPROC;
       ```
+
+* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects, available only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is; in non-endpoint scripts the identifiers are not bound and references will fail at runtime.
 
 ### Code Organization
 
@@ -370,6 +374,10 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 | **1-based indexing** | First element is at index 1, not 0 |
 | `Count` | Returns the number of elements |
 | Deep clone | The `clone()` method recursively clones all elements |
+
+### .NET Method Dispatch on Built-in Types
+
+SSL's built-in scalar and array types are backed by underlying .NET values, and member access with `:` forwards to that .NET object when no SSL-side member matches. This means a string value supports `:Length`, `:ToUpper()`, `:Substring(...)`, `:IndexOf(...)`, etc., a date value supports `:Year`, `:AddDays(...)`, a number value supports `:ToString(...)`, an array value exposes its underlying `:Count` and list members, and a boolean value supports `:ToString()`. Prefer SSL built-in functions (`Len`, `Upper`, `SubStr`, ...) for ordinary work — the implicit `:` dispatch is useful when the SSL surface does not cover what you need (formatted conversions, culture-aware comparisons, .NET-specific helpers), and it returns whatever the underlying .NET method returns, which may not be an SSL-friendly type. The same mechanism lets `MakeNETObject(value)` produce a wrapped value (`netobject`) that you then call .NET members on with `:`.
 
 ### Operators Summary
 
@@ -814,7 +822,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 ## 8. Edge Cases & Gotchas
 
 1.  **Implicit Concatenation Error:** Do not try to put `:DEFAULT` on a `:DECLARE` line. They are separate steps.
-2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — `DoProc` is a rejected inside class methods (all forms, not just same-class calls).
+2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — `DoProc` is rejected inside class methods (all forms, not just same-class calls).
 3.  **Case Sensitivity Inversion:** Unlike many languages where keywords are lower (`if`) and vars are sensitive, SSL is the opposite: Keywords are strict (`:IF`), identifiers are loose (`sVar` == `SVAR`).
 4.  **Semicolons:** Almost every line (including comments) must end with `;`.
 5.  **1-Based Arrays:** SSL arrays are 1-based, not 0-based. First element is `aArray[1]`.
