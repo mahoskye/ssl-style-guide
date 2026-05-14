@@ -1,0 +1,14 @@
+{
+  "name": "ssl-style-guide-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Maintainer tooling for the SSL style guide repository",
+  "type": "module",
+  "scripts": {
+    "generate-agents": "bun generate-agents.mjs",
+    "check-agents": "bun generate-agents.mjs --check"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0"
+  }
+}
