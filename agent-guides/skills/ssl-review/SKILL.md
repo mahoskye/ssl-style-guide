@@ -128,6 +128,7 @@ types, 29 classes, 6 special forms, 330 functions.
 - **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope.
 - **Bare procedure calls:** Direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
 - **`DoProc` in class methods:** `DoProc` is rejected inside `:CLASS` methods — use `Me:Method()` instead.
+- **Unqualified class field access:** Inside a `:CLASS` method, any read or write of a name that appears in the class's `:DECLARE` list (and is not also a local or `:PARAMETERS` name) must be qualified with `Me:` (or `Base:` for an inherited field). A bare identifier creates/uses a local instead and silently leaves the field unchanged.
 - **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended. Note: `!=` negates `==` (strict), not `=` (prefix), so `=` and `!=` are **not** logical opposites for strings.
 
 ---

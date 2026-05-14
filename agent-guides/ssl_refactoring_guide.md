@@ -627,6 +627,30 @@ result := ExecFunction("Category.Script.Proc", {arg1, arg2});
 :ENDPROC;
 ```
 
+### 7.2a Unqualified Class Field Access
+
+```ssl
+/* WRONG - bare identifier resolves to a local, not the :DECLARE field;
+:CLASS Customer;
+:DECLARE sName, nBalance;
+
+:PROCEDURE Initialize;
+    :PARAMETERS sNewName;
+    sName := sNewName;    /* creates a local sName; the field is untouched;
+    nBalance := 0;        /* same problem — writes to a local;
+:ENDPROC;
+
+/* CORRECT - qualify class fields with Me: (or Base: for inherited fields);
+:CLASS Customer;
+:DECLARE sName, nBalance;
+
+:PROCEDURE Initialize;
+    :PARAMETERS sNewName;
+    Me:sName := sNewName;
+    Me:nBalance := 0;
+:ENDPROC;
+```
+
 ### 7.3 Incorrect SQL Parameter Syntax
 
 ```ssl
@@ -807,6 +831,7 @@ Run through this checklist after refactoring:
 
 ### Logic
 - [ ] All script procedure calls use DoProc or ExecFunction; inside classes, sibling/inherited methods use `Me:` / `Base:`
+- [ ] Inside class methods, `:DECLARE` class fields are accessed via `Me:fieldName` / `Base:fieldName` (bare identifiers resolve to locals, not fields)
 - [ ] :CASE blocks use :EXITCASE unless multiple matching cases are intentional
 - [ ] :BEGINCASE includes :OTHERWISE for default handling (advisory — the language only requires at least one :CASE)
 - [ ] All blocks properly closed (:IF/:ENDIF, etc.)
