@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { readFileSync } from 'fs';
+import { execFileSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { loadAllData } from '../src/data/loader.ts';
@@ -141,5 +142,19 @@ assertIncludes(
   'bun run check:consistency',
   'MCP README consistency command'
 );
+
+// Generated agent adapters must stay in sync with their canonical sources in
+// agent-guides/agents/ (see tools/generate-agents.mjs).
+try {
+  execFileSync('bun', [resolve(repoRoot, 'tools/generate-agents.mjs'), '--check'], {
+    stdio: 'pipe',
+  });
+} catch (error) {
+  const detail = [error.stdout, error.stderr]
+    .map((stream) => (stream ? stream.toString().trim() : ''))
+    .filter(Boolean)
+    .join('\n');
+  fail(`Agent adapters out of sync — run 'bun tools/generate-agents.mjs'.\n${detail}`);
+}
 
 console.log('Consistency checks passed.');
