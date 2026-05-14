@@ -4,12 +4,12 @@
  * Generate per-tool agent adapter files from the canonical, tool-neutral agent
  * definitions in agent-guides/agents/.
  *
- * Canonical source:  agent-guides/agents/<name>.agent.md
- * Generated outputs:
- *   .github/agents/<name>.agent.md   GitHub Copilot      (committed)
- *   .opencode/agent/<name>.md        opencode            (committed)
- *   .claude/agents/<name>.md         Claude Code         (git-ignored, local-only)
- *   AGENTS.md managed block          OpenAI Codex        (git-ignored, local-only)
+ * Canonical source:  agent-guides/agents/<name>.agent.md  (tracked)
+ * Generated outputs (all git-ignored build artifacts):
+ *   .github/agents/<name>.agent.md   GitHub Copilot
+ *   .opencode/agent/<name>.md        opencode
+ *   .claude/agents/<name>.md         Claude Code
+ *   AGENTS.md managed block          OpenAI Codex (degrades to instructions + skills)
  *
  * Usage:
  *   bun tools/generate-agents.mjs           write adapters
@@ -268,21 +268,25 @@ function main() {
   const agents = files.map(loadManifest);
   const claudePresent = existsSync(CLAUDE_DIR);
 
-  // Adapter files.
+  // Adapter files. All adapters are git-ignored build artifacts.
   const outputs = planOutputs(agents);
   const drift = [];
   const written = [];
 
   for (const output of outputs) {
-    if (output.local && !claudePresent) {
-      continue; // .claude/ absent (e.g. fresh clone) — local-only adapter, skip.
-    }
     const current = readIfExists(output.path);
-    if (current === output.content) continue;
     if (CHECK_ONLY) {
-      drift.push(output.label);
+      // Only flag adapters that exist on disk and have drifted — a not-yet-
+      // generated adapter (e.g. a fresh clone) is not drift.
+      if (current !== null && current !== output.content) {
+        drift.push(output.label);
+      }
       continue;
     }
+    if (output.local && !claudePresent) {
+      continue; // .claude/ absent (e.g. fresh clone) — skip the Claude adapter.
+    }
+    if (current === output.content) continue;
     mkdirSync(dirname(output.path), { recursive: true });
     writeFileSync(output.path, output.content, 'utf8');
     written.push(output.label);

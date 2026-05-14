@@ -2,4 +2,6 @@ node_modules/
 dist/
 .claude/
 AGENTS.md
+.github/agents/
+.opencode/agent/
 .githooks/

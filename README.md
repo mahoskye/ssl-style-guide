@@ -130,10 +130,11 @@ SSL developer agents:
 
 Each agent is authored once; `tools/generate-agents.mjs` emits per-tool adapter
 files — `.github/agents/` for GitHub Copilot, `.opencode/agent/` for opencode, and
-`.claude/agents/` for Claude Code. Run `bun tools/generate-agents.mjs` after
+`.claude/agents/` for Claude Code. These adapters are git-ignored build
+artifacts: run `bun tools/generate-agents.mjs` after a fresh clone and after
 editing a canonical `*.agent.md` file. See `agent-guides/agents/README.md` for the
-format; `bun run check:consistency` also runs `--check` so committed adapters
-cannot drift from their sources.
+format; `bun run check:consistency` also runs `--check` to flag adapters that have
+drifted from their sources.
 
 ## Metadata
 

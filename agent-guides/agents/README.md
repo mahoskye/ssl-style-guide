@@ -46,35 +46,36 @@ header), so write it tool-neutrally — reference skills by their
 
 ## Generated adapters
 
-Run from the repo root after editing any canonical file:
+Run from the repo root after a fresh clone and after editing any canonical file:
 
 ```bash
 bun tools/generate-agents.mjs          # write adapters
 bun tools/generate-agents.mjs --check  # verify adapters are in sync (no writes)
 ```
 
-| Output | Tool | Tracked? |
+| Output | Tool | Status |
 | --- | --- | --- |
-| `.github/agents/<name>.agent.md` | GitHub Copilot (VS Code) | committed |
-| `.opencode/agent/<name>.md` | opencode | committed |
-| `.claude/agents/<name>.md` | Claude Code (CLI + VS Code extension) | git-ignored, local-only |
-| `AGENTS.md` managed block | OpenAI Codex (degrades to instructions + skills) | git-ignored, local-only |
+| `.github/agents/<name>.agent.md` | GitHub Copilot (VS Code) | git-ignored — regenerated |
+| `.opencode/agent/<name>.md` | opencode | git-ignored — regenerated |
+| `.claude/agents/<name>.md` | Claude Code (CLI + VS Code extension) | git-ignored — regenerated |
+| `AGENTS.md` managed block | OpenAI Codex (degrades to instructions + skills) | git-ignored — regenerated |
 
-`.claude/` and `AGENTS.md` are git-ignored, so their adapters are regenerated per
-clone. The generator also creates `.claude/CLAUDE.md` (with `@AGENTS.md`) if it
-is absent, because Claude Code reads `CLAUDE.md`, not `AGENTS.md`.
+All adapters are git-ignored build artifacts — only the canonical
+`agent-guides/agents/` sources are tracked. Run the generator after a fresh clone
+and after editing any canonical file. The generator also creates
+`.claude/CLAUDE.md` (with `@AGENTS.md`) if it is absent, because Claude Code reads
+`CLAUDE.md`, not `AGENTS.md`.
 
-`bun run check:consistency` (in `ssl-mcp-server/`) runs `--check` so committed
-adapters cannot drift from their canonical sources.
+`bun run check:consistency` (in `ssl-mcp-server/`) runs `--check`, which flags any
+adapter that exists on disk but has drifted from its canonical source.
 
 ## Adding or changing an agent
 
 1. Add or edit a `<name>.agent.md` file here; bump `version` on any change.
 2. Run `bun tools/generate-agents.mjs`.
-3. Commit the canonical file and the regenerated `.github/` / `.opencode/`
-   adapters together.
+3. Commit the canonical `*.agent.md` file only. The per-tool adapters are
+   git-ignored build artifacts — do not commit them.
 
-**Note:** Copilot reads both `.github/agents/` and `.claude/agents/`. Since
-`.claude/` is git-ignored, the committed `.github/agents/` files are the
-portable path; a local developer who also has `.claude/agents/` populated may
-see the agent listed twice.
+**Note:** Copilot reads both `.github/agents/` and `.claude/agents/`. Both are
+git-ignored and regenerated locally; a developer who has both populated may see
+the agent listed twice in Copilot.
