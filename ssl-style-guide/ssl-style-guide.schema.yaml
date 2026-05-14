@@ -953,7 +953,8 @@ ssl_style_guide:
     methods:
       - :PROCEDURE ...;
     fields:
-      - :DECLARE ...;
+      declaration:
+        - :DECLARE ...;
       access_rule: |
         Inside class methods, :DECLARE class fields must be qualified with
         Me:fieldName (or Base:fieldName for an inherited parent field).

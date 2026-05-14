@@ -953,9 +953,18 @@ ssl_style_guide:
     methods:
       - :PROCEDURE ...;
     fields:
-      - :DECLARE ...;
-    properties:
-      - object:property syntax
+      declaration:
+        - :DECLARE ...;
+      access_rule: |
+        Inside class methods, :DECLARE class fields must be qualified with
+        Me:fieldName (or Base:fieldName for an inherited parent field).
+        A bare identifier resolves to a local variable or :PARAMETERS entry,
+        not the class field, so an unqualified assignment silently creates a
+        local and leaves the field unchanged.
+      terminology_note: |
+        :DECLARE slots on a class are fields. Reserve "property" for
+        SSLExpando / AddProperty / CreateUdObject anonymous-object members,
+        which are a separate runtime mechanism.
     inheritance:
       single_inheritance: true
       base_class_qualified_names: true
