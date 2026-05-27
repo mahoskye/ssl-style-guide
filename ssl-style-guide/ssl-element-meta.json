@@ -2,7 +2,7 @@
   "version": "1.0",
   "source": "ssl-docs/content/reference",
   "totals": {
-    "elements": 446,
+    "elements": 448,
     "by_type": {
       "function": 330,
       "class": 29,
@@ -10,10 +10,10 @@
       "operator": 32,
       "literal": 3,
       "type": 8,
-      "special_form": 6
+      "special_form": 8
     },
     "with_exceptions": 263,
-    "with_caveats": 343,
+    "with_caveats": 345,
     "with_best_practices": 397
   },
   "elements": [
@@ -11867,7 +11867,7 @@
       "id": "ssl.class.sslcodeprovider",
       "element_type": "class",
       "title": "SSLCodeProvider",
-      "summary": "Compiles published server scripts and data sources and returns the compilation results as an SSLCompilerErrorList.",
+      "summary": "Compiles published server scripts and data sources and returns a list of compilation errors.",
       "doc_status": "published",
       "source_path": "content/reference/classes/SSLCodeProvider.md",
       "exceptions": [],
@@ -11880,7 +11880,7 @@
         "do": [
           "Pass a full category.name or a GUID when targeting one server script or data source.",
           "Use the bulk and category methods when validating larger changes.",
-          "Check the returned SSLCompilerErrorList even when you expect a clean compile.",
+          "Check the returned error list even when you expect a clean compile.",
           "Use category GUIDs with the ...Category and ...Categories methods."
         ],
         "dont": [
@@ -12139,7 +12139,7 @@
       "source_path": "content/reference/classes/WebServices.md",
       "exceptions": [],
       "caveats": [
-        "This page documents the WebServices factory class only. The returned HTTP and SOAP client objects have their own APIs that are not described here."
+        "This page documents the factory only. The returned clients and the objects they surface in turn (HttpRequest, HttpResponse, HttpException, SoapResponse, SoapParameters) live in the Returns section."
       ],
       "best_practices": {
         "do": [
@@ -12149,8 +12149,7 @@
         ],
         "dont": [
           "Call CreateSoapClient() when you need an HTTP client.",
-          "Call CreateHttpClient() when you need a SOAP client.",
-          "Assume this page documents the full API of the returned client objects."
+          "Call CreateHttpClient() when you need a SOAP client."
         ]
       }
     },
@@ -12269,7 +12268,8 @@
           "Keep class fields in :DECLARE statements near the top of the file so",
           "Place regular methods before Constructor and keep the constructor last for predictable structure.",
           "Instantiate user-defined classes with CreateUdObject instead of built-in-class curly-brace syntax.",
-          "Use Me: for sibling method calls and Base: for inherited behavior inside class methods."
+          "Use Me: for sibling method calls and Base: for inherited behavior inside class methods.",
+          "Qualify every class-field reference inside a method with Me: (or Base: for a parent field). A bare name resolves to a local or parameter, not the class field."
         ],
         "dont": [
           "Mix script logic and a class definition in the same file. :CLASS runs",
@@ -13607,7 +13607,7 @@
     {
       "id": "ssl.special_form.base",
       "element_type": "special_form",
-      "title": "base",
+      "title": "Base:",
       "summary": "Provides explicit access to members on a class's immediate parent type from within a class method.",
       "doc_status": "published",
       "source_path": "content/reference/special-forms/base.md",
@@ -13618,7 +13618,7 @@
     {
       "id": "ssl.special_form.code-block",
       "element_type": "special_form",
-      "title": "code-block",
+      "title": "Code Block",
       "summary": "Defines an anonymous code block with bound variables and a single expression body. A code block can be created at the top level, passed as a function argument, or assigned to a variable for later execution.",
       "doc_status": "published",
       "source_path": "content/reference/special-forms/code-block.md",
@@ -13640,7 +13640,7 @@
     {
       "id": "ssl.special_form.constructor",
       "element_type": "special_form",
-      "title": "constructor",
+      "title": "Constructor",
       "summary": "Runs one-time class initialization code when a user-defined class instance is created.",
       "doc_status": "published",
       "source_path": "content/reference/special-forms/constructor.md",
@@ -13651,12 +13651,43 @@
     {
       "id": "ssl.special_form.me",
       "element_type": "special_form",
-      "title": "me",
+      "title": "Me:",
       "summary": "Provides a reference to the current class instance inside :CLASS methods.",
       "doc_status": "published",
       "source_path": "content/reference/special-forms/me.md",
       "exceptions": [],
       "caveats": [],
+      "best_practices": {}
+    },
+    {
+      "id": "ssl.special_form.request",
+      "element_type": "special_form",
+      "title": "Request",
+      "summary": "An ambient identifier in endpoint scripts that holds the incoming HTTP request.",
+      "doc_status": "published",
+      "source_path": "content/reference/special-forms/request.md",
+      "exceptions": [],
+      "caveats": [
+        "Request is read-only from the script's perspective. Modifying values on its collection properties (QueryString, Headers, etc.) does not change anything downstream.",
+        "Outside an endpoint context, Request raises an undeclared-variable error on access. Guard with :TRY / :CATCH if your script may run in either context.",
+        "Whether Request is an SSLRequest or SSLWsRequest depends on how the script was invoked. Code that needs to work in both contexts should rely only on the inherited surface — avoid Parameters unless you know the call path is a web service."
+      ],
+      "best_practices": {}
+    },
+    {
+      "id": "ssl.special_form.response",
+      "element_type": "special_form",
+      "title": "Response",
+      "summary": "An ambient identifier in endpoint scripts that holds the outgoing HTTP response.",
+      "doc_status": "published",
+      "source_path": "content/reference/special-forms/response.md",
+      "exceptions": [],
+      "caveats": [
+        "Response is mutable: assigning properties and calling methods affects what the client receives. Be deliberate about ordering — set ContentType and StatusCode before the first Write so headers go out correctly.",
+        "Outside an endpoint context, Response raises an undeclared-variable error on access. Guard with :TRY / :CATCH if your script may run in either context.",
+        "Whether Response is an SSLResponse or SSLWsResponse depends on how the script was invoked. Code that needs to work in both contexts should rely only on the inherited surface — avoid Value unless you know the call path is a web service.",
+        "After calling End(), further Write calls have no effect on the wire. After Redirect(), :RETURN from the script — subsequent code may run but its output is unlikely to reach the client."
+      ],
       "best_practices": {}
     }
   ]
