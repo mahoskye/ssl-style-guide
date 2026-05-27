@@ -157,4 +157,18 @@ try {
   fail(`Agent adapters out of sync — run 'bun tools/generate-agents.mjs'.\n${detail}`);
 }
 
+// Bundled reference JSON must mirror ssl-mcp-server/data/ and match ssl-docs
+// (the latter is skipped when ../ssl-docs is not present locally).
+try {
+  execFileSync('bun', [resolve(repoRoot, 'tools/check-reference-drift.mjs')], {
+    stdio: 'pipe',
+  });
+} catch (error) {
+  const detail = [error.stdout, error.stderr]
+    .map((stream) => (stream ? stream.toString().trim() : ''))
+    .filter(Boolean)
+    .join('\n');
+  fail(`Reference data drift detected.\n${detail}`);
+}
+
 console.log('Consistency checks passed.');
