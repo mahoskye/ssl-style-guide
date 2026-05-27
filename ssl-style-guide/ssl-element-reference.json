@@ -7,9 +7,9 @@
     "literals": 3,
     "types": 8,
     "classes": 29,
-    "special_forms": 6,
+    "special_forms": 8,
     "functions": 330,
-    "all": 446
+    "all": 448
   },
   "keywords": {
     "BEGINCASE": {
@@ -3192,7 +3192,7 @@
     },
     "SSLCodeProvider": {
       "title": "SSLCodeProvider",
-      "summary": "Compiles published server scripts and data sources and returns the compilation results as an SSLCompilerErrorList.",
+      "summary": "Compiles published server scripts and data sources and returns a list of compilation errors.",
       "constructors": [
         {
           "signature": "SSLCodeProvider{}",
@@ -3202,62 +3202,62 @@
       "methods": [
         {
           "name": "CompileAll",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all server scripts and data sources."
         },
         {
           "name": "CompileAllServerScripts",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all server scripts."
         },
         {
           "name": "CompileAllDataSources",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all data sources."
         },
         {
           "name": "CompileServerScript",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles one server script by GUID or full name."
         },
         {
           "name": "CompileServerScripts",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles multiple server scripts."
         },
         {
           "name": "CompileServerScriptCategory",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all server scripts in one category."
         },
         {
           "name": "CompileServerScriptCategories",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all server scripts in multiple categories."
         },
         {
           "name": "CompileDataSource",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles one data source by GUID or full name."
         },
         {
           "name": "CompileDataSources",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles multiple data sources."
         },
         {
           "name": "CompileDataSourceCategory",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all data sources in one category."
         },
         {
           "name": "CompileDataSourceCategories",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Compiles all data sources in multiple categories."
         },
         {
           "name": "CompileScript",
-          "returns": "SSLCompilerErrorList",
+          "returns": "object",
           "description": "Accepts SSL code text, but currently raises a not-implemented error for non-null input."
         }
       ]
@@ -3862,12 +3862,12 @@
       "methods": [
         {
           "method": "CreateHttpClient()",
-          "returns": "object",
+          "returns": "HttpClient",
           "description": "Returns a new HTTP client object."
         },
         {
           "method": "CreateSoapClient()",
-          "returns": "object",
+          "returns": "SoapClient",
           "description": "Returns a new SOAP client object."
         }
       ]
@@ -3880,12 +3880,12 @@
       "syntax": "/*@private;\n:PROCEDURE ProcedureName;\n\n/*@protected;\n:PROCEDURE ProcedureName;"
     },
     "base": {
-      "title": "base",
+      "title": "Base:",
       "summary": "Provides explicit access to members on a class's immediate parent type from within a class method.",
-      "syntax": "Base:FieldName;\nBase:PropertyName;\nBase:MethodName(args);\nBase:Constructor(args);"
+      "syntax": "Base:FieldName;\nBase:MethodName(args);\nBase:Constructor(args);"
     },
     "code-block": {
-      "title": "code-block",
+      "title": "Code Block",
       "summary": "Defines an anonymous code block with bound variables and a single expression body. A code block can be created at the top level, passed as a function argument, or assigned to a variable for later execution.",
       "syntax": "{|param1| expression}\n{|param1, param2| expression}"
     },
@@ -3895,14 +3895,24 @@
       "syntax": "/* region Region Name;\n\n/* region content;\n\n/* endregion;"
     },
     "constructor": {
-      "title": "constructor",
+      "title": "Constructor",
       "summary": "Runs one-time class initialization code when a user-defined class instance is created.",
       "syntax": ":CLASS MyClass;\n\n:PROCEDURE Constructor;\n    /* Initialization code;\n:ENDPROC;"
     },
     "me": {
-      "title": "me",
+      "title": "Me:",
       "summary": "Provides a reference to the current class instance inside :CLASS methods.",
-      "syntax": "Me;\nMe:PropertyName;\nMe:MethodName(args);"
+      "syntax": "Me;\nMe:FieldName;\nMe:MethodName(args);"
+    },
+    "request": {
+      "title": "Request",
+      "summary": "An ambient identifier in endpoint scripts that holds the incoming HTTP request.",
+      "syntax": "Request;\nRequest:PropertyName;\nRequest:CollectionName:Key;\nRequest:MethodName(args);"
+    },
+    "response": {
+      "title": "Response",
+      "summary": "An ambient identifier in endpoint scripts that holds the outgoing HTTP response.",
+      "syntax": "Response:PropertyName := value;\nResponse:MethodName(args);"
     }
   },
   "functions": {

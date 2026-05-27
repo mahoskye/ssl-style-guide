@@ -4,7 +4,7 @@ description: >-
   Refactors and modernizes STARLIMS SSL (v11) code while preserving behavior,
   following this repository's refactoring guide. Use to refactor, modernize, or
   clean up SSL code.
-version: 3
+version: 4
 mode: all
 argument-hint: "<file-path> [goal]"
 model: inherit
@@ -47,7 +47,10 @@ while preserving its behavior.
 4. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
-`ssl_signature`, and `ssl_search` for element lookups.
+`ssl_signature`, and `ssl_search` for element lookups. If it is not available,
+fall back to the bundled JSON inventory in this repo:
+`ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
+`ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
 
 ## Workflow skills
 

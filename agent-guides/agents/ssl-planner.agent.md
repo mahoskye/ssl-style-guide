@@ -5,7 +5,7 @@ description: >-
   agents execute. Knows LIMS capabilities deeply but does not write production
   SSL code — designs the change, defines signatures and data flow, and hands
   off to ssl-developer.
-version: 1
+version: 2
 mode: all
 argument-hint: "<feature or change to plan> [target-spec-path]"
 model: inherit
@@ -45,7 +45,10 @@ fluency to design changes that fit the platform's grain.
 
 1. The `ssl-reference` MCP server — `ssl_lookup`, `ssl_signature`, `ssl_search`.
    This is your primary tool for confirming what LIMS actually provides. Use it
-   liberally before naming a function, class, or keyword in a spec.
+   liberally before naming a function, class, or keyword in a spec. If the MCP
+   server is not available, fall back to the bundled JSON inventory in this
+   repo: `ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
+   `ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
 2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical language rules.
 3. `agent-guides/ssl_agent_instructions.md` — language semantics, edge cases,
    and validated behavior (e.g. data-source preprocessing, class member order).

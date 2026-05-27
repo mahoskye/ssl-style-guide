@@ -4,7 +4,7 @@ description: >-
   Reviews STARLIMS SSL (v11) code against this repository's style guide and
   language rules and reports findings. Read-only — does not modify files. Use
   to review, lint, or check SSL code quality.
-version: 3
+version: 4
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -44,8 +44,10 @@ clear, actionable review.
 3. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
-`ssl_signature`, and `ssl_search` to validate identifiers instead of reading the
-JSON inventory directly.
+`ssl_signature`, and `ssl_search` to validate identifiers. If it is not
+available, fall back to the bundled JSON inventory in this repo:
+`ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
+`ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
 
 ## Workflow skills
 

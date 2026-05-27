@@ -4,7 +4,7 @@ description: >-
   Acts as an SSL developer: implements, reviews, and refactors STARLIMS SSL
   (v11) code following this repository's schema and agent guides. Use for
   general SSL coding work.
-version: 4
+version: 5
 mode: primary
 argument-hint: "<task description> [file-path]"
 model: inherit
@@ -63,8 +63,14 @@ changed.
    prefer the schema and current code over older notes.
 
 When the `ssl-reference` MCP server is available, prefer its `ssl_lookup`,
-`ssl_signature`, and `ssl_search` tools for element lookups instead of reading
-the JSON inventory directly.
+`ssl_signature`, and `ssl_search` tools for element lookups. If it is not
+available, fall back to the bundled JSON inventory shipped in this repo:
+
+- `ssl-style-guide/ssl-element-reference.json` — summaries and syntax for
+  every element (keywords, operators, literals, types, classes, special
+  forms, functions; 446 entries total).
+- `ssl-style-guide/ssl-element-meta.json` — richer per-element metadata
+  including exceptions, caveats, and best practices.
 
 ## Workflow skills
 
