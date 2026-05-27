@@ -4,7 +4,7 @@ description: >-
   Reviews STARLIMS SSL (v11) code against this repository's style guide and
   language rules and reports findings. Read-only — does not modify files. Use
   to review, lint, or check SSL code quality.
-version: 1
+version: 3
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -21,6 +21,11 @@ skills:
 guides:
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
+handoffs:
+  - label: Apply fixes with ssl-refactorer
+    agent: ssl-refactorer
+    prompt: Apply the fixes from the review above, preserving behavior.
+    send: false
 ---
 
 ## Role
