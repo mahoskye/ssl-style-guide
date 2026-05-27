@@ -4,7 +4,7 @@ description: >-
   Refactors and modernizes STARLIMS SSL (v11) code while preserving behavior,
   following this repository's refactoring guide. Use to refactor, modernize, or
   clean up SSL code.
-version: 1
+version: 3
 mode: all
 argument-hint: "<file-path> [goal]"
 model: inherit
@@ -24,6 +24,11 @@ guides:
   - agent-guides/ssl_refactoring_guide.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
+handoffs:
+  - label: Verify with ssl-reviewer
+    agent: ssl-reviewer
+    prompt: Review the refactored code above against the SSL style guide and report any remaining findings.
+    send: false
 ---
 
 ## Role

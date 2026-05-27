@@ -32,8 +32,9 @@ const CHECK_ONLY = process.argv.includes('--check');
 
 const KNOWN_KEYS = new Set([
   'name', 'description', 'version', 'mode', 'argument-hint',
-  'model', 'tools', 'mcp', 'skills', 'guides', 'overrides',
+  'model', 'tools', 'mcp', 'skills', 'guides', 'handoffs', 'overrides',
 ]);
+const HANDOFF_KEYS = new Set(['label', 'agent', 'prompt', 'send', 'model']);
 const REQUIRED_KEYS = ['name', 'description', 'version', 'tools'];
 const NEUTRAL_TOOLS = new Set(['read', 'edit', 'grep', 'glob', 'bash:read-only']);
 const VALID_MODES = new Set(['primary', 'subagent', 'all']);
@@ -48,12 +49,15 @@ const CLAUDE_TOOL_MAP = {
   glob: ['Glob'],
   'bash:read-only': ['Bash'],
 };
+// VS Code custom-agents tool ids (May 2026). Tools use namespaced names like
+// `search/codebase`; listing a group name (`edit`) includes all of its tools.
+// See https://code.visualstudio.com/docs/copilot/customization/custom-agents
 const COPILOT_TOOL_MAP = {
-  read: ['search', 'codebase'],
-  edit: ['editFiles'],
-  grep: ['search'],
-  glob: ['search'],
-  'bash:read-only': ['runCommands'],
+  read: ['read/readFile', 'search/codebase', 'search/listDirectory'],
+  edit: ['edit'],
+  grep: ['search/textSearch'],
+  glob: ['search/fileSearch'],
+  'bash:read-only': ['execute/runInTerminal', 'read/terminalLastCommand'],
 };
 
 function fail(message) {
@@ -132,8 +136,49 @@ function loadManifest(fileName) {
       fail(`${sourceRel}: guide path '${guide}' does not exist`);
     }
   }
+  if (manifest.handoffs !== undefined) {
+    if (!Array.isArray(manifest.handoffs) || manifest.handoffs.length === 0) {
+      fail(`${sourceRel}: handoffs must be a non-empty list`);
+    }
+    for (const [i, handoff] of manifest.handoffs.entries()) {
+      if (!handoff || typeof handoff !== 'object') {
+        fail(`${sourceRel}: handoffs[${i}] must be a mapping`);
+      }
+      for (const key of Object.keys(handoff)) {
+        if (!HANDOFF_KEYS.has(key)) {
+          fail(`${sourceRel}: handoffs[${i}] has unknown key '${key}'`);
+        }
+      }
+      if (typeof handoff.label !== 'string' || !handoff.label.trim()) {
+        fail(`${sourceRel}: handoffs[${i}].label must be a non-empty string`);
+      }
+      if (typeof handoff.agent !== 'string' || !handoff.agent.trim()) {
+        fail(`${sourceRel}: handoffs[${i}].agent must be a non-empty string`);
+      }
+      if (handoff.send !== undefined && typeof handoff.send !== 'boolean') {
+        fail(`${sourceRel}: handoffs[${i}].send must be a boolean`);
+      }
+    }
+  }
 
   return { manifest, body: body.trim(), sourceRel };
+}
+
+function validateHandoffTargets(agents) {
+  const known = new Set(agents.map((a) => a.manifest.name));
+  for (const { manifest, sourceRel } of agents) {
+    for (const handoff of manifest.handoffs ?? []) {
+      if (!known.has(handoff.agent)) {
+        fail(
+          `${sourceRel}: handoff target agent '${handoff.agent}' is not a ` +
+          `canonical agent (known: ${[...known].join(', ')})`
+        );
+      }
+      if (handoff.agent === manifest.name) {
+        fail(`${sourceRel}: handoff target agent '${handoff.agent}' is self-referential`);
+      }
+    }
+  }
 }
 
 function mapTools(tools, map) {
@@ -170,14 +215,26 @@ function claudeFrontmatter(manifest) {
   return fm;
 }
 
+function copilotMcpToolNames(manifest) {
+  // VS Code custom-agents MCP syntax: `<server>/<tool>` or `<server>/*` for all.
+  const names = [];
+  for (const entry of manifest.mcp ?? []) {
+    for (const tool of entry.tools ?? []) {
+      names.push(`${entry.server}/${tool}`);
+    }
+  }
+  return names;
+}
+
 function copilotFrontmatter(manifest) {
   const fm = {
     name: manifest.name,
     description: oneLine(manifest.description),
-    tools: mapTools(manifest.tools, COPILOT_TOOL_MAP),
+    tools: [...mapTools(manifest.tools, COPILOT_TOOL_MAP), ...copilotMcpToolNames(manifest)],
   };
   if (manifest['argument-hint']) fm['argument-hint'] = manifest['argument-hint'];
   if (manifest.model && manifest.model !== 'inherit') fm.model = manifest.model;
+  if (manifest.handoffs) fm.handoffs = manifest.handoffs;
   Object.assign(fm, manifest.overrides?.copilot ?? {});
   return fm;
 }
@@ -266,6 +323,7 @@ function main() {
     fail(`No *.agent.md files in ${CANONICAL_DIR}`);
   }
   const agents = files.map(loadManifest);
+  validateHandoffTargets(agents);
   const claudePresent = existsSync(CLAUDE_DIR);
 
   // Adapter files. All adapters are git-ignored build artifacts.

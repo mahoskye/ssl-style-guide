@@ -38,6 +38,7 @@ same shape as `SKILL.md`.
 | `mcp` | no | MCP servers/tools the agent expects: `- server: <name>` / `tools: [...]`. |
 | `skills` | no | Workflow skills (`agent-guides/skills/<name>/`) the agent composes. |
 | `guides` | no | Guide/schema paths the body relies on; the generator checks they exist. |
+| `handoffs` | no | Suggested next-step agents (VS Code Copilot only). List of `{ label, agent, prompt?, send?, model? }`. Target `agent` must be a canonical agent in this directory. |
 | `overrides` | no | Per-tool frontmatter escape hatch: `overrides.<tool>: { ... }`. |
 
 The body is emitted **verbatim** into every adapter (with a generated-file
