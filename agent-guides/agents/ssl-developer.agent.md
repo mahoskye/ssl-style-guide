@@ -4,7 +4,7 @@ description: >-
   Acts as an SSL developer: implements, reviews, and refactors STARLIMS SSL
   (v11) code following this repository's schema and agent guides. Use for
   general SSL coding work.
-version: 3
+version: 4
 mode: primary
 argument-hint: "<task description> [file-path]"
 model: inherit
@@ -29,6 +29,10 @@ guides:
   - agent-guides/ssl_refactoring_guide.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
+  - label: Plan first with ssl-planner
+    agent: ssl-planner
+    prompt: This task is under-specified. Produce an implementation spec for it under specs/, then hand back for implementation.
+    send: false
   - label: Review changes with ssl-reviewer
     agent: ssl-reviewer
     prompt: Review the changes above against the SSL style guide and report findings.

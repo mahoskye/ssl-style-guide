@@ -13,6 +13,7 @@ source of truth, and `tools/generate-agents.mjs` maps it to each dialect.
 
 | Agent | Role | Tools |
 | --- | --- | --- |
+| `ssl-planner` | Plan SSL work; produce implementation specs for other agents to execute | read + edit (specs only) |
 | `ssl-developer` | General SSL coding — implement, review, refactor, scaffold | read + edit |
 | `ssl-reviewer` | Review SSL code against the style guide; report findings | read-only |
 | `ssl-refactorer` | Modernize / clean up SSL code, preserving behavior | read + edit |
