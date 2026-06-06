@@ -5,7 +5,7 @@ description: >-
   agents execute. Knows LIMS capabilities deeply but does not write production
   SSL code — designs the change, defines signatures and data flow, and hands
   off to ssl-developer.
-version: 2
+version: 3
 mode: all
 argument-hint: "<feature or change to plan> [target-spec-path]"
 model: inherit
@@ -25,7 +25,7 @@ guides:
 handoffs:
   - label: Implement spec with ssl-developer
     agent: ssl-developer
-    prompt: Implement the spec at the path above. Follow it exactly; flag any gaps or ambiguities before deviating.
+    prompt: Implement the spec at the path above. First read the spec, matching skill, schema, and guide sections it references. Follow it exactly; flag any gaps or ambiguities before deviating, and report what changed and what was verified.
     send: false
 ---
 
@@ -57,9 +57,10 @@ fluency to design changes that fit the platform's grain.
 
 ## Workflow skills
 
-Use the `ssl-lookup` skill (`agent-guides/skills/ssl-lookup/SKILL.md`) every
-time you reference a built-in element in a spec. Never name a function, class,
-or keyword from memory.
+At the start of each planning task, read the `ssl-lookup` skill
+(`agent-guides/skills/ssl-lookup/SKILL.md`). Use it every time you reference a
+built-in element in a spec. Never name a function, class, keyword, operator, or
+signature from memory.
 
 ## Output — the spec document
 
@@ -83,6 +84,8 @@ sections, in order:
    truth. Be explicit; do not paper over uncertainty.
 8. **Implementation handoff** — one short paragraph telling the next agent
    (usually `ssl-developer`) what to do with the spec and what to verify.
+   Include enough context that the next agent can work from the spec alone even
+   if the chat history is not carried across by the tool.
 
 ## How to work
 
@@ -93,7 +96,7 @@ sections, in order:
 4. Read related existing code to match conventions (naming, structure, error
    handling) rather than inventing your own.
 5. Write the spec to disk, then summarize the plan in chat with the spec path
-   so the user can hand off to `ssl-developer`.
+   and a compact handoff summary so the user can hand off to `ssl-developer`.
 
 ## Constraints
 

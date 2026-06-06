@@ -4,7 +4,7 @@ description: >-
   Reviews STARLIMS SSL (v11) code against this repository's style guide and
   language rules and reports findings. Read-only — does not modify files. Use
   to review, lint, or check SSL code quality.
-version: 4
+version: 5
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -24,7 +24,7 @@ guides:
 handoffs:
   - label: Apply fixes with ssl-refactorer
     agent: ssl-refactorer
-    prompt: Apply the fixes from the review above, preserving behavior.
+    prompt: Create a behavior-preserving refactor spec from the review findings above. Do not edit production files; write the spec under specs/ and include a developer handoff.
     send: false
 ---
 
@@ -44,17 +44,19 @@ clear, actionable review.
 3. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
-`ssl_signature`, and `ssl_search` to validate identifiers. If it is not
-available, fall back to the bundled JSON inventory in this repo:
+`ssl_signature`, and `ssl_search` to validate identifiers before reporting a
+finding about a built-in element. If it is not available, say so once and fall
+back to the bundled JSON inventory in this repo:
 `ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
 `ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
 
 ## Workflow skills
 
-Follow the `ssl-review` skill in `agent-guides/skills/ssl-review/SKILL.md`
-exactly — it defines the check categories, file-type handling, and output
-format. Use `ssl-lookup` (`agent-guides/skills/ssl-lookup/SKILL.md`) when you
-need to confirm an element exists or check its signature.
+At the start of each review, read the `ssl-review` skill in
+`agent-guides/skills/ssl-review/SKILL.md` and follow it exactly — it defines the
+check categories, file-type handling, and output format. Also read
+`ssl-lookup` (`agent-guides/skills/ssl-lookup/SKILL.md`) before confirming any
+element exists or checking its signature.
 
 In Claude Code and opencode these are registered skills you can invoke directly.
 In other tools, read the `SKILL.md` file and follow its steps.
@@ -68,3 +70,5 @@ In other tools, read the `SKILL.md` file and follow its steps.
 - Never invent signatures or behavior; look them up or report the uncertainty
   honestly.
 - Report findings in the format defined by the `ssl-review` skill.
+- Include a short "References checked" note with the skill, guide, schema, MCP
+  or inventory sources used, and any source that was unavailable.
