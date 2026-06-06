@@ -31,6 +31,7 @@ plus step-by-step instructions:
 - `ssl-lookup` — look up a function signature, class member, or keyword
 - `ssl-review` — review SSL code against the style guide and language rules
 - `ssl-refactor` — refactor SSL code following the refactoring guide
+- `ssl-refactor-plan` — plan behavior-preserving refactors for implementation
 - `ssl-format` — format SSL code and embedded SQL in canonical compact style
 - `ssl-new-procedure` — scaffold a new SSL procedure
 - `ssl-new-class` — scaffold a new SSL class
@@ -40,12 +41,12 @@ directly; in other tools they are Markdown files an agent reads and follows.
 
 ## Agents
 
-`agents/` contains the canonical, tool-neutral definitions for three SSL
+`agents/` contains the canonical, tool-neutral definitions for four SSL
 developer agents:
 
 - `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
 - `ssl-reviewer` — review SSL code against the style guide (read-only)
-- `ssl-refactorer` — modernize and clean up SSL code, preserving behavior
+- `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
 
 Each agent is a thin persona: it delegates to the skills above and cites the
 guidance documents rather than carrying its own copy of the rules. Each agent is
