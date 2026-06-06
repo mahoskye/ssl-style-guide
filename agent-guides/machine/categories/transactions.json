@@ -1,0 +1,73 @@
+{
+  "id": "transactions",
+  "label": "Transactions",
+  "aliases": [
+    "database transactions",
+    "commit",
+    "rollback"
+  ],
+  "summary": "Transaction lifecycle functions and failure handling around database writes.",
+  "must_follow": [
+    "Use :TRY/:CATCH around multi-step transactional database work.",
+    "Call GetLastSSLError() inside :CATCH when error details are needed.",
+    "Make rollback behavior explicit for write operations that can partially fail."
+  ],
+  "avoid": [
+    "Do not leave transaction boundaries implicit in specs or refactors.",
+    "Do not put control-flow exits inside :FINALLY."
+  ],
+  "elements": [
+    {
+      "name": "BeginLimsTransaction",
+      "type": "function",
+      "syntax": "BeginLimsTransaction([sConnectionName], [sIsoLevel])",
+      "summary": "Starts a LIMS database transaction on the default connection or on a named connection."
+    },
+    {
+      "name": "EndLimsTransaction",
+      "type": "function",
+      "syntax": "EndLimsTransaction([sConnectionName], [bCommit])",
+      "summary": "Ends a LIMS transaction on the default connection or on a named connection."
+    },
+    {
+      "name": "GetTransactionsCount",
+      "type": "function",
+      "syntax": "GetTransactionsCount()",
+      "summary": "Returns the number of open database transactions for a specified or default connection."
+    },
+    {
+      "name": "IsInTransaction",
+      "type": "function",
+      "syntax": "IsInTransaction([vConnection])",
+      "summary": "Returns .T. if the specified database connection currently has an open transaction."
+    },
+    {
+      "name": "SQLExecute",
+      "type": "function",
+      "syntax": "SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])",
+      "summary": "Executes SQL and returns either query results or a success flag."
+    },
+    {
+      "name": "RunSQL",
+      "type": "function",
+      "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
+      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+    },
+    {
+      "name": "GetLastSSLError",
+      "type": "function",
+      "syntax": "GetLastSSLError()",
+      "summary": "Retrieves the most recent SSL error encountered during the current process."
+    }
+  ],
+  "related_categories": [
+    "database",
+    "sql",
+    "error-handling"
+  ],
+  "source_paths": [
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/sql-transactions.md"
+  ],
+  "missing_optional_sources": []
+}

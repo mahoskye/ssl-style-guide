@@ -21,8 +21,8 @@ Look up the SSL element named `$ARGUMENTS`.
    {
      "version": "1",
      "totals": { "keywords": 38, "operators": 32, "literals": 3,
-                 "types": 8, "classes": 29, "special_forms": 6,
-                 "functions": 330, "all": 446 },
+                 "types": 8, "classes": 29, "special_forms": 8,
+                 "functions": 330, "all": 448 },
      "keywords":      { "<NAME>":   { title, summary, syntax }, ... },
      "operators":     { "<name>":   { title, summary, syntax,
                                       type_behavior: [{left, right, result, behavior}] }, ... },

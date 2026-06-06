@@ -1,0 +1,76 @@
+{
+  "id": "classes",
+  "label": "Classes",
+  "aliases": [
+    "class files",
+    "methods",
+    "fields",
+    "inheritance"
+  ],
+  "summary": "User-defined class structure, field access, method calls, and built-in class creation.",
+  "must_follow": [
+    "Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.",
+    "Access class fields through Me:fieldName or Base:fieldName inside methods.",
+    "Call sibling or inherited methods with Me:Method() and Base:Method().",
+    "Use CreateUdObject(\"ClassName\") for user-defined classes."
+  ],
+  "avoid": [
+    "Do not assign to class fields with bare identifiers inside methods.",
+    "Do not call DoProc inside class methods.",
+    "Do not instantiate built-in classes with CreateUdObject."
+  ],
+  "elements": [
+    {
+      "name": "CLASS",
+      "type": "keyword",
+      "syntax": ":CLASS ClassName;",
+      "summary": "Defines a class in SSL. A class file can declare fields, methods, an optional base class, and a Constructor procedure for instance initialization."
+    },
+    {
+      "name": "INHERIT",
+      "type": "keyword",
+      "syntax": ":INHERIT ClassName;",
+      "summary": "Specifies the parent class for an SSL class."
+    },
+    {
+      "name": "DECLARE",
+      "type": "keyword",
+      "syntax": ":DECLARE variable1[, variable2, ...];",
+      "summary": "Declares one or more variables in the current SSL scope."
+    },
+    {
+      "name": "PUBLIC",
+      "type": "keyword",
+      "syntax": ":PUBLIC variable1[, variable2, ...];",
+      "summary": "Declares global variables that can be accessed from any scope in the program."
+    },
+    {
+      "name": "CreateUdObject",
+      "type": "function",
+      "syntax": "CreateUdObject()",
+      "summary": "Creates a dynamic object or instantiates a user-defined class."
+    },
+    {
+      "name": "me",
+      "type": "special_form",
+      "syntax": "Me;\nMe:FieldName;\nMe:MethodName(args);",
+      "summary": "Provides a reference to the current class instance inside :CLASS methods."
+    },
+    {
+      "name": "base",
+      "type": "special_form",
+      "syntax": "Base:FieldName;\nBase:MethodName(args);\nBase:Constructor(args);",
+      "summary": "Provides explicit access to members on a class's immediate parent type from within a class method."
+    }
+  ],
+  "related_categories": [
+    "objects",
+    "procedures",
+    "naming"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

@@ -3,5 +3,5 @@ dist/
 .claude/
 AGENTS.md
 .github/agents/
-.opencode/agent/
+.opencode/agents/
 .githooks/

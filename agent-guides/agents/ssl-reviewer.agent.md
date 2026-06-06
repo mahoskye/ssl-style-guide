@@ -4,7 +4,7 @@ description: >-
   Reviews STARLIMS SSL (v11) code against this repository's style guide and
   language rules and reports findings. Read-only — does not modify files. Use
   to review, lint, or check SSL code quality.
-version: 5
+version: 6
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -14,11 +14,12 @@ tools:
   - glob
 mcp:
   - server: ssl-reference
-    tools: [ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
 skills:
   - ssl-review
   - ssl-lookup
 guides:
+  - agent-guides/machine/foundation.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
@@ -37,16 +38,21 @@ clear, actionable review.
 
 ## Sources of truth (consult in this order)
 
-1. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
+1. `agent-guides/machine/foundation.md` — compact baseline rules and retrieval
+   protocol. Start here, then use `ssl_context_pack` for task/category context.
+2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
    SSL rules.
-2. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
+3. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
    cases, and validated behavior.
-3. The checked-in code itself, when guidance is silent.
+4. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
 `ssl_signature`, and `ssl_search` to validate identifiers before reporting a
-finding about a built-in element. If it is not available, say so once and fall
-back to the bundled JSON inventory in this repo:
+finding about a built-in element. Use `ssl_context_pack` for compact rule
+context by review area, such as `formatting`, `error-handling`, `classes`, or
+`data-sources`. If it is not available, say so once and fall back to the bundled
+machine docs and JSON inventory in this repo:
+`agent-guides/machine/category-index.json`, `agent-guides/machine/categories/`,
 `ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
 `ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
 

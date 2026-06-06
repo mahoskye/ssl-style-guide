@@ -1,0 +1,73 @@
+{
+  "id": "module-structure",
+  "label": "Module Structure",
+  "aliases": [
+    "file structure",
+    "script layout",
+    "includes"
+  ],
+  "summary": "File-level organization for scripts, classes, and data sources.",
+  "must_follow": [
+    "One file should represent either a class definition, a script, or a data source.",
+    "Place :INCLUDE early because it is lexer-level textual inclusion.",
+    "Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE."
+  ],
+  "avoid": [
+    "Do not mix class definitions, script procedures, and data-source bodies in one file.",
+    "Do not move :PARAMETERS after other statements."
+  ],
+  "elements": [
+    {
+      "name": "INCLUDE",
+      "type": "keyword",
+      "syntax": ":INCLUDE scriptName;",
+      "summary": "Inserts another SSL script's source into the current file so its statements compile as if they were written inline."
+    },
+    {
+      "name": "PUBLIC",
+      "type": "keyword",
+      "syntax": ":PUBLIC variable1[, variable2, ...];",
+      "summary": "Declares global variables that can be accessed from any scope in the program."
+    },
+    {
+      "name": "PARAMETERS",
+      "type": "keyword",
+      "syntax": ":PARAMETERS param1[, param2, ...];",
+      "summary": "Declares named input parameters for a script, procedure, method, or constructor."
+    },
+    {
+      "name": "DEFAULT",
+      "type": "keyword",
+      "syntax": ":PARAMETERS paramName[, otherParam, ...];\n:DEFAULT paramName, defaultExpression;",
+      "summary": "Assigns a fallback expression to a parameter when the caller omits that argument."
+    },
+    {
+      "name": "DECLARE",
+      "type": "keyword",
+      "syntax": ":DECLARE variable1[, variable2, ...];",
+      "summary": "Declares one or more variables in the current SSL scope."
+    },
+    {
+      "name": "CLASS",
+      "type": "keyword",
+      "syntax": ":CLASS ClassName;",
+      "summary": "Defines a class in SSL. A class file can declare fields, methods, an optional base class, and a Constructor procedure for instance initialization."
+    },
+    {
+      "name": "PROCEDURE",
+      "type": "keyword",
+      "syntax": ":PROCEDURE ProcedureName;",
+      "summary": "Declares a named routine body that can contain executable SSL statements and end with :ENDPROC ;."
+    }
+  ],
+  "related_categories": [
+    "procedures",
+    "classes",
+    "data-sources"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

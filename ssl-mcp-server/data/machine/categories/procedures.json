@@ -1,0 +1,75 @@
+{
+  "id": "procedures",
+  "label": "Procedures",
+  "aliases": [
+    "script procedures",
+    "procedure calls",
+    "entry points"
+  ],
+  "summary": "Procedure declarations, parameter/default ordering, and procedure-call mechanisms.",
+  "must_follow": [
+    ":PARAMETERS must appear before any other statements in a script or procedure body.",
+    ":DEFAULT must immediately follow :PARAMETERS.",
+    "Use DoProc(\"ProcName\", {args}) for same-file script procedures.",
+    "Use ExecFunction(\"Category.Script\", {args}) or ExecFunction(\"Category.Script.Proc\", {args}) for external script entry points."
+  ],
+  "avoid": [
+    "Do not call custom script procedures directly as MyProc().",
+    "Do not put :DEFAULT on a :DECLARE line.",
+    "Do not use DoProc inside class methods."
+  ],
+  "elements": [
+    {
+      "name": "PROCEDURE",
+      "type": "keyword",
+      "syntax": ":PROCEDURE ProcedureName;",
+      "summary": "Declares a named routine body that can contain executable SSL statements and end with :ENDPROC ;."
+    },
+    {
+      "name": "ENDPROC",
+      "type": "keyword",
+      "syntax": ":ENDPROC;",
+      "summary": "Terminates a procedure block and signals the end of its executable statements."
+    },
+    {
+      "name": "PARAMETERS",
+      "type": "keyword",
+      "syntax": ":PARAMETERS param1[, param2, ...];",
+      "summary": "Declares named input parameters for a script, procedure, method, or constructor."
+    },
+    {
+      "name": "DEFAULT",
+      "type": "keyword",
+      "syntax": ":PARAMETERS paramName[, otherParam, ...];\n:DEFAULT paramName, defaultExpression;",
+      "summary": "Assigns a fallback expression to a parameter when the caller omits that argument."
+    },
+    {
+      "name": "DoProc",
+      "type": "function",
+      "syntax": "DoProc(sProcedureName, [aArguments]);",
+      "summary": "Calls a procedure by name at runtime."
+    },
+    {
+      "name": "ExecFunction",
+      "type": "function",
+      "syntax": "ExecFunction(sName, [aParameters])",
+      "summary": "Invokes a function by name at runtime and returns the result."
+    },
+    {
+      "name": "RETURN",
+      "type": "keyword",
+      "syntax": ":RETURN;\n:RETURN expression;",
+      "summary": "Ends the current script, procedure, or method immediately and can optionally return a value."
+    }
+  ],
+  "related_categories": [
+    "classes",
+    "module-structure",
+    "naming"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

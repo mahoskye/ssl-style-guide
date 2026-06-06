@@ -1,0 +1,68 @@
+{
+  "id": "security",
+  "label": "Security",
+  "aliases": [
+    "safe coding",
+    "sql injection",
+    "credentials"
+  ],
+  "summary": "Security-sensitive SSL practices, especially SQL binding and dynamic code.",
+  "must_follow": [
+    "Prefer parameterized SQL over string concatenation.",
+    "Treat dynamic code execution and indirect procedure calls as security-sensitive.",
+    "Avoid logging secrets, connection strings, passwords, or tokens."
+  ],
+  "avoid": [
+    "Do not use SQL injection detection as a substitute for binding parameters.",
+    "Do not execute code or procedure names derived from untrusted input without validation."
+  ],
+  "elements": [
+    {
+      "name": "DetectSqlInjections",
+      "type": "function",
+      "syntax": "DetectSqlInjections(bEnable, [sConnectionName])",
+      "summary": "Enables or disables SQL injection detection for a database connection and returns the previous setting."
+    },
+    {
+      "name": "SQLExecute",
+      "type": "function",
+      "syntax": "SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])",
+      "summary": "Executes SQL and returns either query results or a success flag."
+    },
+    {
+      "name": "RunSQL",
+      "type": "function",
+      "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
+      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+    },
+    {
+      "name": "LSearch",
+      "type": "function",
+      "syntax": "LSearch(sCommandString, vDefaultValue, [sConnectionName], [aArrayOfValues])",
+      "summary": "Returns a single value from a SQL query, or a caller-supplied fallback when the query produces no scalar result."
+    },
+    {
+      "name": "ExecFunction",
+      "type": "function",
+      "syntax": "ExecFunction(sName, [aParameters])",
+      "summary": "Invokes a function by name at runtime and returns the result."
+    },
+    {
+      "name": "Eval",
+      "type": "function",
+      "syntax": "Eval(fnCode, [vArg1], [vArg2], ...)",
+      "summary": "Invokes a code block with the supplied arguments and returns the block's result."
+    }
+  ],
+  "related_categories": [
+    "database",
+    "sql",
+    "procedures",
+    "logging"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

@@ -53,12 +53,14 @@ Run from the repo root after a fresh clone and after editing any canonical file:
 ```bash
 bun tools/generate-agents.mjs          # write adapters
 bun tools/generate-agents.mjs --check  # verify adapters are in sync (no writes)
+bun tools/deploy-agents.mjs           # install adapters into user-level tool dirs
+bun tools/deploy-agents.mjs --check    # verify user-level installs are current
 ```
 
 | Output | Tool | Status |
 | --- | --- | --- |
-| `.github/agents/<name>.agent.md` | GitHub Copilot (VS Code) | git-ignored — regenerated |
-| `.opencode/agent/<name>.md` | opencode | git-ignored — regenerated |
+| `.github/agents/<name>.agent.md` | GitHub Copilot (VS Code / Copilot CLI) | git-ignored — regenerated |
+| `.opencode/agents/<name>.md` | OpenCode | git-ignored — regenerated |
 | `.claude/agents/<name>.md` | Claude Code (CLI + VS Code extension) | git-ignored — regenerated |
 | `AGENTS.md` managed block | OpenAI Codex (degrades to instructions + skills) | git-ignored — regenerated |
 
@@ -71,13 +73,35 @@ and after editing any canonical file. The generator also creates
 `bun run check:consistency` (in `ssl-mcp-server/`) runs `--check`, which flags any
 adapter that exists on disk but has drifted from its canonical source.
 
+## User-level deployment
+
+Prefer user-level deployment for day-to-day use so the SSL agents are available
+across workspaces without committing generated adapter files into each repo.
+`tools/deploy-agents.mjs` copies the generated adapters to the current default
+user locations:
+
+| Tool | User-level location |
+| --- | --- |
+| GitHub Copilot / VS Code custom agents / Copilot CLI | `~/.copilot/agents/<name>.agent.md` |
+| Claude Code subagents | `~/.claude/agents/<name>.md` |
+| OpenCode agents | `~/.config/opencode/agents/<name>.md` |
+
+Current VS Code docs also support custom agents in VS Code user data through
+the Agent Customizations editor and workspace agents in `.github/agents/`.
+Prompt files are a separate slash-command surface; user prompt files live in VS
+Code user data, while workspace prompt files live in `.github/prompts/`.
+Do not put these persistent role agents in a prompt directory unless you are
+intentionally converting them into manually invoked slash commands.
+
 ## Adding or changing an agent
 
 1. Add or edit a `<name>.agent.md` file here; bump `version` on any change.
 2. Run `bun tools/generate-agents.mjs`.
-3. Commit the canonical `*.agent.md` file only. The per-tool adapters are
+3. Run `bun tools/deploy-agents.mjs` if you want the updated adapters available
+   at the user layer.
+4. Commit the canonical `*.agent.md` file only. The per-tool adapters are
    git-ignored build artifacts — do not commit them.
 
-**Note:** Copilot reads both `.github/agents/` and `.claude/agents/`. Both are
-git-ignored and regenerated locally; a developer who has both populated may see
-the agent listed twice in Copilot.
+**Note:** Copilot can read both `.github/agents/` and `.claude/agents/` at the
+workspace level. Prefer the user-level Copilot install for regular use to avoid
+duplicate listings from multiple local adapter directories.

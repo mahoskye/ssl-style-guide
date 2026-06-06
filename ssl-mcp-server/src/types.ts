@@ -127,3 +127,47 @@ export interface NamingValidationResult {
   body: string;
   issues: string[];
 }
+
+export interface MachineCategoryElement {
+  name: string;
+  type: string;
+  syntax?: string;
+  summary?: string;
+}
+
+export interface MachineCategoryPack {
+  id: string;
+  label: string;
+  aliases: string[];
+  summary: string;
+  must_follow: string[];
+  avoid: string[];
+  elements: MachineCategoryElement[];
+  related_categories: string[];
+  source_paths: string[];
+  missing_optional_sources?: string[];
+}
+
+export interface MachineCategoryIndexEntry {
+  id: string;
+  label: string;
+  aliases: string[];
+  summary: string;
+  element_names: string[];
+  related_categories: string[];
+  pack: string;
+  source_paths: string[];
+}
+
+export interface MachineCategoryIndex {
+  version: string;
+  description: string;
+  source_paths: string[];
+  categories: MachineCategoryIndexEntry[];
+}
+
+export interface MachineDocs {
+  foundation: string;
+  categoryIndex: MachineCategoryIndex;
+  categories: Record<string, MachineCategoryPack>;
+}

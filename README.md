@@ -33,7 +33,8 @@ validated automatically.
 - `ssl-style-guide/ssl.tmLanguage.updated.json`
   TextMate grammar for editors that consume TextMate scopes.
 - `agent-guides/`
-  Agent-facing language and refactoring references.
+  Agent-facing language and refactoring references, generated machine packs,
+  workflow skills, and canonical agent definitions.
 - `ssl-mcp-server/`
   MCP server that packages the public reference data for MCP-compatible clients.
 
@@ -94,16 +95,28 @@ schema and Tree-sitter highlights.
 
 `ssl-mcp-server/` exposes the bundled SSL reference through MCP. Its runtime
 data under `ssl-mcp-server/data/` is a mirror of the canonical public docs plus
-checked-in external inventory snapshots.
+checked-in external inventory snapshots and generated machine packs.
 
 When canonical docs change, or when checked-in external inventory snapshots are
 updated, refresh the mirrored MCP data with:
 
 ```bash
+bun tools/generate-machine-docs.mjs
+
 cd ssl-mcp-server
 bun scripts/bundle-data.mjs
 bun run check:consistency
 ```
+
+### Machine Packs
+
+`agent-guides/machine/` contains generated compact context for agents:
+`foundation.md`, `category-index.json`, and category packs such as `database`,
+`loops`, `strings`, `data-sources`, `classes`, `error-handling`, `formatting`,
+and `naming`. These files are generated from the schema, agent guides, element
+inventory, and selected `ssl-docs` guide paths. Agents load the foundation first
+and retrieve task/category detail through the MCP `ssl_context_pack` tool or
+`ssl://machine/*` resources.
 
 ## Agent Skills
 
@@ -130,12 +143,13 @@ SSL developer agents:
 - `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
 
 Each agent is authored once; `tools/generate-agents.mjs` emits per-tool adapter
-files — `.github/agents/` for GitHub Copilot, `.opencode/agent/` for opencode, and
-`.claude/agents/` for Claude Code. These adapters are git-ignored build
-artifacts: run `bun tools/generate-agents.mjs` after a fresh clone and after
-editing a canonical `*.agent.md` file. See `agent-guides/agents/README.md` for the
-format; `bun run check:consistency` also runs `--check` to flag adapters that have
-drifted from their sources.
+files — `.github/agents/` for GitHub Copilot, `.opencode/agents/` for OpenCode,
+and `.claude/agents/` for Claude Code. These adapters are git-ignored build
+artifacts. For normal use across repositories, deploy them to user-level agent
+directories with `bun tools/deploy-agents.mjs` after generation. See
+`agent-guides/agents/README.md` for the format, user-level install locations,
+and check commands; `bun run check:consistency` also runs `--check` to flag
+adapters that have drifted from their sources.
 
 ## Metadata
 
