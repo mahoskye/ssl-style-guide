@@ -121,12 +121,13 @@ alternative rules or wording.
 
 ## Agent Definitions
 
-`agent-guides/agents/` contains the canonical, tool-neutral definitions for three
+`agent-guides/agents/` contains the canonical, tool-neutral definitions for four
 SSL developer agents:
 
+- `ssl-planner` — plan SSL work and produce implementation specs
 - `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
 - `ssl-reviewer` — review SSL code against the style guide (read-only)
-- `ssl-refactorer` — modernize and clean up SSL code, preserving behavior
+- `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
 
 Each agent is authored once; `tools/generate-agents.mjs` emits per-tool adapter
 files — `.github/agents/` for GitHub Copilot, `.opencode/agent/` for opencode, and
