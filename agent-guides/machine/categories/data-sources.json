@@ -1,0 +1,59 @@
+{
+  "id": "data-sources",
+  "label": "Data Sources",
+  "aliases": [
+    "data source files",
+    "sql data sources",
+    "builder directives"
+  ],
+  "summary": "SSL and SQL data-source syntax, inline defaults, and builder directives.",
+  "must_follow": [
+    "Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.",
+    "Every data-source parameter must have a default.",
+    "SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.",
+    "One file should represent either a class definition, a script, or a data source."
+  ],
+  "avoid": [
+    "Do not apply normal script :PARAMETERS/:DEFAULT layout to data-source files.",
+    "Do not treat builder directives as reusable SSL keywords outside data-source contexts."
+  ],
+  "elements": [
+    {
+      "name": "PARAMETERS",
+      "type": "keyword",
+      "syntax": ":PARAMETERS param1[, param2, ...];",
+      "summary": "Declares named input parameters for a script, procedure, method, or constructor."
+    },
+    {
+      "name": "DSN",
+      "type": "directive",
+      "summary": "Data-source builder directive; preprocessed before SSL compilation."
+    },
+    {
+      "name": "TABLENAME",
+      "type": "directive",
+      "summary": "Data-source builder directive; preprocessed before SSL compilation."
+    },
+    {
+      "name": "NULLASBLANK",
+      "type": "directive",
+      "summary": "Data-source builder directive; preprocessed before SSL compilation."
+    },
+    {
+      "name": "INVARIANTDATECOLUMNS",
+      "type": "directive",
+      "summary": "Data-source builder directive; preprocessed before SSL compilation."
+    }
+  ],
+  "related_categories": [
+    "database",
+    "sql",
+    "procedures"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/data-sources.md"
+  ],
+  "missing_optional_sources": []
+}

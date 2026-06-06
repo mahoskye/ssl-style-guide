@@ -1,0 +1,695 @@
+{
+  "version": "1",
+  "description": "Searchable category index for compact SSL machine documentation.",
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "agent-guides/ssl_refactoring_guide.md",
+    "ssl-style-guide/ssl-element-reference.json",
+    "ssl-style-guide/ssl-element-meta.json",
+    "../ssl-docs/content/guides/sql-queries.md",
+    "../ssl-docs/content/guides/sql-transactions.md",
+    "../ssl-docs/content/guides/data-sources.md",
+    "../ssl-docs/content/guides/error-handling.md",
+    "../ssl-docs/content/guides/naming-conventions.md",
+    "../ssl-docs/content/guides/type-system.md"
+  ],
+  "categories": [
+    {
+      "id": "control-flow",
+      "label": "Control Flow",
+      "aliases": [
+        "control statements",
+        "conditionals",
+        "branching",
+        "case statements"
+      ],
+      "summary": "Branching and early-return constructs for SSL scripts and procedures.",
+      "element_names": [
+        "IF",
+        "ELSE",
+        "ENDIF",
+        "BEGINCASE",
+        "CASE",
+        "OTHERWISE",
+        "EXITCASE",
+        "ENDCASE",
+        "RETURN"
+      ],
+      "related_categories": [
+        "loops",
+        "error-handling",
+        "operators"
+      ],
+      "pack": "categories/control-flow.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "loops",
+      "label": "Loops",
+      "aliases": [
+        "iteration",
+        "for loops",
+        "while loops",
+        "loop control"
+      ],
+      "summary": "Iteration constructs, loop exits, and loop-control gotchas.",
+      "element_names": [
+        "FOR",
+        "TO",
+        "STEP",
+        "NEXT",
+        "WHILE",
+        "ENDWHILE",
+        "EXITFOR",
+        "EXITWHILE",
+        "LOOP",
+        "ALen"
+      ],
+      "related_categories": [
+        "arrays",
+        "control-flow",
+        "error-handling"
+      ],
+      "pack": "categories/loops.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "database",
+      "label": "Database",
+      "aliases": [
+        "db",
+        "queries",
+        "sql functions",
+        "lims database"
+      ],
+      "summary": "SSL database APIs, query return shapes, and parameterization rules.",
+      "element_names": [
+        "SQLExecute",
+        "RunSQL",
+        "LSearch",
+        "LSelect",
+        "LSelect1",
+        "LSelectC",
+        "GetDataSet",
+        "GetConnectionStrings",
+        "GetDefaultConnection",
+        "SetDefaultConnection",
+        "LimsRecordsAffected"
+      ],
+      "related_categories": [
+        "sql",
+        "transactions",
+        "data-sources",
+        "arrays"
+      ],
+      "pack": "categories/database.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/sql-queries.md"
+      ]
+    },
+    {
+      "id": "sql",
+      "label": "SQL Style",
+      "aliases": [
+        "sql formatting",
+        "query style",
+        "sql strings"
+      ],
+      "summary": "SQL formatting and query-construction conventions inside SSL strings.",
+      "element_names": [
+        "SQLExecute",
+        "RunSQL",
+        "LSearch",
+        "LSelect1",
+        "GetDataSet",
+        "BuildStringForIn",
+        "PrepareArrayForIn"
+      ],
+      "related_categories": [
+        "database",
+        "transactions",
+        "strings",
+        "arrays"
+      ],
+      "pack": "categories/sql.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md",
+        "ssl-style-guide/sql-canonical-compact-reference.md",
+        "../ssl-docs/content/guides/sql-queries.md"
+      ]
+    },
+    {
+      "id": "transactions",
+      "label": "Transactions",
+      "aliases": [
+        "database transactions",
+        "commit",
+        "rollback"
+      ],
+      "summary": "Transaction lifecycle functions and failure handling around database writes.",
+      "element_names": [
+        "BeginLimsTransaction",
+        "EndLimsTransaction",
+        "GetTransactionsCount",
+        "IsInTransaction",
+        "SQLExecute",
+        "RunSQL",
+        "GetLastSSLError"
+      ],
+      "related_categories": [
+        "database",
+        "sql",
+        "error-handling"
+      ],
+      "pack": "categories/transactions.json",
+      "source_paths": [
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/sql-transactions.md"
+      ]
+    },
+    {
+      "id": "strings",
+      "label": "Strings",
+      "aliases": [
+        "text",
+        "string functions",
+        "string comparisons"
+      ],
+      "summary": "String literals, comparison semantics, containment, and common string helpers.",
+      "element_names": [
+        "Len",
+        "AllTrim",
+        "LimsString",
+        "Upper",
+        "Lower",
+        "SubStr",
+        "At",
+        "BuildString",
+        "BuildArray",
+        "equals",
+        "strict-equals",
+        "dollar"
+      ],
+      "related_categories": [
+        "operators",
+        "sql",
+        "formatting"
+      ],
+      "pack": "categories/strings.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "arrays",
+      "label": "Arrays",
+      "aliases": [
+        "array functions",
+        "1-based arrays",
+        "lists"
+      ],
+      "summary": "SSL array creation, indexing, traversal, and array helper functions.",
+      "element_names": [
+        "ArrayNew",
+        "ALen",
+        "AAdd",
+        "AScan",
+        "AScanExact",
+        "AEval",
+        "AEvalA",
+        "AFill",
+        "DelArray",
+        "BuildArray",
+        "BuildArray2",
+        "BuildString",
+        "BuildString2",
+        "CompArray",
+        "SortArray"
+      ],
+      "related_categories": [
+        "loops",
+        "sql",
+        "types"
+      ],
+      "pack": "categories/arrays.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/type-system.md"
+      ]
+    },
+    {
+      "id": "dates",
+      "label": "Dates",
+      "aliases": [
+        "date functions",
+        "date formatting",
+        "date conversion"
+      ],
+      "summary": "Date conversion, formatting, and date arithmetic helpers.",
+      "element_names": [
+        "LIMSDate",
+        "CToD",
+        "DToC",
+        "DToS",
+        "DateAdd",
+        "DateDiff",
+        "DateFormat",
+        "DateFromString",
+        "DateToString",
+        "Day",
+        "Month",
+        "Year",
+        "DOW",
+        "DOY"
+      ],
+      "related_categories": [
+        "database",
+        "types",
+        "formatting"
+      ],
+      "pack": "categories/dates.json",
+      "source_paths": [
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/type-system.md"
+      ]
+    },
+    {
+      "id": "classes",
+      "label": "Classes",
+      "aliases": [
+        "class files",
+        "methods",
+        "fields",
+        "inheritance"
+      ],
+      "summary": "User-defined class structure, field access, method calls, and built-in class creation.",
+      "element_names": [
+        "CLASS",
+        "INHERIT",
+        "DECLARE",
+        "PUBLIC",
+        "CreateUdObject",
+        "me",
+        "base"
+      ],
+      "related_categories": [
+        "objects",
+        "procedures",
+        "naming"
+      ],
+      "pack": "categories/classes.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "objects",
+      "label": "Objects",
+      "aliases": [
+        "dynamic objects",
+        "properties",
+        "built-in classes",
+        "member access"
+      ],
+      "summary": "Dynamic objects, properties, built-in classes, and member-access conventions.",
+      "element_names": [
+        "CreateUdObject",
+        "AddProperty",
+        "SSLExpando",
+        "Email",
+        "SQLConnection",
+        "me",
+        "base"
+      ],
+      "related_categories": [
+        "classes",
+        "types",
+        "formatting"
+      ],
+      "pack": "categories/objects.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "procedures",
+      "label": "Procedures",
+      "aliases": [
+        "script procedures",
+        "procedure calls",
+        "entry points"
+      ],
+      "summary": "Procedure declarations, parameter/default ordering, and procedure-call mechanisms.",
+      "element_names": [
+        "PROCEDURE",
+        "ENDPROC",
+        "PARAMETERS",
+        "DEFAULT",
+        "DoProc",
+        "ExecFunction",
+        "RETURN"
+      ],
+      "related_categories": [
+        "classes",
+        "module-structure",
+        "naming"
+      ],
+      "pack": "categories/procedures.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "data-sources",
+      "label": "Data Sources",
+      "aliases": [
+        "data source files",
+        "sql data sources",
+        "builder directives"
+      ],
+      "summary": "SSL and SQL data-source syntax, inline defaults, and builder directives.",
+      "element_names": [
+        "PARAMETERS",
+        "DSN",
+        "TABLENAME",
+        "NULLASBLANK",
+        "INVARIANTDATECOLUMNS"
+      ],
+      "related_categories": [
+        "database",
+        "sql",
+        "procedures"
+      ],
+      "pack": "categories/data-sources.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/data-sources.md"
+      ]
+    },
+    {
+      "id": "error-handling",
+      "label": "Error Handling",
+      "aliases": [
+        "try catch",
+        "exceptions",
+        "finally",
+        "ssl errors"
+      ],
+      "summary": "Modern SSL error handling with TRY/CATCH/FINALLY and error retrieval.",
+      "element_names": [
+        "TRY",
+        "CATCH",
+        "FINALLY",
+        "ENDTRY",
+        "GetLastSSLError",
+        "ClearLastSSLError",
+        "ErrorMes"
+      ],
+      "related_categories": [
+        "control-flow",
+        "transactions",
+        "logging"
+      ],
+      "pack": "categories/error-handling.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/error-handling.md"
+      ]
+    },
+    {
+      "id": "files",
+      "label": "Files",
+      "aliases": [
+        "file functions",
+        "directories",
+        "zip",
+        "ftp"
+      ],
+      "summary": "File, directory, archive, and transfer helper functions.",
+      "element_names": [
+        "Directory",
+        "CombineFiles",
+        "CreateZip",
+        "ExtractZip",
+        "CopyToFtp",
+        "DeleteFromFtp",
+        "CheckOnFtp",
+        "FtpsClient"
+      ],
+      "related_categories": [
+        "error-handling",
+        "strings"
+      ],
+      "pack": "categories/files.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-element-reference.json",
+        "ssl-style-guide/ssl-element-meta.json"
+      ]
+    },
+    {
+      "id": "email",
+      "label": "Email",
+      "aliases": [
+        "mail",
+        "smtp",
+        "send email"
+      ],
+      "summary": "Email built-in class and related message-sending behavior.",
+      "element_names": [
+        "Email",
+        "SendLimsEmail"
+      ],
+      "related_categories": [
+        "objects",
+        "arrays",
+        "error-handling"
+      ],
+      "pack": "categories/email.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-element-reference.json",
+        "ssl-style-guide/ssl-element-meta.json"
+      ]
+    },
+    {
+      "id": "security",
+      "label": "Security",
+      "aliases": [
+        "safe coding",
+        "sql injection",
+        "credentials"
+      ],
+      "summary": "Security-sensitive SSL practices, especially SQL binding and dynamic code.",
+      "element_names": [
+        "DetectSqlInjections",
+        "SQLExecute",
+        "RunSQL",
+        "LSearch",
+        "ExecFunction",
+        "Eval"
+      ],
+      "related_categories": [
+        "database",
+        "sql",
+        "procedures",
+        "logging"
+      ],
+      "pack": "categories/security.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "formatting",
+      "label": "Formatting",
+      "aliases": [
+        "style",
+        "layout",
+        "comments",
+        "regions"
+      ],
+      "summary": "Statement layout, indentation, comments, operators, and region comments.",
+      "element_names": [
+        "DECLARE",
+        "PARAMETERS",
+        "DEFAULT",
+        "INCLUDE",
+        "PUBLIC"
+      ],
+      "related_categories": [
+        "naming",
+        "operators",
+        "procedures"
+      ],
+      "pack": "categories/formatting.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "naming",
+      "label": "Naming",
+      "aliases": [
+        "hungarian notation",
+        "identifiers",
+        "variable names"
+      ],
+      "summary": "Procedure, class, variable, constant, and parameter naming conventions.",
+      "element_names": [
+        "DECLARE",
+        "PARAMETERS",
+        "PUBLIC"
+      ],
+      "related_categories": [
+        "formatting",
+        "classes",
+        "procedures"
+      ],
+      "pack": "categories/naming.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/naming-conventions.md"
+      ]
+    },
+    {
+      "id": "types",
+      "label": "Types",
+      "aliases": [
+        "type system",
+        "runtime types",
+        "literals"
+      ],
+      "summary": "SSL primitive/runtime types, literals, and type-sensitive comparisons.",
+      "element_names": [
+        "array",
+        "boolean",
+        "date",
+        "nil",
+        "number",
+        "object",
+        "string",
+        "true",
+        "false",
+        "LimsString"
+      ],
+      "related_categories": [
+        "arrays",
+        "strings",
+        "dates",
+        "objects"
+      ],
+      "pack": "categories/types.json",
+      "source_paths": [
+        "agent-guides/ssl_agent_instructions.md",
+        "../ssl-docs/content/guides/type-system.md"
+      ]
+    },
+    {
+      "id": "operators",
+      "label": "Operators",
+      "aliases": [
+        "comparisons",
+        "assignment",
+        "logical operators"
+      ],
+      "summary": "Assignment, arithmetic, comparison, logical, containment, and member-access operators.",
+      "element_names": [
+        "assignment",
+        "equals",
+        "strict-equals",
+        "not-equals",
+        "less-than",
+        "greater-than",
+        "and",
+        "or",
+        "not",
+        "dollar",
+        "plus",
+        "minus"
+      ],
+      "related_categories": [
+        "strings",
+        "formatting",
+        "control-flow"
+      ],
+      "pack": "categories/operators.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "logging",
+      "label": "Logging",
+      "aliases": [
+        "messages",
+        "UsrMes",
+        "ErrorMes",
+        "InfoMes"
+      ],
+      "summary": "Server logging helpers and message-output caveats.",
+      "element_names": [
+        "UsrMes",
+        "ErrorMes",
+        "InfoMes"
+      ],
+      "related_categories": [
+        "error-handling",
+        "security"
+      ],
+      "pack": "categories/logging.json",
+      "source_paths": [
+        "agent-guides/ssl_agent_instructions.md",
+        "ssl-style-guide/ssl-element-reference.json"
+      ]
+    },
+    {
+      "id": "module-structure",
+      "label": "Module Structure",
+      "aliases": [
+        "file structure",
+        "script layout",
+        "includes"
+      ],
+      "summary": "File-level organization for scripts, classes, and data sources.",
+      "element_names": [
+        "INCLUDE",
+        "PUBLIC",
+        "PARAMETERS",
+        "DEFAULT",
+        "DECLARE",
+        "CLASS",
+        "PROCEDURE"
+      ],
+      "related_categories": [
+        "procedures",
+        "classes",
+        "data-sources"
+      ],
+      "pack": "categories/module-structure.json",
+      "source_paths": [
+        "ssl-style-guide/ssl-style-guide.schema.yaml",
+        "agent-guides/ssl_agent_instructions.md"
+      ]
+    }
+  ]
+}

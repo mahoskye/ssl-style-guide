@@ -1,0 +1,77 @@
+{
+  "id": "files",
+  "label": "Files",
+  "aliases": [
+    "file functions",
+    "directories",
+    "zip",
+    "ftp"
+  ],
+  "summary": "File, directory, archive, and transfer helper functions.",
+  "must_follow": [
+    "Look up exact signatures before using file or transfer helpers.",
+    "Treat path, FTP, and archive operations as side-effectful and handle errors explicitly."
+  ],
+  "avoid": [
+    "Do not assume missing files or remote paths fail silently.",
+    "Do not invent overloads for transfer helpers."
+  ],
+  "elements": [
+    {
+      "name": "Directory",
+      "type": "function",
+      "syntax": "Directory(sFilePattern, [sAttributes])",
+      "summary": "Retrieves filesystem entries that match a path or wildcard pattern, with optional filtering for directories, hidden entries, and system entries."
+    },
+    {
+      "name": "CombineFiles",
+      "type": "function",
+      "syntax": "CombineFiles(aFileNames, sOutFile);",
+      "summary": "Concatenates multiple files into one output file on disk."
+    },
+    {
+      "name": "CreateZip",
+      "type": "function",
+      "syntax": "CreateZip(sZipFileName, sSourceDirectory, [bRecurse], [sFileFilter], [sPassword])",
+      "summary": "Creates a ZIP archive from a source directory."
+    },
+    {
+      "name": "ExtractZip",
+      "type": "function",
+      "syntax": "ExtractZip(sZipFileName, sTargetDirectory, [sFileFilter], [sPassword])",
+      "summary": "Extracts a ZIP archive into a target directory."
+    },
+    {
+      "name": "CopyToFtp",
+      "type": "function",
+      "syntax": "CopyToFtp(",
+      "summary": "Appends the same text content to one or more files on an FTP or SFTP server."
+    },
+    {
+      "name": "DeleteFromFtp",
+      "type": "function",
+      "syntax": "DeleteFromFtp(",
+      "summary": "Deletes a remote file through FTP, or through SFTP when bIsSFTP is .T.."
+    },
+    {
+      "name": "CheckOnFtp",
+      "type": "function",
+      "syntax": "CheckOnFtp(",
+      "summary": "Checks whether a remote file exists on an FTP server, or on an SFTP server when bIsSFTP is .T.."
+    },
+    {
+      "name": "FtpsClient",
+      "type": "class",
+      "summary": "Transfers files and manages directories on an FTPS server."
+    }
+  ],
+  "related_categories": [
+    "error-handling",
+    "strings"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-element-reference.json",
+    "ssl-style-guide/ssl-element-meta.json"
+  ],
+  "missing_optional_sources": []
+}

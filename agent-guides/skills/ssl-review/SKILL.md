@@ -89,8 +89,8 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 Use `ssl-style-guide/ssl-element-reference.json` (or MCP tools `ssl_lookup`
 and `ssl_search` when available) to validate identifiers. The JSON contains
-all 446 published SSL elements: 38 keywords, 32 operators, 3 literals, 8
-types, 29 classes, 6 special forms, 330 functions.
+all 448 published SSL elements: 38 keywords, 32 operators, 3 literals, 8
+types, 29 classes, 8 special forms, 330 functions.
 
 - **Removed/unknown built-in functions:** Flag any call that looks like a
   built-in function (PascalCase identifier, not preceded by `Me:` / `Base:`,

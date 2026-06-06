@@ -13,7 +13,7 @@
  * narrative reference docs.
  */
 
-import { copyFileSync, readFileSync } from 'fs';
+import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -53,6 +53,13 @@ for (const { src, dest } of filesToBundle) {
   copyFileSync(resolve(REPO_ROOT, src), resolve(DATA_DIR, dest));
   console.log(`Copied ${dest}`);
 }
+
+rmSync(resolve(DATA_DIR, 'machine'), { recursive: true, force: true });
+mkdirSync(resolve(DATA_DIR, 'machine'), { recursive: true });
+cpSync(resolve(REPO_ROOT, 'agent-guides/machine'), resolve(DATA_DIR, 'machine'), {
+  recursive: true,
+});
+console.log('Copied machine/');
 
 // Report element totals from the bundled reference for verification.
 const ref = JSON.parse(

@@ -4,7 +4,7 @@ description: >-
   Plans behavior-preserving STARLIMS SSL (v11) refactors and writes
   implementation specs for ssl-developer. Use to analyze cleanup or
   modernization work before production SSL edits.
-version: 5
+version: 6
 mode: all
 argument-hint: "<file-path> [goal]"
 model: inherit
@@ -15,12 +15,13 @@ tools:
   - glob
 mcp:
   - server: ssl-reference
-    tools: [ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
 skills:
   - ssl-refactor-plan
   - ssl-format
   - ssl-lookup
 guides:
+  - agent-guides/machine/foundation.md
   - agent-guides/ssl_refactoring_guide.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
@@ -41,17 +42,22 @@ implement.
 
 ## Sources of truth (consult in this order)
 
-1. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
+1. `agent-guides/machine/foundation.md` — compact baseline rules and retrieval
+   protocol. Start here, then use `ssl_context_pack` for task/category context.
+2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
    SSL rules.
-2. `agent-guides/ssl_refactoring_guide.md` — the refactoring workflow, structure,
+3. `agent-guides/ssl_refactoring_guide.md` — the refactoring workflow, structure,
    and formatting expectations; this is your primary guide.
-3. `agent-guides/ssl_agent_instructions.md` — language semantics and edge cases.
-4. The checked-in code itself, when guidance is silent.
+4. `agent-guides/ssl_agent_instructions.md` — language semantics and edge cases.
+5. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
 `ssl_signature`, and `ssl_search` for element lookups before proposing changes
-that depend on a built-in element. If it is not available, say so once and fall
-back to the bundled JSON inventory in this repo:
+that depend on a built-in element. Use `ssl_context_pack` for compact category
+context before planning changes in areas such as `procedures`, `classes`,
+`database`, or `formatting`. If it is not available, say so once and fall back
+to the bundled machine docs and JSON inventory in this repo:
+`agent-guides/machine/category-index.json`, `agent-guides/machine/categories/`,
 `ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
 `ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
 

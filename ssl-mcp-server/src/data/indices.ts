@@ -1,4 +1,5 @@
 import type { Element } from "../types.js";
+import type { MachineDocs } from "../types.js";
 import type { LoadedData } from "./loader.js";
 
 export interface Indices {
@@ -11,6 +12,7 @@ export interface Indices {
   agentInstructions: string;
   refactoringGuide: string;
   ebnfGrammar: string;
+  machineDocs: MachineDocs;
 }
 
 export function buildIndices(data: LoadedData): Indices {
@@ -85,5 +87,6 @@ export function buildIndices(data: LoadedData): Indices {
     agentInstructions: data.agentInstructions,
     refactoringGuide: data.refactoringGuide,
     ebnfGrammar: data.ebnfGrammar,
+    machineDocs: data.machineDocs,
   };
 }

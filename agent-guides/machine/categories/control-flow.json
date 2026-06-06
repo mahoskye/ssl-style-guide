@@ -1,0 +1,87 @@
+{
+  "id": "control-flow",
+  "label": "Control Flow",
+  "aliases": [
+    "control statements",
+    "conditionals",
+    "branching",
+    "case statements"
+  ],
+  "summary": "Branching and early-return constructs for SSL scripts and procedures.",
+  "must_follow": [
+    "Use uppercase colon-prefixed keywords in SSL code, for example :IF and :BEGINCASE.",
+    ":BEGINCASE requires at least one :CASE block.",
+    "Terminate each :CASE and :OTHERWISE block with :EXITCASE unless deliberate fallthrough is required.",
+    "Keep one statement per line and terminate every statement with a semicolon."
+  ],
+  "avoid": [
+    "Do not rely on BEGINCASE fallthrough accidentally.",
+    "Do not put semicolons inside comment text; the first semicolon ends the comment."
+  ],
+  "elements": [
+    {
+      "name": "IF",
+      "type": "keyword",
+      "syntax": ":IF condition;\n    /* Statements to run when condition is true;\n:ELSE;\n    /* Optional statements to run when condition is false;\n:ENDIF;",
+      "summary": "Executes a block of statements only when a condition evaluates to true."
+    },
+    {
+      "name": "ELSE",
+      "type": "keyword",
+      "syntax": ":ELSE;",
+      "summary": "Directs control to an alternate set of statements when the preceding IF condition is false."
+    },
+    {
+      "name": "ENDIF",
+      "type": "keyword",
+      "syntax": ":ENDIF;",
+      "summary": "Terminates an :IF block, with or without an :ELSE branch."
+    },
+    {
+      "name": "BEGINCASE",
+      "type": "keyword",
+      "syntax": ":BEGINCASE;\n:CASE <condition>;\n    /* statements;\n    :EXITCASE;\n:CASE <condition>;\n    /* statements;\n    :EXITCASE;\n:OTHERWISE;\n    /* statements;\n    :EXITCASE;\n:ENDCASE;",
+      "summary": "Starts a :BEGINCASE block for evaluating one or more boolean :CASE conditions, with an optional :OTHERWISE branch and a required :ENDCASE."
+    },
+    {
+      "name": "CASE",
+      "type": "keyword",
+      "syntax": ":CASE expression;",
+      "summary": "Executes a block of statements if a specific boolean expression evaluates to true within a CASE structure."
+    },
+    {
+      "name": "OTHERWISE",
+      "type": "keyword",
+      "syntax": ":OTHERWISE;",
+      "summary": "Executes the default branch of a :BEGINCASE block when no earlier :CASE branch runs."
+    },
+    {
+      "name": "EXITCASE",
+      "type": "keyword",
+      "syntax": ":EXITCASE;",
+      "summary": "Ends the current :CASE or :OTHERWISE branch and continues after :ENDCASE."
+    },
+    {
+      "name": "ENDCASE",
+      "type": "keyword",
+      "syntax": ":ENDCASE;",
+      "summary": "Closes a :BEGINCASE block after its :CASE branches and optional :OTHERWISE branch."
+    },
+    {
+      "name": "RETURN",
+      "type": "keyword",
+      "syntax": ":RETURN;\n:RETURN expression;",
+      "summary": "Ends the current script, procedure, or method immediately and can optionally return a value."
+    }
+  ],
+  "related_categories": [
+    "loops",
+    "error-handling",
+    "operators"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

@@ -1,0 +1,72 @@
+{
+  "id": "objects",
+  "label": "Objects",
+  "aliases": [
+    "dynamic objects",
+    "properties",
+    "built-in classes",
+    "member access"
+  ],
+  "summary": "Dynamic objects, properties, built-in classes, and member-access conventions.",
+  "must_follow": [
+    "Reserve property for dynamic-object members, SSLExpando members, and AddProperty-created members.",
+    "Use field for :DECLARE slots on classes.",
+    "Instantiate directly creatable built-in classes with curly braces, for example Email{}.",
+    "Use no spaces around member access colon."
+  ],
+  "avoid": [
+    "Do not use CreateUdObject for built-in class instances.",
+    "Do not blur class fields and dynamic object properties in documentation or reviews."
+  ],
+  "elements": [
+    {
+      "name": "CreateUdObject",
+      "type": "function",
+      "syntax": "CreateUdObject()",
+      "summary": "Creates a dynamic object or instantiates a user-defined class."
+    },
+    {
+      "name": "AddProperty",
+      "type": "function",
+      "syntax": "AddProperty(oTarget, vPropName)",
+      "summary": "Add one or more properties to an object."
+    },
+    {
+      "name": "SSLExpando",
+      "type": "class",
+      "summary": "SSLExpando is a built-in object class for storing named values whose shape is decided at runtime."
+    },
+    {
+      "name": "Email",
+      "type": "class",
+      "summary": "Composes, loads, saves, sends, or queues email messages with attachments and optional signing or encryption."
+    },
+    {
+      "name": "SQLConnection",
+      "type": "class",
+      "summary": "Represents a configured database connection returned by GetConnectionByName."
+    },
+    {
+      "name": "me",
+      "type": "special_form",
+      "syntax": "Me;\nMe:FieldName;\nMe:MethodName(args);",
+      "summary": "Provides a reference to the current class instance inside :CLASS methods."
+    },
+    {
+      "name": "base",
+      "type": "special_form",
+      "syntax": "Base:FieldName;\nBase:MethodName(args);\nBase:Constructor(args);",
+      "summary": "Provides explicit access to members on a class's immediate parent type from within a class method."
+    }
+  ],
+  "related_categories": [
+    "classes",
+    "types",
+    "formatting"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}
