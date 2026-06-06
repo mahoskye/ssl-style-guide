@@ -1,0 +1,42 @@
+{
+  "id": "email",
+  "label": "Email",
+  "aliases": [
+    "mail",
+    "smtp",
+    "send email"
+  ],
+  "summary": "Email built-in class and related message-sending behavior.",
+  "must_follow": [
+    "Instantiate the built-in Email class with curly braces.",
+    "Look up exact recipient, attachment, CC, BCC, and ignore-error parameter behavior before sending.",
+    "Handle send failures explicitly when workflow state depends on email delivery."
+  ],
+  "avoid": [
+    "Do not pass NIL or empty recipient arrays unless the documented function behavior accepts them.",
+    "Do not use CreateUdObject for Email."
+  ],
+  "elements": [
+    {
+      "name": "Email",
+      "type": "class",
+      "summary": "Composes, loads, saves, sends, or queues email messages with attachments and optional signing or encryption."
+    },
+    {
+      "name": "SendLimsEmail",
+      "type": "function",
+      "syntax": "SendLimsEmail(",
+      "summary": "Sends an email through SMTP and returns whether the send succeeded."
+    }
+  ],
+  "related_categories": [
+    "objects",
+    "arrays",
+    "error-handling"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-element-reference.json",
+    "ssl-style-guide/ssl-element-meta.json"
+  ],
+  "missing_optional_sources": []
+}

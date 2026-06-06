@@ -1,0 +1,104 @@
+{
+  "id": "strings",
+  "label": "Strings",
+  "aliases": [
+    "text",
+    "string functions",
+    "string comparisons"
+  ],
+  "summary": "String literals, comparison semantics, containment, and common string helpers.",
+  "must_follow": [
+    "Use == for exact string equality.",
+    "Remember that = is prefix-style for strings and is not the same as exact equality.",
+    "Use $ for containment tests.",
+    "Use bracket strings when SQL or text contains many quotes."
+  ],
+  "avoid": [
+    "Do not assume = and != are logical opposites for strings.",
+    "Do not use string concatenation for SQL values when parameterization is available."
+  ],
+  "elements": [
+    {
+      "name": "Len",
+      "type": "function",
+      "syntax": "Len(vSource)",
+      "summary": "Returns the number of characters in a string or the element count of an array."
+    },
+    {
+      "name": "AllTrim",
+      "type": "function",
+      "syntax": "AllTrim(sSource)",
+      "summary": "Remove leading and trailing space characters from a string."
+    },
+    {
+      "name": "LimsString",
+      "type": "function",
+      "syntax": "LimsString([vSource])",
+      "summary": "Converts a value to a string, returning \\\"NIL\\\" when the input is NIL."
+    },
+    {
+      "name": "Upper",
+      "type": "function",
+      "syntax": "Upper(sSource)",
+      "summary": "Converts all characters in a string to uppercase."
+    },
+    {
+      "name": "Lower",
+      "type": "function",
+      "syntax": "Lower(sSource)",
+      "summary": "Converts all characters in a string to lowercase."
+    },
+    {
+      "name": "SubStr",
+      "type": "function",
+      "syntax": "SubStr(sSource, [nStartPos], [nLength])",
+      "summary": "Extracts part of a string starting at a position you specify."
+    },
+    {
+      "name": "At",
+      "type": "function",
+      "syntax": "At(sSubString, sSource)",
+      "summary": "Finds the first occurrence of a substring in a string and returns its one-based position."
+    },
+    {
+      "name": "BuildString",
+      "type": "function",
+      "syntax": "BuildString(aTarget, [nStart], [nCount], [sDelimiter])",
+      "summary": "Builds one string from array elements using a delimiter."
+    },
+    {
+      "name": "BuildArray",
+      "type": "function",
+      "syntax": "BuildArray(sText, [bCrlfOk], [sDelimiter], [bUnique], [bTrimSpaces])",
+      "summary": "Splits text into a one-dimensional array using a literal delimiter."
+    },
+    {
+      "name": "equals",
+      "type": "operator",
+      "syntax": "bEqual := vLeft = vRight;",
+      "summary": "Compares two values for equality, using prefix matching for strings, exact matching for numbers, booleans, and dates, and reference equality for arrays and objects."
+    },
+    {
+      "name": "strict-equals",
+      "type": "operator",
+      "syntax": "bEqual := vLeft == vRight;",
+      "summary": "Returns .T. when two values are strictly equal under SSL equality rules."
+    },
+    {
+      "name": "dollar",
+      "type": "operator",
+      "syntax": "bResult := needle $ haystack;",
+      "summary": "Tests whether the left string is found within the right operand as a substring."
+    }
+  ],
+  "related_categories": [
+    "operators",
+    "sql",
+    "formatting"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

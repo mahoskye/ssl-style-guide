@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
@@ -6,6 +6,9 @@ import type {
   Element,
   ElementMeta,
   ElementType,
+  MachineCategoryIndex,
+  MachineCategoryPack,
+  MachineDocs,
   ReferenceEntry,
   ReferenceFile,
 } from "../types.js";
@@ -159,6 +162,27 @@ export interface LoadedData {
   agentInstructions: string;
   refactoringGuide: string;
   ebnfGrammar: string;
+  machineDocs: MachineDocs;
+}
+
+function loadMachineDocs(): MachineDocs {
+  const categoryIndex = JSON.parse(
+    readFileSync(dataPath("machine/category-index.json"), "utf-8")
+  ) as MachineCategoryIndex;
+  const categoriesDir = dataPath("machine/categories");
+  const categories: Record<string, MachineCategoryPack> = {};
+  for (const file of readdirSync(categoriesDir).filter((name) => name.endsWith(".json")).sort()) {
+    const pack = JSON.parse(
+      readFileSync(resolve(categoriesDir, file), "utf-8")
+    ) as MachineCategoryPack;
+    categories[pack.id] = pack;
+  }
+
+  return {
+    foundation: readFileSync(dataPath("machine/foundation.md"), "utf-8"),
+    categoryIndex,
+    categories,
+  };
 }
 
 function formatElementType(type: string): string {
@@ -180,6 +204,7 @@ export function loadAllData(): LoadedData {
   const agentInstructions = readFileSync(dataPath("ssl_agent_instructions.md"), "utf-8");
   const refactoringGuide = readFileSync(dataPath("ssl_refactoring_guide.md"), "utf-8");
   const ebnfGrammar = readFileSync(dataPath("ssl-ebnf-grammar.md"), "utf-8");
+  const machineDocs = loadMachineDocs();
 
   const byType = elements.reduce<Record<string, number>>((acc, e) => {
     acc[e.type] = (acc[e.type] ?? 0) + 1;
@@ -201,5 +226,6 @@ export function loadAllData(): LoadedData {
     agentInstructions,
     refactoringGuide,
     ebnfGrammar,
+    machineDocs,
   };
 }

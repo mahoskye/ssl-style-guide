@@ -1,0 +1,77 @@
+{
+  "id": "sql",
+  "label": "SQL Style",
+  "aliases": [
+    "sql formatting",
+    "query style",
+    "sql strings"
+  ],
+  "summary": "SQL formatting and query-construction conventions inside SSL strings.",
+  "must_follow": [
+    "Use multiline SQL strings for non-trivial queries and put major clauses on separate lines.",
+    "Pre-compute complex values before interpolating them into SQLExecute placeholders.",
+    "Use PrepareArrayForIn or SQLExecute array expansion for dynamic IN clauses when appropriate.",
+    "Keep SQL keyword casing distinct from SSL identifier casing."
+  ],
+  "avoid": [
+    "Do not build an IN clause by hand when a safer array helper or parameter array is available.",
+    "Do not mix named and positional placeholder mental models in the same call."
+  ],
+  "elements": [
+    {
+      "name": "SQLExecute",
+      "type": "function",
+      "syntax": "SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])",
+      "summary": "Executes SQL and returns either query results or a success flag."
+    },
+    {
+      "name": "RunSQL",
+      "type": "function",
+      "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
+      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+    },
+    {
+      "name": "LSearch",
+      "type": "function",
+      "syntax": "LSearch(sCommandString, vDefaultValue, [sConnectionName], [aArrayOfValues])",
+      "summary": "Returns a single value from a SQL query, or a caller-supplied fallback when the query produces no scalar result."
+    },
+    {
+      "name": "LSelect1",
+      "type": "function",
+      "syntax": "LSelect1(sCommandString, [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])",
+      "summary": "Executes a parameterized SQL SELECT command and returns the result as an array of rows."
+    },
+    {
+      "name": "GetDataSet",
+      "type": "function",
+      "syntax": "GetDataSet(sCommandString, [aValues], [bIncludeSchema], [sTableName], [bNullAsBlank], [aInvariantDateCols])",
+      "summary": "Executes a SQL query on the default database connection and returns the result as an XML dataset string."
+    },
+    {
+      "name": "BuildStringForIn",
+      "type": "function",
+      "syntax": "BuildStringForIn(aTarget)",
+      "summary": "Builds a quoted string list for a SQL IN clause from an array."
+    },
+    {
+      "name": "PrepareArrayForIn",
+      "type": "function",
+      "syntax": "PrepareArrayForIn(aTarget, sItemType)",
+      "summary": "Prepares an array for SQL IN clause helpers by mutating it in place."
+    }
+  ],
+  "related_categories": [
+    "database",
+    "transactions",
+    "strings",
+    "arrays"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "ssl-style-guide/sql-canonical-compact-reference.md",
+    "../ssl-docs/content/guides/sql-queries.md"
+  ],
+  "missing_optional_sources": []
+}

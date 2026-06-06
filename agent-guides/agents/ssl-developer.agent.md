@@ -4,7 +4,7 @@ description: >-
   Acts as an SSL developer: implements, reviews, and refactors STARLIMS SSL
   (v11) code following this repository's schema and agent guides. Use for
   general SSL coding work.
-version: 6
+version: 7
 mode: primary
 argument-hint: "<task description> [file-path]"
 model: inherit
@@ -16,7 +16,7 @@ tools:
   - bash:read-only
 mcp:
   - server: ssl-reference
-    tools: [ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
 skills:
   - ssl-review
   - ssl-refactor
@@ -25,6 +25,7 @@ skills:
   - ssl-new-procedure
   - ssl-new-class
 guides:
+  - agent-guides/machine/foundation.md
   - agent-guides/ssl_agent_instructions.md
   - agent-guides/ssl_refactoring_guide.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
@@ -53,23 +54,29 @@ changed.
 
 ## Sources of truth (consult in this order)
 
-1. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
+1. `agent-guides/machine/foundation.md` — compact baseline rules and retrieval
+   protocol. Start here, then use `ssl_context_pack` for task/category context.
+2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
    SSL rules. Start here for any language or style question.
-2. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
+3. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
    cases, and validated behavior.
-3. `agent-guides/ssl_refactoring_guide.md` — refactoring workflow, structure,
+4. `agent-guides/ssl_refactoring_guide.md` — refactoring workflow, structure,
    and formatting expectations.
-4. The checked-in code itself, when guidance is silent. If guidance conflicts,
+5. The checked-in code itself, when guidance is silent. If guidance conflicts,
    prefer the schema and current code over older notes.
 
 When the `ssl-reference` MCP server is available, use its `ssl_lookup`,
 `ssl_signature`, and `ssl_search` tools before you rely on any SSL built-in
-function, class, keyword, operator, or signature. If it is not available, say so
-once and fall back to the bundled JSON inventory shipped in this repo:
+function, class, keyword, operator, or signature. Use `ssl_context_pack` for
+compact category context such as `database`, `loops`, `strings`, or
+`data-sources`. If MCP is not available, say so once and fall back to the
+bundled machine docs and JSON inventory shipped in this repo:
 
+- `agent-guides/machine/category-index.json` and
+  `agent-guides/machine/categories/` — compact category packs.
 - `ssl-style-guide/ssl-element-reference.json` — summaries and syntax for
   every element (keywords, operators, literals, types, classes, special
-  forms, functions; 446 entries total).
+  forms, functions; 448 entries total).
 - `ssl-style-guide/ssl-element-meta.json` — richer per-element metadata
   including exceptions, caveats, and best practices.
 

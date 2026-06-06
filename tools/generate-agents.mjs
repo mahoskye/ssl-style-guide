@@ -7,7 +7,7 @@
  * Canonical source:  agent-guides/agents/<name>.agent.md  (tracked)
  * Generated outputs (all git-ignored build artifacts):
  *   .github/agents/<name>.agent.md   GitHub Copilot
- *   .opencode/agent/<name>.md        opencode
+ *   .opencode/agents/<name>.md       opencode
  *   .claude/agents/<name>.md         Claude Code
  *   AGENTS.md managed block          OpenAI Codex (degrades to instructions + skills)
  *
@@ -18,7 +18,7 @@
 
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import YAML from 'yaml';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -293,8 +293,8 @@ function planOutputs(agents) {
       local: false,
     });
     outputs.push({
-      label: `.opencode/agent/${name}.md`,
-      path: resolve(REPO_ROOT, `.opencode/agent/${name}.md`),
+      label: `.opencode/agents/${name}.md`,
+      path: resolve(REPO_ROOT, `.opencode/agents/${name}.md`),
       content: renderAdapter(opencodeFrontmatter(manifest), body, sourceRel, version),
       local: false,
     });
@@ -308,11 +308,7 @@ function planOutputs(agents) {
   return outputs;
 }
 
-function readIfExists(path) {
-  return existsSync(path) ? readFileSync(path, 'utf8') : null;
-}
-
-function main() {
+export function buildAgentAdapterOutputs() {
   if (!existsSync(CANONICAL_DIR)) {
     fail(`Canonical agent directory not found: ${CANONICAL_DIR}`);
   }
@@ -324,10 +320,18 @@ function main() {
   }
   const agents = files.map(loadManifest);
   validateHandoffTargets(agents);
+  return { agents, outputs: planOutputs(agents) };
+}
+
+function readIfExists(path) {
+  return existsSync(path) ? readFileSync(path, 'utf8') : null;
+}
+
+function main() {
+  const { agents, outputs } = buildAgentAdapterOutputs();
   const claudePresent = existsSync(CLAUDE_DIR);
 
   // Adapter files. All adapters are git-ignored build artifacts.
-  const outputs = planOutputs(agents);
   const drift = [];
   const written = [];
 
@@ -408,4 +412,6 @@ function main() {
   for (const label of written) console.log(`  - ${label}`);
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

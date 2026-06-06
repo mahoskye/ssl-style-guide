@@ -3,9 +3,10 @@
 MCP server for the repository's public SSL reference data.
 
 It serves the bundled element inventory, style guide, EBNF grammar, agent
-instructions, and refactoring guide to MCP-compatible clients. The data under
-`ssl-mcp-server/data/` is a checked-in mirror of the canonical public files in
-the repository root plus bundled reference inventories.
+instructions, refactoring guide, and generated machine packs to MCP-compatible
+clients. The data under `ssl-mcp-server/data/` is a checked-in mirror of the
+canonical public files in the repository root plus bundled reference
+inventories.
 
 ## Quick Start
 
@@ -77,13 +78,15 @@ Windows example:
 
 Bundled runtime files:
 
-- `data/ssl-element-reference.json` — full element inventory (446 elements:
+- `data/ssl-element-reference.json` — full element inventory (448 elements:
   keywords, operators, literals, types, classes, special forms, functions)
   with signatures, parameters, methods, and related metadata
 - `data/ssl-style-guide.schema.yaml`
 - `data/ssl_agent_instructions.md`
 - `data/ssl_refactoring_guide.md`
 - `data/ssl-ebnf-grammar.md`
+- `data/machine/` — compact foundation and searchable category packs for agent
+  context retrieval
 
 `ssl-element-reference.json` is generated from the published `ssl-docs`
 reference (sibling repo) by `tools/generate_element_reference.py` at the
@@ -96,6 +99,7 @@ the element reference:
 ```bash
 # from repo root
 python3 tools/generate_element_reference.py
+bun tools/generate-machine-docs.mjs
 
 # from ssl-mcp-server/
 bun scripts/bundle-data.mjs
@@ -112,6 +116,7 @@ bun run check:consistency
 | `ssl_validate_naming` | Check Hungarian notation compliance for a variable name |
 | `ssl_style_rule` | Return style guide rules for a topic |
 | `ssl_category` | List functions by category, or list all categories |
+| `ssl_context_pack` | Retrieve compact machine documentation by category, alias, task, or element name |
 | `ssl_diagnose` | Validate SSL code for syntax errors, style violations, and common mistakes |
 | `ssl_format` | Format SSL code using canonical style-guide rules |
 
@@ -130,6 +135,9 @@ bun run check:consistency
 | `ssl://grammar` | EBNF grammar markdown |
 | `ssl://language-reference` | Agent instructions |
 | `ssl://refactoring-guide` | Refactoring guide markdown |
+| `ssl://machine/foundation` | Compact baseline SSL rules for agents |
+| `ssl://machine/categories` | Searchable machine-doc category index |
+| `ssl://machine/categories/{category}` | Compact category pack |
 
 ## Prompts
 
@@ -142,16 +150,17 @@ bun run check:consistency
 
 Current bundled coverage (sourced from `data/ssl-element-reference.json`):
 
-- 446 developer-facing elements
+- 448 developer-facing elements
 - 330 functions
 - 29 classes
 - 38 keywords
 - 32 operators
 - 3 literals
 - 8 types
-- 6 special forms
+- 8 special forms
 - 37 function categories
 - 8 Hungarian notation prefixes
+- 22 machine-doc categories
 
 ## Testing
 
