@@ -1,0 +1,104 @@
+{
+  "id": "operators",
+  "label": "Operators",
+  "aliases": [
+    "comparisons",
+    "assignment",
+    "logical operators"
+  ],
+  "summary": "Assignment, arithmetic, comparison, logical, containment, and member-access operators.",
+  "must_follow": [
+    "Use := for assignment.",
+    "Use == when exact string equality matters.",
+    "Use spaces around assignment, arithmetic, comparison, and logical operators.",
+    "Use no spaces around member access colon."
+  ],
+  "avoid": [
+    "Do not treat = as exact string equality.",
+    "Do not assume != negates string prefix equality."
+  ],
+  "elements": [
+    {
+      "name": "assignment",
+      "type": "operator",
+      "syntax": "target := value;",
+      "summary": "Stores a value in a variable, object property, or array element and evaluates to the assigned value."
+    },
+    {
+      "name": "equals",
+      "type": "operator",
+      "syntax": "bEqual := vLeft = vRight;",
+      "summary": "Compares two values for equality, using prefix matching for strings, exact matching for numbers, booleans, and dates, and reference equality for arrays and objects."
+    },
+    {
+      "name": "strict-equals",
+      "type": "operator",
+      "syntax": "bEqual := vLeft == vRight;",
+      "summary": "Returns .T. when two values are strictly equal under SSL equality rules."
+    },
+    {
+      "name": "not-equals",
+      "type": "operator",
+      "syntax": "bDifferent := vLeft != vRight;",
+      "summary": "Returns .T. when two values are not strictly equal under SSL equality rules."
+    },
+    {
+      "name": "less-than",
+      "type": "operator",
+      "syntax": "vLeft < vRight",
+      "summary": "Compares two values of the same supported type and returns .T. when the left operand is strictly less than the right operand."
+    },
+    {
+      "name": "greater-than",
+      "type": "operator",
+      "syntax": "vLeft > vRight",
+      "summary": "Compares two values of the same supported type and returns .T. when the left operand is strictly greater than the right operand."
+    },
+    {
+      "name": "and",
+      "type": "operator",
+      "syntax": "leftBoolean .AND. rightBoolean",
+      "summary": "Combines two boolean expressions and returns .T. only when both are .T.."
+    },
+    {
+      "name": "or",
+      "type": "operator",
+      "syntax": "leftBoolean .OR. rightBoolean",
+      "summary": "Combines two boolean expressions and returns .T. when either operand is .T.."
+    },
+    {
+      "name": "not",
+      "type": "operator",
+      "syntax": ".NOT. booleanExpression\n.NOT. (compoundExpression)",
+      "summary": "Performs boolean negation, returning .T. for .F. and .F. for .T.."
+    },
+    {
+      "name": "dollar",
+      "type": "operator",
+      "syntax": "bResult := needle $ haystack;",
+      "summary": "Tests whether the left string is found within the right operand as a substring."
+    },
+    {
+      "name": "plus",
+      "type": "operator",
+      "syntax": "left + right",
+      "summary": "Adds numbers, concatenates strings, or adds days to dates depending on operand types."
+    },
+    {
+      "name": "minus",
+      "type": "operator",
+      "syntax": "vLeft - vRight",
+      "summary": "Subtracts numbers, trims trailing spaces before string concatenation, or performs date arithmetic depending on operand types."
+    }
+  ],
+  "related_categories": [
+    "strings",
+    "formatting",
+    "control-flow"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

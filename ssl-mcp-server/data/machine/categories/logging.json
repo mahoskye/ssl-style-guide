@@ -1,0 +1,49 @@
+{
+  "id": "logging",
+  "label": "Logging",
+  "aliases": [
+    "messages",
+    "UsrMes",
+    "ErrorMes",
+    "InfoMes"
+  ],
+  "summary": "Server logging helpers and message-output caveats.",
+  "must_follow": [
+    "Use ErrorMes for messages that must be written even when normal user-message logging is disabled.",
+    "Treat UsrMes, ErrorMes, and InfoMes as server log functions, not UI display functions.",
+    "Avoid logging secrets or sensitive runtime values."
+  ],
+  "avoid": [
+    "Do not claim UsrMes displays a message to the end user.",
+    "Do not use logging as error handling when caller-visible behavior depends on the result."
+  ],
+  "elements": [
+    {
+      "name": "UsrMes",
+      "type": "function",
+      "syntax": "UsrMes(vCaption, [vMessage])",
+      "summary": "Writes a user message to the user log and returns the formatted log text."
+    },
+    {
+      "name": "ErrorMes",
+      "type": "function",
+      "syntax": "ErrorMes(vCaption, vMessage)",
+      "summary": "Logs an error message and returns the resulting message string."
+    },
+    {
+      "name": "InfoMes",
+      "type": "function",
+      "syntax": "InfoMes(vCaption, [vMessage])",
+      "summary": "Logs an informational user message and returns the same formatted string as UsrMes."
+    }
+  ],
+  "related_categories": [
+    "error-handling",
+    "security"
+  ],
+  "source_paths": [
+    "agent-guides/ssl_agent_instructions.md",
+    "ssl-style-guide/ssl-element-reference.json"
+  ],
+  "missing_optional_sources": []
+}

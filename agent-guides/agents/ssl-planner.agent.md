@@ -5,7 +5,7 @@ description: >-
   agents execute. Knows LIMS capabilities deeply but does not write production
   SSL code — designs the change, defines signatures and data flow, and hands
   off to ssl-developer.
-version: 3
+version: 4
 mode: all
 argument-hint: "<feature or change to plan> [target-spec-path]"
 model: inherit
@@ -16,10 +16,11 @@ tools:
   - glob
 mcp:
   - server: ssl-reference
-    tools: [ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
 skills:
   - ssl-lookup
 guides:
+  - agent-guides/machine/foundation.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
@@ -43,16 +44,20 @@ fluency to design changes that fit the platform's grain.
 
 ## Sources of truth (consult in this order)
 
-1. The `ssl-reference` MCP server — `ssl_lookup`, `ssl_signature`, `ssl_search`.
-   This is your primary tool for confirming what LIMS actually provides. Use it
-   liberally before naming a function, class, or keyword in a spec. If the MCP
-   server is not available, fall back to the bundled JSON inventory in this
-   repo: `ssl-style-guide/ssl-element-reference.json` (summaries + syntax) and
-   `ssl-style-guide/ssl-element-meta.json` (exceptions, caveats, best practices).
-2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical language rules.
-3. `agent-guides/ssl_agent_instructions.md` — language semantics, edge cases,
+1. `agent-guides/machine/foundation.md` — compact baseline rules and retrieval
+   protocol. Start here, then use `ssl_context_pack` for task/category context.
+2. The `ssl-reference` MCP server — `ssl_context_pack`, `ssl_lookup`,
+   `ssl_signature`, `ssl_search`. Use it liberally before naming a function,
+   class, keyword, operator, or category-specific rule in a spec. If the MCP
+   server is not available, fall back to the bundled machine docs and JSON
+   inventory in this repo: `agent-guides/machine/category-index.json`,
+   `agent-guides/machine/categories/`, `ssl-style-guide/ssl-element-reference.json`
+   (summaries + syntax), and `ssl-style-guide/ssl-element-meta.json`
+   (exceptions, caveats, best practices).
+3. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical language rules.
+4. `agent-guides/ssl_agent_instructions.md` — language semantics, edge cases,
    and validated behavior (e.g. data-source preprocessing, class member order).
-4. The checked-in code itself, when guidance is silent. Read related procedures
+5. The checked-in code itself, when guidance is silent. Read related procedures
    and classes to understand the conventions you are extending.
 
 ## Workflow skills

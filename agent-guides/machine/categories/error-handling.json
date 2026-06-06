@@ -1,0 +1,76 @@
+{
+  "id": "error-handling",
+  "label": "Error Handling",
+  "aliases": [
+    "try catch",
+    "exceptions",
+    "finally",
+    "ssl errors"
+  ],
+  "summary": "Modern SSL error handling with TRY/CATCH/FINALLY and error retrieval.",
+  "must_follow": [
+    "Prefer :TRY/:CATCH/:FINALLY over legacy :ERROR/:RESUME.",
+    ":TRY requires at least one of :CATCH or :FINALLY.",
+    "Use GetLastSSLError() inside :CATCH to retrieve error details.",
+    "Do not place :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
+  ],
+  "avoid": [
+    "Do not write bare :TRY ... :ENDTRY blocks.",
+    "Do not assume UsrMes, ErrorMes, or InfoMes displays messages to users; they are server log functions."
+  ],
+  "elements": [
+    {
+      "name": "TRY",
+      "type": "keyword",
+      "syntax": ":TRY;\n    try_statements;\n:CATCH;\n    catch_statements;\n:ENDTRY;",
+      "summary": "Starts a protected block that can transfer control to :CATCH, :FINALLY, or both when errors occur."
+    },
+    {
+      "name": "CATCH",
+      "type": "keyword",
+      "syntax": ":CATCH;",
+      "summary": "Handles errors raised in the immediately preceding :TRY block."
+    },
+    {
+      "name": "FINALLY",
+      "type": "keyword",
+      "syntax": ":FINALLY;",
+      "summary": "Starts the cleanup section of a :TRY block and always runs after the protected work completes."
+    },
+    {
+      "name": "ENDTRY",
+      "type": "keyword",
+      "syntax": ":ENDTRY;",
+      "summary": "Closes a structured :TRY block after its :CATCH and/or :FINALLY sections."
+    },
+    {
+      "name": "GetLastSSLError",
+      "type": "function",
+      "syntax": "GetLastSSLError()",
+      "summary": "Retrieves the most recent SSL error encountered during the current process."
+    },
+    {
+      "name": "ClearLastSSLError",
+      "type": "function",
+      "syntax": "ClearLastSSLError();",
+      "summary": "Clears the current SSL error state."
+    },
+    {
+      "name": "ErrorMes",
+      "type": "function",
+      "syntax": "ErrorMes(vCaption, vMessage)",
+      "summary": "Logs an error message and returns the resulting message string."
+    }
+  ],
+  "related_categories": [
+    "control-flow",
+    "transactions",
+    "logging"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/error-handling.md"
+  ],
+  "missing_optional_sources": []
+}

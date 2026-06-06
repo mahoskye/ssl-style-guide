@@ -1,0 +1,64 @@
+{
+  "id": "formatting",
+  "label": "Formatting",
+  "aliases": [
+    "style",
+    "layout",
+    "comments",
+    "regions"
+  ],
+  "summary": "Statement layout, indentation, comments, operators, and region comments.",
+  "must_follow": [
+    "Use one statement per line.",
+    "Almost every SSL statement, including comments, must end with a semicolon.",
+    "Never include a semicolon inside comment text.",
+    "Use spaces around assignment, arithmetic, comparison, and logical operators.",
+    "Prefer /* region ...; and /* endregion; comments for editor grouping."
+  ],
+  "avoid": [
+    "Do not use :REGION/:ENDREGION for code organization.",
+    "Do not normalize indentation globally; preserve 4-space files and prefer tabs otherwise."
+  ],
+  "elements": [
+    {
+      "name": "DECLARE",
+      "type": "keyword",
+      "syntax": ":DECLARE variable1[, variable2, ...];",
+      "summary": "Declares one or more variables in the current SSL scope."
+    },
+    {
+      "name": "PARAMETERS",
+      "type": "keyword",
+      "syntax": ":PARAMETERS param1[, param2, ...];",
+      "summary": "Declares named input parameters for a script, procedure, method, or constructor."
+    },
+    {
+      "name": "DEFAULT",
+      "type": "keyword",
+      "syntax": ":PARAMETERS paramName[, otherParam, ...];\n:DEFAULT paramName, defaultExpression;",
+      "summary": "Assigns a fallback expression to a parameter when the caller omits that argument."
+    },
+    {
+      "name": "INCLUDE",
+      "type": "keyword",
+      "syntax": ":INCLUDE scriptName;",
+      "summary": "Inserts another SSL script's source into the current file so its statements compile as if they were written inline."
+    },
+    {
+      "name": "PUBLIC",
+      "type": "keyword",
+      "syntax": ":PUBLIC variable1[, variable2, ...];",
+      "summary": "Declares global variables that can be accessed from any scope in the program."
+    }
+  ],
+  "related_categories": [
+    "naming",
+    "operators",
+    "procedures"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

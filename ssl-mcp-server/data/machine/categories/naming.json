@@ -1,0 +1,51 @@
+{
+  "id": "naming",
+  "label": "Naming",
+  "aliases": [
+    "hungarian notation",
+    "identifiers",
+    "variable names"
+  ],
+  "summary": "Procedure, class, variable, constant, and parameter naming conventions.",
+  "must_follow": [
+    "Procedures and classes use PascalCase.",
+    "Variables use Hungarian-style camelCase.",
+    "Constants use UPPER_SNAKE_CASE.",
+    "Use documented prefixes: s, n, b, d, a, o, fn, and v."
+  ],
+  "avoid": [
+    "Do not rename values in behavior-preserving refactors unless the refactor scope includes naming cleanup.",
+    "Do not invent prefixes outside the documented set without a reason."
+  ],
+  "elements": [
+    {
+      "name": "DECLARE",
+      "type": "keyword",
+      "syntax": ":DECLARE variable1[, variable2, ...];",
+      "summary": "Declares one or more variables in the current SSL scope."
+    },
+    {
+      "name": "PARAMETERS",
+      "type": "keyword",
+      "syntax": ":PARAMETERS param1[, param2, ...];",
+      "summary": "Declares named input parameters for a script, procedure, method, or constructor."
+    },
+    {
+      "name": "PUBLIC",
+      "type": "keyword",
+      "syntax": ":PUBLIC variable1[, variable2, ...];",
+      "summary": "Declares global variables that can be accessed from any scope in the program."
+    }
+  ],
+  "related_categories": [
+    "formatting",
+    "classes",
+    "procedures"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/naming-conventions.md"
+  ],
+  "missing_optional_sources": []
+}

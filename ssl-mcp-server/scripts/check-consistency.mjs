@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { readFileSync } from 'fs';
+import { readdirSync, readFileSync, statSync } from 'fs';
 import { execFileSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -15,6 +15,10 @@ const mirrorPairs = [
   ['agent-guides/ssl_agent_instructions.md', 'ssl-mcp-server/data/ssl_agent_instructions.md'],
   ['agent-guides/ssl_refactoring_guide.md', 'ssl-mcp-server/data/ssl_refactoring_guide.md'],
   ['ssl-style-guide/ssl-ebnf-grammar.md', 'ssl-mcp-server/data/ssl-ebnf-grammar.md'],
+];
+
+const mirrorDirs = [
+  ['agent-guides/machine', 'ssl-mcp-server/data/machine'],
 ];
 
 function readRepoFile(relativePath) {
@@ -57,11 +61,42 @@ function assertIncludes(text, snippet, label) {
   }
 }
 
+function listFiles(relativeDir) {
+  const root = resolve(repoRoot, relativeDir);
+  const files = [];
+  function walk(dir) {
+    for (const entry of readdirSync(dir).sort()) {
+      const full = resolve(dir, entry);
+      const stat = statSync(full);
+      if (stat.isDirectory()) {
+        walk(full);
+      } else if (stat.isFile()) {
+        files.push(full.slice(root.length + 1));
+      }
+    }
+  }
+  walk(root);
+  return files;
+}
+
 for (const [sourcePath, mirrorPath] of mirrorPairs) {
   const source = readRepoFile(sourcePath);
   const mirror = readRepoFile(mirrorPath);
   if (source !== mirror) {
     fail(`Bundled mirror drift: ${sourcePath} != ${mirrorPath}`);
+  }
+}
+
+for (const [sourceDir, mirrorDir] of mirrorDirs) {
+  const sourceFiles = listFiles(sourceDir);
+  const mirrorFiles = listFiles(mirrorDir);
+  assertArrayEqual(sourceFiles, mirrorFiles, `Bundled mirror file list: ${sourceDir}`);
+  for (const file of sourceFiles) {
+    const source = readRepoFile(`${sourceDir}/${file}`);
+    const mirror = readRepoFile(`${mirrorDir}/${file}`);
+    if (source !== mirror) {
+      fail(`Bundled mirror drift: ${sourceDir}/${file} != ${mirrorDir}/${file}`);
+    }
   }
 }
 
@@ -155,6 +190,18 @@ try {
     .filter(Boolean)
     .join('\n');
   fail(`Agent adapters out of sync — run 'bun tools/generate-agents.mjs'.\n${detail}`);
+}
+
+try {
+  execFileSync('bun', [resolve(repoRoot, 'tools/generate-machine-docs.mjs'), '--check'], {
+    stdio: 'pipe',
+  });
+} catch (error) {
+  const detail = [error.stdout, error.stderr]
+    .map((stream) => (stream ? stream.toString().trim() : ''))
+    .filter(Boolean)
+    .join('\n');
+  fail(`Machine docs out of sync — run 'bun tools/generate-machine-docs.mjs'.\n${detail}`);
 }
 
 // Bundled reference JSON must mirror ssl-mcp-server/data/ and match ssl-docs

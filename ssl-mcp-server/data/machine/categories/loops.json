@@ -1,0 +1,93 @@
+{
+  "id": "loops",
+  "label": "Loops",
+  "aliases": [
+    "iteration",
+    "for loops",
+    "while loops",
+    "loop control"
+  ],
+  "summary": "Iteration constructs, loop exits, and loop-control gotchas.",
+  "must_follow": [
+    "SSL arrays are 1-based; loop over arrays from 1 through ALen(aArray).",
+    "Use :NEXT to end :FOR loops; :ENDFOR is not a valid loop terminator.",
+    "Put a space before :STEP in :FOR headers.",
+    "Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
+  ],
+  "avoid": [
+    "Do not use zero-based indexes for SSL arrays.",
+    "Do not assume .NET collection indexing rules apply to SSL arrays."
+  ],
+  "elements": [
+    {
+      "name": "FOR",
+      "type": "keyword",
+      "syntax": ":FOR nIndex := nStart :TO nEnd [:STEP nStep];",
+      "summary": "Executes a counted loop by assigning a numeric variable, checking it against a numeric limit, and updating it after each iteration."
+    },
+    {
+      "name": "TO",
+      "type": "keyword",
+      "syntax": ":FOR nIndex := nStart :TO nEnd [:STEP nStep];",
+      "summary": "Sets the inclusive loop limit used by a :FOR loop."
+    },
+    {
+      "name": "STEP",
+      "type": "keyword",
+      "syntax": ":FOR nIndex := nStart :TO nEnd [:STEP nStep];",
+      "summary": "Sets the increment or decrement used by a :FOR loop between iterations."
+    },
+    {
+      "name": "NEXT",
+      "type": "keyword",
+      "syntax": ":NEXT;",
+      "summary": "Closes a :FOR loop and returns control to the loop's increment-and-test step."
+    },
+    {
+      "name": "WHILE",
+      "type": "keyword",
+      "syntax": ":WHILE condition;\n    /* loop body;\n:ENDWHILE;",
+      "summary": "Repeats a block of statements as long as a supplied condition evaluates to true."
+    },
+    {
+      "name": "ENDWHILE",
+      "type": "keyword",
+      "syntax": ":ENDWHILE;",
+      "summary": "Closes a :WHILE loop block."
+    },
+    {
+      "name": "EXITFOR",
+      "type": "keyword",
+      "syntax": ":EXITFOR;",
+      "summary": "Terminates the innermost active :FOR loop immediately and continues with the statement after the matching :NEXT."
+    },
+    {
+      "name": "EXITWHILE",
+      "type": "keyword",
+      "syntax": ":EXITWHILE;",
+      "summary": "Terminates the innermost active :WHILE loop and continues with the statement after the matching :ENDWHILE."
+    },
+    {
+      "name": "LOOP",
+      "type": "keyword",
+      "syntax": ":LOOP;",
+      "summary": "Skips the rest of the current :WHILE or :FOR iteration and continues with the next iteration of the innermost active loop."
+    },
+    {
+      "name": "ALen",
+      "type": "function",
+      "syntax": "ALen(aTarget)",
+      "summary": "Return the number of elements in an array."
+    }
+  ],
+  "related_categories": [
+    "arrays",
+    "control-flow",
+    "error-handling"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md"
+  ],
+  "missing_optional_sources": []
+}

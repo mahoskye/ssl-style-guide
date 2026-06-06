@@ -1,0 +1,123 @@
+{
+  "id": "arrays",
+  "label": "Arrays",
+  "aliases": [
+    "array functions",
+    "1-based arrays",
+    "lists"
+  ],
+  "summary": "SSL array creation, indexing, traversal, and array helper functions.",
+  "must_follow": [
+    "SSL arrays are 1-based.",
+    "Declare array variables before use and initialize arrays before appending.",
+    "Use adjacent commas with no spaces for skipped optional parameters.",
+    "Check ALen before reading an index from dynamic input."
+  ],
+  "avoid": [
+    "Do not pass NIL as the target array to mutating array helpers.",
+    "Do not treat SSL arrays as zero-based .NET arrays."
+  ],
+  "elements": [
+    {
+      "name": "ArrayNew",
+      "type": "function",
+      "syntax": "ArrayNew([nDim1], [nDim2], [nDim3])",
+      "summary": "Create a new array with up to three dimensions."
+    },
+    {
+      "name": "ALen",
+      "type": "function",
+      "syntax": "ALen(aTarget)",
+      "summary": "Return the number of elements in an array."
+    },
+    {
+      "name": "AAdd",
+      "type": "function",
+      "syntax": "AAdd(aTarget, vElement)",
+      "summary": "Appends an element to the end of an array and returns the appended element."
+    },
+    {
+      "name": "AScan",
+      "type": "function",
+      "syntax": "AScan(aTarget, vValueOrBlock, [nStart], [nCount])",
+      "summary": "Return the index of the first array element that matches a value or condition."
+    },
+    {
+      "name": "AScanExact",
+      "type": "function",
+      "syntax": "AScanExact(aTarget, vValueOrBlock, [nStart], [nCount])",
+      "summary": "Return the index of the first array element that matches a value or condition exactly."
+    },
+    {
+      "name": "AEval",
+      "type": "function",
+      "syntax": "AEval(aTarget, fnBlock, [nStart], [nCount])",
+      "summary": "Evaluate a code block for each array element and return the same array."
+    },
+    {
+      "name": "AEvalA",
+      "type": "function",
+      "syntax": "AEvalA(aTarget, fnBlock, [nStart], [nCount])",
+      "summary": "Evaluate a code block for each selected array element and write the result back to the same array."
+    },
+    {
+      "name": "AFill",
+      "type": "function",
+      "syntax": "AFill(aTarget, vValue, [nStart], [nCount])",
+      "summary": "Fill an array element range with the same value and return the same array."
+    },
+    {
+      "name": "DelArray",
+      "type": "function",
+      "syntax": "DelArray(aTarget, nIndex)",
+      "summary": "Removes an element from an array at a specified one-based index and returns the same array."
+    },
+    {
+      "name": "BuildArray",
+      "type": "function",
+      "syntax": "BuildArray(sText, [bCrlfOk], [sDelimiter], [bUnique], [bTrimSpaces])",
+      "summary": "Splits text into a one-dimensional array using a literal delimiter."
+    },
+    {
+      "name": "BuildArray2",
+      "type": "function",
+      "syntax": "BuildArray2(sText, [sLineDelimiter], [sColDelimiter], [bCrlfOk], [bTrimSpaces])",
+      "summary": "Parses text into a two-dimensional array using separate row and column delimiters."
+    },
+    {
+      "name": "BuildString",
+      "type": "function",
+      "syntax": "BuildString(aTarget, [nStart], [nCount], [sDelimiter])",
+      "summary": "Builds one string from array elements using a delimiter."
+    },
+    {
+      "name": "BuildString2",
+      "type": "function",
+      "syntax": "BuildString2(aTarget, [sLineDelimiter], [sColDelimiter])",
+      "summary": "Builds one string from a two-dimensional array using separate row and column delimiters."
+    },
+    {
+      "name": "CompArray",
+      "type": "function",
+      "syntax": "CompArray(a1, a2)",
+      "summary": "Determines whether two arrays are exactly equal."
+    },
+    {
+      "name": "SortArray",
+      "type": "function",
+      "syntax": "SortArray(aTarget, [vNumeric])",
+      "summary": "Sorts an array in place and returns the same array."
+    }
+  ],
+  "related_categories": [
+    "loops",
+    "sql",
+    "types"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/type-system.md"
+  ],
+  "missing_optional_sources": []
+}

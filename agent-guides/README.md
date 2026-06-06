@@ -1,11 +1,12 @@
 # Agent Guides
 
 Agent-facing material for working with STARLIMS SSL (v11) in this repository.
-Three layers, from reference to ready-to-run:
+Four layers, from reference to ready-to-run:
 
 | Layer | Path | What it is |
 | --- | --- | --- |
 | **Guidance documents** | `ssl_agent_instructions.md`, `ssl_refactoring_guide.md` | Detailed SSL language reference and the refactoring workflow. |
+| **Machine packs** | `machine/` | Generated compact foundation and searchable category packs for agent context retrieval. |
 | **Skills** | `skills/<name>/SKILL.md` | Self-contained task workflows an agent follows step by step. |
 | **Agents** | `agents/<name>.agent.md` | Canonical, tool-neutral developer personas that compose the skills. |
 
@@ -22,6 +23,25 @@ set. When sources disagree, prefer the schema and the checked-in code.
 
 These are reference material. Skills and agents cite them rather than restating
 their rules.
+
+## Machine packs
+
+`machine/` contains generated, compact context for agents:
+
+- `foundation.md` — baseline rules and retrieval protocol to load first.
+- `category-index.json` — searchable categories, aliases, related categories,
+  and included element names.
+- `categories/*.json` — compact packs for topics such as database, loops,
+  strings, data sources, classes, error handling, formatting, and naming.
+
+Regenerate after source guidance or element inventory changes:
+
+```bash
+bun tools/generate-machine-docs.mjs
+```
+
+The MCP server also bundles these files and exposes them through
+`ssl://machine/*` resources and the `ssl_context_pack` tool.
 
 ## Skills
 
@@ -51,15 +71,17 @@ developer agents:
 Each agent is a thin persona: it delegates to the skills above and cites the
 guidance documents rather than carrying its own copy of the rules. Each agent is
 authored once here; `tools/generate-agents.mjs` emits git-ignored per-tool
-adapters for GitHub Copilot (`.github/agents/`), opencode (`.opencode/agent/`),
-and Claude Code (`.claude/agents/`). Only the canonical sources are tracked, so
-run the generator after a fresh clone. See `agents/README.md` for the canonical
-format and the regeneration command.
+adapters for GitHub Copilot (`.github/agents/`), OpenCode (`.opencode/agents/`),
+and Claude Code (`.claude/agents/`). Only the canonical sources are tracked.
+Use `bun tools/deploy-agents.mjs` to install the generated adapters into
+user-level agent directories for use across workspaces. See `agents/README.md`
+for the canonical format, regeneration command, and deployment locations.
 
 ## How the layers relate
 
 ```
 schema + guidance documents   ->  the rules (source of truth)
+        machine packs         ->  compact task/category context
         skills                ->  how to perform a task with those rules
         agents                ->  who does the work; composes the skills
 ```

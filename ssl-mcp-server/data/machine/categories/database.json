@@ -1,0 +1,102 @@
+{
+  "id": "database",
+  "label": "Database",
+  "aliases": [
+    "db",
+    "queries",
+    "sql functions",
+    "lims database"
+  ],
+  "summary": "SSL database APIs, query return shapes, and parameterization rules.",
+  "must_follow": [
+    "Prefer parameterized database calls.",
+    "SQLExecute is the only database API that supports named ?param? substitution.",
+    "RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays.",
+    "Inside SQL strings, use uppercase SQL keywords and functions; keep normal SQL identifiers lowercase unless an external schema requires preserved casing."
+  ],
+  "avoid": [
+    "Do not use ?param? named substitution with non-SQLExecute database functions.",
+    "Do not concatenate user or runtime values into SQL when placeholders can bind them.",
+    "Do not pass empty trailing optional parameters when they can be omitted."
+  ],
+  "elements": [
+    {
+      "name": "SQLExecute",
+      "type": "function",
+      "syntax": "SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])",
+      "summary": "Executes SQL and returns either query results or a success flag."
+    },
+    {
+      "name": "RunSQL",
+      "type": "function",
+      "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
+      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+    },
+    {
+      "name": "LSearch",
+      "type": "function",
+      "syntax": "LSearch(sCommandString, vDefaultValue, [sConnectionName], [aArrayOfValues])",
+      "summary": "Returns a single value from a SQL query, or a caller-supplied fallback when the query produces no scalar result."
+    },
+    {
+      "name": "LSelect",
+      "type": "function",
+      "syntax": "LSelect(sCommandString, [aFieldList], [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])",
+      "summary": "Executes a SQL SELECT statement and returns the result as a two-dimensional SSL array."
+    },
+    {
+      "name": "LSelect1",
+      "type": "function",
+      "syntax": "LSelect1(sCommandString, [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])",
+      "summary": "Executes a parameterized SQL SELECT command and returns the result as an array of rows."
+    },
+    {
+      "name": "LSelectC",
+      "type": "function",
+      "syntax": "LSelectC(sCommandString, [aFieldList], [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])",
+      "summary": "Executes a SQL SELECT statement and returns the result as a two-dimensional SSL array."
+    },
+    {
+      "name": "GetDataSet",
+      "type": "function",
+      "syntax": "GetDataSet(sCommandString, [aValues], [bIncludeSchema], [sTableName], [bNullAsBlank], [aInvariantDateCols])",
+      "summary": "Executes a SQL query on the default database connection and returns the result as an XML dataset string."
+    },
+    {
+      "name": "GetConnectionStrings",
+      "type": "function",
+      "syntax": "GetConnectionStrings()",
+      "summary": "Retrieves all configured database connections as a two-dimensional array."
+    },
+    {
+      "name": "GetDefaultConnection",
+      "type": "function",
+      "syntax": "GetDefaultConnection()",
+      "summary": "Returns the current default database connection name."
+    },
+    {
+      "name": "SetDefaultConnection",
+      "type": "function",
+      "syntax": "SetDefaultConnection(sDefaultConnection)",
+      "summary": "Changes the active default database connection name and returns the previous default connection."
+    },
+    {
+      "name": "LimsRecordsAffected",
+      "type": "function",
+      "syntax": "LimsRecordsAffected()",
+      "summary": "Returns the number of records affected by the most recent database operation."
+    }
+  ],
+  "related_categories": [
+    "sql",
+    "transactions",
+    "data-sources",
+    "arrays"
+  ],
+  "source_paths": [
+    "ssl-style-guide/ssl-style-guide.schema.yaml",
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/sql-queries.md"
+  ],
+  "missing_optional_sources": []
+}

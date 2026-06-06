@@ -1,0 +1,114 @@
+{
+  "id": "dates",
+  "label": "Dates",
+  "aliases": [
+    "date functions",
+    "date formatting",
+    "date conversion"
+  ],
+  "summary": "Date conversion, formatting, and date arithmetic helpers.",
+  "must_follow": [
+    "Use documented date conversion functions rather than assuming implicit coercion.",
+    "Keep canonical casing for LIMSDate, DOW, and DOY.",
+    "Be explicit about invariant/local date handling when database result materialization depends on it."
+  ],
+  "avoid": [
+    "Do not pass arbitrary strings or numbers to date-only functions unless the element documentation says they are accepted."
+  ],
+  "elements": [
+    {
+      "name": "LIMSDate",
+      "type": "function",
+      "syntax": "LIMSDate(vDate, [sFormat])",
+      "summary": "Returns a date value as a formatted string."
+    },
+    {
+      "name": "CToD",
+      "type": "function",
+      "syntax": "CToD(sDateString)",
+      "summary": "Converts a string in the current SSL date format to a date value."
+    },
+    {
+      "name": "DToC",
+      "type": "function",
+      "syntax": "DToC(dDate)",
+      "summary": "Converts a date value to a string using the current SSL date format."
+    },
+    {
+      "name": "DToS",
+      "type": "function",
+      "syntax": "DToS(dDate)",
+      "summary": "Converts a date value to an 8-character string in yyyyMMdd format."
+    },
+    {
+      "name": "DateAdd",
+      "type": "function",
+      "syntax": "DateAdd(dDate, nNumber, [sDatepart])",
+      "summary": "Adds a time interval to a date and returns the resulting date."
+    },
+    {
+      "name": "DateDiff",
+      "type": "function",
+      "syntax": "DateDiff(dStartDate, dEndDate, [sDatepart])",
+      "summary": "Returns the whole-number difference between two date values in a requested unit."
+    },
+    {
+      "name": "DateFormat",
+      "type": "function",
+      "syntax": "DateFormat(sNewFormat)",
+      "summary": "Sets the current SSL date format string."
+    },
+    {
+      "name": "DateFromString",
+      "type": "function",
+      "syntax": "DateFromString(sDateAsString, [vFormat], [bUseLocalCulture], [bMakeInvariant])",
+      "summary": "Parses a string into a date value with optional format and culture controls."
+    },
+    {
+      "name": "DateToString",
+      "type": "function",
+      "syntax": "DateToString(dDate, [sFormat])",
+      "summary": "Converts a date value to a string using a specified or default format."
+    },
+    {
+      "name": "Day",
+      "type": "function",
+      "syntax": "Day(dDate)",
+      "summary": "Extracts the day-of-month number from a date value."
+    },
+    {
+      "name": "Month",
+      "type": "function",
+      "syntax": "Month(dDate)",
+      "summary": "Extracts the numeric month from a date value."
+    },
+    {
+      "name": "Year",
+      "type": "function",
+      "syntax": "Year(dDate)",
+      "summary": "Extracts the numeric year from a date value."
+    },
+    {
+      "name": "DOW",
+      "type": "function",
+      "syntax": "DOW(dDate)",
+      "summary": "Returns the numeric day of week for a date."
+    },
+    {
+      "name": "DOY",
+      "type": "function",
+      "syntax": "DOY(dDate)",
+      "summary": "Calculates the ordinal day number of a date within its year."
+    }
+  ],
+  "related_categories": [
+    "database",
+    "types",
+    "formatting"
+  ],
+  "source_paths": [
+    "agent-guides/ssl_agent_instructions.md",
+    "../ssl-docs/content/guides/type-system.md"
+  ],
+  "missing_optional_sources": []
+}
