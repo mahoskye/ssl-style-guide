@@ -327,8 +327,9 @@ const CATEGORY_DEFS = [
     label: 'Data Sources',
     aliases: ['data source files', 'sql data sources', 'builder directives'],
     summary: 'SSL and SQL data-source syntax, inline defaults, and builder directives.',
-    elements: ['PARAMETERS', 'DSN', 'TABLENAME', 'NULLASBLANK', 'INVARIANTDATECOLUMNS'],
+    elements: ['PARAMETERS', 'RunDS', 'GetDSParameters', 'DSN', 'TABLENAME', 'NULLASBLANK', 'INVARIANTDATECOLUMNS'],
     mustFollow: [
+      'Invoke data sources with RunDS("Category.DataSourceName", {params}); GetDSParameters returns a data source parameter definition list.',
       'Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.',
       'Every data-source parameter must have a default.',
       'SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.',
@@ -582,7 +583,9 @@ function loadSchemaFacts() {
   const guide = parsed.ssl_style_guide ?? {};
   const prefixes = guide.lints?.hungarian_notation?.prefixes ?? {};
   const builtInClasses = guide.object_oriented?.object_creation?.builtin_classes?.all_classes ?? [];
-  return { prefixes, builtInClasses };
+  const schemaVersion = guide.metadata?.version ?? 'unknown';
+  const schemaUpdated = guide.metadata?.last_updated ?? 'unknown';
+  return { prefixes, builtInClasses, schemaVersion, schemaUpdated };
 }
 
 function findElement(elements, name) {
@@ -635,8 +638,11 @@ function renderFoundation(schemaFacts) {
 
   return `# SSL Machine Foundation
 
-Generated compact baseline for SSL agents. Use this first, then retrieve a
-category pack or element record for task-specific detail.
+Generated compact baseline for SSL agents (source:
+ssl-style-guide.schema.yaml v${schemaFacts.schemaVersion}, last_updated
+${schemaFacts.schemaUpdated}, via tools/generate-machine-docs.mjs). Use this
+first, then retrieve a category pack or element record for task-specific
+detail.
 
 ## Retrieval Protocol
 

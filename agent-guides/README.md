@@ -65,6 +65,7 @@ directly; in other tools they are Markdown files an agent reads and follows.
 developer agents:
 
 - `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
+- `ssl-planner` — design SSL changes and hand implementation specs to ssl-developer
 - `ssl-reviewer` — review SSL code against the style guide (read-only)
 - `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
 
