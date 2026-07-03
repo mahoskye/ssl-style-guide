@@ -2,7 +2,7 @@
 name: ssl-lookup
 description: Look up SSL function signatures, class members, keyword syntax, or operator behavior. Use when the user asks about an SSL function, class, or language element.
 argument-hint: "<element-name>"
-allowed-tools: Read, Grep, Glob
+allowed-tools: Read, Grep, Glob, mcp__ssl-reference__ssl_lookup, mcp__ssl-reference__ssl_signature, mcp__ssl-reference__ssl_search, mcp__ssl-reference__ssl_context_pack
 ---
 
 Look up the SSL element named `$ARGUMENTS`.
@@ -13,6 +13,7 @@ Look up the SSL element named `$ARGUMENTS`.
    - `ssl_lookup` with `name: "$ARGUMENTS"` — exact match by name or symbol
    - `ssl_signature` with `name: "$ARGUMENTS"` — richer detail for functions and classes
    - `ssl_search` with `query: "$ARGUMENTS"` — fuzzy match if exact lookup fails
+   - `ssl_context_pack` — when the question is topical rather than a single element (categories, aliases).
 
 2. **Local element reference JSON** — `ssl-style-guide/ssl-element-reference.json`
    (also bundled at `ssl-mcp-server/data/ssl-element-reference.json`).
@@ -22,7 +23,7 @@ Look up the SSL element named `$ARGUMENTS`.
      "version": "1",
      "totals": { "keywords": 38, "operators": 32, "literals": 3,
                  "types": 8, "classes": 29, "special_forms": 8,
-                 "functions": 330, "all": 448 },
+                 "returns": 12, "functions": 330, "all": 460 },
      "keywords":      { "<NAME>":   { title, summary, syntax }, ... },
      "operators":     { "<name>":   { title, summary, syntax,
                                       type_behavior: [{left, right, result, behavior}] }, ... },
@@ -33,13 +34,21 @@ Look up the SSL element named `$ARGUMENTS`.
                                       constructors: [{signature, description, parameters}],
                                       properties: [...], methods: [...] }, ... },
      "special_forms": { "<name>":   { title, summary, syntax }, ... },
+     "returns":       { "<Name>":   { title, summary, properties, methods } , ... },
      "functions":     { "<Name>":   { title, summary, signature,
                                       returns: {type, description},
                                       parameters: [...] }, ... }
    }
    ```
+   (In the `returns` bucket, `properties` and `methods` are each optional and
+   present only when the return object exposes them.)
 
-3. **Narrative docs (use only when JSON doesn't have what you need):**
+3. **Compact machine packs (before the narrative guides):**
+   - Compact machine packs: `agent-guides/machine/foundation.md` +
+     `agent-guides/machine/categories/` (via `category-index.json` or MCP
+     `ssl_context_pack`) — prefer these over the full narrative guides.
+
+4. **Narrative docs (use only when JSON and machine packs don't have what you need):**
    - `agent-guides/ssl_agent_instructions.md`
    - `ssl-style-guide/ssl-style-guide.schema.yaml`
    - `ssl-style-guide/ssl-ebnf-grammar.md`
@@ -125,7 +134,9 @@ Summary:   Updates a variable, property, or array element in place by applying +
 ```
 
 **Type / literal / special form:** include `runtime_type`, `members`, or
-`syntax` as appropriate.
+`syntax` as appropriate. For return objects (the `returns` bucket), include the
+`properties` and `methods` present on the entry and name the function(s)/classes
+that produce them.
 
 If the user asked about an element that has obvious siblings (e.g. asking
 about `:CASE` — also surface `:BEGINCASE`, `:EXITCASE`, `:OTHERWISE`),

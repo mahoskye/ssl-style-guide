@@ -652,6 +652,8 @@ detail.
   context by category, alias, or element name.
 - Use \`ssl_lookup\`, \`ssl_signature\`, and \`ssl_search\` before relying on a
   built-in function, class, keyword, operator, or signature.
+- Run \`ssl_diagnose\` on any SSL you write or modify before declaring it done.
+- Use \`ssl_format\` for formatting passes instead of hand-formatting.
 - Read \`agent-guides/ssl_agent_instructions.md\` only when the compact pack and
   element inventory do not contain enough detail.
 
