@@ -1,7 +1,10 @@
 # SSL Machine Foundation
 
-Generated compact baseline for SSL agents. Use this first, then retrieve a
-category pack or element record for task-specific detail.
+Generated compact baseline for SSL agents (source:
+ssl-style-guide.schema.yaml v1.4.0, last_updated
+2026-07-03, via tools/generate-machine-docs.mjs). Use this
+first, then retrieve a category pack or element record for task-specific
+detail.
 
 ## Retrieval Protocol
 

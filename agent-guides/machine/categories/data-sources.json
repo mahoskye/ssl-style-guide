@@ -8,6 +8,7 @@
   ],
   "summary": "SSL and SQL data-source syntax, inline defaults, and builder directives.",
   "must_follow": [
+    "Invoke data sources with RunDS(\"Category.DataSourceName\", {params}); GetDSParameters returns a data source parameter definition list.",
     "Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.",
     "Every data-source parameter must have a default.",
     "SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.",
@@ -23,6 +24,18 @@
       "type": "keyword",
       "syntax": ":PARAMETERS param1[, param2, ...];",
       "summary": "Declares named input parameters for a script, procedure, method, or constructor."
+    },
+    {
+      "name": "RunDS",
+      "type": "function",
+      "syntax": "RunDS(sDataSourceName, [aParameters], [vReturnType])",
+      "summary": "Executes a data source by name or GUID and returns the result in the requested format."
+    },
+    {
+      "name": "GetDSParameters",
+      "type": "function",
+      "syntax": "GetDSParameters(sDsName)",
+      "summary": "Returns an array of parameter key strings for the named data source."
     },
     {
       "name": "DSN",
