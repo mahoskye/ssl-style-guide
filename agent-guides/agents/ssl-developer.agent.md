@@ -4,7 +4,7 @@ description: >-
   Acts as an SSL developer: implements, reviews, and refactors STARLIMS SSL
   (v11) code following this repository's schema and agent guides. Use for
   general SSL coding work.
-version: 7
+version: 8
 mode: primary
 argument-hint: "<task description> [file-path]"
 model: inherit
@@ -16,7 +16,7 @@ tools:
   - bash:read-only
 mcp:
   - server: ssl-reference
-    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search, ssl_diagnose, ssl_format, ssl_validate_naming]
 skills:
   - ssl-review
   - ssl-refactor
@@ -24,6 +24,7 @@ skills:
   - ssl-format
   - ssl-new-procedure
   - ssl-new-class
+  - ssl-new-datasource
 guides:
   - agent-guides/machine/foundation.md
   - agent-guides/ssl_agent_instructions.md
@@ -69,8 +70,11 @@ When the `ssl-reference` MCP server is available, use its `ssl_lookup`,
 `ssl_signature`, and `ssl_search` tools before you rely on any SSL built-in
 function, class, keyword, operator, or signature. Use `ssl_context_pack` for
 compact category context such as `database`, `loops`, `strings`, or
-`data-sources`. If MCP is not available, say so once and fall back to the
-bundled machine docs and JSON inventory shipped in this repo:
+`data-sources`. Use `ssl_diagnose` to validate any SSL you write or change,
+`ssl_format` to apply canonical formatting, and `ssl_validate_naming` to check
+identifier prefixes before inventing names. If MCP is not available, say so once
+and fall back to the bundled machine docs and JSON inventory shipped in this
+repo:
 
 - `agent-guides/machine/category-index.json` and
   `agent-guides/machine/categories/` — compact category packs.
@@ -89,9 +93,11 @@ that workflow:
 - Look up an element   → `ssl-lookup`
 - Review code          → `ssl-review`
 - Refactor code        → `ssl-refactor`
-- Format code          → `ssl-format`
+- Format code          → `ssl_format` MCP tool (authoritative); `ssl-format`
+  skill only when the MCP is unavailable
 - Scaffold a procedure → `ssl-new-procedure`
 - Scaffold a class     → `ssl-new-class`
+- Scaffold a data source → `ssl-new-datasource`
 
 In Claude Code and opencode these are registered skills you can invoke directly.
 In other tools, read the `SKILL.md` file and follow its steps.
@@ -111,12 +117,17 @@ In other tools, read the `SKILL.md` file and follow its steps.
    `ssl_refactoring_guide.md` for refactors.
 5. Delegate the actual work to the matching skill above rather than improvising.
 6. Make minimal, targeted edits; preserve the surrounding file's existing style.
-7. Summarize what you changed, what you verified, and any issues or missing
+7. Before declaring done, run `ssl_diagnose` on every SSL file you created or
+   modified. Fix all errors and re-run until clean; report any remaining
+   warnings with justification. If the MCP is unavailable, state that
+   diagnostics could not be run.
+8. Summarize what you changed, what you verified, and any issues or missing
    reference access encountered.
 
 ## Constraints
 
-- Follow the SSL authoring rules and cross-file style rules in `AGENTS.md`.
+- Follow the SSL authoring rules and cross-file style rules in `AGENTS.md`
+  (generated; run `bun tools/generate-agents.mjs` if absent).
 - Never invent function signatures, keywords, or class members — look them up.
 - Keep authoritative language behavior separate from style-only preferences.
 - Do not proceed on an unverified SSL built-in when MCP and local inventory both

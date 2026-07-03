@@ -1,8 +1,8 @@
 ---
 name: ssl-new-class
-description: Scaffold a new SSL class with correct member ordering, constructor, and conventions.
+description: Scaffold a new SSL class with correct member ordering, constructor, and conventions. Use when asked to create, scaffold, or start a new SSL class.
 argument-hint: "<class-name> [base-class]"
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__ssl-reference__ssl_lookup, mcp__ssl-reference__ssl_validate_naming, mcp__ssl-reference__ssl_diagnose
 ---
 
 Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class name, optional second token is the base class).
@@ -14,16 +14,12 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - `[base-class]` = `$1` — optional, fully qualified base class name (e.g., `Category.Script`)
 
 2. **Validate the proposed class name against the built-in inventory.**
-   Check `ssl-style-guide/ssl-element-reference.json` (or MCP `ssl_lookup`)
-   to ensure `<class-name>` does not collide with one of the 29 built-in
-   classes: AzureStorage, BatchSupport, CDataColumn, CDataColumns,
-   CDataField, CDataRow, CDataTable, Email, EnterpriseExporter, FtpsClient,
-   HtmlConverter, PatcherSupport, PdfSupport, RegSetup, SDMS,
-   SDMSDocUploader, SQLConnection, SSLBaseDictionary, SSLCodeProvider,
-   SSLDataset, SSLError, SSLExpando, SSLIntDictionary, SSLRegex,
-   SSLSQLError, SSLStringDictionary, Sequence, TablesImport, WebServices.
-   If the user-supplied name collides with one of these, stop and ask the
-   user to pick a different name (do not auto-rename).
+   Use MCP `ssl_validate_naming` (and `ssl_lookup` for the authoritative
+   inventory) — or `ssl-style-guide/ssl-element-reference.json` when MCP is
+   unavailable — to ensure `<class-name>` does not collide with a built-in
+   class (currently 29 — get the authoritative list from the JSON's `classes`
+   bucket or `ssl_lookup`). If the user-supplied name collides with one of
+   these, stop and ask the user to pick a different name (do not auto-rename).
 
 3. **If a `[base-class]` is supplied,** confirm it exists. If the base
    class name (without category prefix) matches a built-in class from the
@@ -41,7 +37,8 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - `:CLASS` continues to end of file; there is no `:ENDCLASS`
    - Constructor must be the last procedure in the class
    - Prefer tabs for indentation; if adapting to an existing space-indented file,
-     preserve 4-space indentation
+     preserve 4-space indentation (the templates below display spaces for
+     readability — emit tabs in the generated file)
    - Use one statement per line
    - `DoProc` is invalid inside class methods (all forms, not just same-class); use `Me:` / `Base:`
    - Built-in classes use `{}`; user-defined classes instantiate with
@@ -178,56 +175,10 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - Instantiate with `CreateUdObject("Category.InvoiceManager")` or `CreateUdObject("Category.InvoiceManager", {args})`
    - If the user provided a target file path, write the scaffold there; otherwise return the scaffold directly
 
----
-
-## Example
-
-Input: `/ssl-new-class InvoiceManager`
-
-Output:
-```ssl
-/* =============================================================================;
-/* CLASS:   InvoiceManager;
-/* PURPOSE: [Describe the class purpose];
-/* =============================================================================;
-:CLASS InvoiceManager;
-
-:DECLARE _sPrivateField;
-:DECLARE sPublicField;
-
-/* -----------------------------------------------------------------------------;
-/* PROCEDURE: GetField;
-/* PURPOSE: [Describe method purpose];
-/* RETURNS: [Return value description];
-/* -----------------------------------------------------------------------------;
-:PROCEDURE GetField;
-:DECLARE sValue;
-
-:TRY;
-    sValue := Me:sPublicField;
-    :RETURN sValue;
-:CATCH;
-    :RETURN NIL;
-:ENDTRY;
-
-:ENDPROC;
-
-/* -----------------------------------------------------------------------------;
-/* Constructor;
-/* PURPOSE: Initialize the InvoiceManager instance;
-/* -----------------------------------------------------------------------------;
-:PROCEDURE Constructor;
-
-:TRY;
-    /* Initialize fields;
-    Me:sPublicField := "";
-    Me:_sPrivateField := "";
-:CATCH;
-    /* Initialization error;
-:ENDTRY;
-
-:ENDPROC;
-```
+9. **Verify:** if the scaffold was written to a file and MCP `ssl_diagnose` is
+   available, run it and confirm the scaffold parses with zero errors before
+   reporting done. Without MCP, state that the scaffold has not been
+   machine-validated.
 
 ---
 

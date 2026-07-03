@@ -13,10 +13,12 @@ source of truth, and `tools/generate-agents.mjs` maps it to each dialect.
 
 | Agent | Role | Tools |
 | --- | --- | --- |
-| `ssl-planner` | Plan SSL work; produce implementation specs for other agents to execute | read + edit (specs only) |
+| `ssl-planner` | Plan SSL work; produce implementation specs for other agents to execute | read + edit (specs only)\* |
 | `ssl-developer` | General SSL coding — implement, review, refactor, scaffold | read + edit |
 | `ssl-reviewer` | Review SSL code against the style guide; report findings | read-only |
-| `ssl-refactorer` | Plan behavior-preserving cleanup for developer handoff | read + edit (specs only) |
+| `ssl-refactorer` | Plan behavior-preserving cleanup for developer handoff | read + edit (specs only)\* |
+
+\* "specs only" is a prompt-enforced convention, not a hard tool boundary.
 
 All four are thin personas: they **delegate to the workflow skills** in
 `agent-guides/skills/` and **cite the guide docs** rather than restating SSL
@@ -31,7 +33,7 @@ same shape as `SKILL.md`.
 | --- | --- | --- |
 | `name` | yes | Agent id; lowercase, hyphens, must match the filename stem. |
 | `description` | yes | One-paragraph summary used by every tool's picker. |
-| `version` | yes | Integer; bump on any manifest/body change. Drives `--check`. |
+| `version` | yes | Integer; bump on any change; it is embedded in generated headers so adapters show their source version. Drives `--check`. |
 | `mode` | no | `primary` \| `subagent` \| `all` (opencode vocabulary; default `all`). |
 | `argument-hint` | no | Invocation hint, e.g. `"<file-path> [focus]"`. |
 | `model` | no | `inherit` (default — omitted per tool) or a concrete model id. |

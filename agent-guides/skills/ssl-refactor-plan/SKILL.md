@@ -1,8 +1,8 @@
 ---
 name: ssl-refactor-plan
-description: Plan an SSL refactor and write a behavior-preserving implementation spec for ssl-developer.
+description: Plan an SSL refactor and write a behavior-preserving implementation spec for ssl-developer. Use when a refactor is large or risky enough to plan before editing, or when asked to plan/spec an SSL refactor without changing code.
 argument-hint: "<file-path> [goal] [target-spec-path]"
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__ssl-reference__ssl_lookup, mcp__ssl-reference__ssl_signature, mcp__ssl-reference__ssl_search, mcp__ssl-reference__ssl_context_pack
 ---
 
 Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
@@ -14,9 +14,13 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
    If no file path is given, ask the user before continuing.
 
 2. **Read the required references before planning:**
+   - Compact machine packs: `agent-guides/machine/foundation.md` +
+     `agent-guides/machine/categories/` (via `category-index.json` or MCP
+     `ssl_context_pack`) — prefer these over the full narrative guides.
    - `ssl-style-guide/ssl-style-guide.schema.yaml`
-   - `agent-guides/ssl_refactoring_guide.md`
-   - `agent-guides/ssl_agent_instructions.md`
+   - `agent-guides/ssl_refactoring_guide.md` and
+     `agent-guides/ssl_agent_instructions.md` — the narrative guides, when the
+     packs lack detail.
 
 3. **Identify the file type** before proposing changes. If the file is a data
    source (SSL or SQL), it uses different parameter syntax and structure:
@@ -31,6 +35,10 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
      interfaces
    - Note internal calls (`DoProc`, `Me:`, `Base:`) and external calls
      (`ExecFunction`, database APIs)
+   - Note `:INCLUDE` targets and `:PUBLIC` declarations — included scripts are
+     spliced in full and `:PUBLIC` variables are call-stack scoped, so the
+     file's real symbol surface may extend beyond its own text; record these in
+     the spec's Current behavior section
    - Confirm built-in functions, classes, keywords, and operators with the
      `ssl-lookup` workflow, preferring MCP lookup tools when available
 
@@ -61,8 +69,10 @@ Write a self-contained Markdown document with these sections, in order:
    file, including data-source exceptions if relevant.
 6. **Built-in element checks** — functions, classes, keywords, and operators
    verified through MCP or local inventory. Note any unresolved lookups.
-7. **Validation plan** — exact checks the developer should run or perform after
-   editing.
+7. **Validation plan** — exact checks the developer should run after editing.
+   Always include: run MCP `ssl_diagnose` on the edited file and require zero
+   errors (fallback if the MCP is unavailable: the manual checklist in
+   `ssl_refactoring_guide.md` Part 8); plus any file-specific behavioral checks.
 8. **Open questions** — risks, ambiguities, or behavior changes that require
    user confirmation.
 9. **Developer handoff** — short paragraph instructing `ssl-developer` to

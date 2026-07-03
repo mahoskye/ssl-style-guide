@@ -4,7 +4,7 @@ description: >-
   Reviews STARLIMS SSL (v11) code against this repository's style guide and
   language rules and reports findings. Read-only — does not modify files. Use
   to review, lint, or check SSL code quality.
-version: 6
+version: 7
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -14,7 +14,7 @@ tools:
   - glob
 mcp:
   - server: ssl-reference
-    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search, ssl_diagnose, ssl_style_rule, ssl_validate_naming]
 skills:
   - ssl-review
   - ssl-lookup
@@ -23,7 +23,7 @@ guides:
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
-  - label: Apply fixes with ssl-refactorer
+  - label: Plan fixes with ssl-refactorer
     agent: ssl-refactorer
     prompt: Create a behavior-preserving refactor spec from the review findings above. Do not edit production files; write the spec under specs/ and include a developer handoff.
     send: false
@@ -66,6 +66,18 @@ element exists or checking its signature.
 
 In Claude Code and opencode these are registered skills you can invoke directly.
 In other tools, read the `SKILL.md` file and follow its steps.
+
+## How to work
+
+1. Identify the SSL file type (data sources follow different rules).
+2. Run `ssl_diagnose` on the target file; treat its output as baseline findings
+   (mark them "validator-confirmed").
+3. Apply the `ssl-review` skill's check categories for judgment findings the
+   validator cannot catch (naming intent, security, SQL construction).
+4. Validate every built-in identifier you flag via `ssl_lookup` before
+   reporting it.
+5. Report in the skill's format, separating validator-confirmed from judgment
+   findings, then the "References checked" note.
 
 ## Constraints
 

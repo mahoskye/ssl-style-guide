@@ -38,6 +38,12 @@ const HANDOFF_KEYS = new Set(['label', 'agent', 'prompt', 'send', 'model']);
 const REQUIRED_KEYS = ['name', 'description', 'version', 'tools'];
 const NEUTRAL_TOOLS = new Set(['read', 'edit', 'grep', 'glob', 'bash:read-only']);
 const VALID_MODES = new Set(['primary', 'subagent', 'all']);
+// The nine tools exposed by the ssl-reference MCP server.
+const VALID_SSL_REFERENCE_TOOLS = new Set([
+  'ssl_lookup', 'ssl_search', 'ssl_signature', 'ssl_validate_naming',
+  'ssl_style_rule', 'ssl_category', 'ssl_context_pack', 'ssl_diagnose',
+  'ssl_format',
+]);
 
 const AGENTS_BEGIN = '<!-- BEGIN generated agents -->';
 const AGENTS_END = '<!-- END generated agents -->';
@@ -134,6 +140,33 @@ function loadManifest(fileName) {
   for (const guide of manifest.guides ?? []) {
     if (!existsSync(resolve(REPO_ROOT, guide))) {
       fail(`${sourceRel}: guide path '${guide}' does not exist`);
+    }
+  }
+  if (manifest.mcp !== undefined) {
+    if (!Array.isArray(manifest.mcp)) {
+      fail(`${sourceRel}: mcp must be a list`);
+    }
+    for (const [i, entry] of manifest.mcp.entries()) {
+      if (!entry || typeof entry !== 'object') {
+        fail(`${sourceRel}: mcp[${i}] must be a mapping`);
+      }
+      if (typeof entry.server !== 'string' || !entry.server.trim()) {
+        fail(`${sourceRel}: mcp[${i}].server must be a non-empty string`);
+      }
+      if (!Array.isArray(entry.tools) || entry.tools.length === 0) {
+        fail(`${sourceRel}: mcp[${i}].tools must be a non-empty list`);
+      }
+      for (const tool of entry.tools) {
+        if (typeof tool !== 'string' || !tool.trim()) {
+          fail(`${sourceRel}: mcp[${i}].tools entries must be non-empty strings`);
+        }
+        if (entry.server === 'ssl-reference' && !VALID_SSL_REFERENCE_TOOLS.has(tool)) {
+          fail(
+            `${sourceRel}: mcp[${i}] tool '${tool}' is not a valid ssl-reference ` +
+            `tool (allowed: ${[...VALID_SSL_REFERENCE_TOOLS].join(', ')})`
+          );
+        }
+      }
     }
   }
   if (manifest.handoffs !== undefined) {
