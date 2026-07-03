@@ -537,7 +537,7 @@ module.exports = grammar({
     declaration_statement_parameters: $ => seq($.kw_parameters, commaSep1($, field('parameter', $.identifier)), ';'),
     declaration_statement_default: $ => seq($.kw_default, field('default_var', $.identifier), ',', $.expression, ';'),
     declaration_statement_public: $ => seq($.kw_public, commaSep1($, field('public', $.identifier)), ';'),
-    declaration_statement_include: $ => seq($.kw_include, field('path', choice($.identifier, $.qualified_identifier)), ';'),
+    declaration_statement_include: $ => seq($.kw_include, field('path', choice($.identifier, $.qualified_identifier, $.string)), ';'),
 
     parameter_section: $ => seq(
       $.declaration_statement_parameters,
