@@ -2,7 +2,7 @@
 name: ssl-refactor
 description: Refactor SSL code following the SSL refactoring guide. Use when asked to refactor, modernize, or clean up SSL code.
 argument-hint: "<file-path> [goal]"
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__ssl-reference__ssl_lookup, mcp__ssl-reference__ssl_format, mcp__ssl-reference__ssl_diagnose
 ---
 
 Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional remaining text is the refactoring goal).
@@ -11,6 +11,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
 
 1. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[goal]` as the remaining text (e.g., "modernize error handling", "fix naming", "all").
    - If no file path is given, ask the user before continuing.
+   - If the file is large, has many external entry points, or the goal involves behavior-sensitive changes, suggest running `ssl-refactor-plan` first and implementing from the spec instead of editing directly.
 
 2. **Identify the file type** before refactoring. If the file is a data source (SSL or SQL),
    it uses different parameter syntax and structure — see `ssl_agent_instructions.md` §4A
@@ -25,7 +26,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - Never place `;` inside comment body text; it ends the comment early
    - `:PARAMETERS` must come immediately after `:PROCEDURE`
    - `:DEFAULT` must come immediately after `:PARAMETERS`
-   - `:DECLARE` must appear before body statements
+   - `:DECLARE` before body statements is a style preference — the language allows `:DECLARE` anywhere in statement flow
    - Use one statement per line
    - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation
    - Use `Me:Method()` / `Base:Method()` inside classes; `DoProc` is invalid inside class methods
@@ -51,6 +52,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
 - Read the entire target file
 - Identify all procedures and their relationships
 - Note external calls (`ExecFunction`) and internal calls (`DoProc`)
+- Note any `:INCLUDE` lines — the target script is spliced in full before execution, so variables/procedures it declares are in scope here; never flag or 'fix' their uses as undeclared, and don't relocate `:INCLUDE` lines during cleanup.
 - Understand what the code does before changing anything
 
 ### Step 2 — PLAN
@@ -70,7 +72,7 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 **Structure:**
 - Move `:PARAMETERS` immediately after `:PROCEDURE`
 - Move `:DEFAULT` immediately after `:PARAMETERS`
-- Move `:DECLARE` before body statements
+- Moving `:DECLARE` before body statements is a style preference — the language allows `:DECLARE` anywhere in statement flow
 - Ensure procedure ordering is logical
 
 **Error Handling:**
@@ -111,9 +113,11 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 - Do not silently rewrite or delete these calls — surface them to the user
   as flagged TODOs with a note that the function is no longer in the
   published reference and may have been removed from current STARLIMS
-  versions.
+  versions. (Verify with `ssl_lookup` — the authoritative inventory; this
+  list may lag it.)
 
 ### Step 4 — FORMAT
+- If MCP `ssl_format` is available, run it instead of hand-formatting; then only verify embedded-SQL style manually.
 - Verify all statements end with `;`
 - Preserve the file's indentation style: prefer tabs, or preserve existing
   4-space indentation
@@ -121,6 +125,7 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 - Uppercase all colon-prefixed keywords
 
 ### Step 5 — VALIDATE
+- **If MCP `ssl_diagnose` is available, run it on the edited file and require zero errors before finishing** — it runs the real starlims-lsp validator and is authoritative over the manual checks below. Treat the remaining bullets as the fallback when the MCP is absent.
 - Confirm all procedures are complete — no stubs or `// TODO` placeholders
 - Verify `:TRY` blocks each have at least one `:CATCH` or `:FINALLY` (and at most one `:CATCH`)
    - Verify no `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY` blocks
@@ -147,3 +152,14 @@ Refactoring complete. Changes made:
 Preserved:
 - [list of intentionally unchanged behaviors]
 ```
+
+---
+
+## References
+
+- Compact machine packs: `agent-guides/machine/foundation.md` +
+  `agent-guides/machine/categories/` (via `category-index.json` or MCP
+  `ssl_context_pack`) — prefer these over the full narrative guides.
+- `agent-guides/ssl_refactoring_guide.md` and
+  `agent-guides/ssl_agent_instructions.md` — the narrative guides, when the
+  packs lack detail.

@@ -2,31 +2,35 @@
 name: ssl-format
 description: Format SSL code and embedded SQL strings using canonical compact style. Use when asked to format, prettify, or fix indentation in SSL code.
 argument-hint: "<file-path> [scope: sql|ssl|all]"
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__ssl-reference__ssl_format, mcp__ssl-reference__ssl_diagnose
 ---
 
 Format the SSL file at `$ARGUMENTS` (first token is the file path, optional second token is the scope).
 
 ## Instructions
 
-1. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[scope]` as `$1` (default: `all`).
+1. **If MCP `ssl_format` is available, use it first.** Run `ssl_format` on the file for the SSL-code pass; it is authoritative for indentation, spacing, and keyword casing. Apply the manual SSL rules below only when the MCP is unavailable. Embedded-SQL canonical-compact formatting (the `sql` scope) is not performed by the formatter — always apply the SQL rules below manually.
+
+2. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[scope]` as `$1` (default: `all`).
    - If no file path is given, ask the user before continuing.
    - Scopes: `sql` = only format embedded SQL strings, `ssl` = only format SSL code, `all` = both.
 
-2. **Read the file** at the given path.
+3. **Read the file** at the given path.
 
-3. **Identify the file type.** If the file is a data source (SSL or SQL), be aware that:
+4. **Identify the file type.** If the file is a data source (SSL or SQL), be aware that:
    - `:PARAMETERS` uses inline `:=` defaults — do not split into separate `:DEFAULT` statements
    - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — format these consistently but do not flag or remove them
    - The SQL query body within data source files still follows canonical compact formatting rules
 
-4. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
+5. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
 
-5. **Apply the rules below** according to scope, then write the file back.
+6. **Apply the rules below** according to scope, then write the file back.
 
 ---
 
-## Scope: `ssl` — SSL Code Formatting
+## Scope: `ssl` — SSL Code Formatting (manual fallback when `ssl_format` is unavailable)
+
+The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part 3) apply only when MCP `ssl_format` cannot be run.
 
 ### Indentation
 - Prefer tabs; if the file already uses spaces, preserve 4-space indentation
@@ -58,6 +62,9 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - 1 blank line between procedures
 - 1 blank line between logical sections
 - Remove excessive consecutive blank lines (3+ becomes 1)
+
+### Region markers
+- Leave `/* region Name;` / `/* endregion;` markers as-is; `endregion` takes no name — never append one.
 
 ---
 
@@ -131,7 +138,8 @@ Apply `ssl` formatting first, then `sql` formatting to embedded SQL strings.
 2. Identify all SQL string literals (inside DB function calls)
 3. Apply formatting rules per scope
 4. Write the formatted file using Edit (prefer minimal diffs) or Write (if changes are extensive)
-5. Report what was changed
+5. Verify: if MCP `ssl_diagnose` is available, run it on the written file and confirm zero new errors (formatting must never introduce diagnostics). Without MCP, re-read the file and manually confirm block pairing and terminal semicolons.
+6. Report what was changed
 
 ## Output
 

@@ -45,7 +45,7 @@ The MCP server also bundles these files and exposes them through
 
 ## Skills
 
-`skills/` contains six SSL workflow skills, each a `SKILL.md` with frontmatter
+`skills/` contains eight SSL workflow skills, each a `SKILL.md` with frontmatter
 plus step-by-step instructions:
 
 - `ssl-lookup` — look up a function signature, class member, or keyword
@@ -55,6 +55,7 @@ plus step-by-step instructions:
 - `ssl-format` — format SSL code and embedded SQL in canonical compact style
 - `ssl-new-procedure` — scaffold a new SSL procedure
 - `ssl-new-class` — scaffold a new SSL class
+- `ssl-new-datasource` — scaffold a new SSL or SQL data source
 
 In Claude Code and opencode these are registered skills an agent can invoke
 directly; in other tools they are Markdown files an agent reads and follows.
