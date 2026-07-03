@@ -34,7 +34,7 @@
       "name": "PUBLIC",
       "type": "keyword",
       "syntax": ":PUBLIC variable1[, variable2, ...];",
-      "summary": "Declares global variables that can be accessed from any scope in the program."
+      "summary": "Declares public variables shared down the call stack — visible to the declaring scope and every scope it calls."
     }
   ],
   "related_categories": [
