@@ -344,7 +344,7 @@
       "patterns": []
     },
     "include-declaration": {
-      "begin": "(:INCLUDE)(\\s+)([A-Za-z_][A-Za-z0-9_]*)\\b",
+      "begin": "(:INCLUDE)(\\s+)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\"[^\"]*\"|'[^']*')",
       "beginCaptures": {
         "1": {
           "name": "keyword.control.ssl"
