@@ -1,7 +1,7 @@
 ssl_style_guide:
   metadata:
     title: STARLIMS SSL Style Guide (Tool‑agnostic)
-    version: 1.3.0
+    version: 1.4.0
     maintainers:
     - PaperBull / maho
     sources:
@@ -23,7 +23,7 @@ ssl_style_guide:
       advisory: best-practice guidance (security, maintainability, performance)
     ssl_version: v11
     language_completeness: comprehensive
-    last_updated: 2026-05-01
+    last_updated: 2026-07-03
   authoritative_language:
     note: Sections marked here should track accepted SSL language behavior.
     sections:
@@ -175,7 +175,7 @@ ssl_style_guide:
     region:
       begin: :REGION
       end: :ENDREGION
-      note: "Legacy functional body-capture construct that stores raw text for later retrieval via GetRegion(sValue, vSrc, vDst). For editor grouping, prefer comment regions."
+      note: "Current, supported body-capture construct: stores raw body text for retrieval and $placeholder$ substitution via GetRegion(sValue, vSrc, vDst). Distinct from folding-only /* region comments; the construct the style guide actually dropped was C#-style #region."
     inline_code:
       begin: :BEGININLINECODE
       end: :ENDINLINECODE
@@ -419,6 +419,10 @@ ssl_style_guide:
     default_rule: :DEFAULT name, value;
     public_rule: :PUBLIC a, b;
     include_rule: :INCLUDE ScriptName;
+    include_target_forms:
+      - ":INCLUDE ScriptName;"
+      - ":INCLUDE Category.ScriptName;"
+      - ':INCLUDE "ScriptName";' # quoted targets also occur and are accepted
   procedures:
     signature:
       level: authoritative
@@ -1039,6 +1043,12 @@ ssl_style_guide:
     indirect_calls:
       level: authoritative
       pattern: 'DoProc("ProcedureName", {param1, param2})'
+      cross_script_pattern: 'DoProc("Category.Script.Proc", {params})'
+      segment_rules: >-
+        One-segment DoProc targets resolve case-insensitively in the current
+        script only; two-segment DoProc targets are rejected at runtime;
+        three-segment targets route through the ExecFunction executor path
+        (cross-script dispatch).
       class_method_restriction: DoProc is rejected inside class methods; use Me:Method() or Base:Method() instead
       exec_function:
         entry_point: 'ExecFunction("Category.Script", {params})'
@@ -1096,6 +1106,19 @@ ssl_style_guide:
   types:
     level: authoritative
     note: "SSL has 8 core value types. Type names are reported by LimsTypeEx() in uppercase (e.g. STRING, NUMBER)."
+    dotnet_member_passthrough:
+      level: authoritative
+      rule: >-
+        Built-in value types (string, number, date, array, boolean,
+        netobject) are backed by .NET values; ':' member access forwards to
+        the underlying .NET object when no SSL-side member matches (e.g.
+        sName:Length, sName:ToUpper(), dDate:Year, dDate:AddDays(3),
+        aList:Count, nVal:ToString()). This is legitimate dispatch, not an
+        error. MakeNETObject(value) wraps a value explicitly as netobject.
+      tooling_note: >-
+        Tools must never flag an unmatched ':' member on these types as an
+        unknown-member error — a typo cannot be distinguished from a valid
+        .NET passthrough (starlims-lsp catalog decision D10).
     core_types:
       array:
         summary: Ordered, 1-based collections of SSL values, including nested arrays.
@@ -1202,11 +1225,16 @@ ssl_style_guide:
       usage: Encouraged for organizing and grouping procedures in long files
       syntax: "/* region Name; ... /* endregion;"
       naming: Title Case words (e.g., /* region Validation Helpers;)
+      pairing: >-
+        Closers are nameless — the canonical closer is exactly
+        "/* endregion;". Nested regions pair last-opened-first-closed
+        (LIFO); any text after "endregion" is prose commentary, never a
+        name to match.
     functional_regions:
       level: authoritative
-      usage: "Legacy text storage/retrieval via GetRegion()"
+      usage: "Body-text capture and retrieval via GetRegion()"
       syntax: ":REGION Name; ... :ENDREGION;"
-      note: "Legacy functional body-capture construct used for text retrieval."
+      note: "Current, supported construct with a runtime purpose: GetRegion() retrieves the raw body with $placeholder$ substitution. Not legacy; actively used in production code bases."
   sql:
     api: SQLExecute
     formatting:
@@ -1552,7 +1580,7 @@ ssl_style_guide:
     coding_standards:
       - rule: limit_public_vars
         severity: warning
-        message: ":PUBLIC variables persist across all procedures and risk namespace pollution. Prefer :DECLARE with parameter passing."
+        message: ":PUBLIC variables are call-stack scoped — visible to the declaring scope and every scope it calls, for the lifetime of the declaring frame — and risk namespace pollution. Prefer :DECLARE with parameter passing."
       - rule: prefer_exitcase
         severity: warning
         message: ":EXITCASE is syntactically optional, but without it later :CASE expressions are still evaluated and additional matching bodies may execute. :OTHERWISE still stays skipped once any earlier case body has run. Always include :EXITCASE unless multi-match behavior is intentional."
@@ -1637,6 +1665,19 @@ ssl_style_guide:
     class_file_constraint:
       level: authoritative
       rule: one_class_or_script_per_file  # A file is one of: class, script, or data source — never a mix
+    physical_layout:
+      level: authoritative
+      note: >-
+        Mapping between repository/export file paths and runtime dispatch
+        namespaces. All matching is case-insensitive.
+      file_extensions: [".srvscr", ".ssl", ".ssl.txt", ".ds", ".ds.txt"]
+      server_scripts: "Server Scripts/CATEGORY/SCRIPT.<ext> -> Category.Script"
+      application_scripts: "Applications/APP/MODULE/Server Scripts/SCRIPT.<ext> -> Module.Script (the application name is runtime context, not part of the dispatch namespace)"
+      data_sources: "Data Sources/CATEGORY/NAME.ds -> Category.Name, dispatched via RunDS()"
+      flat_layouts: >-
+        Development checkouts are often flat (loose .ssl files outside the
+        export tree); tooling should degrade to script-basename matching
+        when the canonical anchors are absent.
     data_source_modules:
       level: authoritative
       note: >

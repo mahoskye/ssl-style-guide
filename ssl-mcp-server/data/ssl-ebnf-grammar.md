@@ -113,7 +113,7 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 ```ebnf
 (*
     SSL (STARLIMS Scripting Language) Version 11 EBNF Grammar
-    Last updated: 2026-03-21
+    Last updated: 2026-07-03
     Documents the authoritative syntax of SSL v11.
 *)
 
@@ -214,7 +214,7 @@ DeclareStatement ::= ":" "DECLARE" IdentifierList (* Regular statement — can a
 DefaultStatement ::= ":" "DEFAULT" DefaultParameterPair (* Must immediately follow :PARAMETERS *)
 PublicStatement ::= ":" "PUBLIC" IdentifierList (* Regular statement — can appear anywhere *)
 IncludeStatement ::= ":" "INCLUDE" IncludeTarget (* Resolved as a textual paste; place early for clarity *)
-IncludeTarget ::= Identifier | QualifiedIdentifier
+IncludeTarget ::= Identifier | QualifiedIdentifier | StringLiteral (* quoted targets also occur: :INCLUDE "ScriptName"; *)
 QualifiedIdentifier ::= Identifier {"." Identifier}
 
 (* Logic statements *)
@@ -362,7 +362,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 9. **Regions**: SSL supports functional regions for code templating:
     - **Functional regions**: `:REGION identifier; ... :ENDREGION;` - stored at runtime for dynamic code retrieval
-    - **IDE folding regions**: `/* region description; ... /* endregion;` - editor folding markers, not language constructs
+    - **IDE folding regions**: `/* region description; ... /* endregion;` - editor folding markers, not language constructs. Closers are nameless (`/* endregion;`); nested regions pair last-opened-first-closed (LIFO), and any text after `endregion` is prose, never a name to match.
 
 10. **Database Integration**: Database queries are typically represented as string literals. Parameters in database statements can be represented as `?PARAMETER?` (named parameters) or simply `?` (positional parameters).
 
