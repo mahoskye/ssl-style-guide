@@ -127,6 +127,7 @@ const CATEGORIES: { key: keyof ReferenceFile; type: ElementType }[] = [
   { key: "types", type: "type" },
   { key: "classes", type: "class" },
   { key: "special_forms", type: "special_form" },
+  { key: "returns", type: "return" },
   { key: "functions", type: "function" },
 ];
 
@@ -188,6 +189,7 @@ function loadMachineDocs(): MachineDocs {
 function formatElementType(type: string): string {
   if (type === "class") return "classes";
   if (type === "special_form") return "special forms";
+  if (type === "return") return "return objects";
   return `${type}s`;
 }
 

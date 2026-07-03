@@ -42,6 +42,7 @@ const CATEGORIES = {
   types: 'types',
   classes: 'classes',
   special_forms: 'special-forms',
+  returns: 'returns',
   functions: 'functions',
 };
 

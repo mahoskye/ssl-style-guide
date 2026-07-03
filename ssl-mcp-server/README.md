@@ -78,9 +78,9 @@ Windows example:
 
 Bundled runtime files:
 
-- `data/ssl-element-reference.json` — full element inventory (448 elements:
-  keywords, operators, literals, types, classes, special forms, functions)
-  with signatures, parameters, methods, and related metadata
+- `data/ssl-element-reference.json` — full element inventory (460 elements:
+  keywords, operators, literals, types, classes, special forms, functions,
+  return objects) with signatures, parameters, methods, and related metadata
 - `data/ssl-style-guide.schema.yaml`
 - `data/ssl_agent_instructions.md`
 - `data/ssl_refactoring_guide.md`
@@ -150,7 +150,7 @@ bun run check:consistency
 
 Current bundled coverage (sourced from `data/ssl-element-reference.json`):
 
-- 448 developer-facing elements
+- 460 developer-facing elements
 - 330 functions
 - 29 classes
 - 38 keywords
@@ -158,6 +158,7 @@ Current bundled coverage (sourced from `data/ssl-element-reference.json`):
 - 3 literals
 - 8 types
 - 8 special forms
+- 12 return objects
 - 37 function categories
 - 8 Hungarian notation prefixes
 - 22 machine-doc categories
