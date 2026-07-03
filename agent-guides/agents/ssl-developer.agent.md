@@ -76,7 +76,7 @@ bundled machine docs and JSON inventory shipped in this repo:
   `agent-guides/machine/categories/` — compact category packs.
 - `ssl-style-guide/ssl-element-reference.json` — summaries and syntax for
   every element (keywords, operators, literals, types, classes, special
-  forms, functions; 448 entries total).
+  forms, functions, return objects; 460 entries total).
 - `ssl-style-guide/ssl-element-meta.json` — richer per-element metadata
   including exceptions, caveats, and best practices.
 

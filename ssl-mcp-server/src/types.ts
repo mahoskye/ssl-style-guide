@@ -8,7 +8,8 @@ export type ElementType =
   | "type"
   | "class"
   | "special_form"
-  | "function";
+  | "function"
+  | "return";
 
 /** A single row from a markdown table in ssl-docs (e.g. parameters, methods). */
 export interface TableRow {
@@ -59,6 +60,7 @@ export interface ReferenceFile {
   classes: Record<string, ReferenceEntry>;
   special_forms: Record<string, ReferenceEntry>;
   functions: Record<string, ReferenceEntry>;
+  returns: Record<string, ReferenceEntry>;
 }
 
 /**
