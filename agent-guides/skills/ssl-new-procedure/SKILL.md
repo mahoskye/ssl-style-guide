@@ -1,8 +1,8 @@
 ---
 name: ssl-new-procedure
-description: Scaffold a new SSL procedure with correct structure, naming conventions, and documentation header.
+description: Scaffold a new SSL procedure with correct structure, naming conventions, and documentation header. Use when asked to create, scaffold, or add a new SSL procedure.
 argument-hint: "<procedure-name> [parameters...]"
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__ssl-reference__ssl_lookup, mcp__ssl-reference__ssl_validate_naming, mcp__ssl-reference__ssl_diagnose
 ---
 
 Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the procedure name, remaining tokens are parameter names).
@@ -14,9 +14,10 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - `[parameters...]` = remaining tokens — each becomes a `:PARAMETERS` entry
 
 2. **Validate the proposed procedure name against the built-in inventory.**
-   Check `ssl-style-guide/ssl-element-reference.json` (or MCP `ssl_lookup`)
-   to see whether `<procedure-name>` collides with one of the 330 built-in
-   functions. If it does, warn the user — calling the user-defined
+   Check via MCP `ssl_lookup`/`ssl_validate_naming` when available, else
+   `ssl-style-guide/ssl-element-reference.json`, whether `<procedure-name>`
+   collides with a built-in function (currently 330). If it does, warn the
+   user — calling the user-defined
    procedure via `DoProc("Name", ...)` will work, but a bare `Name(...)`
    call would resolve to the built-in. Suggest a non-colliding alternative
    name unless the user explicitly wants to shadow the built-in.
@@ -27,7 +28,8 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - Never place `;` inside comment body text
    - `:PARAMETERS` must come immediately after `:PROCEDURE`
    - `:DEFAULT` must come immediately after `:PARAMETERS`
-   - `:DECLARE` must appear before body statements
+   - `:DECLARE` before body statements is a style preference — the language
+     allows `:DECLARE` anywhere in statement flow
    - Prefer tabs for indentation; if adapting to an existing space-indented file,
      preserve 4-space indentation
    - Use one statement per line
@@ -90,12 +92,20 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - Include `:RETURN` at end of try body
    - All statements must end with `;`
    - Indentation: use tabs by default
+   - If the user says the procedure is an internal helper, add `/*@private;` on
+     the line above `:PROCEDURE` — this hides it from external dispatch (script
+     procedures only; it has no effect on class methods)
 
 7. **If no parameters are provided:** omit `:PARAMETERS` and `:DEFAULT` blocks entirely.
 
 8. **Output:** Present the generated procedure as an SSL code block. If the user
    provided a target file path, write it there; otherwise return the scaffold
    directly.
+
+9. **Verify:** if the scaffold was written to a file and MCP `ssl_diagnose` is
+   available, run it and confirm the scaffold parses with zero errors before
+   reporting done. Without MCP, state that the scaffold has not been
+   machine-validated.
 
 ---
 

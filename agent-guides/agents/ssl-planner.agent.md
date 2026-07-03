@@ -5,7 +5,7 @@ description: >-
   agents execute. Knows LIMS capabilities deeply but does not write production
   SSL code — designs the change, defines signatures and data flow, and hands
   off to ssl-developer.
-version: 4
+version: 5
 mode: all
 argument-hint: "<feature or change to plan> [target-spec-path]"
 model: inherit
@@ -16,7 +16,7 @@ tools:
   - glob
 mcp:
   - server: ssl-reference
-    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search]
+    tools: [ssl_context_pack, ssl_lookup, ssl_signature, ssl_search, ssl_validate_naming]
 skills:
   - ssl-lookup
 guides:
@@ -88,9 +88,11 @@ sections, in order:
 7. **Open questions** — anything you could not resolve from the sources of
    truth. Be explicit; do not paper over uncertainty.
 8. **Implementation handoff** — one short paragraph telling the next agent
-   (usually `ssl-developer`) what to do with the spec and what to verify.
-   Include enough context that the next agent can work from the spec alone even
-   if the chat history is not carried across by the tool.
+   (usually `ssl-developer`) what to do with the spec and what to verify — at
+   minimum, instruct the implementer to run `ssl_diagnose` on every touched file
+   and finish with zero errors. Include enough context that the next agent can
+   work from the spec alone even if the chat history is not carried across by
+   the tool.
 
 ## How to work
 
