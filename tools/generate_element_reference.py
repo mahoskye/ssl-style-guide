@@ -39,6 +39,7 @@ CATEGORIES = [
     ("types", "types"),
     ("classes", "classes"),
     ("special_forms", "special-forms"),
+    ("returns", "returns"),
     ("functions", "functions"),
 ]
 
@@ -303,6 +304,7 @@ EXTRACTORS = {
     "classes": extract_class,
     "special_forms": extract_special_form,
     "functions": extract_function,
+    "returns": extract_class,
 }
 
 
