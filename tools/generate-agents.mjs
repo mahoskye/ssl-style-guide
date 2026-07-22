@@ -59,7 +59,7 @@ const CLAUDE_TOOL_MAP = {
 // `search/codebase`; listing a group name (`edit`) includes all of its tools.
 // See https://code.visualstudio.com/docs/copilot/customization/custom-agents
 const COPILOT_TOOL_MAP = {
-  read: ['read/readFile', 'search/codebase', 'search/listDirectory'],
+  read: ['read/readFile', 'search/codebase', 'search/listDirectory', 'search/usages'],
   edit: ['edit'],
   grep: ['search/textSearch'],
   glob: ['search/fileSearch'],
@@ -235,12 +235,22 @@ function mcpToolNames(manifest) {
 }
 
 function claudeFrontmatter(manifest) {
-  const tools = [...mapTools(manifest.tools, CLAUDE_TOOL_MAP), ...mcpToolNames(manifest)];
   const fm = {
     name: manifest.name,
     description: oneLine(manifest.description),
-    tools: tools.join(', '),
   };
+  // Edit-capable agents run permissive in Claude Code: omitting `tools`
+  // inherits the session's full toolset (Skill, task tracking, Agent, MCP).
+  // Read-only agents keep a hard allowlist — that boundary is load-bearing —
+  // plus `Skill` so they can invoke their registered workflow skills.
+  if (!manifest.tools.includes('edit')) {
+    const tools = [
+      ...mapTools(manifest.tools, CLAUDE_TOOL_MAP),
+      'Skill',
+      ...mcpToolNames(manifest),
+    ];
+    fm.tools = tools.join(', ');
+  }
   if (manifest.skills) fm.skills = manifest.skills;
   if (manifest['argument-hint']) fm['argument-hint'] = manifest['argument-hint'];
   if (manifest.model && manifest.model !== 'inherit') fm.model = manifest.model;
@@ -289,6 +299,12 @@ function opencodeFrontmatter(manifest) {
   };
   if (manifest.model && manifest.model !== 'inherit') fm.model = manifest.model;
   fm.tools = enabled;
+  // Mirror disabled capabilities in opencode's permission model so read-only
+  // roles are enforced by the harness, not just by prompt prose.
+  const permission = {};
+  if (!enabled.edit) permission.edit = 'deny';
+  if (!enabled.bash) permission.bash = 'deny';
+  if (Object.keys(permission).length > 0) fm.permission = permission;
   Object.assign(fm, manifest.overrides?.opencode ?? {});
   return fm;
 }
