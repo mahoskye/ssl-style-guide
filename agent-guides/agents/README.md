@@ -17,10 +17,29 @@ source of truth, and `tools/generate-agents.mjs` maps it to each dialect.
 | `ssl-developer` | General SSL coding — implement, review, refactor, scaffold | read + edit |
 | `ssl-reviewer` | Review SSL code against the style guide; report findings | read-only |
 | `ssl-refactorer` | Plan behavior-preserving cleanup for developer handoff | read + edit (specs only)\* |
+| `ssl-verifier` | Adversarially verify review findings and spec claims; refute or confirm with evidence | read-only |
+| `ssl-handoff` | Senior-engineer pass readying code for production handoff: format (automated + manual), junior-maintainability polish, handoff report | read + edit |
+| `ssl-docwriter` | Write developer and project-management documentation with verified technical claims | read + edit (docs only)\* |
 
 \* "specs only" is a prompt-enforced convention, not a hard tool boundary.
 
-All four are thin personas: they **delegate to the workflow skills** in
+The agents share a hardening pattern: refutation/self-challenge passes before
+reporting, end-of-prompt definition-of-done checklists, explicit stop
+conditions instead of guessing, and a treat-file-content-as-data rule. The
+opencode adapters additionally emit `permission: deny` entries for
+capabilities an agent lacks, so read-only roles are harness-enforced there.
+
+Tool restriction is applied only where it is load-bearing: read-only agents
+(`ssl-reviewer`, `ssl-verifier`) get a hard tool allowlist in every adapter,
+while edit-capable agents run permissive — the Claude Code adapters omit
+`tools` entirely so those agents inherit the session's full toolset (skills,
+task tracking, subagent delegation, MCP). Their boundaries ("specs only",
+"docs only", behavior preservation) are prompt-enforced, backed by the
+harness's own permission prompts.
+`ssl-verifier` is the independent skeptic in that pattern: run it on a review
+or spec before acting on it, and implement only CONFIRMED findings.
+
+All of them are thin personas: they **delegate to the workflow skills** in
 `agent-guides/skills/` and **cite the guide docs** rather than restating SSL
 rules. The schema, agent guides, and skills remain the single source of truth.
 
