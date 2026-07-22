@@ -9,7 +9,7 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 ## Instructions
 
-1. **If MCP `ssl_format` is available, use it first.** Run `ssl_format` on the file for the SSL-code pass; it is authoritative for indentation, spacing, and keyword casing. Apply the manual SSL rules below only when the MCP is unavailable. Embedded-SQL canonical-compact formatting (the `sql` scope) is not performed by the formatter — always apply the SQL rules below manually.
+1. **If MCP `ssl_format` is available, use it first.** Run `ssl_format` on the file for the SSL-code pass; it handles indentation, spacing, and keyword casing. Then review its diff — the formatter is not fully tuned and can make questionable decisions; correct any output that violates the rules below or clearly hurts readability. Apply the full manual SSL rules below only when the MCP is unavailable. Embedded-SQL canonical-compact formatting (the `sql` scope) is not performed by the formatter — always apply the SQL rules below manually.
 
 2. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[scope]` as `$1` (default: `all`).
    - If no file path is given, ask the user before continuing.

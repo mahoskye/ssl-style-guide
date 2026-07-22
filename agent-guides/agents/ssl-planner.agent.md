@@ -5,7 +5,7 @@ description: >-
   agents execute. Knows LIMS capabilities deeply but does not write production
   SSL code — designs the change, defines signatures and data flow, and hands
   off to ssl-developer.
-version: 5
+version: 6
 mode: all
 argument-hint: "<feature or change to plan> [target-spec-path]"
 model: inherit
@@ -24,6 +24,10 @@ guides:
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
+  - label: Challenge spec with ssl-verifier
+    agent: ssl-verifier
+    prompt: Adversarially verify the spec at the path above. Re-check every named built-in against the reference, test each design claim against the schema and guides, and report each claim as CONFIRMED, REFUTED, or UNVERIFIABLE with evidence.
+    send: false
   - label: Implement spec with ssl-developer
     agent: ssl-developer
     prompt: Implement the spec at the path above. First read the spec, matching skill, schema, and guide sections it references. Follow it exactly; flag any gaps or ambiguities before deviating, and report what changed and what was verified.
@@ -102,8 +106,27 @@ sections, in order:
    `ssl_signature`. If an element does not exist, redesign — do not invent.
 4. Read related existing code to match conventions (naming, structure, error
    handling) rather than inventing your own.
-5. Write the spec to disk, then summarize the plan in chat with the spec path
+5. Run the self-challenge pass below on the draft spec.
+6. Write the spec to disk, then summarize the plan in chat with the spec path
    and a compact handoff summary so the user can hand off to `ssl-developer`.
+
+## Self-challenge (before finalizing the spec)
+
+Attack your own draft before writing the final version:
+
+- Which named built-ins are still unverified? Verify each via `ssl_lookup` /
+  `ssl_signature`, or redesign around them.
+- Would the design break if the file type were different than assumed?
+  Re-confirm server script vs. class vs. data source for every file in the
+  plan.
+- Which error path, empty result, or fallthrough case is unhandled? Add it to
+  Edge cases or Open questions.
+- Could `ssl-developer` execute this spec with zero chat context — are all
+  paths, signatures, and conventions in the document itself? If not, add the
+  missing context.
+
+Anything that survives this pass unresolved goes in **Open questions** —
+never resolved silently in your head.
 
 ## Constraints
 
