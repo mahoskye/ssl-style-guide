@@ -61,3 +61,14 @@ for (const bin of binaries) {
 }
 
 console.log(`\nBundled ${binaries.length} binaries into ${DEST}`);
+
+// The bundled binaries land as large loose git objects; without an
+// occasional repack, pack-objects grinds for minutes on every push (each
+// bundle run adds ~45MB loose, and git's default auto-gc threshold counts
+// objects, not bytes). Let git decide — this is a no-op when the repo is
+// already packed.
+try {
+  execSync('git gc --auto', { cwd: REPO_ROOT, stdio: 'inherit' });
+} catch {
+  console.warn('git gc --auto failed (non-fatal)');
+}
