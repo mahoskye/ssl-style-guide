@@ -88,8 +88,9 @@ Bundled runtime files:
 - `data/machine/` — compact foundation and searchable category packs for agent
   context retrieval
 
-`ssl-element-reference.json` is generated from the published `ssl-docs`
-reference (sibling repo) by `tools/generate_element_reference.py` at the
+`ssl-element-reference.json` is generated from the published
+[starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference)
+repo (sibling checkout, local directory name `ssl-docs`) by `tools/generate_element_reference.py` at the
 repository root. The MCP server flattens the per-category buckets into a
 single name-keyed index at startup.
 

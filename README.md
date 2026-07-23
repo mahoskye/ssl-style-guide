@@ -114,7 +114,9 @@ bun run check:consistency
 `foundation.md`, `category-index.json`, and category packs such as `database`,
 `loops`, `strings`, `data-sources`, `classes`, `error-handling`, `formatting`,
 and `naming`. These files are generated from the schema, agent guides, element
-inventory, and selected `ssl-docs` guide paths. Agents load the foundation first
+inventory, and selected guide paths from the
+[starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference)
+repo (checked out locally as `ssl-docs`). Agents load the foundation first
 and retrieve task/category detail through the MCP `ssl_context_pack` tool or
 `ssl://machine/*` resources.
 
