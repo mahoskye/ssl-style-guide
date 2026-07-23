@@ -25,14 +25,14 @@ readability within SSL string literals.
 | Continuation lines | Aligned under the first token of their parent clause |
 | AND/OR | Indented 2 spaces under their parent clause |
 | ON | Indented 2 spaces under JOIN |
-| HAVING | Indented 2 spaces under GROUP BY |
-| WHEN/ELSE | Indented 2 spaces under CASE |
+| HAVING | Indented 2 spaces under GROUP BY (deliberate: HAVING is a sub-clause of GROUP BY here, unlike styles that put it at column 0) |
+| WHEN/ELSE | Indented 4 spaces under CASE |
 | Keyword casing | UPPERCASE — all SQL keywords and built-in functions |
 | Identifier casing | lowercase — table names, column names, aliases |
 | External casing | Preserve when schema/object requires it |
 | Comma style | Trailing commas |
-| Max line length | ~90 characters (soft target, break at logical points) |
-| Subqueries | Indented one level inside parentheses |
+| Max line length | ~90 characters, breaking at logical points; a single atomic token (string literal, identifier) that cannot fit leaves its line over-long — tokens are never split |
+| Subqueries | Flat convention in every context (WHERE, FROM, SELECT list, SET): the `(` opens on the parent line, the body indents one level (4 spaces), and the closing `)` returns to the parent clause's column |
 | SSL embedding | Entire SQL block indented 4 spaces inside the string literal |
 
 ### Indentation Reference
@@ -64,6 +64,13 @@ aResults := SQLExecute("
 ```
 
 The 4-space indent is relative to the start of the string literal line. All SQL indentation rules then apply relative to that base indent.
+
+The SSL *string boundary* — when a string is handed to the SQL engine,
+where the opening and closing quotes sit, and how the surrounding SSL
+statement lays out (rules A–F) — is specified by the starlims-lsp catalog
+entry `catalog/formatting/sql_in_strings.md`, which in turn delegates the
+SQL layout itself to this document. This document owns everything inside
+the quotes; that entry owns the quotes.
 
 ---
 
@@ -276,13 +283,16 @@ ORDER BY logdate DESC NULLS LAST,
 
 ### 2.6 Subqueries
 
-**Scalar subquery (in SELECT list):**
+**Scalar subquery (in SELECT list)** — the flat convention applies here
+too: the `(` opens inline in the projection, the body indents one level,
+and `) AS alias` returns to the clause column:
 
 ```sql
-SELECT o.ordno,
-       (SELECT COUNT(*)
-        FROM ordtask t
-        WHERE t.ordno = o.ordno) AS task_count
+SELECT o.ordno, (
+    SELECT COUNT(*)
+    FROM ordtask t
+    WHERE t.ordno = o.ordno
+) AS task_count
 FROM orders o
 WHERE o.status = 'Logged'
 ```
@@ -525,7 +535,10 @@ WHERE ordno = '2025-001'
   AND testcode = 'pH'
 ```
 
-**With subquery:**
+**With subquery** — the subquery body uses the statement-level flat
+indent (4 from the UPDATE), not nesting under the assigned column; the
+closing `)` returns to column 0. This is the same flat convention as
+every other subquery context:
 
 ```sql
 UPDATE ordtask t SET
@@ -664,6 +677,11 @@ Additional ON conditions align under the first condition inside the parentheses.
 ## 3. Analytic / Window Functions
 
 ### 3.1 ROW_NUMBER, RANK, DENSE_RANK, NTILE
+
+Long window specs break inside `OVER (`: one space before the paren, each
+window clause (PARTITION BY / ORDER BY / frame) on its own line indented
+4 past the function's column, and the closing `) AS alias` on its own
+line aligned with the function's column:
 
 ```sql
 SELECT ordno, testcode, result_value,
@@ -807,14 +825,16 @@ UNPIVOT (
 
 ### 4.3 LATERAL Inline Views
 
+`LATERAL (` stays on the FROM line and the subquery uses the flat
+convention like every inline view:
+
 ```sql
 SELECT o.ordno, o.status, lt.latest_result
-FROM orders o,
-     LATERAL (
-         SELECT MAX(r.result_value) AS latest_result
-         FROM ordresult r
-         WHERE r.ordno = o.ordno
-     ) lt
+FROM orders o, LATERAL (
+    SELECT MAX(r.result_value) AS latest_result
+    FROM ordresult r
+    WHERE r.ordno = o.ordno
+) lt
 WHERE o.status = 'Active'
 ```
 
