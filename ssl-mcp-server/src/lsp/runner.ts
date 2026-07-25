@@ -31,7 +31,8 @@ function resolveBinaryPath(): string {
   if (!existsSync(fullPath)) {
     throw new Error(
       `LSP binary not found: ${fullPath}\n` +
-        `Run "bun scripts/bundle-lsp.mjs" to build and bundle the binaries.`
+        `Run "bun run fetch-lsp" to download it from the starlims-lsp GitHub ` +
+        `release, or "bun run bundle-lsp" to build from a sibling checkout.`
     );
   }
 
