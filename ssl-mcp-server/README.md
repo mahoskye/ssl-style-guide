@@ -13,19 +13,24 @@ reference inventories.
 ```bash
 cd ssl-mcp-server
 bun install
-bun run bundle-lsp   # build and bundle starlims-lsp binaries (requires Go)
+bun run fetch-lsp    # download the pinned starlims-lsp release binary
 bun run check
 bun run check:consistency
 ```
 
-The `ssl_diagnose` and `ssl_format` tools require the bundled `starlims-lsp`
-binary in `bin/lsp/`. Run `bun run bundle-lsp` to build from the sibling
-`starlims-lsp` repo, or `bun run bundle-lsp --copy` to copy pre-built
-binaries without rebuilding.
+The `ssl_diagnose` and `ssl_format` tools require the `starlims-lsp` binary
+in `bin/lsp/` (gitignored — binaries are not tracked in this repository).
+`bun run fetch-lsp` downloads the release pinned in `lsp-version.json` for
+the current platform; add `--all` for every platform, or pass a tag
+(`bun run fetch-lsp v0.15.0`) to fetch that version and move the pin.
+Maintainers with a sibling `starlims-lsp` checkout can build instead with
+`bun run bundle-lsp` (requires Go), or `bun run bundle-lsp --copy` to copy
+already-built binaries.
 
-The binaries in `bin/lsp/` are built from
+The binaries come from
 [starlims-lsp](https://github.com/mahoskye/starlims-lsp), distributed under
-the MIT license (see that repository's `LICENSE`).
+the MIT license; third-party license texts for its statically linked Go
+modules are attached to each release as `THIRD-PARTY-NOTICES.md`.
 
 Run the server through the Bun CLI entrypoint:
 
