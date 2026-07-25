@@ -11,6 +11,7 @@
   "scripts": {
     "bundle-data": "bun scripts/bundle-data.mjs",
     "bundle-lsp": "bun scripts/bundle-lsp.mjs",
+    "fetch-lsp": "bun scripts/fetch-lsp.mjs",
     "build": "bunx tsc",
     "check": "bunx tsc --noEmit",
     "check:consistency": "bun scripts/check-consistency.mjs",
