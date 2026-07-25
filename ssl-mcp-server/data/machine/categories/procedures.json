@@ -47,7 +47,7 @@
       "name": "DoProc",
       "type": "function",
       "syntax": "DoProc(sProcedureName, [aArguments]);",
-      "summary": "Calls a procedure by name at runtime."
+      "summary": "Calls a local or scripted procedure by name with an optional argument array."
     },
     {
       "name": "ExecFunction",
