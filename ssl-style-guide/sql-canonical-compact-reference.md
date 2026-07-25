@@ -678,26 +678,41 @@ Additional ON conditions align under the first condition inside the parentheses.
 
 ### 3.1 ROW_NUMBER, RANK, DENSE_RANK, NTILE
 
-Long window specs break inside `OVER (`: one space before the paren, each
-window clause (PARTITION BY / ORDER BY / frame) on its own line indented
-4 past the function's column, and the closing `) AS alias` on its own
-line aligned with the function's column:
+Whether a window spec breaks is decided by line width, not by which
+clauses it contains. A spec breaks inside `OVER (` if and only if
+laying it out inline — from `OVER` through the end of the select-list
+item (the closing paren and `AS alias`) — would push the current line
+past the ~90-character limit (see Core Formatting Rules). A spec that
+fits stays on one line even when it has both PARTITION BY and ORDER BY;
+an empty `OVER ()` always stays inline.
+
+When a spec breaks: one space before the paren, each window clause
+(PARTITION BY / ORDER BY / frame) on its own line indented 4 past the
+function's column, and the closing `) AS alias` on its own line aligned
+with the function's column:
 
 ```sql
-SELECT ordno, testcode, result_value,
+SELECT ordno, testcode, analysisgroup,
        ROW_NUMBER() OVER (
-           PARTITION BY ordno
-           ORDER BY testcode
+           PARTITION BY ordno, analysisgroup
+           ORDER BY testcode DESC, analysisgroup
        ) AS rn,
        RANK() OVER (
-           PARTITION BY testcode
-           ORDER BY result_value DESC
+           PARTITION BY testcode, analysisgroup
+           ORDER BY result_value DESC, logdate
        ) AS val_rank
 FROM ordresult
 WHERE status = 'Complete'
 ```
 
-Short window specs stay on one line:
+Window specs that fit within the line limit stay on one line, including
+specs with both PARTITION BY and ORDER BY:
+
+```sql
+SELECT ordno, testcode, result_value,
+       ROW_NUMBER() OVER (PARTITION BY ordno ORDER BY testcode) AS rn
+FROM ordresult
+```
 
 ```sql
 SELECT ordno, testcode,
@@ -724,11 +739,11 @@ ORDER BY logdate
 ```sql
 SELECT ordno, logdate, result_value,
        LAG(result_value, 1) OVER (
-           PARTITION BY testcode
+           PARTITION BY testcode, analysisgroup
            ORDER BY logdate
        ) AS prev_result,
        LEAD(result_value, 1) OVER (
-           PARTITION BY testcode
+           PARTITION BY testcode, analysisgroup
            ORDER BY logdate
        ) AS next_result,
        FIRST_VALUE(result_value) OVER (
@@ -1289,8 +1304,8 @@ nNewId := SQLExecute("
 aRanked := SQLExecute("
     SELECT ordno, testcode, result_value,
            ROW_NUMBER() OVER (
-               PARTITION BY ordno
-               ORDER BY testcode
+               PARTITION BY ordno, analysisgroup
+               ORDER BY testcode DESC, logdate
            ) AS rn
     FROM ordresult
     WHERE ordno = ?sOrdNo?
