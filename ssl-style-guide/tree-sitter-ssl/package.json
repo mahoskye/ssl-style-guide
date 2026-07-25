@@ -45,5 +45,6 @@
       "scope": "source.ssl",
       "injection-regex": "^ssl$"
     }
-  ]
+  ],
+  "license": "MIT"
 }

@@ -96,7 +96,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 * **Labels & Branching (Legacy — prefer `:IF`/`:WHILE`/`:FOR` in new code):**
     * `:LABEL` and `Branch()` are legacy flow control. Prefer structured constructs in new and refactored code.
-    * The token text for a label includes the word `LABEL` — so `Branch` must include it. `:LABEL SKIP;` produces token text `"LABEL SKIP"` and `:LABELSKIP;` produces `"LABELSKIP"`. Omitting `LABEL` from the Branch target string causes a runtime error.
+    * The `Branch` target string must include the word `LABEL`: `:LABEL SKIP;` is targeted as `Branch("LABEL SKIP")` and `:LABELSKIP;` as `Branch("LABELSKIP")`. Omitting `LABEL` from the Branch target string causes a runtime error.
     * Example:
       ```ssl
       :IF ! Empty(bSomeVar);
@@ -256,7 +256,7 @@ Authoritative rules describe documented language behavior; style recommendations
   ```ssl
   /* Set x := 0; then increment;
   ```
-  This is actually **two** tokens: the comment `/* Set x := 0;` followed by the executable statement `then increment;` (which is rejected). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
+  SSL reads this as the complete comment `/* Set x := 0;` followed by `then increment;`, which it then tries to run as a statement (and rejects). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
 
 ---
 
@@ -918,7 +918,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 - `*` - Multiplication
 - `/` - Division
 - `^` - Exponentiation (power)
-- `**` - Exponentiation (alias for `^`; both produce the same POWER token)
+- `**` - Exponentiation (exact alias for `^`; identical behavior)
 - `%` - Modulo
 
 **Unary Operators (2):**

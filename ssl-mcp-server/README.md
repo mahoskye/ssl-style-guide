@@ -5,8 +5,8 @@ MCP server for the repository's public SSL reference data.
 It serves the bundled element inventory, style guide, EBNF grammar, agent
 instructions, refactoring guide, and generated machine packs to MCP-compatible
 clients. The data under `ssl-mcp-server/data/` is a checked-in mirror of the
-canonical public files in the repository root plus bundled reference
-inventories.
+canonical public files in `ssl-style-guide/` and `agent-guides/` plus bundled
+reference inventories.
 
 ## Quick Start
 
@@ -22,6 +22,10 @@ The `ssl_diagnose` and `ssl_format` tools require the bundled `starlims-lsp`
 binary in `bin/lsp/`. Run `bun run bundle-lsp` to build from the sibling
 `starlims-lsp` repo, or `bun run bundle-lsp --copy` to copy pre-built
 binaries without rebuilding.
+
+The binaries in `bin/lsp/` are built from
+[starlims-lsp](https://github.com/mahoskye/starlims-lsp), distributed under
+the MIT license (see that repository's `LICENSE`).
 
 Run the server through the Bun CLI entrypoint:
 
@@ -81,6 +85,8 @@ Bundled runtime files:
 - `data/ssl-element-reference.json` — full element inventory (460 elements:
   keywords, operators, literals, types, classes, special forms, functions,
   return objects) with signatures, parameters, methods, and related metadata
+- `data/ssl-element-meta.json` — per-element exceptions, caveats, best
+  practices, categories, and aliases overlaid onto the inventory at startup
 - `data/ssl-style-guide.schema.yaml`
 - `data/ssl_agent_instructions.md`
 - `data/ssl_refactoring_guide.md`
@@ -126,9 +132,9 @@ bun run check:consistency
 | URI | Content |
 |-----|---------|
 | `ssl://elements/{name}` | Full element record as JSON |
-| `ssl://classes/{name}/members` | Class methods and properties, plus bundled member-name validation data |
+| `ssl://classes/{name}/members` | Class methods and properties |
 | `ssl://categories` | All category names |
-| `ssl://categories/{category}` | Functions in a category |
+| `ssl://categories/{name}` | Functions in a category |
 | `ssl://keywords` | All keyword elements |
 | `ssl://operators` | All operator elements |
 | `ssl://style-guide` | Full style guide YAML |
