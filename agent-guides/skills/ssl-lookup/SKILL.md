@@ -61,7 +61,9 @@ Look up the SSL element named `$ARGUMENTS`.
 
 2. **If MCP is unavailable, read the local JSON** with the Read tool. Prefer
    the project copy at `ssl-style-guide/ssl-element-reference.json`. Element
-   keys follow ssl-docs filename stems — keywords are stored as `BEGINCASE`,
+   keys follow the reference-page filename stems of the
+   [starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference)
+   repo — keywords are stored as `BEGINCASE`,
    `IF`, etc. (uppercase, no leading colon); functions and classes are
    PascalCase (`AAdd`, `AzureStorage`); operators and literals are kebab-case
    slugs (`add-assign`, `nil`).

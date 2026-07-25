@@ -9,7 +9,7 @@
   "summary": "File-level organization for scripts, classes, and data sources.",
   "must_follow": [
     "One file should represent either a class definition, a script, or a data source.",
-    "Place :INCLUDE early because it is lexer-level textual inclusion.",
+    "Place :INCLUDE early — it textually includes the referenced source before the script runs.",
     "Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE."
   ],
   "avoid": [

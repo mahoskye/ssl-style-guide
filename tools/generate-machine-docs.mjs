@@ -539,7 +539,7 @@ const CATEGORY_DEFS = [
     elements: ['INCLUDE', 'PUBLIC', 'PARAMETERS', 'DEFAULT', 'DECLARE', 'CLASS', 'PROCEDURE'],
     mustFollow: [
       'One file should represent either a class definition, a script, or a data source.',
-      'Place :INCLUDE early because it is lexer-level textual inclusion.',
+      'Place :INCLUDE early — it textually includes the referenced source before the script runs.',
       'Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.',
     ],
     avoid: [

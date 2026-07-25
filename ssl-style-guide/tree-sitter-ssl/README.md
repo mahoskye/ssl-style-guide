@@ -77,6 +77,9 @@ npm run gen
 npm test
 ```
 
+`npm test` runs the corpus tests; the corpus is maintained locally and is not
+part of this repository, so the test step applies to maintainer checkouts only.
+
 Use `tree-sitter parse` on SSL files to inspect parse output.
 
 ## Validation Notes
