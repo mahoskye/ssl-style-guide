@@ -53,7 +53,7 @@
       "name": "ClearLastSSLError",
       "type": "function",
       "syntax": "ClearLastSSLError();",
-      "summary": "Clears the current SSL error state."
+      "summary": "Clears the stored SSL error so later error checks start clean."
     },
     {
       "name": "ErrorMes",
