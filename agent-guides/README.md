@@ -62,13 +62,16 @@ directly; in other tools they are Markdown files an agent reads and follows.
 
 ## Agents
 
-`agents/` contains the canonical, tool-neutral definitions for four SSL
+`agents/` contains the canonical, tool-neutral definitions for seven SSL
 developer agents:
 
 - `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
 - `ssl-planner` — design SSL changes and hand implementation specs to ssl-developer
 - `ssl-reviewer` — review SSL code against the style guide (read-only)
 - `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
+- `ssl-verifier` — adversarially verify review findings and spec claims (read-only)
+- `ssl-handoff` — ready functionally-done code for production handoff
+- `ssl-docwriter` — write developer documentation with verified technical claims
 
 Each agent is a thin persona: it delegates to the skills above and cites the
 guidance documents rather than carrying its own copy of the rules. Each agent is
