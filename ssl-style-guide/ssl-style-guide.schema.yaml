@@ -13,7 +13,7 @@ ssl_style_guide:
       linters/formatters later.
     - All block keywords are colon‑prefixed and must be UPPERCASE; formatters
       should enforce UPPER.
-    - Rules and function lists reflect verified SSL v11 behavior from live environment testing.
+    - Rules and function lists document the authoritative behavior of SSL v11.
     - Grammar and formatting rules apply to SSL scripts and class files. Data source
       files (SSL and SQL) are preprocessed before they run and use distinct parameter
       syntax and builder directives — see data_source_modules under module_structure.
@@ -1336,7 +1336,7 @@ ssl_style_guide:
         - LSelect1
         - LSelectC
         - GetDataSet
-      note: Only SQLExecute supports ?name? substitution; other DB functions use positional ? with parameter arrays. Current validated behavior has `LSelect` matching `LSelect1` when `aFieldList` is omitted or NIL, while `LSelectC` delegates to `LSelect` and explicit field lists are not implemented in this validated snapshot.
+      note: Only SQLExecute supports ?name? substitution; other DB functions use positional ? with parameter arrays. In SSL v11, `LSelect` matches `LSelect1` when `aFieldList` is omitted or NIL, while `LSelectC` delegates to `LSelect`; explicit field lists are not supported.
       array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
       placeholder_patterns:
       - ?name?

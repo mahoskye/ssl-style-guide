@@ -83,6 +83,10 @@ npm run gen
 npm test
 ```
 
+`npm test` runs the Tree-sitter corpus tests; the corpus is maintained locally
+and is not part of this repository, so the test step applies to maintainer
+checkouts only.
+
 ### TextMate Grammar
 
 `ssl-style-guide/ssl.tmLanguage.updated.json` carries the syntax-highlighting
@@ -122,27 +126,32 @@ and retrieve task/category detail through the MCP `ssl_context_pack` tool or
 
 ## Agent Skills
 
-`agent-guides/skills/` contains six SSL workflow skills:
+`agent-guides/skills/` contains eight SSL workflow skills:
 
 - `ssl-review`
 - `ssl-refactor`
+- `ssl-refactor-plan`
 - `ssl-lookup`
 - `ssl-format`
 - `ssl-new-procedure`
 - `ssl-new-class`
+- `ssl-new-datasource`
 
 These skills should follow the schema and agent guides rather than introducing
 alternative rules or wording.
 
 ## Agent Definitions
 
-`agent-guides/agents/` contains the canonical, tool-neutral definitions for four
-SSL developer agents:
+`agent-guides/agents/` contains the canonical, tool-neutral definitions for
+seven SSL developer agents:
 
 - `ssl-planner` — plan SSL work and produce implementation specs
 - `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
 - `ssl-reviewer` — review SSL code against the style guide (read-only)
 - `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
+- `ssl-verifier` — adversarially verify review findings and spec claims (read-only)
+- `ssl-handoff` — ready functionally-done code for production handoff
+- `ssl-docwriter` — write developer documentation with verified technical claims
 
 Each agent is authored once; `tools/generate-agents.mjs` emits per-tool adapter
 files — `.github/agents/` for GitHub Copilot, `.opencode/agents/` for OpenCode,
@@ -150,12 +159,12 @@ and `.claude/agents/` for Claude Code. These adapters are git-ignored build
 artifacts. For normal use across repositories, deploy them to user-level agent
 directories with `bun tools/deploy-agents.mjs` after generation. See
 `agent-guides/agents/README.md` for the format, user-level install locations,
-and check commands; `bun run check:consistency` also runs `--check` to flag
-adapters that have drifted from their sources.
+and check commands; `bun run check:consistency` (in `ssl-mcp-server/`) also runs
+`--check` to flag adapters that have drifted from their sources.
 
 ## Metadata
 
-- Version: `1.3.0`
+- Version: `1.4.0` (mirrors `metadata.version` in `ssl-style-guide/ssl-style-guide.schema.yaml`)
 - SSL version: `v11`
 - Maintainers: `PaperBull / maho`
 - License: `MIT`
