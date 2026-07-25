@@ -7,8 +7,11 @@ This repository keeps the authoritative SSL rule set, parser-facing grammar,
 editor-support files, and agent-facing guidance aligned. When files disagree,
 prefer the machine-readable schema and the checked-in canonical guides over
 summary documentation. Alignment is partly enforced by the checked-in
-consistency scripts and partly maintained by review; not every prose surface is
-validated automatically.
+consistency scripts (run in CI) and partly maintained by review; not every
+prose surface is validated automatically.
+
+For prerequisites, setup, and the check commands, see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Canonical Sources
 
