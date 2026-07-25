@@ -21,6 +21,11 @@ cd ssl-mcp-server
 bun install
 bun run fetch-lsp    # downloads the pinned starlims-lsp release binary
 cd ..
+
+# reference repo as a sibling checkout (required for the full check suite:
+# the machine-doc packs embed its guide content, and the drift check
+# compares against it — CI clones it the same way)
+git clone https://github.com/mahoskye/starlims-ssl-reference.git ../ssl-docs
 ```
 
 The LSP binaries are not tracked in git. `bun run fetch-lsp` (in
