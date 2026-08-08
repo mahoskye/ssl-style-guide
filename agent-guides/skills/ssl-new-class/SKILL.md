@@ -167,7 +167,11 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - One class per file (enforced by the language)
    - All statements end with `;`
    - If a method has no parameters, omit `:PARAMETERS`
-   - Inside `:CATCH`, use `GetLastSSLError()` if you need error details
+   - Inside `:CATCH`, use `GetLastSSLError()` if you need error details, and call
+     `ClearLastSSLError()` once the error is handled
+   - If a method raises, call `RaiseError` directly inside the `:TRY` block whose
+     `:CATCH` handles it — never inside `:CATCH`, and never where nothing catches
+     it (an uncaught error surfaces to the end user as a server error)
    - Indentation: use tabs by default
 
 8. **Output:** Present the generated class as an SSL code block. Include:

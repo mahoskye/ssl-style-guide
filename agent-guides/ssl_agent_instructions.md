@@ -126,6 +126,8 @@ Authoritative rules describe documented language behavior; style recommendations
           /* Cleanup runs here;
       :ENDTRY;
       ```
+    * **Raising errors:** `RaiseError(sMessage[, sLocation[, nErrorCode[, oInnerException]]])` throws immediately. Inside a `:TRY` block, the remaining statements in that block are skipped and `:CATCH` gets control — `GetLastSSLError()` retrieves the raised error (`sLocation` becomes `:Operation`, `nErrorCode` becomes `:Code`) — then execution continues normally after `:ENDTRY`. An uncaught error propagates up the call stack; if nothing catches it, the invocation fails and the end user sees a server error. A `NIL` message itself raises `RaiseError(): error message cannot be null.`
+      **Placement doctrine:** Place `RaiseError` directly inside the `:TRY` block whose `:CATCH` handles it, so the raise can never escape. Never call `RaiseError` inside `:CATCH` — the error handler must not become the thing that crashes. Every raise needs a `:TRY`/`:CATCH` (or legacy `:ERROR`/`:RESUME`) boundary somewhere up the call stack. Mark raise-only helper procedures `/*@private;` so callers cannot invoke them without the entry point that catches their errors. After handling an error in `:CATCH`, call `ClearLastSSLError()` so stale error state does not leak into later handling.
     * **Error/Resume (Legacy):** `:ERROR` defines a handler for all subsequent code in the current scope and must contain at least one statement. `:RESUME` inside the handler switches execution to resume mode, which wraps each subsequent statement in its own individual try/catch to allow execution to continue after failures — this has significant performance cost. Prefer `:TRY/:CATCH/:FINALLY` when narrower block-scoped handling fits the code.
       ```ssl
       :ERROR;
@@ -481,7 +483,7 @@ sXml := GetDataSet("SELECT * FROM Sample WHERE Status = ?", {sStatus});
 | Function | Purpose | Returns |
 |----------|---------|---------|
 | `SQLExecute` | Universal - routes automatically | Array, XML String, Object (dataset wrapper), or Bool |
-| `RunSQL` | **DML only** (INSERT/UPDATE/DELETE) | `Boolean` (success/failure) |
+| `RunSQL` | **DML only** (INSERT/UPDATE/DELETE) | `Boolean` — `.T.` on success; a SQL failure raises by default. It returns `.F.` only when SQL error ignoring is enabled (then check `GetLastSQLError`) |
 | `LSearch` | Single value lookups | Single value with default |
 | `LSelect` | Multi-row SELECT queries (behaves like `LSelect1` when `aFieldList` is omitted) | 2D Array |
 | `LSelect1` | Multi-row SELECT queries | 2D Array |
@@ -755,6 +757,7 @@ sComplexQuery := "SELECT * FROM Sample";
     oErr := GetLastSSLError();
     sErrMsg := "Error: " + oErr:Description + ". Operation: " + oErr:Operation;
     ErrorMes(sErrMsg);
+    ClearLastSSLError();
     :RETURN .F.;
 :FINALLY;
     /* Cleanup resources;
