@@ -777,6 +777,36 @@ FROM ordtask
 GROUP BY ordno
 ```
 
+### 3.5 KEEP (DENSE_RANK FIRST/LAST)
+
+```sql
+SELECT deptno, MIN(sal) KEEP (DENSE_RANK FIRST ORDER BY sal) AS lowest_first,
+       MAX(sal) KEEP (DENSE_RANK LAST ORDER BY sal) AS highest_last
+FROM emp
+GROUP BY deptno
+```
+
+As an analytic function with a window spec:
+
+```sql
+SELECT deptno, empno,
+       MAX(sal) KEEP (DENSE_RANK LAST ORDER BY sal, comm) OVER (
+           PARTITION BY deptno
+           ORDER BY empno
+       ) AS best_sal
+FROM emp
+```
+
+**KEEP formatting rules:**
+- `KEEP` is a keyword (uppercase) and stays glued inline to its aggregate
+  call — never a line break between the aggregate's `)` and `KEEP`.
+- The contents of `KEEP (...)` stay on one line: `DENSE_RANK FIRST|LAST
+  ORDER BY ...` never breaks inside the parens — the same treatment as
+  `WITHIN GROUP (...)` (§3.4).
+- A following `OVER (...)` treats the aggregate-plus-KEEP compound as one
+  call: when the window spec breaks (§3.1), it anchors at the aggregate
+  function's column, not at `KEEP` or a continuation line.
+
 ---
 
 ## 4. Oracle-Specific Constructs
