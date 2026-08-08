@@ -1030,6 +1030,18 @@ ssl_style_guide:
       logging_guidance: Log errors with contextual identifiers; avoid swallowing errors silently.
       prefer_structured: true
       traditional_error_blocks: supported  # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
+      raise_error_doctrine:
+        - Place RaiseError directly inside the :TRY block whose :CATCH handles it,
+          so the raise can never escape.
+        - Never call RaiseError inside :CATCH — the error handler must not become
+          the thing that crashes.
+        - Every raise needs a :TRY/:CATCH (or legacy :ERROR/:RESUME) boundary
+          somewhere up the call stack; an uncaught error fails the invocation and
+          surfaces to the end user as a server error.
+        - Mark raise-only helper procedures /*@private; so callers cannot bypass
+          the entry point that catches their errors.
+        - Call ClearLastSSLError() after handling an error in :CATCH, so stale
+          error state does not leak into later handling.
   function_calls:
     direct_calls:
       syntax_level: authoritative

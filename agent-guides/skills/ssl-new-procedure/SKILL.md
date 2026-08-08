@@ -88,7 +88,11 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - `:DECLARE` line: declare local variables, including an appropriately typed
      result variable when the procedure returns a value
    - Include `:TRY` / `:CATCH` / `:ENDTRY` skeleton around the body
-   - Inside `:CATCH`, use `GetLastSSLError()` if you need error details
+   - Inside `:CATCH`, use `GetLastSSLError()` if you need error details, and call
+     `ClearLastSSLError()` once the error is handled
+   - If the body raises, call `RaiseError` directly inside the `:TRY` block whose
+     `:CATCH` handles it — never inside `:CATCH`, and never where nothing catches
+     it (an uncaught error surfaces to the end user as a server error)
    - Include `:RETURN` at end of try body
    - All statements must end with `;`
    - Indentation: use tabs by default
