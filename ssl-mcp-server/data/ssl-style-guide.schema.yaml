@@ -210,6 +210,9 @@ ssl_style_guide:
         Everything between /* and ; is the comment content.
         Newlines and formatting are preserved - no parsing is done.
         A comment can span multiple lines.
+        This rule applies to SSL source, including ssl_data_source bodies.
+        SQL data-source files use SQL comment syntax instead — see
+        module_structure.data_source_modules.sql_data_source.comments.
     rules:
     - level: style_only
       rule: Begin major sections (procedures, classes, regions) with a short summary.
@@ -379,6 +382,7 @@ ssl_style_guide:
     indexing:
       arrays: one_based  # First element is at index 1, not 0
       string_positions: one_based
+      net_collections: zero_based  # Collections on .NET objects reached via colon member access (e.g. dataSet:Tables[0]) follow .NET semantics — see array_operations.net_interop_exception
     arithmetic_rules:
       integer_division: use appropriate functions
       floating_point: supported
@@ -1356,6 +1360,11 @@ ssl_style_guide:
       - ?arr[i]?
       - ?Func()?
       - '?'
+      scope_note: >
+        These patterns apply to SQL embedded in SSL strings (SQLExecute and
+        related functions). SQL data-source files are a different mechanism and
+        reference parameters as @name placeholders — see
+        module_structure.data_source_modules.sql_data_source.body_parameters.
       guidance_level: style_only
       prefer_named: true
       validate_count_vs_bindings: warn
@@ -1455,6 +1464,15 @@ ssl_style_guide:
     level: authoritative
     literal_syntax: {expr1, expr2, expr3}
     one_based_indexing: true
+    net_interop_exception: >
+      Native SSL arrays and string positions are 1-based; index 0 is invalid.
+      Collections exposed by .NET objects — values reached through colon member
+      access, e.g. dataSet:Tables[0] — follow .NET semantics and are 0-based,
+      so index 0 is valid there. The porting hazard runs both ways: writing
+      dataSet:Tables[1] out of 1-based habit silently addresses the second
+      table, not the first. Tooling cannot always tell a .NET collection from
+      a native array, so index-0 checks on colon-accessed values should warn
+      rather than error.
     functions:
       - AAdd(array, value)
       - ALen(array)
@@ -1537,7 +1555,17 @@ ssl_style_guide:
         message: "A file is either a :CLASS definition or a script, never both."
       - rule: doproc_in_class
         severity: error
-        message: "DoProc is rejected inside class methods — all forms are rejected. Use Me:MethodName() / Base:MethodName() instead."
+        message: "An unqualified DoProc target is a compile-time error inside class methods. Use Me:MethodName() / Base:MethodName() for methods on the class or its base; fully qualified 'Category.Script.Procedure' targets referencing deployed script procedures are allowed."
+        scope: >
+          The error fires only when the DoProc target is a string literal with
+          a bare (single-segment) procedure name. Fully qualified three-segment
+          'Category.Script.Procedure' literals are valid inside class methods.
+          Two-segment 'Category.Script' targets are not a class-specific issue —
+          they are rejected at runtime everywhere ("Invalid procedure name").
+          A target supplied as a variable or expression is not checked at
+          compile time, so tooling may warn on such calls in class methods
+          but should not report the compile error. ExecFunction has no
+          class-method restriction in any form.
       - rule: constructor_return_value
         message: ":RETURN inside a Constructor cannot return a value."
     type_safety:
@@ -1700,32 +1728,69 @@ ssl_style_guide:
         ssl_data_source:
           preprocessor: ssl_data_source_preprocessor
           parameters:
-            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+            syntax: ":PARAMETERS p1 := val1, p2;"
             inline_defaults: true  # := assignment, not separate :DEFAULT
-            default_required: true  # every parameter must have a default
+            default_required: false  # inline defaults are optional per parameter
             empty_parameters_error: true  # :PARAMETERS; with no params is an error
-            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
+            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1;  # a :DEFAULT is emitted only for parameters that declare one"
+          comments:
+            syntax: ssl  # /* text; — opened by /*, closed by the first ;
+            note: >
+              The body is SSL, so SSL comment rules apply throughout, including
+              the optional header_comment. Parameters are referenced as ordinary
+              variables by bare name; @name placeholders are not part of this
+              file type.
           structure:
             - header_comment (optional)
-            - ":PARAMETERS with inline := defaults"
+            - ":PARAMETERS with optional inline := defaults"
             - ssl_script_body
         sql_data_source:
           preprocessor: sql_data_source_preprocessor
           parameters:
-            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+            syntax: ":PARAMETERS p1 := val1, p2;"
             inline_defaults: true
-            default_required: true
+            default_required: false
             empty_parameters_error: true
           directives:
             - ":DSN := connectionName;  # database connection"
             - ":TABLENAME := name;  # dataset table name"
             - ":NULLASBLANK := true;  # null-to-blank conversion"
             - ":INVARIANTDATECOLUMNS := col1, col2;  # invariant date columns"
+          comments:
+            syntax: sql
+            forms:
+              - "-- line comment"
+              - "/* block comment */"
+            note: >
+              SQL data sources use SQL comment syntax: '--' to end of line, and
+              '/* ... */' terminated by '*/'. Semicolons inside comments and
+              inside quoted SQL literals (e.g. 'all;msoffice->pdf') are content
+              with no syntactic significance. The SSL comment form (/* text;
+              with no */) is not part of this file type's grammar — an
+              unterminated /* comment reaches the database as malformed SQL and
+              fails there. Comments may appear anywhere, including before the
+              builder directives (the optional header_comment banner).
+              Optimizer-hint comments (/*+ ... */) are preserved verbatim, not
+              treated as removable comments.
+          body_parameters:
+            syntax: "@name"
+            note: >
+              The SQL body references :PARAMETERS values as @name placeholders;
+              names match the :PARAMETERS declarations. Write @name regardless
+              of database platform — the builder adapts placeholders to the
+              backend. Placeholders inside quoted SQL literals are not
+              substituted. A declared parameter never referenced in the body is
+              harmless; a @name with no matching declaration is not substituted
+              and fails when the query executes.
           structure:
             - header_comment (optional)
             - builder_directives (optional)
-            - ":PARAMETERS with inline := defaults (optional)"
+            - ":PARAMETERS with optional inline := defaults (optional)"
             - sql_query
+          structure_note: >
+            The SQL body must follow the :PARAMETERS block when one is present;
+            SQL text placed before :PARAMETERS is discarded during
+            preprocessing. Builder directives and comments may precede it.
           rewritten_to: "SSL script calling GetSSLDataset()"
       lint_rules:
         - rule: no_default_statements_in_datasource
@@ -1734,9 +1799,9 @@ ssl_style_guide:
         - rule: no_flag_builder_directives
           severity: info
           message: ":DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS are valid builder directives in SQL data source files."
-        - rule: datasource_default_required
-          severity: error
-          message: "Every parameter in a data source :PARAMETERS declaration must have an inline := default value."
+        - rule: datasource_undeclared_placeholder
+          severity: warning
+          message: "A @name placeholder in a SQL data source body has no matching :PARAMETERS declaration — it is not substituted and fails when the query executes."
   language_features:
     version: SSL v11
     case_sensitivity:

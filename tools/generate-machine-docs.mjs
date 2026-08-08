@@ -220,6 +220,7 @@ const CATEGORY_DEFS = [
     ],
     mustFollow: [
       'SSL arrays are 1-based.',
+      'Index collections on .NET objects reached via colon member access (for example dataSet:Tables[0]) as 0-based.',
       'Declare array variables before use and initialize arrays before appending.',
       'Use adjacent commas with no spaces for skipped optional parameters.',
       'Check ALen before reading an index from dynamic input.',
@@ -277,7 +278,7 @@ const CATEGORY_DEFS = [
     ],
     avoid: [
       'Do not assign to class fields with bare identifiers inside methods.',
-      'Do not call DoProc inside class methods.',
+      'Do not call DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.',
       'Do not instantiate built-in classes with CreateUdObject.',
     ],
     related: ['objects', 'procedures', 'naming'],
@@ -317,7 +318,7 @@ const CATEGORY_DEFS = [
     avoid: [
       'Do not call custom script procedures directly as MyProc().',
       'Do not put :DEFAULT on a :DECLARE line.',
-      'Do not use DoProc inside class methods.',
+      'Do not use DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.',
     ],
     related: ['classes', 'module-structure', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
@@ -331,7 +332,9 @@ const CATEGORY_DEFS = [
     mustFollow: [
       'Invoke data sources with RunDS("Category.DataSourceName", {params}); GetDSParameters returns a data source parameter definition list.',
       'Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.',
-      'Every data-source parameter must have a default.',
+      'Data-source parameter defaults are optional; when wanted, express them inline with :=.',
+      'Reference SQL data-source parameters in the SQL body as @name placeholders.',
+      'Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.',
       'SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.',
       'One file should represent either a class definition, a script, or a data source.',
     ],
@@ -668,8 +671,9 @@ detail.
 - In scripts and procedures, \`:PARAMETERS\` appears before any other statement
   and \`:DEFAULT\` immediately follows \`:PARAMETERS\`.
 - Data source files are different: \`:PARAMETERS\` uses inline \`:=\` defaults,
-  and every parameter must have a default.
-- SSL arrays are 1-based.
+  optional per parameter.
+- SSL arrays are 1-based; collections on .NET objects reached via colon member
+  access (for example \`dataSet:Tables[0]\`) are 0-based.
 - Use \`==\` for exact string equality; \`=\` is prefix-style for strings.
 - Use \`DoProc("ProcName", {args})\` for same-file script procedures.
 - Use \`ExecFunction("Category.Script", {args})\` or

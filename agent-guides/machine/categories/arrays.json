@@ -9,6 +9,7 @@
   "summary": "SSL array creation, indexing, traversal, and array helper functions.",
   "must_follow": [
     "SSL arrays are 1-based.",
+    "Index collections on .NET objects reached via colon member access (for example dataSet:Tables[0]) as 0-based.",
     "Declare array variables before use and initialize arrays before appending.",
     "Use adjacent commas with no spaces for skipped optional parameters.",
     "Check ALen before reading an index from dynamic input."

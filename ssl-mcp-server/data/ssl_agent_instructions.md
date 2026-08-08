@@ -11,7 +11,7 @@ Authoritative rules describe documented language behavior; style recommendations
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
 4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
-5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — `DoProc` is rejected inside class methods.
+5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
 8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
@@ -176,7 +176,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value.
-    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. `DoProc` is rejected inside class methods — all forms are rejected, not just same-class calls.
+    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. An unqualified `DoProc("ProcName", ...)` is rejected inside class methods; fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
     * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
     * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
@@ -302,7 +302,7 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
       ```
 * **Arrays:**
     * Literal Syntax: `{val1, val2}`.
-    * **Indexing:** **1-based indexing** (unlike most languages).
+    * **Indexing:** **1-based indexing** (unlike most languages). Exception: collections on .NET objects reached via colon member access (e.g. `dataSet:Tables[0]`) follow .NET semantics and are 0-based.
     * **Array Length:** Use `Len(aArray)` or `ALen(aArray)` to get length.
 
 ### String Details
@@ -587,7 +587,7 @@ In SSL data source files, `:PARAMETERS` uses inline `:=` assignment for defaults
 ```
 
 **Rules:**
-- Every parameter **must** have a default value (the builder throws an error otherwise)
+- Inline `:=` defaults are **optional** per parameter — `:PARAMETERS patOrigRec;` with no default is valid
 - `:PARAMETERS;` with no parameters is an error
 - There is no separate `:DEFAULT` statement — defaults are inline
 - The preprocessor rewrites the above into standard form before the script runs:
@@ -610,8 +610,12 @@ SQL data source files support additional directives that are also preprocessed (
 
 SELECT *
 FROM sample
-WHERE status = ?sStatus?
+WHERE status = @sStatus
 ```
+
+The SQL body references `:PARAMETERS` values as `@name` placeholders (not the `?name?` style used for SQL embedded in SSL strings). Write `@name` regardless of database platform — the preprocessor adapts placeholders to the backend. A `@name` with no matching `:PARAMETERS` declaration is not substituted and fails when the query executes; a declared parameter never referenced in the body is harmless.
+
+The SQL body uses SQL comment syntax — `--` to end of line and `/* ... */` terminated by `*/` — not the SSL comment form. Semicolons inside SQL comments and quoted SQL literals are plain content. Comments may appear anywhere, including a banner before the directives. The SQL body must follow the `:PARAMETERS` block when one is present; SQL text placed before `:PARAMETERS` is discarded during preprocessing.
 
 | Directive | Purpose |
 |-----------|---------|
@@ -827,7 +831,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 ## 8. Edge Cases & Gotchas
 
 1.  **Implicit Concatenation Error:** Do not try to put `:DEFAULT` on a `:DECLARE` line. They are separate steps.
-2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — `DoProc` is rejected inside class methods (all forms, not just same-class calls).
+2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods (fully qualified `DoProc("Category.Script.Proc", ...)` calls remain valid).
 3.  **Case Sensitivity Inversion:** Unlike many languages where keywords are lower (`if`) and vars are sensitive, SSL is the opposite: Keywords are strict (`:IF`), identifiers are loose (`sVar` == `SVAR`).
 4.  **Semicolons:** Almost every line (including comments) must end with `;`.
 5.  **1-Based Arrays:** SSL arrays are 1-based, not 0-based. First element is `aArray[1]`.
@@ -848,7 +852,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
 21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
 22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
-23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Every parameter must have a default. See §4A.
+23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Defaults are optional per parameter. See §4A.
 24. **Data source directives are not SSL keywords.** `:DSN`, `:TABLENAME`, `:NULLASBLANK`, and `:INVARIANTDATECOLUMNS` only exist in SQL data source files and are handled by the data source preprocessor before the script runs. Do not flag them as unknown keywords.
 25. **Data source parameter syntax is preprocessed.** The `:=` inline syntax in data source `:PARAMETERS` is rewritten by the preprocessor into standard `:PARAMETERS` + `:DEFAULT` before the script runs. The runtime never sees the `:=` form.
 

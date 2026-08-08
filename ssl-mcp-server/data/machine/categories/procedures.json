@@ -16,7 +16,7 @@
   "avoid": [
     "Do not call custom script procedures directly as MyProc().",
     "Do not put :DEFAULT on a :DECLARE line.",
-    "Do not use DoProc inside class methods."
+    "Do not use DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed."
   ],
   "elements": [
     {
