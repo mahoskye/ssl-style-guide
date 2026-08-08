@@ -40,7 +40,7 @@
     {
       "name": "BEGINCASE",
       "type": "keyword",
-      "syntax": ":BEGINCASE;\n:CASE <condition>;\n    /* statements;\n    :EXITCASE;\n:CASE <condition>;\n    /* statements;\n    :EXITCASE;\n:OTHERWISE;\n    /* statements;\n    :EXITCASE;\n:ENDCASE;",
+      "syntax": ":BEGINCASE;\n:CASE <condition>;\n\t/* statements;\n\t:EXITCASE;\n:CASE <condition>;\n\t/* statements;\n\t:EXITCASE;\n:OTHERWISE;\n\t/* statements;\n\t:EXITCASE;\n:ENDCASE;",
       "summary": "Starts a :BEGINCASE block for evaluating one or more boolean :CASE conditions, with an optional :OTHERWISE branch and a required :ENDCASE."
     },
     {

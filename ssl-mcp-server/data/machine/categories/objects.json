@@ -29,7 +29,7 @@
       "name": "AddProperty",
       "type": "function",
       "syntax": "AddProperty(oTarget, vPropName)",
-      "summary": "Add one or more properties to an object."
+      "summary": "Adds one or more properties to an object."
     },
     {
       "name": "SSLExpando",
@@ -49,13 +49,13 @@
     {
       "name": "me",
       "type": "special_form",
-      "syntax": "Me;\nMe:FieldName;\nMe:MethodName(args);",
+      "syntax": "Me;\nMe:FieldName;\nMe:MethodName(args)",
       "summary": "Provides a reference to the current class instance inside :CLASS methods."
     },
     {
       "name": "base",
       "type": "special_form",
-      "syntax": "Base:FieldName;\nBase:MethodName(args);\nBase:Constructor(args);",
+      "syntax": "Base:FieldName;\nBase:MethodName(args)\nBase:Constructor(args)",
       "summary": "Provides explicit access to members on a class's immediate parent type from within a class method."
     }
   ],
