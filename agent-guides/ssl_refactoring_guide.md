@@ -172,7 +172,7 @@ Data source files have a different structure from scripts and classes. Do not ap
 
 **Key differences when refactoring data source files:**
 - Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
-- Every parameter must have a default value
+- Inline `:=` defaults are optional per parameter — `:PARAMETERS sName, nCount := 10;` is valid (some with defaults, some without)
 - Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
 - The preprocessor rewrites everything into standard SSL before the script runs
 
