@@ -4,5 +4,6 @@ ssl-mcp-server/bin/lsp/
 .claude/
 AGENTS.md
 .github/agents/
-.opencode/agents/
+.opencode/
+agent-quality-lab/
 .githooks/
