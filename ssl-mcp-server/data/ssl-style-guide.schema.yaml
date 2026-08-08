@@ -1,7 +1,7 @@
 ssl_style_guide:
   metadata:
     title: STARLIMS SSL Style Guide (Tool‑agnostic)
-    version: 1.4.0
+    version: 1.5.0
     maintainers:
     - PaperBull / maho
     sources:
@@ -23,7 +23,7 @@ ssl_style_guide:
       advisory: best-practice guidance (security, maintainability, performance)
     ssl_version: v11
     language_completeness: comprehensive
-    last_updated: 2026-07-03
+    last_updated: 2026-08-07
   authoritative_language:
     note: Sections marked here should track accepted SSL language behavior.
     sections:
