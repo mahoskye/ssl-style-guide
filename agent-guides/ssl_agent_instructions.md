@@ -144,6 +144,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Same File:** Use `DoProc("ProcedureName", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Entry Point:** Use `ExecFunction("Category.Script", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
+    * **First segment is never ambiguous:** Applications and server-script categories share a single namespace — a category cannot be created with the name of an existing application. The first segment of a dotted path therefore always resolves to exactly one container; there is no collision or precedence rule to consider.
     * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
       `DoProc("MyProc", {param1,,param3,,param5});` is valid, but
       `DoProc("MyProc", {param1, , param3, , param5});` is not.
