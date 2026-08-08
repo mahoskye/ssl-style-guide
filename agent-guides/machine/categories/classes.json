@@ -16,7 +16,7 @@
   ],
   "avoid": [
     "Do not assign to class fields with bare identifiers inside methods.",
-    "Do not call DoProc inside class methods.",
+    "Do not call DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.",
     "Do not instantiate built-in classes with CreateUdObject."
   ],
   "elements": [

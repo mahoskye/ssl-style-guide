@@ -614,7 +614,7 @@ result := ExecFunction("Category.Script.Proc", {arg1, arg2});
 ### 7.2 DoProc Inside Class Methods
 
 ```ssl
-/* WRONG - All DoProc calls are rejected inside :CLASS methods (not just same-class calls);
+/* WRONG - An unqualified DoProc target is rejected inside :CLASS methods;
 :CLASS MyClass;
 :PROCEDURE DoWork;
     DoProc("HelperMethod");
@@ -624,6 +624,12 @@ result := ExecFunction("Category.Script.Proc", {arg1, arg2});
 :CLASS MyClass;
 :PROCEDURE DoWork;
     Me:HelperMethod();
+:ENDPROC;
+
+/* ALSO VALID - Fully qualified deployed script procedures may be called via DoProc;
+:CLASS MyClass;
+:PROCEDURE DoWork;
+    DoProc("Category.Script.Procedure", {Me:sFolderNo});
 :ENDPROC;
 ```
 

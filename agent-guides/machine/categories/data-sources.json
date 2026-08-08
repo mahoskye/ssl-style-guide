@@ -10,7 +10,9 @@
   "must_follow": [
     "Invoke data sources with RunDS(\"Category.DataSourceName\", {params}); GetDSParameters returns a data source parameter definition list.",
     "Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.",
-    "Every data-source parameter must have a default.",
+    "Data-source parameter defaults are optional; when wanted, express them inline with :=.",
+    "Reference SQL data-source parameters in the SQL body as @name placeholders.",
+    "Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.",
     "SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.",
     "One file should represent either a class definition, a script, or a data source."
   ],
