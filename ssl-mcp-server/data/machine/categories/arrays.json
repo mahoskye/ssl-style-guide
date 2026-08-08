@@ -22,13 +22,13 @@
       "name": "ArrayNew",
       "type": "function",
       "syntax": "ArrayNew([nDim1], [nDim2], [nDim3])",
-      "summary": "Create a new array with up to three dimensions."
+      "summary": "Creates a new array with up to three dimensions."
     },
     {
       "name": "ALen",
       "type": "function",
       "syntax": "ALen(aTarget)",
-      "summary": "Return the number of elements in an array."
+      "summary": "Returns the number of elements in an array."
     },
     {
       "name": "AAdd",
@@ -40,31 +40,31 @@
       "name": "AScan",
       "type": "function",
       "syntax": "AScan(aTarget, vValueOrBlock, [nStart], [nCount])",
-      "summary": "Return the index of the first array element that matches a value or condition."
+      "summary": "Returns the index of the first array element that matches a value or condition."
     },
     {
       "name": "AScanExact",
       "type": "function",
       "syntax": "AScanExact(aTarget, vValueOrBlock, [nStart], [nCount])",
-      "summary": "Return the index of the first array element that matches a value or condition exactly."
+      "summary": "Returns the index of the first array element that matches a value or condition exactly."
     },
     {
       "name": "AEval",
       "type": "function",
       "syntax": "AEval(aTarget, fnBlock, [nStart], [nCount])",
-      "summary": "Evaluate a code block for each array element and return the same array."
+      "summary": "Evaluates a code block for each array element and returns the same array."
     },
     {
       "name": "AEvalA",
       "type": "function",
       "syntax": "AEvalA(aTarget, fnBlock, [nStart], [nCount])",
-      "summary": "Evaluate a code block for each selected array element and write the result back to the same array."
+      "summary": "Evaluates a code block for each selected array element and writes the result back to the same array."
     },
     {
       "name": "AFill",
       "type": "function",
       "syntax": "AFill(aTarget, vValue, [nStart], [nCount])",
-      "summary": "Fill an array element range with the same value and return the same array."
+      "summary": "Fills an array element range with the same value and returns the same array."
     },
     {
       "name": "DelArray",

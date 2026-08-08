@@ -77,7 +77,7 @@
       "name": "ALen",
       "type": "function",
       "syntax": "ALen(aTarget)",
-      "summary": "Return the number of elements in an array."
+      "summary": "Returns the number of elements in an array."
     }
   ],
   "related_categories": [

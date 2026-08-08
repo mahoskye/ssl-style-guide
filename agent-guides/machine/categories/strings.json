@@ -28,7 +28,7 @@
       "name": "AllTrim",
       "type": "function",
       "syntax": "AllTrim(sSource)",
-      "summary": "Remove leading and trailing space characters from a string."
+      "summary": "Removes leading and trailing space characters from a string."
     },
     {
       "name": "LimsString",
