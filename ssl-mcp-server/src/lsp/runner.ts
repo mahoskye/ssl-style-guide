@@ -111,14 +111,18 @@ export function runLsp(
 
 /**
  * Validate SSL code. Pass code as a string, or a file path to read directly.
+ * Set isDataSource to classify the input as a data-source (.ds) document,
+ * which exempts its SQL content from SSL checks; .ds file paths are
+ * classified by extension without it.
  */
 export async function validateSsl(
-  input: { code: string } | { file: string }
+  input: ({ code: string } | { file: string }) & { isDataSource?: boolean }
 ): Promise<LspRunResult> {
+  const dsFlag = input.isDataSource ? ["--ds"] : [];
   if ("file" in input) {
-    return runLsp(["--validate", input.file], "");
+    return runLsp(["--validate", ...dsFlag, input.file], "");
   }
-  return runLsp(["--validate", "--stdin"], input.code);
+  return runLsp(["--validate", "--stdin", ...dsFlag], input.code);
 }
 
 /**
