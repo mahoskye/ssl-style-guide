@@ -16,7 +16,7 @@ const DiagnoseSchema = z.object({
 export function registerDiagnose(server: McpServer): void {
   server.tool(
     "ssl_diagnose",
-    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, and message. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
+    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
     DiagnoseSchema.shape,
     async ({ code, file, isDataSource }) => {
       if (!code && !file) {
