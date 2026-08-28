@@ -202,7 +202,7 @@ Do not log expected guard rejections, replay conflicts, or caller validation fai
 - For database APIs that use positional `?` placeholders and an explicit values array, follow that API's documented signature rather than applying `SQLExecute` substitution syntax.
 - Use ordinary SQL string literals by default. Add the `N` prefix only when the target explicitly requires Unicode literal semantics.
 - Let ordinary text comparisons use the schema or database collation. Force `COLLATE` only for a documented comparison contract, and explain why the schema collation is insufficient immediately before the query.
-- Omit the connection argument for standard default-database calls. When a later optional argument must be supplied, skip the earlier optionals with adjacent commas (`Fn(, vLater)`), not `NIL` — NIL is accepted only where a function documents it, and some (e.g. `BeginLimsTransaction`) raise on non-string values.
+- Omit the connection argument for standard default-database calls. When a later optional argument must be supplied, leave the earlier optional slots blank with adjacent commas (`Fn(, vLater)`) — the standard style. Explicit `NIL` in a skipped slot is valid and equivalent at runtime (omitted arguments are NIL-padded); it is just not the convention.
 - Use structured SQL with clause-per-line formatting and indentation that exposes lock and guard conditions.
 - Apply lock hints deliberately for the operation's concurrency contract.
 - For guarded writes, require `LimsRecordsAffected() == 1` and perform a verification read when later logic depends on the resulting state or state version.

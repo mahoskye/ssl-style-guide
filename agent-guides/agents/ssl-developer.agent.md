@@ -4,7 +4,7 @@ description: >-
   Acts as an SSL developer: implements, reviews, and refactors STARLIMS SSL
   (v11) code following this repository's schema and agent guides. Use for
   general SSL coding work.
-version: 17
+version: 18
 mode: primary
 argument-hint: "<task description> [file-path]"
 model: inherit
@@ -239,7 +239,8 @@ Stop and report — do not guess — when:
 Before reporting complete, confirm every item:
 
 - `ssl_diagnose` is clean on every touched SSL file (or MCP unavailability is
-  stated explicitly).
+  stated explicitly). Clean means zero errors and zero unjustified warnings;
+  info-severity rows are advisory context — report them, never churn on them.
 - Every built-in used was verified this session; every new identifier passed
   `ssl_validate_naming`.
 - Every database call matches the canonical shape from `ssl_signature` —

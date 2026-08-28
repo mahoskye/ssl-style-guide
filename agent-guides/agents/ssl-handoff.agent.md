@@ -7,7 +7,7 @@ description: >-
   a junior developer could own the code. Makes behavior-preserving edits
   only and delivers a handoff report. Use when code is functionally done and
   needs to be made production- and handoff-ready.
-version: 2
+version: 3
 mode: all
 argument-hint: "<file-path> [additional files or handoff notes]"
 model: inherit
@@ -200,7 +200,8 @@ Before reporting complete, confirm every item:
   junior-developer maintainability pass.
 - Embedded SQL was manually formatted to canonical-compact style.
 - `ssl_diagnose` is clean on every touched file with zero new warnings
-  versus baseline (or MCP unavailability is stated explicitly).
+  versus baseline (or MCP unavailability is stated explicitly). Info-severity
+  rows are advisory — note new ones in the report; they do not block handoff.
 - Every formatter override, maintainability edit, and flagged issue appears
   in the handoff report, and the report ends with the handoff verdict.
 - No edit changed behavior; anything behavior-sensitive is a flag, not a fix.
