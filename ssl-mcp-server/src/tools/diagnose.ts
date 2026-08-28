@@ -16,7 +16,7 @@ const DiagnoseSchema = z.object({
 export function registerDiagnose(server: McpServer): void {
   server.tool(
     "ssl_diagnose",
-    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
+    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Includes info-severity advisories (style observations and idiom notes); treat errors/warnings as actionable and info as context. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
     DiagnoseSchema.shape,
     async ({ code, file, isDataSource }) => {
       if (!code && !file) {
@@ -56,8 +56,26 @@ export function registerDiagnose(server: McpServer): void {
       // Parse and re-serialize for consistent formatting
       try {
         const parsed = JSON.parse(output);
+        const entries: Array<{ file?: string }> = Array.isArray(parsed) ? parsed : [parsed];
+        // A binary older than the pinned release doesn't know --info and
+        // reads it as a file path, emitting a phantom failed-read entry
+        // alongside (or instead of) the real one. Fail loudly rather than
+        // returning the wrong entry.
+        if (entries.some((e) => e?.file === "--info")) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text:
+                  "The bundled starlims-lsp binary predates the pinned release and does not " +
+                  'support --info. Run "bun run fetch-lsp" in ssl-mcp-server/ to update it.',
+              },
+            ],
+            isError: true,
+          };
+        }
         // The validator returns an array; for single input there's exactly one entry
-        const entry = Array.isArray(parsed) ? parsed[0] : parsed;
+        const entry = entries[0];
         return {
           content: [
             { type: "text" as const, text: JSON.stringify(entry, null, 2) },

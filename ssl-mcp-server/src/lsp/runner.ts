@@ -114,15 +114,20 @@ export function runLsp(
  * Set isDataSource to classify the input as a data-source (.ds) document,
  * which exempts its SQL content from SSL checks; .ds file paths are
  * classified by extension without it.
+ *
+ * Always passes --info: the LSP drops info-severity diagnostics by default
+ * (starlims-lsp v0.18.0), but the info tier's advisory rules are designed
+ * for exactly this LLM-facing surface. Consumers can filter on the
+ * diagnostic's severity field if they want the everyday errors/warnings view.
  */
 export async function validateSsl(
   input: ({ code: string } | { file: string }) & { isDataSource?: boolean }
 ): Promise<LspRunResult> {
   const dsFlag = input.isDataSource ? ["--ds"] : [];
   if ("file" in input) {
-    return runLsp(["--validate", ...dsFlag, input.file], "");
+    return runLsp(["--validate", "--info", ...dsFlag, input.file], "");
   }
-  return runLsp(["--validate", "--stdin", ...dsFlag], input.code);
+  return runLsp(["--validate", "--info", "--stdin", ...dsFlag], input.code);
 }
 
 /**
