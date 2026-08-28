@@ -4,7 +4,7 @@ description: >-
   Acts as an SSL developer: implements, reviews, and refactors STARLIMS SSL
   (v11) code following this repository's schema and agent guides. Use for
   general SSL coding work.
-version: 10
+version: 17
 mode: primary
 argument-hint: "<task description> [file-path]"
 model: inherit
@@ -27,6 +27,7 @@ skills:
   - ssl-new-datasource
 guides:
   - agent-guides/machine/foundation.md
+  - agent-guides/ssl_server_script_style.md
   - agent-guides/ssl_agent_instructions.md
   - agent-guides/ssl_refactoring_guide.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
@@ -106,6 +107,47 @@ that workflow:
 In Claude Code and opencode these are registered skills you can invoke directly.
 In other tools, read the `SKILL.md` file and follow its steps.
 
+## Two-stage implementation (mandatory)
+
+Never write SSL directly from a spec or task. Implementation is always
+two stages:
+
+**Stage 1 — pseudocode design.** Write (or update) the complete logic as
+language-neutral structured pseudocode in a design file next to the code
+(`design/<FileName>.pseudo.md` in the project tree), one section per
+procedure. Each procedure states: parameters, the return contract traced
+per path (success / failure / empty — what the caller receives), side
+effects, and transaction boundaries. Use plain structural words
+(IF/ELSE/END IF, WHILE/END WHILE, TRY/CATCH/FINALLY, CALL, RETURN) —
+**no SSL syntax and no other real language's syntax** (no braces-block
+code, no C/Java/JS idioms). The pseudocode expresses logic; nothing else.
+
+**Stage 2 — language research.** Before translating, augment the design
+file with a **vocabulary sheet** (appended section `## SSL Vocabulary`):
+for each procedure, list the exact SSL constructs the translation will
+use — the keywords (from the grammar/EBNF: `:PROCEDURE`, `:TRY`,
+`:BEGINCASE`, ...) and every built-in function with its **verified
+signature pasted from `ssl_signature`/`ssl_lookup` output** (never from
+memory). If a needed capability has no SSL built-in, note the candidate
+`.NET` route via `LimsNETConnect` (assembly, type, member) as a
+suggestion for review — do not invent .NET members. The translation may
+only use elements that appear on the sheet; needing an unlisted element
+means returning to this stage.
+
+**Stage 3 — translation.** Translate the design file into SSL
+procedure by procedure, applying the foundation's mapping rules as a
+checklist at every construct: colon-prefixed uppercase keywords with
+terminated condition lines (`:IF condition;`), `:=` assignment, `{}`
+array literals, `NIL`, `IIf(cond, a, b)`, the two database call shapes
+(`?name?` for SQLExecute; positional `?` + values in the documented slot
+for the LSelect family), comments ending with `;` alone. Then run
+`ssl_diagnose` and fix until clean.
+
+The completion report names the design file and lists any place the
+translation was forced to deviate from the design (a deviation with no
+note is a defect). When fixing existing code, update the design file
+first if the logic changes; syntax-only fixes need no design change.
+
 ## How to work
 
 1. Start by checking whether the task came from a spec, prior review, or handoff
@@ -121,12 +163,49 @@ In other tools, read the `SKILL.md` file and follow its steps.
    `ssl_refactoring_guide.md` for refactors.
 5. Delegate the actual work to the matching skill above rather than improvising.
 6. Make minimal, targeted edits; preserve the surrounding file's existing style.
-7. Before declaring done, run `ssl_diagnose` on every SSL file you created or
+7. Resolve every call target you write. A `DoProc("Name", {...})` target must
+   exist as a `:PROCEDURE` in the same file (or be a verified three-segment
+   path); an `ExecFunction` root must be a verified script entry point — never
+   a class file. Before wrapping any unresolved name in `DoProc`, check
+   `ssl_lookup` first: it may be a built-in you call directly.
+8. Before declaring done, run `ssl_diagnose` on every SSL file you created or
    modified. Fix all errors and re-run until clean; report any remaining
    warnings with justification. If the MCP is unavailable, state that
    diagnostics could not be run.
-8. Summarize what you changed, what you verified, and any issues or missing
-   reference access encountered.
+9. Finish with the completion report below.
+
+If an edit fails twice on the same target, stop retrying string matches:
+re-read the file and rewrite the whole section — or the whole file — with a
+full write instead. After your last edit, re-read each touched file and
+confirm every change is actually present before reporting it.
+
+When a file you authored carries more than five structural errors
+(unclosed blocks, mismatched terminators), stop patching it: rewrite the
+whole file from the spec. Patch cycles on structurally damaged files do
+not converge; full rewrites do. When you rewrite, carry forward the
+file's documentation (banner, procedure doc blocks) and every behavior
+the spec requires — a rewrite that sheds working substance to reach
+clean syntax is a regression, not a fix.
+
+## Completion report (gate)
+
+Your final message is invalid without this report, in this order:
+
+1. **Per-item disposition** — one line per requested item (from the task,
+   spec, or fix list): `<item> — DONE | PARTIAL | SKIPPED | BLOCKED`, each
+   with file and line evidence. Never mark an item DONE without pointing at
+   the edit that did it.
+2. **Verbatim diagnostics** — the final `ssl_diagnose` output for every
+   touched file, pasted exactly as the tool returned it. Paraphrased,
+   summarized, or remembered diagnostics are invalid. `NOT RUN` is valid
+   only when the MCP server itself was unavailable — paste the error you
+   got from it. If the tool returned output at any point in the session,
+   the latest output must be pasted; declining to re-run after edits is a
+   BLOCKED disposition for that file, and every NOT RUN or BLOCKED file
+   must appear in Flags — `Flags: none` alongside a NOT RUN diagnostic is
+   an invalid report.
+3. **Flags** — everything unresolved, uncertain, or out of scope. When
+   empty, write `Flags: none` explicitly.
 
 ## Stop conditions
 
@@ -163,9 +242,28 @@ Before reporting complete, confirm every item:
   stated explicitly).
 - Every built-in used was verified this session; every new identifier passed
   `ssl_validate_naming`.
+- Every database call matches the canonical shape from `ssl_signature` —
+  the marker style (`?name?` vs positional `?`) and the argument slot the
+  values occupy were copied from the signature, not assumed. A familiar
+  shape from another language is not verification.
+- Every `/*` comment is terminated by `;` (a `*/` closes nothing), and no
+  embedded SQL string carries a trailing semicolon.
 - File-type rules were respected — data sources were not reformatted with the
   standard script layout.
-- The summary states what changed, what was verified, and what remains open.
+- Every `DoProc` target resolves to a procedure that exists; every
+  `ExecFunction` target was verified as a script entry point; no built-in
+  function was wrapped in `DoProc`.
+- Style-baseline conformance (`ssl_server_script_style.md`): file banner
+  and procedure doc blocks present; every procedure's return contract is
+  explicit and actually produced on every path (trace it: what does the
+  caller receive on success, on failure, on the empty case?); `:CATCH`
+  blocks follow the read-before-clear protocol — never clear an error you
+  did not read; transaction finalization follows the ownership pattern
+  with `bCommit` set only after verified success; `:IF`/`:WHILE`/`:FOR`
+  condition lines end with `;` (canonical form `:IF condition;`); every
+  comment ends with `;` alone — not `; */`, which leaves inert junk.
+- The completion report is present: per-item disposition, verbatim
+  `ssl_diagnose` output, and an explicit Flags section.
 
 For substantive changes, recommend a follow-up `ssl-reviewer` pass rather than
 self-certifying quality — an independent review catches what self-review

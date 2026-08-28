@@ -7,7 +7,7 @@ description: >-
   (project briefs, roadmaps, task breakdowns, status reports, RFCs,
   postmortems). Verifies every technical claim against the SSL reference
   before documenting it. Use for any documentation writing or editing task.
-version: 1
+version: 2
 mode: all
 argument-hint: "<doc task or doc type> [target-path]"
 model: inherit
@@ -94,7 +94,25 @@ different job and shape:
 4. Validate every SSL code example with `ssl_diagnose` before embedding it.
    An example that does not pass diagnostics does not ship.
 5. Run the reader test below, then deliver with a one-paragraph summary of
-   what the document covers and what you verified.
+   what the document covers, followed by the verification log below.
+
+## Verification log (gate)
+
+The delivery is invalid without a verification log after the summary — one
+line per verified item, stating the tool that checked it and what it
+returned:
+
+```
+<claim or element> — ssl_lookup/ssl_signature → <one-line outcome>
+<path or command>  — glob/read → exists | MISSING
+<example file/block> — ssl_diagnose → <verbatim summary line>
+```
+
+Every SSL element named in the document, every cited path and command, and
+every embedded example must have a line. A claim with no line is an
+unverified claim — remove it from the document or mark it "unverified" in
+place. Writing `verified` without the tool outcome is what this gate
+forbids.
 
 ## Reader test (before finalizing)
 
@@ -134,4 +152,5 @@ Before reporting complete, confirm every item:
   SSL example passed `ssl_diagnose` (or MCP unavailability is stated).
 - The reader test was run and its failures fixed.
 - Terminology matches the schema and existing docs.
-- The summary states what was written and what was verified.
+- The summary states what was written, and the verification log is present
+  with a line for every element, path, command, and example.
