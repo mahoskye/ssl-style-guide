@@ -14,7 +14,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 2. **Read the file** at the given path using the Read tool.
 
-3. **If MCP `ssl_diagnose` is available, run it first** and fold its JSON diagnostics into the report as authoritative errors/warnings (it runs starlims-lsp `--validate`, including `:INCLUDE`-aware undeclared-variable analysis). Then apply the style/security checks below, which the LSP does not cover. If the MCP is unavailable, apply all checks below manually.
+3. **If MCP `ssl_diagnose` is available, run it first** and fold its JSON diagnostics into the report as authoritative errors/warnings (it runs starlims-lsp `--validate --info`, including `:INCLUDE`-aware undeclared-variable analysis). Info-severity rows are advisory style observations and idiom notes — report them as suggestions, not violations. Then apply the style/security checks below, which the LSP does not cover. If the MCP is unavailable, apply all checks below manually.
 
 4. **Apply the checks below** according to the focus area. For `all`, run every check.
 
