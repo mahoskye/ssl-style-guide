@@ -39,7 +39,7 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - `:BEGINCASE` requires at least one `:CASE`
    - Use one statement per line
    - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
-   - Inside SQL strings, uppercase SQL keywords; keep other identifiers lowercase
+   - Inside SQL strings, uppercase SQL keywords; preserve the author's identifier casing (force-folding identifiers is dialect-conditional — do not flag mixed-case or uppercase identifiers)
    - End each `:CASE` / `:OTHERWISE` with `:EXITCASE;` unless multi-match is intentional
    - `==` is exact string equality; `=` is prefix matching for strings
 
@@ -78,8 +78,9 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 - `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, `GetDataSet`: use positional `?` with explicit parameter arrays
 - Flag UDObject array properties used directly in `IN (?obj:prop?)` expansion — must copy to local variable first (runtime error: "The current array has more than 1 dimmension.")
 - Flag direct variable embedding in SQL strings
-- Flag SQL strings that do not uppercase SQL keywords/functions or that
-  uppercase non-keyword identifiers without an external casing requirement
+- Flag SQL strings that do not uppercase SQL keywords/functions; do not
+  flag identifier casing (author casing is preserved — see
+  `sql-canonical-compact-reference.md`, Identifier Casing)
 
 ### `security` — Security-relevant patterns
 - SQL injection (see `sql` checks above)

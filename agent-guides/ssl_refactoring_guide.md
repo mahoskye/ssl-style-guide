@@ -290,8 +290,8 @@ Multi-line conditions:
 
 SQL strings use **canonical compact** formatting. Core rules:
 - SQL keywords and functions in UPPERCASE
-- All other SQL identifiers in lowercase unless external schema/object casing
-  must be preserved
+- All other SQL identifiers keep the author's casing (force-folding is
+  dialect-conditional — lowercase is an Oracle-only opt-in)
 - Major clauses (SELECT, FROM, WHERE, JOIN, etc.) at column 0 relative to the
   4-space SQL indent
 - SELECT continuation columns aligned to first column (col 7 from clause start)
@@ -846,7 +846,7 @@ Run through this checklist after refactoring:
 
 ### SQL (canonical compact style)
 - [ ] SQL keywords and functions in UPPERCASE
-- [ ] Other SQL identifiers are lowercase unless external casing must be preserved
+- [ ] Other SQL identifiers keep the author's casing (no force-folding)
 - [ ] Multi-line SQL follows canonical compact layout (AND/OR +2, ON +2, HAVING +2)
 - [ ] INSERT uses block-style parens (opening on statement line, closing on own line)
 - [ ] UPDATE SET on same line as UPDATE

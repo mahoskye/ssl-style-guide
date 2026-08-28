@@ -1259,7 +1259,11 @@ ssl_style_guide:
       reference: ssl-style-guide/sql-canonical-compact-reference.md
       keyword_case: upper
       function_case: upper
-      identifier_case: lower
+      identifier_case: preserve   # force-folding is dialect-conditional: safe on Oracle, breaks case-sensitive SQL Server collations; lower is the Oracle-only opt-in
+      identifier_case_options:
+        - preserve
+        - lower
+        - upper
       preserve_external_casing: true
       align_clauses: false
       comma_style: trailing   # SQL SELECT-list commas at end of line; unrelated to arrays.allow_trailing_comma

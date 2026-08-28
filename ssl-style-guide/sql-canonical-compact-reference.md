@@ -1,6 +1,6 @@
-# Oracle SQL Canonical Compact Formatting Reference
+# SQL Canonical Compact Formatting Reference
 
-This document defines the **canonical compact** formatting style for Oracle SQL
+This document defines the **canonical compact** formatting style for SQL
 embedded in SSL code. It is a repository formatting convention optimized for
 readability within SSL string literals.
 
@@ -10,6 +10,14 @@ readability within SSL string literals.
 > preprocessed parameter syntax — see `ssl_agent_instructions.md` §4A for that
 > context. The SQL formatting rules here still apply to the query body within
 > SQL data source files.
+
+> **Dialects:** STARLIMS environments run against either Oracle or SQL
+> Server, and embedded SQL in the wild splits accordingly — Oracle-specific
+> constructs (hierarchical queries, optimizer hints, and more in §4;
+> `DECODE` in §5.4) and the SQL Server/ODBC escape layer (`{fn}`/`{d}`
+> sequences, §4A). The layout rules
+> in this document apply to both. Rules that are safe on only one dialect
+> are called out explicitly — see **Identifier Casing** below.
 
 ---
 
@@ -28,12 +36,36 @@ readability within SSL string literals.
 | HAVING | Indented 2 spaces under GROUP BY (deliberate: HAVING is a sub-clause of GROUP BY here, unlike styles that put it at column 0) |
 | WHEN/ELSE | Indented 4 spaces under CASE |
 | Keyword casing | UPPERCASE — all SQL keywords and built-in functions |
-| Identifier casing | lowercase — table names, column names, aliases |
+| Identifier casing | **preserve the author's casing** by default — see the note below; lowercase is an Oracle-safe opt-in |
 | External casing | Preserve when schema/object requires it |
 | Comma style | Trailing commas |
 | Max line length | ~90 characters, breaking at logical points; a single atomic token (string literal, identifier) that cannot fit leaves its line over-long — tokens are never split |
 | Subqueries | Flat convention in every context (WHERE, FROM, SELECT list, SET): the `(` opens on the parent line, the body indents one level (4 spaces), and the closing `)` returns to the parent clause's column |
 | SSL embedding | Entire SQL block indented 4 spaces inside the string literal |
+
+### Identifier Casing
+
+The safe default is to **preserve the author's casing** for table names,
+column names, and aliases. Forced case-folding is dialect-conditional:
+
+- **Oracle:** unquoted identifiers are case-insensitive (they fold to a
+  canonical form), so rewriting `RESULTS` as `results` is safe. Lowercase
+  identifiers remain the preferred house style *when writing new
+  Oracle-only SQL*.
+- **SQL Server:** identifier comparison follows the database collation. On
+  a case-sensitive collation, `RESULTS` and `results` name different
+  objects — a formatter that force-lowercases identifiers can break a
+  working query.
+
+Because a STARLIMS environment may be either dialect, tooling defaults to
+`preserve` (the starlims-lsp setting `ssl.format.sql.identifierCase`
+accepts `preserve | lower | upper`, default `preserve`; `lower` is the
+opt-in for Oracle-only code bases). Regardless of that setting:
+
+- Double-quoted identifiers (`"MixedCase"`) are never re-cased — on
+  Oracle, quoting makes casing significant, and on either dialect quoting
+  signals deliberate casing.
+- ODBC escape sequence interiors (§4A) are never identifier-folded.
 
 ### Indentation Reference
 
@@ -988,6 +1020,49 @@ ORDER BY ordno
 - Hint comment stays on the same line as the action keyword when short
 - When hints are long, the SELECT columns start on the next line (indented to col 7)
 - Never reformat or remove hints without understanding their purpose — they exist to solve specific performance problems
+
+---
+
+## 4A. ODBC Escape Sequences
+
+SQL Server environments reach the database through ODBC, and embedded SQL
+there routinely uses the ODBC escape layer: `{fn ...}` scalar functions,
+`{d '...'}` / `{t '...'}` / `{ts '...'}` date-time literals, and
+`{oj ...}` outer joins.
+
+**An escape sequence is an atomic span.** Treat everything from the
+opening `{` through its matching `}` as one unit:
+
+- Never break a line inside an escape sequence, and never let the closing
+  `}` glue to a following token — `{fn NOW()}AS created` is invalid SQL on
+  both dialects; a space always follows the `}`.
+- Never respace or reflow the interior — the content of a
+  `{d '2024-01-15'}` literal must survive formatting intact. Casing is the
+  one thing a formatter may normalize inside an escape, per the table
+  below.
+
+**Casing inside an escape sequence:**
+
+| Token | Casing |
+|-------|--------|
+| Escape marker (`fn`, `d`, `t`, `ts`, `oj`) | lowercase |
+| Function name after `{fn` | UPPERCASE (`{fn CONCAT(...)}`) |
+| `SQL_*` type names (e.g. in `{fn CONVERT(x, SQL_VARCHAR)}`) | UPPERCASE |
+| Everything else inside `{...}` | preserve the author's casing |
+
+`SQL_VARCHAR` and friends are ODBC type names, not identifiers — they are
+never identifier-folded, whatever the identifier-casing setting.
+
+**Examples:**
+
+```sql
+SELECT {fn CONCAT(o.ordno, t.testcode)} AS orderkey,
+       {fn CONVERT(t.dispstatus, SQL_VARCHAR)} AS status
+FROM orders o
+INNER JOIN ordtask t
+  ON t.ordno = o.ordno
+WHERE t.datestarted >= {d '2024-01-15'}
+```
 
 ---
 
