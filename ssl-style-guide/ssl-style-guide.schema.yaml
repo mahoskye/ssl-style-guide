@@ -1121,7 +1121,7 @@ ssl_style_guide:
     code_block: "{|param1, param2| expression}"
   types:
     level: authoritative
-    note: "SSL has 8 core value types. Type names are reported by LimsTypeEx() in uppercase (e.g. STRING, NUMBER)."
+    note: "SSL has 8 core value types. Type names are reported by LimsTypeEx() in uppercase (e.g. STRING, NUMERIC)."
     dotnet_member_passthrough:
       level: authoritative
       rule: >-
@@ -1167,7 +1167,7 @@ ssl_style_guide:
           - Not indexable
       netobject:
         summary: Dynamic wrapper for external .NET objects.
-        runtime_type: NETOBJECT
+        runtime_type: OBJECT
         notes:
           - Created via MakeNETObject(), LimsNETConnect(), LimsNETTypeOf()
           - Member access through GetProperty(), SetProperty(), IsProperty(), Invoke()
@@ -1175,7 +1175,7 @@ ssl_style_guide:
           - AddProperty() is not supported on netobject
       number:
         summary: Single numeric type covering integers and fractional values.
-        runtime_type: NUMBER
+        runtime_type: NUMERIC
         notes:
           - All numbers are 64-bit floating-point — no separate integer type
           - Supports arithmetic, comparison, exponentiation (^ or **), and shift (<<, >>) operators
