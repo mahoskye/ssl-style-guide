@@ -309,6 +309,26 @@ function opencodeFrontmatter(manifest) {
   return fm;
 }
 
+// opencode registers MCP tools as `<server>_<tool>`; guides refer to bare
+// tool names. Weak models have invented wrong separators (e.g.
+// `ssl-reference-ssl_lookup`), so spell the exact callable names out.
+function opencodeBody(manifest, body) {
+  if (!manifest.mcp?.length) return body;
+  const lines = ['## MCP tool names in opencode', ''];
+  for (const entry of manifest.mcp) {
+    lines.push(
+      `The \`${entry.server}\` MCP tools are registered here as ` +
+      `\`${entry.server}_<tool>\` (underscore). These are tool invocations, ` +
+      'not shell commands — never run them through bash. When this guide ' +
+      'names a bare tool, invoke the prefixed tool:',
+      '',
+      ...entry.tools.map((t) => `- \`${t}\` → \`${entry.server}_${t}\``),
+      '',
+    );
+  }
+  return `${lines.join('\n')}\n${body}`;
+}
+
 function renderAdapter(frontmatter, body, sourceRel, version) {
   const yaml = YAML.stringify(frontmatter, { lineWidth: 0 }).trimEnd();
   const header =
@@ -344,7 +364,7 @@ function planOutputs(agents) {
     outputs.push({
       label: `.opencode/agents/${name}.md`,
       path: resolve(REPO_ROOT, `.opencode/agents/${name}.md`),
-      content: renderAdapter(opencodeFrontmatter(manifest), body, sourceRel, version),
+      content: renderAdapter(opencodeFrontmatter(manifest), opencodeBody(manifest, body), sourceRel, version),
       local: false,
     });
     outputs.push({

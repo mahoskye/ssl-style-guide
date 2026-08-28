@@ -12,7 +12,7 @@
     "Prefer parameterized database calls.",
     "SQLExecute is the only database API that supports named ?param? substitution.",
     "RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays.",
-    "Inside SQL strings, use uppercase SQL keywords and functions; keep normal SQL identifiers lowercase unless an external schema requires preserved casing."
+    "Inside SQL strings, use uppercase SQL keywords and functions; preserve the author's casing for other SQL identifiers (force-folding is dialect-conditional and breaks case-sensitive SQL Server collations)."
   ],
   "avoid": [
     "Do not use ?param? named substitution with non-SQLExecute database functions.",

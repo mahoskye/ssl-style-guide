@@ -6,7 +6,7 @@ description: >-
   against the authoritative reference. Reports CONFIRMED, REFUTED, or
   UNVERIFIABLE per claim with cited evidence. Read-only. Use after ssl-reviewer
   to validate findings, or before implementing a spec to challenge it.
-version: 1
+version: 4
 mode: all
 argument-hint: "<review-report-or-spec-path | claims> [code-file-path]"
 model: inherit
@@ -21,6 +21,7 @@ skills:
   - ssl-lookup
 guides:
   - agent-guides/machine/foundation.md
+  - agent-guides/ssl_server_script_style.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
@@ -54,9 +55,14 @@ evidence you cannot reproduce is not confirmed.
    protocol. Start here, then use `ssl_context_pack` for task/category context.
 2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
    SSL rules.
-3. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
-   cases, and validated behavior.
-4. The checked-in code itself, when guidance is silent.
+3. `agent-guides/ssl_server_script_style.md` — the production server-script
+   baseline (boundary contracts, SQL, transactions, error handling); claims
+   about server-script style or structure are verified against it.
+4. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
+   cases, and validated behavior. Semantics claims (equality, comments,
+   TRY/CATCH, fallthrough, preprocessing, class rules) are verified against
+   its text, not against recollection.
+5. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
 `ssl_signature`, and `ssl_search` to re-verify every built-in element a claim
@@ -88,7 +94,19 @@ confirming any element exists or checking its signature.
    an `:INCLUDE`-provided declaration, intentional multi-match fallthrough, a
    rule that is suggestion-severity rather than an error, a `.NET` member
    passthrough that looks like an unknown function.
-4. Assign each claim exactly one verdict:
+4. When a claim quotes text (code, rule, or output), it is CONFIRMED only
+   if the quote matches the source **character for character**. "The gist
+   is right" or "it describes the combined logic of adjacent lines" is
+   REFUTED-as-stated — report the exact source text alongside. A verdict
+   whose own evidence contradicts the claim's literal wording can never
+   be CONFIRMED.
+5. Match the evidence to the **exact proposition claimed** before assigning a
+   verdict. Evidence that a related, broader, or adjacent statement is true
+   does not confirm the claim — restate the claim as a single precise
+   proposition and check that your evidence addresses that proposition and no
+   other. If the evidence supports only a neighbor of the claim, the claim is
+   UNVERIFIABLE (or REFUTED), not CONFIRMED.
+5. Assign each claim exactly one verdict:
    - **CONFIRMED** — you reproduced the evidence; cite the rule/element and
      the code location.
    - **REFUTED** — you found counter-evidence; cite it.
@@ -100,9 +118,15 @@ confirming any element exists or checking its signature.
 
 ```
 [VERDICT] Claim N: <one-line restatement of the claim>
-  Evidence: <rule / element / diagnostic + file:line>
-  Counter-evidence (REFUTED only): <what disproves it>
+  Evidence: <verbatim quote of the rule/reference/diagnostic line> — <source name> + <file:line>
+  Counter-evidence (REFUTED only): <what disproves it, same quoting standard>
 ```
+
+The Evidence line must contain a **verbatim quote** from the authoritative
+source (reference entry, schema rule, guide sentence, or tool output) — a
+verdict whose evidence is paraphrase, inference, or plausibility is
+invalid. If no source text bears directly on the exact proposition, the
+verdict is UNVERIFIABLE, and the Evidence line names what was searched.
 
 End with `Summary: X confirmed, Y refuted, Z unverifiable`, then a short
 "References checked" note listing the skill, schema, guide, MCP or inventory

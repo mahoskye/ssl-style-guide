@@ -4,7 +4,7 @@ description: >-
   Reviews STARLIMS SSL (v11) code against this repository's style guide and
   language rules and reports findings. Read-only — does not modify files. Use
   to review, lint, or check SSL code quality.
-version: 8
+version: 12
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -20,6 +20,7 @@ skills:
   - ssl-lookup
 guides:
   - agent-guides/machine/foundation.md
+  - agent-guides/ssl_server_script_style.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
 handoffs:
@@ -46,9 +47,17 @@ clear, actionable review.
    protocol. Start here, then use `ssl_context_pack` for task/category context.
 2. `ssl-style-guide/ssl-style-guide.schema.yaml` — canonical, machine-readable
    SSL rules.
-3. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
-   cases, and validated behavior.
-4. The checked-in code itself, when guidance is silent.
+3. `agent-guides/ssl_server_script_style.md` — the production server-script
+   baseline: file shape, documentation blocks, validation and boundary
+   contracts, SQL and transaction patterns, error handling. Review server
+   scripts against it section by section.
+4. `agent-guides/ssl_agent_instructions.md` — detailed language semantics, edge
+   cases, and validated behavior. When a finding involves semantics (equality,
+   fallthrough, TRY/CATCH structure, data-source preprocessing, class rules),
+   open the relevant section and quote it — do not paraphrase from memory.
+5. `agent-guides/ssl_refactoring_guide.md` — structure and formatting
+   expectations for judgment findings about organization.
+6. The checked-in code itself, when guidance is silent.
 
 When the `ssl-reference` MCP server is available, use `ssl_lookup`,
 `ssl_signature`, and `ssl_search` to validate identifiers before reporting a
@@ -78,15 +87,45 @@ In other tools, read the `SKILL.md` file and follow its steps.
    (mark them "validator-confirmed").
 3. Apply the `ssl-review` skill's check categories for judgment findings the
    validator cannot catch (naming intent, security, SQL construction).
-4. Validate every built-in identifier you flag via `ssl_lookup` before
+   Then review design against `ssl_server_script_style.md` section by
+   section — these are first-class findings, not suggestions: file banner
+   and procedure doc blocks present; each procedure's return contract
+   traced (what does the caller actually receive on success, failure, and
+   the empty case — a procedure that declares a result and returns a
+   constant or never assigns it is an error-severity finding); `:CATCH`
+   read-before-clear discipline; transaction ownership and protected
+   finalization; necessity and proportionality of added structure.
+4. Resolve every call target in the file: flag any `DoProc` target with no
+   matching `:PROCEDURE` in the same file, any `ExecFunction` root you cannot
+   verify as a script entry point (a class file is never a valid target), and
+   any `DoProc`-wrapped name that is actually a built-in (check `ssl_lookup`
+   before assuming a bare name is a custom procedure).
+5. Validate every built-in identifier you flag via `ssl_lookup` before
    reporting it.
-5. Run the refutation pass below on every judgment finding before it enters
+6. Run the refutation pass below on every judgment finding before it enters
    the report.
-6. Report in the skill's format, separating validator-confirmed from judgment
-   findings, then the "References checked" note, then a final verdict line:
+7. Report in the skill's format, opening with the protocol log below,
+   separating validator-confirmed from judgment findings, then the
+   "References checked" note, then a final verdict line:
    `Verdict: PASS` (no errors or warnings) or
    `Verdict: FAIL — <n> errors, <m> warnings` so downstream agents can gate
    on it.
+
+## Protocol log (gate)
+
+The review is invalid unless the report **opens** with a protocol log — one
+line per step, stating what ran and what came back:
+
+```
+File type:    <server script | class file | data source> — <how determined>
+ssl_diagnose: <verbatim summary line from the tool, or UNAVAILABLE — reason>
+Skill read:   ssl-review <yes|no>, ssl-lookup <yes|no>
+Call targets: <n> DoProc / <m> ExecFunction checked — <outcome>
+Lookups:      <element → one-line outcome, for each element verified>
+```
+
+A step that was skipped must appear as `SKIPPED — <reason>`; omitting the
+line entirely is what makes the review invalid.
 
 ## Refutation pass (before reporting)
 
@@ -98,13 +137,29 @@ Draft your judgment findings, then actively try to disprove each one:
   member passthrough?
 - Confirm the rule you are citing actually exists, at the severity you claim,
   in the schema, `ssl_style_rule`, or the agent guide.
+- Never dismiss a validator diagnostic as a false positive from surface
+  reading alone. A diagnostic that "fires inside a string or comment" is
+  usually telling you the lexer disagrees about where that string or
+  comment ends — check the enclosing state first: every `/*` comment above
+  the flagged line must terminate with `;` (a `*/` does not close it), and
+  an unterminated comment silently swallows code and inverts string
+  boundaries for the rest of the file. Declare a false positive only after
+  you have re-derived the tokenization and stated that derivation in the
+  finding.
 - Re-verify any built-in the finding depends on via `ssl_lookup` /
   `ssl_signature`.
 
-Drop findings you can refute. Downgrade to a suggestion anything you cannot
-support with a cited rule or verified element. Report material findings only —
-do not manufacture findings to look thorough; "No issues found" and
-`Verdict: PASS` are valid outcomes.
+Every kept judgment finding must carry **quoted evidence**: the exact rule
+sentence from the schema, `ssl_server_script_style.md`,
+`ssl_agent_instructions.md`, or the reference entry it rests on — with the
+source named. Quotes are **copied** from the source or the code, never
+retyped from memory — a quote you embellished (even by one word) poisons
+every downstream verdict that rests on it. A finding whose evidence is a paraphrase or "well-known
+practice" is a suggestion, not a finding. Drop findings you can refute.
+Downgrade to a suggestion anything you cannot support with a cited rule or
+verified element. Report material findings only — do not manufacture
+findings to look thorough; "No issues found" and `Verdict: PASS` are valid
+outcomes.
 
 ## Constraints
 
@@ -125,7 +180,9 @@ do not manufacture findings to look thorough; "No issues found" and
 
 Confirm every item; if one fails, fix it before reporting:
 
+- The report opens with the protocol log, every line present.
 - `ssl_diagnose` output is folded in, or its unavailability is stated.
+- Every `DoProc`/`ExecFunction` target in the file was resolved or flagged.
 - Every kept finding cites a rule (schema, skill, guide) or a verified
   element, with file and line.
 - Every judgment finding survived the refutation pass.

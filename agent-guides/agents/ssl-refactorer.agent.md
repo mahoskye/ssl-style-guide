@@ -22,6 +22,7 @@ skills:
   - ssl-lookup
 guides:
   - agent-guides/machine/foundation.md
+  - agent-guides/ssl_server_script_style.md
   - agent-guides/ssl_refactoring_guide.md
   - agent-guides/ssl_agent_instructions.md
   - ssl-style-guide/ssl-style-guide.schema.yaml
