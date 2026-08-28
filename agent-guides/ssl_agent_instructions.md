@@ -515,9 +515,10 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 4. **Avoid complex expressions** in production code
 5. **Use `RunSQL`** for DML statements (INSERT, UPDATE, DELETE)
 6. **Use `LSearch`** for single-value lookups with explicit parameters
-7. **Inside SQL strings**, use uppercase SQL keywords and functions; keep all
-   other SQL identifiers lowercase unless an external schema/object name
-   requires preserved casing
+7. **Inside SQL strings**, use uppercase SQL keywords and functions; preserve
+   the author's casing for other SQL identifiers (force-folding is
+   dialect-conditional — safe on Oracle, but breaks case-sensitive SQL
+   Server collations)
 
 ### SQL Formatting Quick Reference (Canonical Compact)
 
@@ -534,8 +535,9 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - `SELECT` continuations aligned to first column (col 7)
 - Trailing commas, ~90 char line target
 
-**Casing:** SQL keywords and SQL functions UPPERCASE; identifiers lowercase;
-preserve external casing when required.
+**Casing:** SQL keywords and SQL functions UPPERCASE; preserve the author's
+identifier casing (lowercase is an Oracle-only opt-in — see the reference's
+Identifier Casing section).
 
 **INSERT:** Opening `(` on the `INSERT INTO` line, columns indented 4 spaces, closing `)` on its own line. Same pattern for `VALUES`.
 

@@ -56,7 +56,7 @@ export function registerCodeReviewPrompt(server: McpServer, indices: Indices): v
 - Indentation: Prefer tabs; preserve 4-space indentation in files that already use spaces
 - One statement per line
 - SQL injection: Parameterized queries preferred; no string concatenation in SQL
-- SQL casing: Inside SQL strings, SQL keywords/functions should be UPPERCASE and other identifiers lowercase unless external casing must be preserved
+- SQL casing: Inside SQL strings, SQL keywords/functions should be UPPERCASE; preserve the author's identifier casing (force-folding is dialect-conditional — do not flag identifier case)
 - Legacy patterns: Flag :ERROR/:RESUME usage (prefer :TRY/:CATCH)
 - Variable declarations: Variables must be declared before use; local declarations are preferred over caller-scope lookup
 - Procedure calls: Flag bare custom procedure calls; same-file procedures must use DoProc and external entry points must use ExecFunction; DoProc is a compile-time error inside class methods

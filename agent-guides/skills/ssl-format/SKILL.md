@@ -79,7 +79,7 @@ Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`
 
 ### Casing
 - SQL keywords and built-in functions: UPPERCASE
-- Table names, column names, aliases: lowercase
+- Table names, column names, aliases: preserve the author's casing (force-folding is dialect-conditional; lowercase only for Oracle-only code)
 - Preserve external schema/object casing when required
 
 ### Sub-clause indentation (2 spaces under parent)

@@ -39,8 +39,9 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional
    - `:BEGINCASE` requires at least one `:CASE` block
    - Use `==` for exact string equality; `=` is prefix matching for strings
-   - Inside SQL strings, use uppercase SQL keywords and functions; keep other SQL
-     identifiers lowercase unless external schema/object casing must be preserved
+   - Inside SQL strings, use uppercase SQL keywords and functions; preserve the
+     author's casing for other SQL identifiers (never force-fold — it breaks
+     case-sensitive SQL Server collations)
 
 4. **Apply the 6-step workflow:**
 
@@ -84,8 +85,9 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 - `SQLExecute`: use `?varName?` substitution
 - Other DB functions: use positional `?` with parameter arrays
 - When using array expansion for `IN` clauses, ensure the array is a local variable — UDObject array properties cause a runtime error and must be copied to a local first
-- Inside SQL strings, uppercase SQL keywords and functions; keep other SQL
-  identifiers lowercase unless external schema/object casing must be preserved
+- Inside SQL strings, uppercase SQL keywords and functions; preserve the
+  author's casing for other SQL identifiers (never force-fold — it breaks
+  case-sensitive SQL Server collations)
 
 **Control Flow:**
 - Add `:EXITCASE;` at end of `:CASE` and `:OTHERWISE` blocks (unless multi-match behavior is intentional)
