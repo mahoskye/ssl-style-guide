@@ -8,7 +8,7 @@
  * Usage:
  *   bun scripts/fetch-lsp.mjs               # pinned version, current platform
  *   bun scripts/fetch-lsp.mjs --all         # pinned version, all platforms
- *   bun scripts/fetch-lsp.mjs v0.18.0       # fetch that tag and update the pin
+ *   bun scripts/fetch-lsp.mjs v0.19.0       # fetch that tag and update the pin
  */
 
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
