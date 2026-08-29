@@ -115,19 +115,24 @@ export function runLsp(
  * which exempts its SQL content from SSL checks; .ds file paths are
  * classified by extension without it.
  *
- * Always passes --info: the LSP drops info-severity diagnostics by default
- * (starlims-lsp v0.18.0), but the info tier's advisory rules are designed
- * for exactly this LLM-facing surface. Consumers can filter on the
- * diagnostic's severity field if they want the everyday errors/warnings view.
+ * Always passes --info and --hungarian. Both tiers are opt-in in the LSP
+ * (--info since starlims-lsp v0.18.0, --hungarian since v0.20.0) because
+ * they are noisy in an editor, but both are designed for exactly this
+ * LLM-facing surface: the info tier carries style observations and idiom
+ * notes, and the Hungarian checks turn SSL's naming convention into a
+ * type signal an assistant can act on. Consumers can filter on the
+ * diagnostic's severity or code field for the everyday view — notably
+ * hungarian_notation, which fires on legacy names that predate the
+ * convention and is usually not worth acting on in old code.
  */
 export async function validateSsl(
   input: ({ code: string } | { file: string }) & { isDataSource?: boolean }
 ): Promise<LspRunResult> {
   const dsFlag = input.isDataSource ? ["--ds"] : [];
   if ("file" in input) {
-    return runLsp(["--validate", "--info", ...dsFlag, input.file], "");
+    return runLsp(["--validate", "--info", "--hungarian", ...dsFlag, input.file], "");
   }
-  return runLsp(["--validate", "--info", "--stdin", ...dsFlag], input.code);
+  return runLsp(["--validate", "--info", "--hungarian", "--stdin", ...dsFlag], input.code);
 }
 
 /**
