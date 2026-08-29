@@ -1,3 +1,4 @@
 export const MCP_SERVER_NAME = "ssl-reference";
 // Keep in sync with ssl-mcp-server/package.json "version".
-export const MCP_SERVER_VERSION = "1.7.0";
+// Must match ssl-mcp-server/package.json; check-consistency.mjs enforces it.
+export const MCP_SERVER_VERSION = "1.12.0";

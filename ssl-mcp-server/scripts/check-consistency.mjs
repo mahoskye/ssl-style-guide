@@ -218,4 +218,22 @@ try {
   fail(`Reference data drift detected.\n${detail}`);
 }
 
+// The version the server advertises over MCP must match package.json. These
+// drifted silently for four releases (constant stuck at 1.7.0 while the
+// package reached 1.11.1), so clients were told the wrong version.
+{
+  const pkgVersion = JSON.parse(readRepoFile('ssl-mcp-server/package.json')).version;
+  const constantsSource = readRepoFile('ssl-mcp-server/src/constants.ts');
+  const match = constantsSource.match(/MCP_SERVER_VERSION\s*=\s*"([^"]+)"/);
+  if (!match) {
+    fail('Could not find MCP_SERVER_VERSION in ssl-mcp-server/src/constants.ts');
+  }
+  if (match[1] !== pkgVersion) {
+    fail(
+      `MCP_SERVER_VERSION (${match[1]}) does not match ssl-mcp-server/package.json (${pkgVersion}) — ` +
+        'clients would be told the wrong version.'
+    );
+  }
+}
+
 console.log('Consistency checks passed.');
