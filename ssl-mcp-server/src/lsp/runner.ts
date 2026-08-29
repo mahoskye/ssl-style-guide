@@ -115,24 +115,30 @@ export function runLsp(
  * which exempts its SQL content from SSL checks; .ds file paths are
  * classified by extension without it.
  *
- * Always passes --info and --hungarian. Both tiers are opt-in in the LSP
- * (--info since starlims-lsp v0.18.0, --hungarian since v0.20.0) because
- * they are noisy in an editor, but both are designed for exactly this
+ * Always passes --info and --hungarian-types, both opt-in in the LSP
+ * (--info since starlims-lsp v0.18.0, --hungarian-types since v0.21.0)
+ * because they are noisy in an editor, but both aimed at exactly this
  * LLM-facing surface: the info tier carries style observations and idiom
- * notes, and the Hungarian checks turn SSL's naming convention into a
- * type signal an assistant can act on. Consumers can filter on the
- * diagnostic's severity or code field for the everyday view — notably
- * hungarian_notation, which fires on legacy names that predate the
- * convention and is usually not worth acting on in old code.
+ * notes, and hungarian_type_mismatch reports a name whose prefix promises
+ * one type over an expression producing another.
+ *
+ * Deliberately NOT --hungarian, which would add hungarian_notation. That
+ * rule audits a codebase against the naming convention and reports every
+ * declared name lacking a prefix, so on a codebase that does not use the
+ * convention it reports most of the file — measured at 31,219 hits
+ * against hungarian_type_mismatch's 477 over a production corpus, more
+ * than half the output in 40% of files. Correct, but it would crowd out
+ * the findings a reviewer can act on. --hungarian-types is silent on
+ * unprefixed names by construction.
  */
 export async function validateSsl(
   input: ({ code: string } | { file: string }) & { isDataSource?: boolean }
 ): Promise<LspRunResult> {
   const dsFlag = input.isDataSource ? ["--ds"] : [];
   if ("file" in input) {
-    return runLsp(["--validate", "--info", "--hungarian", ...dsFlag, input.file], "");
+    return runLsp(["--validate", "--info", "--hungarian-types", ...dsFlag, input.file], "");
   }
-  return runLsp(["--validate", "--info", "--hungarian", "--stdin", ...dsFlag], input.code);
+  return runLsp(["--validate", "--info", "--hungarian-types", "--stdin", ...dsFlag], input.code);
 }
 
 /**

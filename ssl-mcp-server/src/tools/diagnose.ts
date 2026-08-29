@@ -16,7 +16,7 @@ const DiagnoseSchema = z.object({
 export function registerDiagnose(server: McpServer): void {
   server.tool(
     "ssl_diagnose",
-    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Includes info-severity advisories (style observations and idiom notes) and the Hungarian-notation checks (hungarian_notation, hungarian_type_mismatch); treat errors/warnings as actionable and info as context. hungarian_type_mismatch is a real type signal — the prefix a name declares disagrees with what the expression produces — while hungarian_notation fires on legacy names that predate the convention and is usually not worth acting on in existing code. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
+    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Includes info-severity advisories (style observations and idiom notes) and hungarian_type_mismatch, which reports a variable whose Hungarian prefix promises one type while its expression produces another; treat errors/warnings as actionable and info as context. The naming-convention audit (hungarian_notation) is deliberately not included. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
     DiagnoseSchema.shape,
     async ({ code, file, isDataSource }) => {
       if (!code && !file) {

@@ -22,7 +22,7 @@ The `ssl_diagnose` and `ssl_format` tools require the `starlims-lsp` binary
 in `bin/lsp/` (gitignored — binaries are not tracked in this repository).
 `bun run fetch-lsp` downloads the release pinned in `lsp-version.json` for
 the current platform; add `--all` for every platform, or pass a tag
-(`bun run fetch-lsp v0.20.0`) to fetch that version and move the pin.
+(`bun run fetch-lsp v0.21.0`) to fetch that version and move the pin.
 Maintainers with a sibling `starlims-lsp` checkout can build instead with
 `bun run bundle-lsp` (requires Go), or `bun run bundle-lsp --copy` to copy
 already-built binaries.
