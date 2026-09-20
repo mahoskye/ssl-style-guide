@@ -375,10 +375,11 @@ ssl_style_guide:
       - '3.14'
       - '1.2e-3'
       - '9.0E1'
+      - '9.0E+1'  # either exponent sign is valid
       invalid_examples:
       - '7e2'
       - '.5e1'
-      - '9E+1'  # invalid because (a) scientific notation requires a decimal point before the exponent, and (b) explicit plus signs in the exponent are not supported
+      - '9E+1'  # invalid because scientific notation requires a decimal point before the exponent (the explicit plus sign is fine)
     indexing:
       arrays: one_based  # First element is at index 1, not 0
       string_positions: one_based
