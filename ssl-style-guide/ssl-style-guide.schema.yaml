@@ -1,7 +1,7 @@
 ssl_style_guide:
   metadata:
     title: STARLIMS SSL Style Guide (Tool‑agnostic)
-    version: 1.7.1
+    version: 1.7.2
     maintainers:
     - PaperBull / maho
     sources:
