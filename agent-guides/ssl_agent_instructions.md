@@ -343,7 +343,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 - `Empty()` returns `.T.` if value equals 0
 - `_AND`, `_OR`, `_XOR`, `_NOT` use function call syntax, not infix: `_AND(a, b)` not `a _AND b`
 - Bitwise functions require integer operands; fractional values raise errors
-- **Scientific notation** requires a decimal point before the exponent: `1.2e-3`, `9.0E1` are valid; `7e2`, `.5e1`, `9E+1` are not
+- **Scientific notation** requires a decimal point before the exponent: `1.2e-3`, `9.0E1`, `9.0E+1` are valid; `7e2`, `.5e1`, `9E+1` are not (the sign is fine, the missing decimal point is not)
 
 ### Boolean Details
 

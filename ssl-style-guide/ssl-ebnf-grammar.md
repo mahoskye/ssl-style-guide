@@ -315,7 +315,7 @@ Literal ::= NumberLiteral | StringLiteral | BooleanLiteral | ArrayLiteral | NilL
 NumberLiteral ::= IntegerPart [DecimalPart [Exponent]] (* Scientific notation requires a decimal part: '7.0e2' works, '7e2' does not *)
 IntegerPart ::= Digit {Digit}
 DecimalPart ::= "." Digit {Digit} (* Ensures at least one digit after the decimal point *)
-Exponent    ::= ("e" | "E") ["-"] Digit {Digit}
+Exponent    ::= ("e" | "E") ["+" | "-"] Digit {Digit} (* Either sign is optional; the decimal part before the exponent is not *)
 
 StringLiteral ::= '"' {Character} '"' | "'" {Character} "'" | BracketString (* Double-quoted, single-quoted, or bracket strings; no escape sequences — backslashes are literal *)
 BracketString ::= "[" {BracketChar} "]" (* Bracket strings allow one level of nesting: [[a]b] yields the string [a]b. An inner "[" opens a nested span that consumes characters until its paired "]", then the outer "]" closes the string. Deeper nesting is not supported. *)
@@ -372,7 +372,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 13. **Date Values**: SSL has no date literal syntax. Dates are created via functions such as `CToD(sDateString)`, `DateFromNumbers(vYear, vMonth, vDay, ...)`, `Today()`, and `Now()`. Brace-delimited forms like `{2026, 3, 23}` are array literals, not dates.
 
-14. **Scientific Notation**: Number literals can include scientific notation using 'e' or 'E' followed by an optional negative sign and exponent. The formats `1.23e5`, `4.56E-3`, and `0.5e1` are supported, while formats with an explicit plus sign (`9E+1`), without a decimal point before the 'e' (`7e2`), or with a leading decimal point without a zero (`.5e1`) are not supported.
+14. **Scientific Notation**: Number literals can include scientific notation using 'e' or 'E' followed by an optional sign (`+` or `-`) and exponent. The formats `1.23e5`, `4.56E-3`, `9.0E+1`, and `0.5e1` are supported, while formats without a decimal point before the 'e' (`7e2`, `9E+1`) or with a leading decimal point without a zero (`.5e1`) are not supported.
 
 15. **Function Calls**: Functions are called using two primary patterns:
 
