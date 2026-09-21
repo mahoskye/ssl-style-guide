@@ -21,14 +21,27 @@
  * Usage:  bun tools/check-agent-contract.mjs
  */
 
-import { readFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import YAML from '../ssl-mcp-server/node_modules/yaml/dist/index.js';
+import { buildAgentAdapterOutputs } from './generate-agents.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const CANON = resolve(ROOT, 'agent-guides/agents');
+
+// Adapters are gitignored build artifacts, so they are absent in a fresh
+// checkout. Generate them in memory rather than reading disk: that makes
+// the check work in CI without a build step, and tests what the
+// generator *produces* rather than whatever happens to be lying around.
+const generated = new Map();
+for (const out of buildAgentAdapterOutputs().outputs) {
+  const m = /^\.(github|opencode|claude)\/agents\/(.+?)(?:\.agent)?\.md$/.exec(out.label);
+  if (!m) continue;
+  const dialect = { github: 'copilot', opencode: 'opencode', claude: 'claude' }[m[1]];
+  generated.set(`${m[2]}::${dialect}`, out.content);
+}
 
 // Agents whose read-only boundary is an architectural property, not
 // something inferred from their own frontmatter. Deriving "is read-only"
@@ -40,13 +53,14 @@ const MUST_BE_READ_ONLY = new Set(['ssl-reviewer']);
 const failures = [];
 const fail = (m) => failures.push(m);
 
-function frontmatter(path) {
-  const raw = readFileSync(path, 'utf8');
+function parse(raw) {
   if (!raw.startsWith('---\n')) return { fm: null, body: raw };
   const end = raw.indexOf('\n---\n', 4);
   if (end === -1) return { fm: null, body: raw };
   return { fm: YAML.parse(raw.slice(4, end)), body: raw.slice(end + 5) };
 }
+
+const frontmatter = (path) => parse(readFileSync(path, 'utf8'));
 
 const names = readdirSync(CANON)
   .filter((n) => n.endsWith('.agent.md'))
@@ -63,17 +77,13 @@ for (const name of names) {
     continue;
   }
 
-  const adapters = {
-    claude: resolve(ROOT, `.claude/agents/${name}.md`),
-    copilot: resolve(ROOT, `.github/agents/${name}.agent.md`),
-    opencode: resolve(ROOT, `.opencode/agents/${name}.md`),
-  };
-  for (const [dialect, path] of Object.entries(adapters)) {
-    if (!existsSync(path)) {
-      fail(`${name}: missing ${dialect} adapter — run bun tools/generate-agents.mjs`);
+  for (const dialect of ['claude', 'copilot', 'opencode']) {
+    const raw = generated.get(`${name}::${dialect}`);
+    if (raw === undefined) {
+      fail(`${name}: the generator emitted no ${dialect} adapter`);
       continue;
     }
-    const { fm, body } = frontmatter(path);
+    const { fm, body } = parse(raw);
 
     // 1. Partials must be expanded. A surviving marker means the body
     //    ships the literal token to the model.
