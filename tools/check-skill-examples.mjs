@@ -23,7 +23,7 @@
  */
 
 import { execFileSync } from 'child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -43,6 +43,16 @@ function lspBinary() {
 }
 
 const BIN = lspBinary();
+
+if (!existsSync(BIN)) {
+  console.error(
+    `starlims-lsp binary not found at ${BIN}.\n` +
+      `This check drives the real formatter and validator, so it needs the\n` +
+      `binary. Run "bun run fetch-lsp" in ssl-mcp-server/ first (in CI, this\n` +
+      `step must come after the fetch-lsp step).`
+  );
+  process.exit(1);
+}
 
 function runLsp(args) {
   try {
