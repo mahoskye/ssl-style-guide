@@ -24,6 +24,7 @@ import YAML from 'yaml';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
 const CANONICAL_DIR = resolve(REPO_ROOT, 'agent-guides/agents');
+const SHARED_DIR = resolve(CANONICAL_DIR, '_shared');
 const CLAUDE_DIR = resolve(REPO_ROOT, '.claude');
 const AGENTS_MD = resolve(REPO_ROOT, 'AGENTS.md');
 const CLAUDE_MD = resolve(CLAUDE_DIR, 'CLAUDE.md');
@@ -32,7 +33,8 @@ const CHECK_ONLY = process.argv.includes('--check');
 
 const KNOWN_KEYS = new Set([
   'name', 'description', 'version', 'mode', 'argument-hint',
-  'model', 'tools', 'mcp', 'skills', 'guides', 'handoffs', 'overrides',
+  'model', 'tools', 'mcp', 'skills', 'guides', 'handoffs', 'delegates',
+  'overrides',
 ]);
 const HANDOFF_KEYS = new Set(['label', 'agent', 'prompt', 'send', 'model']);
 const REQUIRED_KEYS = ['name', 'description', 'version', 'tools'];
@@ -55,8 +57,12 @@ const CLAUDE_TOOL_MAP = {
   glob: ['Glob'],
   'bash:read-only': ['Bash'],
 };
-// VS Code custom-agents tool ids (May 2026). Tools use namespaced names like
-// `search/codebase`; listing a group name (`edit`) includes all of its tools.
+// VS Code custom-agents tool ids, re-verified against the docs
+// 2026-09-21. Tools use namespaced names like `search/codebase`; listing
+// a tool-set name (`edit`, `agent`) includes all of its tools. Delegation
+// needs both the `agent` tool and an `agents:` list — the docs are
+// explicit that one without the other does nothing, which is why the
+// orchestrator could not dispatch in VS Code before `delegates` existed.
 // See https://code.visualstudio.com/docs/copilot/customization/custom-agents
 const COPILOT_TOOL_MAP = {
   read: ['read/readFile', 'search/codebase', 'search/listDirectory', 'search/usages'],
@@ -211,6 +217,17 @@ function validateHandoffTargets(agents) {
         fail(`${sourceRel}: handoff target agent '${handoff.agent}' is self-referential`);
       }
     }
+    for (const delegate of manifest.delegates ?? []) {
+      if (!known.has(delegate)) {
+        fail(
+          `${sourceRel}: delegate '${delegate}' is not a canonical agent ` +
+          `(known: ${[...known].join(', ')})`
+        );
+      }
+      if (delegate === manifest.name) {
+        fail(`${sourceRel}: delegate '${delegate}' is self-referential`);
+      }
+    }
   }
 }
 
@@ -270,11 +287,17 @@ function copilotMcpToolNames(manifest) {
 }
 
 function copilotFrontmatter(manifest) {
+  const delegates = manifest.delegates ?? [];
   const fm = {
     name: manifest.name,
     description: oneLine(manifest.description),
-    tools: [...mapTools(manifest.tools, COPILOT_TOOL_MAP), ...copilotMcpToolNames(manifest)],
+    tools: [
+      ...mapTools(manifest.tools, COPILOT_TOOL_MAP),
+      ...(delegates.length > 0 ? ['agent'] : []),
+      ...copilotMcpToolNames(manifest),
+    ],
   };
+  if (delegates.length > 0) fm.agents = [...delegates];
   if (manifest['argument-hint']) fm['argument-hint'] = manifest['argument-hint'];
   if (manifest.model && manifest.model !== 'inherit') fm.model = manifest.model;
   if (manifest.handoffs) fm.handoffs = manifest.handoffs;
@@ -329,6 +352,103 @@ function opencodeBody(manifest, body) {
   return `${lines.join('\n')}\n${body}`;
 }
 
+// A body line that is exactly `{{shared:<name>}}` is replaced by
+// `_shared/<name>.md`. Seven agents previously carried near-identical
+// copies of the sources-of-truth and MCP-fallback blocks; every copy was
+// prompt budget spent restating what the others already said, and they
+// drifted apart as agents were edited one at a time. Factoring them out
+// keeps each agent file down to what makes that agent different.
+const SHARED_RE = /^[ \t]*\{\{shared:([a-z0-9-]+)\}\}[ \t]*$/;
+
+function expandShared(body, sourceRel, seen = []) {
+  return body
+    .split('\n')
+    .map((line) => {
+      const match = SHARED_RE.exec(line);
+      if (!match) return line;
+      const name = match[1];
+      if (seen.includes(name)) {
+        fail(`${sourceRel}: shared partial cycle via {{shared:${name}}}`);
+      }
+      const path = resolve(SHARED_DIR, `${name}.md`);
+      if (!existsSync(path)) {
+        fail(
+          `${sourceRel}: {{shared:${name}}} has no partial at ` +
+          `agent-guides/agents/_shared/${name}.md`
+        );
+      }
+      const partial = readFileSync(path, 'utf8').replace(/\n+$/, '');
+      return expandShared(partial, sourceRel, [...seen, name]);
+    })
+    .join('\n');
+}
+
+// Per-dialect file-editing protocol. The neutral body says *what* to do;
+// this says how to do it in the harness the adapter targets, because the
+// failure modes are harness-specific and cost real work when they hit.
+//
+// VS Code has a known agent-mode defect (microsoft/vscode #253561,
+// #256296, #260410 and vscode-copilot-release #8070): an edit applies
+// correctly, the agent fails to detect its own change, retries the same
+// edit by another route, and after a few attempts deletes and recreates
+// the file from scratch. A recreated file loses the formatting and
+// comments it was told to preserve. The protocol below cannot fix the
+// defect, but it keeps the blast radius to one hunk and denies the
+// model the whole-file rewrite as an automatic escape hatch. Unscoped
+// workspace text search is the other known stall; a scoped search or a
+// direct read of a known path is always cheaper.
+const EDIT_PROTOCOL = {
+  copilot: [
+    '## Editing and searching in VS Code',
+    '',
+    '**One edit per call.** Apply changes to a file one hunk at a time and',
+    're-read the file to confirm each landed before starting the next.',
+    'A file needing eight changes takes eight calls.',
+    '',
+    'This is not pedantry. VS Code agent mode has a known defect where an',
+    'edit applies correctly, the agent does not see its own change, and it',
+    'retries — eventually recreating the file from scratch and losing the',
+    'formatting and comments it was told to preserve. **Verify by reading',
+    'the file, never by trusting the tool result**, and treat a',
+    '"no change applied" report as a claim to check rather than a fact.',
+    '',
+    '**A whole-file write is a decision, never a retry.** Rewrite a file',
+    'only when you have decided its structure must change, and say so in',
+    'the report. If an edit genuinely did not land, re-read the current',
+    'text and retry that one hunk with a longer unique anchor. Never let a',
+    'failed edit escalate into replacing the file.',
+    '',
+    '**Scope every search.** An unscoped workspace-wide text search stalls',
+    'on a LIMS workspace. Read the path directly when you know it; use',
+    'codebase search for "where is X handled?"; use text search only for an',
+    'exact token, always narrowed to a directory or glob. If two searches',
+    'have not found it, ask rather than widening the third.',
+    '',
+  ].join('\n'),
+  claude: [
+    '## Editing and searching',
+    '',
+    '**A whole-file write is a decision, never a retry.** Rewrite a file',
+    'only when you have decided its structure must change, and say so in',
+    'the report. If an Edit fails, re-read the exact current text and retry',
+    'that one hunk with a longer unique anchor — a failed edit means your',
+    'anchor was stale or ambiguous, not that the file needs replacing. A',
+    'rewrite that sheds working substance to reach clean syntax is a',
+    'regression, not a fix.',
+    '',
+    '**Scope every search.** Read the path directly when you know it; use',
+    'Glob to locate files by name and Grep for an exact token, narrowed to',
+    'a path. If two searches have not found it, ask rather than widening',
+    'the third.',
+    '',
+  ].join('\n'),
+};
+
+function withEditProtocol(body, dialect) {
+  const block = EDIT_PROTOCOL[dialect];
+  return block ? `${body.replace(/\n+$/, '')}\n\n${block}` : body;
+}
+
 function renderAdapter(frontmatter, body, sourceRel, version) {
   const yaml = YAML.stringify(frontmatter, { lineWidth: 0 }).trimEnd();
   const header =
@@ -353,24 +473,40 @@ function renderAgentsBlock(agents) {
 
 function planOutputs(agents) {
   const outputs = [];
-  for (const { manifest, body, sourceRel } of agents) {
+  for (const { manifest, body: rawBody, sourceRel } of agents) {
     const { name, version } = manifest;
+    const body = expandShared(rawBody, sourceRel);
     outputs.push({
       label: `.github/agents/${name}.agent.md`,
       path: resolve(REPO_ROOT, `.github/agents/${name}.agent.md`),
-      content: renderAdapter(copilotFrontmatter(manifest), body, sourceRel, version),
+      content: renderAdapter(
+        copilotFrontmatter(manifest),
+        withEditProtocol(body, 'copilot'),
+        sourceRel,
+        version
+      ),
       local: false,
     });
     outputs.push({
       label: `.opencode/agents/${name}.md`,
       path: resolve(REPO_ROOT, `.opencode/agents/${name}.md`),
-      content: renderAdapter(opencodeFrontmatter(manifest), opencodeBody(manifest, body), sourceRel, version),
+      content: renderAdapter(
+        opencodeFrontmatter(manifest),
+        opencodeBody(manifest, withEditProtocol(body, 'claude')),
+        sourceRel,
+        version
+      ),
       local: false,
     });
     outputs.push({
       label: `.claude/agents/${name}.md`,
       path: resolve(REPO_ROOT, `.claude/agents/${name}.md`),
-      content: renderAdapter(claudeFrontmatter(manifest), body, sourceRel, version),
+      content: renderAdapter(
+        claudeFrontmatter(manifest),
+        withEditProtocol(body, 'claude'),
+        sourceRel,
+        version
+      ),
       local: true,
     });
   }

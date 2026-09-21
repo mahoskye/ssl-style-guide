@@ -18,11 +18,37 @@ bun run check
 bun run check:consistency
 ```
 
+`ssl_diagnose` runs the **strict agent profile**: `--info`,
+`--hungarian-types`, and `--strict`. All three are opt-in in the LSP
+because they are noisy while a human is mid-edit in an editor, and all
+three are what a non-interactive consumer wants from finished code.
+`--strict` adds `undeclared_variable` (which catches a typo'd variable
+read the default validator reports as clean), `unused_variable`, and
+`invalid_sql_param`. Measured over 1,923 files it costs 0.2 extra
+findings per file across those that already validate without errors, and
+none of its rules is error severity, so it never flips `valid`. The
+naming-convention audit (`hungarian_notation`) is deliberately excluded.
+
+`ssl_format` formats whole files. On legacy SSL that is not a small
+change — measured over 298 real files, 93% changed under the formatter
+and 72% had more than half their lines rewritten — so agents are told to
+format files they create and to leave an existing file's layout alone
+unless reformatting is the task. The tool also re-formats its own output
+to check the formatter settled. It is expected to — idempotence is a
+formatter contract, and holds across every corpus measured against
+v0.24.0 — so an input that comes back flagged as unstable indicates a
+formatter bug, and the note tells the caller to report it rather than
+loop chasing a fixed point.
+
+`--strict` requires starlims-lsp v0.24.0 or newer. Against an older
+binary the flag is read as a file path, and `ssl_diagnose` detects that
+and fails with an explicit message rather than returning wrong results.
+
 The `ssl_diagnose` and `ssl_format` tools require the `starlims-lsp` binary
 in `bin/lsp/` (gitignored — binaries are not tracked in this repository).
 `bun run fetch-lsp` downloads the release pinned in `lsp-version.json` for
 the current platform; add `--all` for every platform, or pass a tag
-(`bun run fetch-lsp v0.23.0`) to fetch that version and move the pin.
+(`bun run fetch-lsp v0.24.0`) to fetch that version and move the pin.
 Maintainers with a sibling `starlims-lsp` checkout can build instead with
 `bun run bundle-lsp` (requires Go), or `bun run bundle-lsp --copy` to copy
 already-built binaries.
@@ -129,7 +155,7 @@ bun run check:consistency
 | `ssl_style_rule` | Return style guide rules for a topic |
 | `ssl_category` | List functions by category, or list all categories |
 | `ssl_context_pack` | Retrieve compact machine documentation by category, alias, task, or element name |
-| `ssl_diagnose` | Validate SSL code for syntax errors, style violations, and common mistakes |
+| `ssl_diagnose` | Validate SSL code for syntax errors, style violations, and common mistakes (strict agent profile) |
 | `ssl_format` | Format SSL code using canonical style-guide rules |
 
 ## Resources

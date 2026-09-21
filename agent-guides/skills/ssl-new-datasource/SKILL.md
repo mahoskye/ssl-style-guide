@@ -93,7 +93,7 @@ the SSL script body.
 /* SSL body: build and return the result set;
 :DECLARE oDataset;
 
-oDataset := GetSSLDataset("SELECT * FROM sample WHERE status = ?sStatus?", , {"sStatus"}, {sStatus});
+oDataset := GetSSLDataset("SELECT * FROM sample WHERE status = ?sStatus?",, {"sStatus"}, {sStatus});
 
 :RETURN oDataset;
 ```
@@ -114,11 +114,37 @@ reusable elsewhere):
 | `:NULLASBLANK := true;` | Null-to-blank conversion |
 | `:INVARIANTDATECOLUMNS := col1, col2;` | Columns treated as invariant dates |
 
+> **How a banner comment ends depends on the document's mode, and the
+> two modes want opposite things.** Get this wrong in either direction
+> and it bites.
+>
+> | Document | End the banner | Getting it wrong |
+> | --- | --- | --- |
+> | **SQL data source** (this one) | `*/` — or use `--` lines | a `;` after it → the server refuses the whole document: `Invalid SQL statement: remove any misplaced semicolons(;)` |
+> | **SSL data source**, and any SSL script | `;` | a bare `*/` does not end the comment, so it swallows the next statement |
+>
+> The reason they differ: a SQL data source's body is SQL, where
+> `/* ... */` is a real comment and a stray `;` is a stray statement
+> separator. An SSL document's comments end at the first `;` and at
+> nothing else — a `*/` there is ordinary comment text with no closing
+> effect, so the comment runs on and eats whatever statement follows.
+> That statement never executes while still reading as live code.
+>
+> `*/;` is therefore correct and near-universal in SSL data sources and
+> a hard error in SQL ones. You will read it constantly; copy it only
+> into SSL documents.
+>
+> More generally, a SQL data source's body runs as **one** SQL command,
+> so any semicolon that is not terminating a builder directive is
+> misplaced — after a banner, on a line of its own, or doubled up.
+> `ssl_diagnose` reports all of them, and the SSL swallowing mistake
+> too.
+
 ```ssl
-/* =============================================================================;
-/* DATA SOURCE: SampleList (SQL);
-/* PURPOSE:     [Describe what this query returns];
-/* =============================================================================;
+/* =============================================================================
+   DATA SOURCE: SampleList (SQL)
+   PURPOSE:     [Describe what this query returns]
+   ============================================================================= */
 :DSN := starlims;
 :TABLENAME := sampleList;
 :NULLASBLANK := true;

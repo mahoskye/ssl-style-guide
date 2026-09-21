@@ -40,8 +40,14 @@ jobs:
       - name: Reference drift check
         run: bun tools/check-reference-drift.mjs
 
+      - name: Agent contract check (delegation, boundaries, protocols)
+        run: bun tools/check-agent-contract.mjs
+
       - name: LSP binary fetch smoke test
         working-directory: ssl-mcp-server
         run: |
           bun run fetch-lsp
           ./bin/lsp/starlims-lsp-linux-amd64 --version
+
+      - name: Skill example check (formatted + validates clean)
+        run: bun tools/check-skill-examples.mjs

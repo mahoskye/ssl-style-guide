@@ -45,7 +45,7 @@ The MCP server also bundles these files and exposes them through
 
 ## Skills
 
-`skills/` contains eight SSL workflow skills, each a `SKILL.md` with frontmatter
+`skills/` contains nine SSL workflow skills, each a `SKILL.md` with frontmatter
 plus step-by-step instructions:
 
 - `ssl-lookup` — look up a function signature, class member, or keyword
@@ -56,25 +56,28 @@ plus step-by-step instructions:
 - `ssl-new-procedure` — scaffold a new SSL procedure
 - `ssl-new-class` — scaffold a new SSL class
 - `ssl-new-datasource` — scaffold a new SSL or SQL data source
+- `ssl-unit-test` — write unit tests as SSL procedures the user runs in STARLIMS
 
 In Claude Code and opencode these are registered skills an agent can invoke
 directly; in other tools they are Markdown files an agent reads and follows.
 
 ## Agents
 
-`agents/` contains the canonical, tool-neutral definitions for seven SSL
+`agents/` contains the canonical, tool-neutral definitions for six SSL
 developer agents:
 
-- `ssl-developer` — general SSL coding: implement, review, refactor, scaffold
-- `ssl-planner` — design SSL changes and hand implementation specs to ssl-developer
-- `ssl-reviewer` — review SSL code against the style guide (read-only)
-- `ssl-refactorer` — plan behavior-preserving cleanup for developer handoff
-- `ssl-verifier` — adversarially verify review findings and spec claims (read-only)
+- `ssl-orchestrator` — **the entry point.** Talk to it in plain language; it
+  reads intent, enforces survey → plan → implement → review, and dispatches
+- `ssl-planner` — specs for new work and for behavior-preserving refactors
+- `ssl-developer` — implement SSL and write the SSL unit tests for it
+- `ssl-reviewer` — review SSL, then refute your own findings (read-only)
 - `ssl-handoff` — ready functionally-done code for production handoff
-- `ssl-docwriter` — write developer documentation with verified technical claims
+- `ssl-docwriter` — documentation, plus the project state and spec catalog
 
 Each agent is a thin persona: it delegates to the skills above and cites the
-guidance documents rather than carrying its own copy of the rules. Each agent is
+guidance documents rather than carrying its own copy of the rules. Content
+common to several agents lives once in `agents/_shared/` and is spliced in at
+generation time. Each agent is
 authored once here; `tools/generate-agents.mjs` emits git-ignored per-tool
 adapters for GitHub Copilot (`.github/agents/`), OpenCode (`.opencode/agents/`),
 and Claude Code (`.claude/agents/`). Only the canonical sources are tracked.
