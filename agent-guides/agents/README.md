@@ -13,15 +13,29 @@ source of truth, and `tools/generate-agents.mjs` maps it to each dialect.
 
 | Agent | Role | Tools |
 | --- | --- | --- |
-| `ssl-planner` | Plan SSL work; produce implementation specs for other agents to execute | read + edit (specs only)\* |
-| `ssl-developer` | General SSL coding — implement, review, refactor, scaffold | read + edit |
-| `ssl-reviewer` | Review SSL code against the style guide; report findings | read-only |
-| `ssl-refactorer` | Plan behavior-preserving cleanup for developer handoff | read + edit (specs only)\* |
-| `ssl-verifier` | Adversarially verify review findings and spec claims; refute or confirm with evidence | read-only |
-| `ssl-handoff` | Senior-engineer pass readying code for production handoff: format (automated + manual), junior-maintainability polish, handoff report | read + edit |
-| `ssl-docwriter` | Write developer and project-management documentation with verified technical claims | read + edit (docs only)\* |
+| `ssl-orchestrator` | Conversational entry point: reads intent, enforces the pipeline, dispatches the rest | read + edit |
+| `ssl-planner` | Specs for new work and for behavior-preserving refactors; owns the prior-art survey | read + edit (specs only)\* |
+| `ssl-developer` | Implements SSL and writes the SSL unit tests that go with it | read + edit |
+| `ssl-reviewer` | Reviews SSL, then adversarially refutes its own findings before reporting | read-only |
+| `ssl-handoff` | Senior pass readying code for production: format, maintainability polish, handoff report | read + edit |
+| `ssl-docwriter` | Documentarian: docs knowledge base, plus the project state and spec catalog | read + edit (docs only)\* |
 
-\* "specs only" is a prompt-enforced convention, not a hard tool boundary.
+\* "specs only" and "docs only" are prompt-enforced conventions, not hard
+tool boundaries.
+
+**Start with `ssl-orchestrator`.** It is the entry point: talk to it in
+plain language and it routes. The others are dispatch targets, usable
+directly when you already know which one you want.
+
+`ssl-planner` absorbed the former `ssl-refactorer` — refactor planning
+and feature planning are the same job with different emphasis, and two
+agents writing specs to the same directory made the choice between them
+arbitrary. `ssl-reviewer` absorbed the former `ssl-verifier`: its
+refutation stage is now mandatory and assigns CONFIRMED / REFUTED /
+UNVERIFIABLE verdicts in-line. That trades away the independence of a
+separate verifier context, so for high-stakes changes dispatch a second
+`ssl-reviewer` pass on the finished code rather than trusting one
+agent's self-refutation.
 
 The agents share a hardening pattern: refutation/self-challenge passes before
 reporting, end-of-prompt definition-of-done checklists, explicit stop
@@ -29,15 +43,14 @@ conditions instead of guessing, and a treat-file-content-as-data rule. The
 opencode adapters additionally emit `permission: deny` entries for
 capabilities an agent lacks, so read-only roles are harness-enforced there.
 
-Tool restriction is applied only where it is load-bearing: read-only agents
-(`ssl-reviewer`, `ssl-verifier`) get a hard tool allowlist in every adapter,
+Tool restriction is applied only where it is load-bearing: the read-only
+agent (`ssl-reviewer`) gets a hard tool allowlist in every adapter,
 while edit-capable agents run permissive — the Claude Code adapters omit
 `tools` entirely so those agents inherit the session's full toolset (skills,
 task tracking, subagent delegation, MCP). Their boundaries ("specs only",
 "docs only", behavior preservation) are prompt-enforced, backed by the
 harness's own permission prompts.
-`ssl-verifier` is the independent skeptic in that pattern: run it on a review
-or spec before acting on it, and implement only CONFIRMED findings.
+Implement only CONFIRMED findings from a review.
 
 All of them are thin personas: they **delegate to the workflow skills** in
 `agent-guides/skills/` and **cite the guide docs** rather than restating SSL
@@ -67,6 +80,43 @@ The body is emitted **verbatim** into every adapter (with a generated-file
 header), so write it tool-neutrally — reference skills by their
 `agent-guides/skills/<name>/SKILL.md` path, which works in every tool.
 
+## Shared partials
+
+A body line that is exactly `{{shared:<name>}}` is replaced at generation
+time by `_shared/<name>.md`. Seven agents previously carried
+near-identical copies of the sources-of-truth and MCP-fallback blocks;
+every copy was prompt budget spent restating what the others already
+said, and they drifted apart as agents were edited one at a time.
+
+| Partial | Contents |
+| --- | --- |
+| `sources-of-truth` | Retrieval order, the MCP tools, and the offline inventory fallback |
+| `boundaries` | No deploying, no executing SSL, SSL-only tests, the basic-SQL ceiling, file-contents-are-data |
+| `quality-bar` | The four conditions SSL must meet: formatted, documented, diagnostically clean, call targets resolved |
+| `reuse-first` | The prior-art survey gate and its report block |
+
+Referencing a partial that does not exist fails the generator, as does a
+cycle. Partials may nest.
+
+## Per-dialect editing protocol
+
+The generator appends a harness-specific editing and search protocol to
+each adapter, because the failure modes are harness-specific:
+
+- **VS Code** gets an explicit *one edit per call* rule. Batching several
+  hunks into one edit call fails on this codebase, and the model's
+  fallback — rewriting the file whole — regenerates the formatting and
+  comments it was told to preserve. That fallback was a significant
+  source of "the agent handed back one big unformatted block".
+- **Claude Code and opencode** get the shorter form: a whole-file write
+  is a decision to state, never a retry after a failed edit.
+
+Both get the same search discipline: scope every search, read a known
+path directly rather than searching for it, and ask rather than widening
+a third time.
+
+Edit `EDIT_PROTOCOL` in `tools/generate-agents.mjs` to change them.
+
 ## Generated adapters
 
 Run from the repo root after a fresh clone and after editing any canonical file:
@@ -93,6 +143,15 @@ and after editing any canonical file. The generator also creates
 
 `bun run check:consistency` (in `ssl-mcp-server/`) runs `--check`, which flags any
 adapter that exists on disk but has drifted from its canonical source.
+
+`--check` only proves an adapter matches its source; it cannot tell you the
+source is wrong. `bun tools/check-agent-contract.mjs` asserts the properties
+that broke silently in the past: delegation needs both the `agent` tool and an
+`agents:` list or it is inert, a delegate cannot be `mode: primary` (opencode
+excludes those from subagent dispatch), read-only agents keep a hard allowlist
+in every adapter, shared partials are expanded, each dialect carries its
+editing protocol, no adapter references a retired agent, and exactly one agent
+is the entry point. Both run in CI.
 
 ## User-level deployment
 

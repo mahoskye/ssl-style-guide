@@ -115,12 +115,25 @@ export function runLsp(
  * which exempts its SQL content from SSL checks; .ds file paths are
  * classified by extension without it.
  *
- * Always passes --info and --hungarian-types, both opt-in in the LSP
- * (--info since starlims-lsp v0.18.0, --hungarian-types since v0.21.0)
- * because they are noisy in an editor, but both aimed at exactly this
- * LLM-facing surface: the info tier carries style observations and idiom
- * notes, and hungarian_type_mismatch reports a name whose prefix promises
- * one type over an expression producing another.
+ * Always passes --info, --hungarian-types, and --strict: all three are
+ * opt-in in the LSP (--info since starlims-lsp v0.18.0,
+ * --hungarian-types since v0.21.0, --strict since v0.24.0) because they
+ * are noisy in an editor, and all three are aimed at exactly this
+ * LLM-facing surface.
+ *
+ * The info tier carries style observations and idiom notes.
+ * hungarian_type_mismatch reports a name whose prefix promises one type
+ * over an expression producing another. --strict adds the three checks
+ * an editor withholds because a human mid-edit has names that are
+ * legitimately undeclared or unused for the next few keystrokes:
+ * undeclared_variable (a typo'd read the default validator cannot see),
+ * unused_variable, and invalid_sql_param (a ?marker? matching no
+ * variable in scope). An agent is never mid-edit — it submits finished
+ * code — so all three are defects rather than transient states.
+ *
+ * Measured over 1,923 files, --strict costs 0.2 findings per file across
+ * the 1,509 that validate without errors today, and none of its three
+ * rules is error severity, so it never flips `valid`.
  *
  * Deliberately NOT --hungarian, which would add hungarian_notation. That
  * rule audits a codebase against the naming convention and reports every
@@ -135,10 +148,11 @@ export async function validateSsl(
   input: ({ code: string } | { file: string }) & { isDataSource?: boolean }
 ): Promise<LspRunResult> {
   const dsFlag = input.isDataSource ? ["--ds"] : [];
+  const profile = ["--info", "--hungarian-types", "--strict"];
   if ("file" in input) {
-    return runLsp(["--validate", "--info", "--hungarian-types", ...dsFlag, input.file], "");
+    return runLsp(["--validate", ...profile, ...dsFlag, input.file], "");
   }
-  return runLsp(["--validate", "--info", "--hungarian-types", "--stdin", ...dsFlag], input.code);
+  return runLsp(["--validate", ...profile, "--stdin", ...dsFlag], input.code);
 }
 
 /**
@@ -151,4 +165,38 @@ export async function formatSsl(
     return runLsp(["--format", input.file], "");
   }
   return runLsp(["--format", "--stdin"], input.code);
+}
+
+export interface FormatCheckResult extends LspRunResult {
+  /** True when formatting the formatter's own output changes it again. */
+  unstable: boolean;
+}
+
+/**
+ * Format, then format the result again to check the formatter reached a
+ * fixed point.
+ *
+ * Idempotence is a formatter contract (starlims-lsp
+ * feature.formatting A6) and currently holds: 0 unstable files across a
+ * 300-file SSL sample and 1,610 data sources as of v0.24.0. It did not
+ * always — two defects broke it, one of which grew a file by a line on
+ * every pass — and agents are told formatting is mandatory, so an agent
+ * that formats, sees a diff, and formats again would burn a session on
+ * a file that never settles.
+ *
+ * So this check stays as a safety net rather than a known-limitation
+ * workaround. A hit now means a formatter regression worth reporting,
+ * not a file the caller should work around.
+ */
+export async function formatSslChecked(
+  input: { code: string } | { file: string }
+): Promise<FormatCheckResult> {
+  const first = await formatSsl(input);
+  if (first.exitCode !== 0 || !first.stdout) {
+    return { ...first, unstable: false };
+  }
+  const second = await runLsp(["--format", "--stdin"], first.stdout);
+  const unstable =
+    second.exitCode === 0 && !!second.stdout && second.stdout !== first.stdout;
+  return { ...first, unstable };
 }

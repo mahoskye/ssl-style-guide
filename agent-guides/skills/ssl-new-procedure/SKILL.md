@@ -55,19 +55,19 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
 /* RETURNS:   [Return value description or "Nothing"];
 /* =============================================================================;
 :PROCEDURE ProcedureName;
-:PARAMETERS param1, param2;
-:DEFAULT param1, "";
-:DEFAULT param2, 0;
-:DECLARE sResult;
+	:PARAMETERS param1, param2;
+	:DEFAULT param1, "";
+	:DEFAULT param2, 0;
+	:DECLARE sResult;
 
-:TRY;
-    /* Procedure body here;
+	:TRY;
+		/* Procedure body here;
 
-    :RETURN sResult;
-:CATCH;
-    /* Log or handle the error;
-    :RETURN NIL;
-:ENDTRY;
+		:RETURN sResult;
+	:CATCH;
+		/* Log or handle the error;
+		:RETURN NIL;
+	:ENDTRY;
 
 :ENDPROC;
 ```
@@ -127,19 +127,19 @@ Output:
 /* RETURNS:   Numeric total;
 /* =============================================================================;
 :PROCEDURE CalculateTotal;
-:PARAMETERS nQty, nPrice;
-:DEFAULT nQty, 0;
-:DEFAULT nPrice, 0;
-:DECLARE nTotal;
+	:PARAMETERS nQty, nPrice;
+	:DEFAULT nQty, 0;
+	:DEFAULT nPrice, 0;
+	:DECLARE nTotal;
 
-:TRY;
-    nTotal := nQty * nPrice;
+	:TRY;
+		nTotal := nQty * nPrice;
 
-    :RETURN nTotal;
-:CATCH;
-    /* Log or handle the error;
-    :RETURN 0;
-:ENDTRY;
+		:RETURN nTotal;
+	:CATCH;
+		/* Log or handle the error;
+		:RETURN 0;
+	:ENDTRY;
 
 :ENDPROC;
 ```
