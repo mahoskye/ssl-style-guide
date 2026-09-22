@@ -15,9 +15,10 @@ jobs:
         with:
           bun-version: 1.3.3
 
-      # The machine-doc packs embed content from the reference repo, and the
-      # drift check compares against it; both need the sibling checkout the
-      # local layout provides (checked out locally as ../ssl-docs).
+      # Only the drift check's name-set parity comparison needs the reference
+      # repo; it skips cleanly without it, so this is here to get that extra
+      # comparison in CI, not because the suite requires it. The sibling path
+      # mirrors the local layout (checked out locally as ../ssl-docs).
       - name: Check out starlims-ssl-reference as sibling
         run: git clone --depth 1 https://github.com/mahoskye/starlims-ssl-reference.git ../ssl-docs
 

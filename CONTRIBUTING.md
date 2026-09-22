@@ -22,9 +22,10 @@ bun install
 bun run fetch-lsp    # downloads the pinned starlims-lsp release binary
 cd ..
 
-# reference repo as a sibling checkout (required for the full check suite:
-# the machine-doc packs embed its guide content, and the drift check
-# compares against it — CI clones it the same way)
+# reference repo as a sibling checkout — OPTIONAL. Only the drift check's
+# name-set parity comparison uses it, and that check skips cleanly without
+# it. Every other check passes on a plain clone. CI clones it to get the
+# parity comparison too.
 git clone https://github.com/mahoskye/starlims-ssl-reference.git ../ssl-docs
 ```
 

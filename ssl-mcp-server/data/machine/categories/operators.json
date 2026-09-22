@@ -99,6 +99,5 @@
   "source_paths": [
     "ssl-style-guide/ssl-style-guide.schema.yaml",
     "agent-guides/ssl_agent_instructions.md"
-  ],
-  "missing_optional_sources": []
+  ]
 }

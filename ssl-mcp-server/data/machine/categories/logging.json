@@ -44,6 +44,5 @@
   "source_paths": [
     "agent-guides/ssl_agent_instructions.md",
     "ssl-style-guide/ssl-element-reference.json"
-  ],
-  "missing_optional_sources": []
+  ]
 }

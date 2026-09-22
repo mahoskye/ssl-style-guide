@@ -24,7 +24,7 @@
 import { readFileSync, readdirSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import YAML from '../ssl-mcp-server/node_modules/yaml/dist/index.js';
+import YAML from 'yaml';
 import { buildAgentAdapterOutputs } from './generate-agents.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

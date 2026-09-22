@@ -72,6 +72,5 @@
     "agent-guides/ssl_agent_instructions.md",
     "ssl-style-guide/sql-canonical-compact-reference.md",
     "../ssl-docs/content/guides/sql-queries.md"
-  ],
-  "missing_optional_sources": []
+  ]
 }

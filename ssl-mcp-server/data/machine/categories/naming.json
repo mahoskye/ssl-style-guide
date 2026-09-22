@@ -46,6 +46,5 @@
     "ssl-style-guide/ssl-style-guide.schema.yaml",
     "agent-guides/ssl_agent_instructions.md",
     "../ssl-docs/content/guides/naming-conventions.md"
-  ],
-  "missing_optional_sources": []
+  ]
 }
