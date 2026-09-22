@@ -81,6 +81,5 @@
   "source_paths": [
     "agent-guides/ssl_agent_instructions.md",
     "../ssl-docs/content/guides/type-system.md"
-  ],
-  "missing_optional_sources": []
+  ]
 }

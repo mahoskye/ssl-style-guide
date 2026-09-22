@@ -72,6 +72,5 @@
   "source_paths": [
     "ssl-style-guide/ssl-element-reference.json",
     "ssl-style-guide/ssl-element-meta.json"
-  ],
-  "missing_optional_sources": []
+  ]
 }

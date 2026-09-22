@@ -147,7 +147,6 @@ export interface MachineCategoryPack {
   elements: MachineCategoryElement[];
   related_categories: string[];
   source_paths: string[];
-  missing_optional_sources?: string[];
 }
 
 export interface MachineCategoryIndexEntry {

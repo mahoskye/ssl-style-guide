@@ -68,6 +68,5 @@
   "source_paths": [
     "agent-guides/ssl_agent_instructions.md",
     "../ssl-docs/content/guides/sql-transactions.md"
-  ],
-  "missing_optional_sources": []
+  ]
 }

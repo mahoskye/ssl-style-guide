@@ -615,10 +615,6 @@ function elementSummary(elements, name, category) {
   };
 }
 
-function sourceExists(sourcePath) {
-  return existsSync(resolve(REPO_ROOT, sourcePath));
-}
-
 function categoryPack(category, elements) {
   return {
     id: category.id,
@@ -630,7 +626,6 @@ function categoryPack(category, elements) {
     elements: category.elements.map((name) => elementSummary(elements, name, category)),
     related_categories: category.related,
     source_paths: category.sourcePaths,
-    missing_optional_sources: category.sourcePaths.filter((path) => !sourceExists(path)),
   };
 }
 
