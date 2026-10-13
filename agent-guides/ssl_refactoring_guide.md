@@ -727,19 +727,26 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 
 ### 7.6 Legacy Error Handling (:ERROR/:RESUME)
 
-The `:ERROR`/`:RESUME` keywords are legacy scope-based error handling. They remain valid, and `:TRY`/`:CATCH`/`:FINALLY` is often easier to target around specific operations in refactoring work.
+The `:ERROR`/`:RESUME` keywords are legacy procedure-level error handling. They remain valid, and `:TRY`/`:CATCH`/`:FINALLY` is often easier to target around specific operations in refactoring work.
 
 **How `:ERROR`/`:RESUME` works:**
-- `:ERROR` defines a handler block that applies to all subsequent code in the current scope (no `:ENDERROR` — it runs until scope ends). The `:ERROR` body must contain at least one statement
-- `:RESUME` inside the handler switches to resume mode — each subsequent statement is individually wrapped in a try/catch so execution continues after failures
-- This has significant performance cost since every statement becomes its own try/catch
+- `:ERROR;` starts the last section of a procedure (no `:ENDERROR` — the handler runs to `:ENDPROC`). It protects the statements **before** it; the statements after it are the handler body, which must contain at least one statement and runs only when a protected statement fails. A handler placed first protects nothing.
+- Without `:RESUME`, the first failure skips the rest of the protected region, runs the handler, and ends the procedure
+- With `:RESUME;` as the last handler statement, every failing protected statement runs the handler and execution continues at the statement after the one that failed
+- Resume mode has significant performance cost since every protected statement is handled individually
 
 ```ssl
-/* Scope-based handler example;
+/* Legacy handler example;
+:PROCEDURE ProcessBatch;
+    :DECLARE oErr;
+
+    DoProc("StepOne");
+    DoProc("StepTwo");
 :ERROR;
     oErr := GetLastSSLError();
     UsrMes("Error: " + oErr:Description);
 :RESUME;
+:ENDPROC;
 
 /* Structured handler example;
 :TRY;
@@ -918,7 +925,7 @@ When refactoring, maintain a progress block in your notes:
 :BEGININLINECODE / :ENDINLINECODE    (legacy named code storage)
 :EXITFOR / :EXITWHILE / :LOOP
 :CLASS / :INHERIT
-:ERROR / :RESUME                     (legacy scope-based error handling)
+:ERROR / :RESUME                     (legacy trailing error handler)
 ```
 
 ### Class Rules

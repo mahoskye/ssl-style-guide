@@ -131,12 +131,21 @@ Authoritative rules describe documented language behavior; style recommendations
       ```
     * **Raising errors:** `RaiseError(sMessage[, sLocation[, nErrorCode[, oInnerException]]])` throws immediately. Inside a `:TRY` block, the remaining statements in that block are skipped and `:CATCH` gets control — `GetLastSSLError()` retrieves the raised error (`sLocation` becomes `:Operation`, `nErrorCode` becomes `:Code`) — then execution continues normally after `:ENDTRY`. An uncaught error propagates up the call stack; if nothing catches it, the invocation fails and the end user sees a server error. A `NIL` message itself raises `RaiseError(): error message cannot be null.`
       **Placement doctrine:** Place `RaiseError` directly inside the `:TRY` block whose `:CATCH` handles it, so the raise can never escape. Never call `RaiseError` inside `:CATCH` — the error handler must not become the thing that crashes. Every raise needs a `:TRY`/`:CATCH` (or legacy `:ERROR`/`:RESUME`) boundary somewhere up the call stack. Mark raise-only helper procedures `/*@private;` so callers cannot invoke them without the entry point that catches their errors. After handling an error in `:CATCH`, call `ClearLastSSLError()` so stale error state does not leak into later handling.
-    * **Error/Resume (Legacy):** `:ERROR` defines a handler for all subsequent code in the current scope and must contain at least one statement. `:RESUME` inside the handler switches execution to resume mode, which wraps each subsequent statement in its own individual try/catch to allow execution to continue after failures — this has significant performance cost. Prefer `:TRY/:CATCH/:FINALLY` when narrower block-scoped handling fits the code.
+    * **Error/Resume (Legacy):** `:ERROR;` starts the **last** section of a procedure and runs to `:ENDPROC`. It protects the statements **before** it; the statements after it are the handler body, which runs only when a protected statement fails, and must contain at least one statement. A handler placed first protects nothing. Without `:RESUME`, the first failure skips the rest of the protected region, runs the handler, and ends the procedure. With `:RESUME;` as the last handler statement, every failing protected statement runs the handler and execution continues at the statement after the one that failed — this has significant performance cost. Prefer `:TRY/:CATCH/:FINALLY` when narrower block-scoped handling fits the code.
       ```ssl
+      :PROCEDURE LoadSettings;
+          :DECLARE sTitle, oErr;
+
+          /* Protected region - every statement before :ERROR;
+          sTitle := ReadText("settings/title.txt");
+
+          :RETURN sTitle;
       :ERROR;
-          /* Handle any error — applies to all code below;
+          /* Handler - runs only when a statement above fails;
           oErr := GetLastSSLError();
+          UsrMes("Read failed: " + oErr:Description);
       :RESUME;
+      :ENDPROC;
       ```
       **Refactoring note:** When narrowing error scope, targeted `:TRY`/`:CATCH`/`:FINALLY` blocks provide more control than blanket resume-mode handling.
 
@@ -889,8 +898,8 @@ All keywords must be prefixed with `:` and are case-sensitive (UPPERCASE only):
 - `:TRY`, `:CATCH`, `:FINALLY`, `:ENDTRY`
 
 **Error Handling (Legacy Form):**
-- `:ERROR` - Legacy error handler; applies to all subsequent code in scope. Requires at least one statement.
-- `:RESUME` - Used within `:ERROR` to continue execution at the next statement after a failure.
+- `:ERROR` - Legacy error handler; the last section of a procedure, protecting the statements before it. The handler body requires at least one statement.
+- `:RESUME` - Last statement of an `:ERROR` handler; execution continues at the statement after the one that failed.
 
 Note: `:TRY`/`:CATCH`/`:FINALLY` is generally preferred when block-scoped handling is appropriate.
 

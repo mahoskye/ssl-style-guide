@@ -186,8 +186,9 @@ ssl_style_guide:
       note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue)."
     error:
       marker: :ERROR
-      resume: :RESUME  # optional — switches to resume mode inside :ERROR handler
-      note: "Legacy scope-based handler. :ERROR body requires ≥1 statement. :RESUME wraps each subsequent statement in individual try/catch."
+      resume: :RESUME  # optional — last statement of the :ERROR handler; switches to resume mode
+      placement: trailing  # :ERROR starts the last section of a procedure and runs to :ENDPROC
+      note: "Legacy procedure-level handler. :ERROR is the last section of a procedure and protects the statements before it; the statements after it are the handler body (≥1 statement), which runs only when a protected statement fails. A handler placed first protects nothing. With :RESUME as the last handler statement, every failing protected statement runs the handler and execution continues at the next statement."
     class:
       begin: :CLASS
       end: null  # no :ENDCLASS — class ends at EOF
@@ -997,8 +998,8 @@ ssl_style_guide:
       traditional:
         keywords:
           - :ERROR
-          - :RESUME  # optional — switches to resume mode (each statement wrapped in individual try/catch)
-        note: "Legacy scope-based error handling. :ERROR defines a handler that applies to all subsequent code in the current scope and must contain at least one statement. :RESUME inside the handler switches to resume mode, wrapping each subsequent statement individually — significant performance cost."
+          - :RESUME  # optional — last handler statement; switches to resume mode (each protected statement handled individually)
+        note: "Legacy procedure-level error handling. :ERROR starts the last section of a procedure, runs to :ENDPROC, and protects the statements before it; the handler body after it must contain at least one statement. A handler placed first protects nothing. Without :RESUME, the first failure runs the handler and ends the procedure. With :RESUME as the last handler statement, every failing protected statement runs the handler and execution continues at the statement after the one that failed — significant performance cost. With :RESUME, an error raised inside a :TRY body in the protected region goes to the handler and :CATCH does not run, so do not combine resume mode with :TRY/:CATCH."
       structured:
         - :TRY
         - body  # requires at least one statement
