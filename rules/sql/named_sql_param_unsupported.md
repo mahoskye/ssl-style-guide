@@ -9,9 +9,7 @@ applies_to: [server_script, class, ssl_data_source]
 rule: >-
   `SQLExecute` is the only database API that supports named `?param?`
   substitution; do not use `?param?` markers with other database functions.
-  Its markers reference in-scope SSL variables by name and it has no
-  values-array parameter (the second parameter is a connection name).
-  Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
+  Its markers reference in-scope SSL variables by name. Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
 categories: [database]
 machine: { list: must_follow, foundation: non_negotiable }
 related_elements: [SQLExecute, RunSQL, LSearch, LSelect, LSelect1, LSelectC, GetDataSet]
@@ -27,7 +25,9 @@ verification:
     with the database pack's avoid item ("Do not use ?param? named
     substitution with non-SQLExecute database functions.") merged in. The
     pack's must-follow item, the agent guide's quick start #8 and gotcha #20,
-    and the schema's sql.parameters.named_supported_by say the same.
+    and the schema's sql.parameters.named_supported_by say the same. The
+    connection-name clause moved to sqlexecute_no_values_array (#101 phase
+    2), so the statement has one record.
 issues: ["#82"]
 ---
 
@@ -65,5 +65,6 @@ aRows := LSelect1("SELECT ordno FROM ordtask WHERE status = ?sStatus?");
 
 ## Notes
 
-The foundation's "SSL Does Not Have" list also states the values-array half
-("A values array on `SQLExecute`"). That list is not generated yet.
+The values-array half ("the second parameter is a connection name") moved to
+`sqlexecute_no_values_array`, which the foundation's "SSL Does Not Have" list
+is generated from.

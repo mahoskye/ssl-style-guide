@@ -14,8 +14,8 @@ machine: { list: avoid }
 related_elements: [DoProc, me, base]
 enforced_by: [lsp:diag.doproc_in_class]
 schema:
-  - path: lints.compile_errors.rules
-    form: lint
+  - path: lints.compile_errors.rules.doproc_in_class.message
+    form: text
     message: >-
       An unqualified DoProc target is a compile-time error inside class
       methods. Use Me:MethodName() / Base:MethodName() for methods on the
@@ -83,5 +83,6 @@ variable is not checked when the class compiles.
 ## Notes
 
 The schema entry `lints.compile_errors.doproc_in_class` also carries a
-`scope` note on two-segment and variable targets. It stays in the
-hand-maintained schema until the classes domain is migrated.
+`scope` note on two-segment and variable targets. The record supplies only
+the entry's message; the slug, severity and `scope` note stay in
+`rules/schema-base.yaml`.

@@ -192,8 +192,15 @@ function renderSchemaRegions(records) {
       Scalar(key, scalar, ancestors) {
         if (scalar.tag !== '!rule') return undefined;
         const keys = [...path];
-        for (const ancestor of ancestors) {
+        for (const [index, ancestor] of ancestors.entries()) {
           if (YAML.isPair(ancestor)) keys.push(ancestor.key.value);
+          // A slot inside a list entry is addressed by the entry's key
+          // (rule, keyword or operator), as getPath resolves it.
+          if (YAML.isSeq(ancestor) && YAML.isMap(ancestors[index + 1])) {
+            const entry = ancestors[index + 1];
+            const name = ENTRY_KEYS.map((k) => entry.get(k)).find((v) => typeof v === 'string');
+            if (name !== undefined) keys.push(name);
+          }
         }
         const at = keys.join('.');
         const id = String(scalar.value).trim();
@@ -239,11 +246,21 @@ function renderSchemaRegions(records) {
   return regions;
 }
 
+// List entries are addressed by the first of these keys they carry, so
+// lints.compile_errors.rules.one_class_per_file.message names the message of
+// the entry whose `rule` is one_class_per_file.
+const ENTRY_KEYS = ['rule', 'keyword', 'operator'];
+
+function entryName(item) {
+  if (!item || typeof item !== 'object') return undefined;
+  return ENTRY_KEYS.map((key) => item[key]).find((value) => typeof value === 'string');
+}
+
 function getPath(object, dotted) {
   let current = object;
   for (const segment of dotted.split('.')) {
     if (Array.isArray(current)) {
-      current = current.find((item) => item && item.rule === segment);
+      current = current.find((item) => entryName(item) === segment);
     } else if (current && typeof current === 'object') {
       current = current[segment];
     } else {

@@ -12,11 +12,17 @@ categories: [database]
 machine: { list: avoid }
 related_elements: [GetDataSet, DoProc, ExecFunction]
 enforced_by: [lsp:diag.empty_optional_param_array]
+schema:
+  - path: lints.parameter_skipping_style.trailing_params
+    form: text
+    message: Omit trailing optional parameters rather than passing empty values.
 verification:
   basis: convention
   note: >-
     Kept from the database pack's avoid list. starlims-lsp reports a trailing
-    `{}` passed to GetDataSet, DoProc or ExecFunction.
+    `{}` passed to GetDataSet, DoProc or ExecFunction. Merged: the schema's
+    lints.parameter_skipping_style.trailing_params and the agent guide's
+    calling-convention note ("Omit trailing optional parameters").
 ---
 
 ## Rationale

@@ -51,16 +51,7 @@ const CATEGORY_DEFS = [
     aliases: ['control statements', 'conditionals', 'branching', 'case statements'],
     summary: 'Branching and early-return constructs for SSL scripts and procedures.',
     elements: ['IF', 'ELSE', 'ENDIF', 'BEGINCASE', 'CASE', 'OTHERWISE', 'EXITCASE', 'ENDCASE', 'RETURN'],
-    mustFollow: [
-      'Use uppercase colon-prefixed keywords in SSL code, for example :IF and :BEGINCASE.',
-      ':BEGINCASE requires at least one :CASE block.',
-      'Terminate each :CASE and :OTHERWISE block with :EXITCASE unless deliberate fallthrough is required.',
-      'Keep one statement per line and terminate every statement with a semicolon.',
-    ],
-    avoid: [
-      'Do not rely on BEGINCASE fallthrough accidentally.',
-      'Do not put semicolons inside comment text; the first semicolon ends the comment.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['loops', 'error-handling', 'operators'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -70,16 +61,7 @@ const CATEGORY_DEFS = [
     aliases: ['iteration', 'for loops', 'while loops', 'loop control'],
     summary: 'Iteration constructs, loop exits, and loop-control gotchas.',
     elements: ['FOR', 'TO', 'STEP', 'NEXT', 'WHILE', 'ENDWHILE', 'EXITFOR', 'EXITWHILE', 'LOOP', 'ALen'],
-    mustFollow: [
-      'SSL arrays are 1-based; loop over arrays from 1 through ALen(aArray).',
-      'Use :NEXT to end :FOR loops; :ENDFOR is not a valid loop terminator.',
-      'Put a space before :STEP in :FOR headers.',
-      'Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY.',
-    ],
-    avoid: [
-      'Do not use zero-based indexes for SSL arrays.',
-      'Do not assume .NET collection indexing rules apply to SSL arrays.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['arrays', 'control-flow', 'error-handling'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -155,16 +137,7 @@ const CATEGORY_DEFS = [
       'strict-equals',
       'dollar',
     ],
-    mustFollow: [
-      'Use == for exact string equality.',
-      'Remember that = is prefix-style for strings and is not the same as exact equality.',
-      'Use $ for containment tests.',
-      'Use bracket strings when SQL or text contains many quotes.',
-    ],
-    avoid: [
-      'Do not assume = and != are logical opposites for strings.',
-      'Do not use string concatenation for SQL values when parameterization is available.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['operators', 'sql', 'formatting'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -190,17 +163,7 @@ const CATEGORY_DEFS = [
       'CompArray',
       'SortArray',
     ],
-    mustFollow: [
-      'SSL arrays are 1-based.',
-      'Index collections on .NET objects reached via colon member access (for example dataSet:Tables[0]) as 0-based.',
-      'Declare array variables before use and initialize arrays before appending.',
-      'Use adjacent commas with no spaces for skipped optional parameters.',
-      'Check ALen before reading an index from dynamic input.',
-    ],
-    avoid: [
-      'Do not pass NIL as the target array to mutating array helpers.',
-      'Do not treat SSL arrays as zero-based .NET arrays.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['loops', 'sql', 'types'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.types],
   },
@@ -225,14 +188,7 @@ const CATEGORY_DEFS = [
       'DOW',
       'DOY',
     ],
-    mustFollow: [
-      'Use documented date conversion functions rather than assuming implicit coercion.',
-      'Keep canonical casing for LIMSDate, DOW, and DOY.',
-      'Be explicit about invariant/local date handling when database result materialization depends on it.',
-    ],
-    avoid: [
-      'Do not pass arbitrary strings or numbers to date-only functions unless the element documentation says they are accepted.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['database', 'types', 'formatting'],
     sourcePaths: [SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.types],
   },
@@ -242,19 +198,7 @@ const CATEGORY_DEFS = [
     aliases: ['class files', 'methods', 'fields', 'inheritance'],
     summary: 'User-defined class structure, field access, method calls, and built-in class creation.',
     elements: ['CLASS', 'INHERIT', 'DECLARE', 'PUBLIC', 'CreateUdObject', 'me', 'base'],
-    mustFollow: [
-      'Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.',
-      'Access class fields through Me:fieldName or Base:fieldName inside methods.',
-      'Call sibling or inherited methods with Me:Method() and Base:Method().',
-      'Use CreateUdObject("Category.ClassName") for user-defined classes; a bare class name is looked up only among the default categories.',
-      'Write :INHERIT with the full Category.ClassName of the parent class.',
-    ],
-    avoid: [
-      'Do not assign to class fields with bare identifiers inside methods.',
-      'Do not call DoProc with a bare procedure name inside class methods; it is a compile-time error. Use Me:Method() or Base:Method().',
-      'Do not instantiate built-in classes with CreateUdObject.',
-      'Do not write :INHERIT with a plain class name; it is a compile-time error.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['objects', 'procedures', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -264,16 +208,7 @@ const CATEGORY_DEFS = [
     aliases: ['dynamic objects', 'properties', 'built-in classes', 'member access'],
     summary: 'Dynamic objects, properties, built-in classes, and member-access conventions.',
     elements: ['CreateUdObject', 'AddProperty', 'SSLExpando', 'Email', 'SQLConnection', 'me', 'base'],
-    mustFollow: [
-      'Reserve property for dynamic-object members, SSLExpando members, and AddProperty-created members.',
-      'Use field for :DECLARE slots on classes.',
-      'Instantiate directly creatable built-in classes with curly braces, for example Email{}.',
-      'Use no spaces around member access colon.',
-    ],
-    avoid: [
-      'Do not use CreateUdObject for built-in class instances.',
-      'Do not blur class fields and dynamic object properties in documentation or reviews.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['classes', 'types', 'formatting'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -376,17 +311,7 @@ const CATEGORY_DEFS = [
     aliases: ['style', 'layout', 'comments', 'regions'],
     summary: 'Statement layout, indentation, comments, operators, and region comments.',
     elements: ['DECLARE', 'PARAMETERS', 'DEFAULT', 'INCLUDE', 'PUBLIC'],
-    mustFollow: [
-      'Use one statement per line.',
-      'Almost every SSL statement, including comments, must end with a semicolon.',
-      'Never include a semicolon inside comment text.',
-      'Use spaces around assignment, arithmetic, comparison, and logical operators.',
-      'Prefer /* region ...; and /* endregion; comments for editor grouping.',
-    ],
-    avoid: [
-      'Do not use :REGION/:ENDREGION for code organization.',
-      'Do not normalize indentation globally; preserve 4-space files and prefer tabs otherwise.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['naming', 'operators', 'procedures'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -396,16 +321,7 @@ const CATEGORY_DEFS = [
     aliases: ['hungarian notation', 'identifiers', 'variable names'],
     summary: 'Procedure, class, variable, constant, and parameter naming conventions.',
     elements: ['DECLARE', 'PARAMETERS', 'PUBLIC'],
-    mustFollow: [
-      'Procedures and classes use PascalCase.',
-      'Variables use Hungarian-style camelCase.',
-      'Constants use UPPER_SNAKE_CASE.',
-      'Use documented prefixes: s, n, b, d, a, o, fn, and v.',
-    ],
-    avoid: [
-      'Do not rename values in behavior-preserving refactors unless the refactor scope includes naming cleanup.',
-      'Do not invent prefixes outside the documented set without a reason.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['formatting', 'classes', 'procedures'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.naming],
   },
@@ -415,16 +331,7 @@ const CATEGORY_DEFS = [
     aliases: ['type system', 'runtime types', 'literals'],
     summary: 'SSL primitive/runtime types, literals, and type-sensitive comparisons.',
     elements: ['array', 'boolean', 'date', 'nil', 'number', 'object', 'string', 'true', 'false', 'LimsString'],
-    mustFollow: [
-      'Use NIL for the nil literal and .T./.F. for booleans.',
-      'Look up function parameter types before relying on coercion.',
-      'Strings, numbers, booleans, dates and arrays have no SSL-defined members; a : call reaches a case-sensitive native .NET member or raises (arrays have :Length, not :Count).',
-      'Convert types explicitly with Val() and LimsString(); only date ± number and date - date coerce.',
-    ],
-    avoid: [
-      'Do not assume every built-in coerces strings, numbers, dates, and NIL interchangeably.',
-      'Do not confuse SSL arrays with .NET zero-based collections.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['arrays', 'strings', 'dates', 'objects'],
     sourcePaths: [SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.types],
   },
@@ -447,16 +354,7 @@ const CATEGORY_DEFS = [
       'plus',
       'minus',
     ],
-    mustFollow: [
-      'Use := for assignment.',
-      'Use == when exact string equality matters.',
-      'Use spaces around assignment, arithmetic, comparison, and logical operators.',
-      'Use no spaces around member access colon.',
-    ],
-    avoid: [
-      'Do not treat = as exact string equality.',
-      'Do not assume != negates string prefix equality.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['strings', 'formatting', 'control-flow'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -556,7 +454,7 @@ function ruleLists(category, rules) {
     return packLists(rules.records, category.id);
   }
   for (const record of rules.records) {
-    if (!record.machine || !record.categories.includes(category.id)) continue;
+    if (!record.machine?.list || !record.categories.includes(category.id)) continue;
     const list = record.machine.list === 'avoid' ? category.avoid : category.mustFollow;
     if (!list.includes(plainRule(record))) {
       fail(
@@ -591,10 +489,10 @@ function categoryPack(category, elements, rules) {
   };
 }
 
-// Foundation bullets sit among hand-written ones, so each call selects the
-// records for its spot: { domain: [...] } in record order, or { id: [...] }
-// in the order given. renderFoundation checks that every flagged record is
-// placed exactly once.
+// Every Non-Negotiable and Does Not Have bullet comes from a record. Each call
+// selects the records for its spot: { domain: [...] } in record order, or
+// { id: [...] } in the order given. renderFoundation checks that every
+// flagged record is placed exactly once.
 function foundationBullets(rules, list, selector, placed) {
   let records = foundationRecords(rules.records, list);
   if (selector.id) {
@@ -625,6 +523,7 @@ function renderFoundation(schemaFacts, rules) {
     .join('\n');
   const placed = new Set();
   const bullets = (selector) => foundationBullets(rules, 'non_negotiable', selector, placed);
+  const missing = (selector) => foundationBullets(rules, 'does_not_have', selector, placed);
 
   const text = `# SSL Machine Foundation
 
@@ -649,27 +548,34 @@ detail.
 
 ## Non-Negotiable SSL Rules
 
-- Colon-prefixed SSL keywords are uppercase and case-sensitive.
-- Almost every SSL statement, including comments, must end with a semicolon.
-- Never include a semicolon inside comment text; the first semicolon ends the
-  comment and the remaining text becomes executable code. End every comment
-  with \`;\` alone — the form \`; */\` leaves an inert \`*/\` outside the
-  comment and draws a diagnostic.
-- Condition-bearing keyword lines are statements and end with a semicolon:
-  \`:IF condition;\`, \`:WHILE condition;\`, \`:FOR i := 1 :TO n;\`. Omitting
-  it makes the parser absorb the next line into the condition.
-- Declare variables before use with \`:DECLARE\`.
-${bullets({ id: ['no_default_on_declare_line', 'parameters_first', 'default_after_parameters'] })}
+${bullets({
+  id: [
+    'keyword_uppercase',
+    'statement_semicolon',
+    'no_semicolon_in_comment_text',
+    'condition_keyword_semicolon',
+    'declare_before_use',
+    'no_default_on_declare_line',
+    'parameters_first',
+    'default_after_parameters',
+  ],
+})}
 ${bullets({ domain: ['data-sources'] })}
-- SSL arrays are 1-based; collections on .NET objects reached via colon member
-  access (for example \`dataSet:Tables[0]\`) are 0-based.
-- Use \`==\` for exact string equality; \`=\` is prefix-style for strings.
-${bullets({ id: ['doproc_for_same_file_procedures', 'execfunction_for_external_scripts'] })}
-- Built-in classes instantiate with curly braces, for example \`Email{}\`.
-- User-defined classes instantiate with \`CreateUdObject("Category.ClassName")\`.
-- Inside class methods, access fields through \`Me:fieldName\` or
-  \`Base:fieldName\`.
-${bullets({ id: ['prefer_try_over_error_resume', 'try_requires_handler', 'no_control_exit_in_finally'] })}
+${bullets({
+  id: [
+    'arrays_one_based',
+    'net_collections_zero_based',
+    'equals_vs_strict_equals',
+    'doproc_for_same_file_procedures',
+    'execfunction_for_external_scripts',
+    'builtin_classes_curly_braces',
+    'createudobject_category_qualified',
+    'field_access_via_me',
+    'prefer_try_over_error_resume',
+    'try_requires_handler',
+    'no_control_exit_in_finally',
+  ],
+})}
 ${bullets({ domain: ['sql'] })}
 
 ## SSL Does Not Have
@@ -677,29 +583,20 @@ ${bullets({ domain: ['sql'] })}
 Constructs from other languages that do not exist in SSL. Writing any of
 these is an error — never invent them:
 
-- Positional parameter access (\`$1\`, \`$2\`, ...): parameters are accessed
-  only by the names declared in \`:PARAMETERS\`.
-- \`:DECLARE\` initializers (\`:DECLARE x := 1;\`): \`:DECLARE\` takes bare
-  identifiers only — assign in a separate statement. Class constants are
-  assigned in the Constructor.
-- \`*/\` comment closers: an SSL comment opens with \`/*\` and ends at the
-  first \`;\`.
-- \`:ENDFOR\`: a \`:FOR\` loop closes with \`:NEXT\`.
-- \`=\` assignment: assignment is \`:=\` (plus \`+=\`, \`-=\`, ...);
-  \`x = y\` is a comparison expression, never an assignment.
-- \`[a, b]\` array literals: array literals use braces \`{1, 2, 3}\`;
-  square brackets are for indexing (\`aRows[1]\`) and are also a string
-  literal form (\`[text]\`), never an array constructor.
-- \`NULL\`: the absent-value literal is \`NIL\`.
-- Bare \`If\`/\`Else\`/\`EndIf\`/\`While\`/\`EndWhile\` keywords: SSL
-  keywords are colon-prefixed uppercase only (\`:IF\`/\`:ELSE\`/
-  \`:ENDIF\`/\`:WHILE\`/\`:ENDWHILE\`) — a bare form is an identifier,
-  not a keyword.
-- The C ternary \`cond ? a : b\`: use \`IIf(bCondition, vTrue, vFalse)\`
-  (exactly three arguments; both branches are evaluated).
-- A values array on \`SQLExecute\`: \`SQLExecute(sSql, {args})\` passes
-  the array as a **connection name** — SQLExecute binds via \`?name?\`
-  markers only (see the database rules above).
+${missing({
+  id: [
+    'no_positional_parameter_access',
+    'declare_initializer',
+    'no_c_style_comment_closer',
+    'endfor_invalid',
+    'assignment_operator',
+    'array_literal_braces',
+    'null_literal_is_nil',
+    'keywords_colon_prefixed',
+    'no_ternary_operator',
+    'sqlexecute_no_values_array',
+  ],
+})}
 
 ## Naming Prefixes
 
@@ -710,6 +607,7 @@ ${prefixes}
 ${CATEGORY_DEFS.map((category) => `- \`${category.id}\`: ${category.summary}`).join('\n')}
 `;
   checkFoundationPlaced(rules, 'non_negotiable', placed);
+  checkFoundationPlaced(rules, 'does_not_have', placed);
   return text;
 }
 

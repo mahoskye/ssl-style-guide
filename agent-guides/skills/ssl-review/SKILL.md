@@ -27,37 +27,43 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - Do not apply the standard script layout order to data source files
 
 6. **Use these core SSL rules while reviewing** (for server scripts and class files):
-   - Colon-prefixed keywords must be UPPERCASE
-   - Almost every statement, including comments, must end with `;`
-   - Never place `;` inside comment body text
-   - `:PARAMETERS` must come immediately after `:PROCEDURE`
-   - `:DEFAULT` must come immediately after `:PARAMETERS`
-   - `:DECLARE` is a regular statement and may appear anywhere a statement is valid; declaring before body statements is a style check (see `formatting` below), not a language rule
-   - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation
-   - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY` (no multi-catch)
-   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement; `:CATCH` body allows zero or more statements
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
-   - `:BEGINCASE` requires at least one `:CASE`
-   - `:EXITCASE` must be the last statement of its branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error
-   - Access modifiers `/*@private;` / `/*@protected;` are not comments: they must be lowercase, have no space after `/*`, and sit on the line immediately before `:PROCEDURE` (a blank line between them breaks the modifier)
-   - Use one statement per line
-   - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
-   - Inside SQL strings, uppercase SQL keywords; preserve the author's identifier casing (force-folding identifiers is dialect-conditional — do not flag mixed-case or uppercase identifiers)
-   - End each `:CASE` / `:OTHERWISE` with `:EXITCASE;` unless multi-match is intentional
-   - `==` is exact string equality; `=` is prefix matching for strings
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,parameters_first,default_after_parameters,declare_locals_at_start,indent_tabs_preferred,doproc_in_class,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally,begincase_requires_case,exitcase_last_in_branch,visibility_annotation_exact_form,visibility_annotation_form,one_statement_per_line,doproc_for_same_file_procedures,execfunction_for_external_scripts,sql_keyword_case,sql_identifier_case,prefer_exitcase,equals_vs_strict_equals -->
+   - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.
+   - `:PARAMETERS` must appear before any other statements in a script or procedure body.
+   - `:DEFAULT` must immediately follow `:PARAMETERS`.
+   - Declare locals at the start of the script or procedure; this is a style preference, because `:DECLARE` is valid anywhere a statement is.
+   - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+   - Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.
+   - `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare `:TRY ... :ENDTRY` is invalid.
+   - Only one `:CATCH` block is allowed per `:TRY`; there is no multi-catch.
+   - The `:TRY` body requires at least one statement, and so does a `:FINALLY` body; a `:CATCH` body may be empty.
+   - Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY`.
+   - `:BEGINCASE` requires at least one `:CASE` block.
+   - `:EXITCASE` must be the last statement of its `:CASE`/`:OTHERWISE` branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error.
+   - Write an access modifier exactly as `/*@private;` or `/*@protected;`: lowercase, with no space between `/*` and `@`.
+   - Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.
+   - Use one statement per line.
+   - Use `DoProc("ProcName", {args})` for same-file script procedures.
+   - Use `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external script entry points.
+   - Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+   - Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+   - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+   - Use `==` for exact string equality; `=` is prefix-style for strings.
+   <!-- /rules -->
 
 ---
 
 ## Check Categories
 
 ### `naming` — Hungarian notation and identifier conventions
-- Prefix mismatch: `s` = string, `n` = numeric, `b` = boolean, `d` = date,
-  `a` = array, `o` = object, `fn` = code block, `v` = variant/any
-- Identifiers should be camelCase after the prefix (`sMyVar`, not `s_my_var` or `SMYVAR`)
-- Class names should be PascalCase
-- Procedure names should be PascalCase (e.g., `GetInvoiceTotal`)
-- Constants should use UPPER_SNAKE_CASE
+<!-- rules: id=prefix_matches_type,hungarian_variable_names,procedure_class_pascal_case,constants_upper_snake_case -->
+- Make a variable's prefix match the type of the value it holds: `s` string, `n` numeric, `b` boolean, `d` date, `a` array, `o` object, `fn` code block, `v` variant/any.
+- Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (`sMyVar`, not `s_my_var` or `SMYVAR`).
+- Procedures and classes use PascalCase.
+- Constants use UPPER_SNAKE_CASE.
+<!-- /rules -->
 
 ### `formatting` — Syntax and structural formatting
 - Every statement (including comments) must end with `;`

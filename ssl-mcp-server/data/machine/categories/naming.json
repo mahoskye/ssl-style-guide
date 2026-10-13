@@ -9,13 +9,13 @@
   "summary": "Procedure, class, variable, constant, and parameter naming conventions.",
   "must_follow": [
     "Procedures and classes use PascalCase.",
-    "Variables use Hungarian-style camelCase.",
+    "Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (sMyVar, not s_my_var or SMYVAR).",
     "Constants use UPPER_SNAKE_CASE.",
-    "Use documented prefixes: s, n, b, d, a, o, fn, and v."
+    "Use documented prefixes: s, n, b, d, a, o, fn, and v.",
+    "Represent functions in PascalCase where applicable, while preserving canonical exceptions such as _AND, _OR, _XOR, _NOT, DOW, DOY, and LIMSDate."
   ],
   "avoid": [
-    "Do not rename values in behavior-preserving refactors unless the refactor scope includes naming cleanup.",
-    "Do not invent prefixes outside the documented set without a reason."
+    "Do not rename values in behavior-preserving refactors unless the refactor scope includes naming cleanup."
   ],
   "elements": [
     {

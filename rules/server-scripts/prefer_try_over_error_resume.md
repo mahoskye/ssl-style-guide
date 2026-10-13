@@ -16,6 +16,12 @@ schema:
   - path: error_handling.guidance.prefer_structured
     form: value
     value: true
+  - path: lints.deprecated_keywords.:ERROR.message
+    form: text
+    message: ":ERROR is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
+  - path: lints.deprecated_keywords.:RESUME.message
+    form: text
+    message: ":RESUME is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
 verification:
   basis: convention
   note: >-

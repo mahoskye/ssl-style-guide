@@ -21,27 +21,29 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - Do not apply the standard script layout (§2.1) to data source files
 
 3. **Use these core SSL rules throughout the refactor** (for server scripts and class files):
-   - Colon-prefixed keywords must be UPPERCASE: `:IF`, `:TRY`, `:PROCEDURE`, etc.
-   - Almost every statement, including comments, must end with `;`
-   - Never place `;` inside comment body text; it ends the comment early
-   - `:PARAMETERS` must come immediately after `:PROCEDURE`
-   - `:DEFAULT` must come immediately after `:PARAMETERS`
-   - `:DECLARE` before body statements is a style preference — the language allows `:DECLARE` anywhere in statement flow
-   - Use one statement per line
-   - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation
-   - Use `Me:Method()` / `Base:Method()` inside classes; `DoProc` is invalid inside class methods
-   - Use `DoProc("ProcName", {args})` for same-file script procedures
-   - Use `ExecFunction("Category.Script", {args})` or
-     `ExecFunction("Category.Script.Proc", {args})` for external entry points
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
-   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
-   - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional
-   - `:BEGINCASE` requires at least one `:CASE` block
-   - Use `==` for exact string equality; `=` is prefix matching for strings
-   - Inside SQL strings, use uppercase SQL keywords and functions; preserve the
-     author's casing for other SQL identifiers (never force-fold — it breaks
-     case-sensitive SQL Server collations)
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,parameters_first,default_after_parameters,declare_locals_at_start,one_statement_per_line,indent_tabs_preferred,me_base_for_method_calls,doproc_in_class,doproc_for_same_file_procedures,execfunction_for_external_scripts,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally,prefer_exitcase,begincase_requires_case,equals_vs_strict_equals,sql_keyword_case,sql_identifier_case -->
+   - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.
+   - `:PARAMETERS` must appear before any other statements in a script or procedure body.
+   - `:DEFAULT` must immediately follow `:PARAMETERS`.
+   - Declare locals at the start of the script or procedure; this is a style preference, because `:DECLARE` is valid anywhere a statement is.
+   - Use one statement per line.
+   - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+   - Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
+   - Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.
+   - Use `DoProc("ProcName", {args})` for same-file script procedures.
+   - Use `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external script entry points.
+   - `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare `:TRY ... :ENDTRY` is invalid.
+   - Only one `:CATCH` block is allowed per `:TRY`; there is no multi-catch.
+   - The `:TRY` body requires at least one statement, and so does a `:FINALLY` body; a `:CATCH` body may be empty.
+   - Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY`.
+   - End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+   - `:BEGINCASE` requires at least one `:CASE` block.
+   - Use `==` for exact string equality; `=` is prefix-style for strings.
+   - Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+   - Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+   <!-- /rules -->
 
 4. **Apply the 6-step workflow:**
 

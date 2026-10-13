@@ -10,14 +10,11 @@
   "summary": "Iteration constructs, loop exits, and loop-control gotchas.",
   "must_follow": [
     "SSL arrays are 1-based; loop over arrays from 1 through ALen(aArray).",
-    "Use :NEXT to end :FOR loops; :ENDFOR is not a valid loop terminator.",
+    ":ENDFOR: a :FOR loop closes with :NEXT.",
     "Put a space before :STEP in :FOR headers.",
     "Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
   ],
-  "avoid": [
-    "Do not use zero-based indexes for SSL arrays.",
-    "Do not assume .NET collection indexing rules apply to SSL arrays."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "FOR",

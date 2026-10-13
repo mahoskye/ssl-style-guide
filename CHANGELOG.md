@@ -43,6 +43,27 @@ Entries before this file existed are reconstructed from the release commits.
   logging and module-structure pack lists, the foundation's server-script
   bullets, and rule regions in the `ssl-new-procedure` skill and the
   server-script baseline. The parsed schema is unchanged.
+- Rules source, language (#101): 62 records in `rules/language/` cover
+  keywords, semicolons and comments, statement structure, operators and
+  equality, types and `NIL`, arrays, formatting and variable behavior, plus
+  `sqlexecute_no_values_array` in `rules/sql/`. They generate the schema's
+  `comments.rules` and most `lints` subtrees, the control-flow, loops,
+  strings, arrays, dates, formatting, types and operators pack lists, the
+  foundation's language bullets and its whole "SSL Does Not Have" list, and
+  rule regions in the review, refactor and new-procedure skills and the
+  agent guide's style quick start. The parsed schema is unchanged.
+- Rules source, classes (#101): 19 records in `rules/classes/` cover member
+  order, `Me:`/`Base:` access, instantiation, `:INHERIT`, constructors and
+  class-file shape. They generate the classes and objects pack lists, the
+  foundation's class bullets, the class entries of `lints.class_rules`,
+  `lints.compile_errors` and `lints.coding_standards`, and the
+  `ssl-new-class` rule lists.
+- Rules source, naming (#101): 12 records in `rules/naming/` cover Hungarian
+  prefixes, length limits, casing and loop counters. They generate the
+  schema's `lints.hungarian_notation` (and so the foundation's prefix table),
+  the naming pack lists and the review skill's naming checks. Every foundation
+  rule bullet is now generated; the `files`, `email` and `security` packs are
+  the only hand-written pack lists left.
 
 ### Changed
 - Element data is re-vendored from the published reference: 118 of 460

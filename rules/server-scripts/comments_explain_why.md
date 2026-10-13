@@ -16,13 +16,18 @@ schema:
   - path: documentation.code_comments.rules
     form: text
     message: Explain "why" not "what"
+  - path: comments.rules
+    form: rule_text
+    message: Prefer comments that explain 'why' rather than restating 'what'.
 verification:
   basis: convention
   note: >-
     Kept from the server-script baseline ("File And Procedure
     Documentation"). Merged: the schema's documentation.code_comments.rules
     entry and the quality bar ("comment the why wherever the logic is
-    non-obvious ... not a restatement of the line below").
+    non-obvious ... not a restatement of the line below"), and the schema's
+    comments.rules entry "Prefer comments that explain 'why' rather than
+    restating 'what'.".
 ---
 
 ## Rationale
