@@ -33,12 +33,12 @@
       "name": "RunSQL",
       "type": "function",
       "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
-      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+      "summary": "Executes a non-query SQL statement and returns .T. on success. Under default settings, a failed statement raises an error."
     },
     {
       "name": "LSearch",
       "type": "function",
-      "syntax": "LSearch(sCommandString, vDefaultValue, [sConnectionName], [aArrayOfValues])",
+      "syntax": "LSearch(sCommandString, [vDefaultValue], [sConnectionName], [aArrayOfValues])",
       "summary": "Returns a single value from a SQL query, or a caller-supplied fallback when the query produces no scalar result."
     },
     {
