@@ -9,7 +9,7 @@
  *   - rules/INDEX.md: one table per domain;
  *   - the generated regions of ssl-style-guide/ssl-style-guide.schema.yaml,
  *     built from rules/schema-base.yaml plus the records' `schema`
- *     placements (pilot: module_structure.data_source_modules only);
+ *     placements (pilot: the subtrees that schema-base.yaml lists);
  *   - in-place regions in Markdown guidance, between
  *     `<!-- rules: <selector> -->` and `<!-- /rules -->`, or inline between
  *     `<!-- rule: <id> -->` and `<!-- /rule -->`.

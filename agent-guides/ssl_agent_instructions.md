@@ -557,31 +557,34 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 SQL in SSL strings uses **canonical compact** style. Full reference with examples
 for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 
-**Layout rules:**
-- SQL block indented 4 spaces inside the SSL string literal
-- Major clauses (`SELECT`, `FROM`, `WHERE`, `JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, etc.) at column 0 relative to that indent
-- `AND`/`OR` indented 2 spaces under their parent clause (`WHERE`, `ON`, `HAVING`)
-- `ON` indented 2 spaces under `JOIN` (but column 0 in `MERGE`)
-- `HAVING` indented 2 spaces under `GROUP BY`
-- `WHEN`/`ELSE` indented 4 spaces under `CASE`; `END` aligned with `CASE`
-- `SELECT` continuations aligned to first column (col 7)
-- Trailing commas, ~90 char line target
+**Rules:**
 
-**Casing:** SQL keywords and SQL functions UPPERCASE; preserve the author's
-identifier casing (lowercase is an Oracle-only opt-in — see the reference's
-Identifier Casing section).
-
-**INSERT:** Opening `(` on the `INSERT INTO` line, columns indented 4 spaces, closing `)` on its own line. Same pattern for `VALUES`.
-
-**UPDATE:** `SET` on same line as `UPDATE`, assignments indented 4 spaces below.
-
-**Set operations:** Blank line before and after `UNION`/`INTERSECT`/`MINUS`.
-
-**SELECT list packing:** Pack short items on one line up to ~90 chars. Break complex expressions (CASE, nested functions) to their own line.
-
-**CASE consistency:** Within one CASE block, either all branches inline or all broken — don't mix. `ELSE` may stay inline when short.
-
-**Optimizer hints:** `/*+ HINT */` after the action keyword — never strip without understanding the purpose.
+<!-- rules: domain=sql level=style_only applies_to=embedded_sql -->
+- Use multiline SQL strings for non-trivial queries and put major clauses on separate lines.
+- Indent the whole SQL block 4 spaces inside the SSL string literal.
+- Start each major clause at column 0 relative to the 4-space indent: `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`.
+- Keep SQL lines to about 90 characters, breaking at logical points.
+- Put commas at the end of the line (trailing comma style), not at the start of the next line.
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+- Preserve external schema or object casing when the schema or object requires it.
+- Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
+- Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
+- Indent `HAVING` 2 spaces under `GROUP BY`.
+- When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`.
+- Indent `WHEN`/`ELSE` 4 spaces under `CASE`.
+- Align `END` with its `CASE`.
+- Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short.
+- When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.
+- Pack `SELECT` columns onto lines up to about 90 characters: short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line, and complex expressions (`CASE`, nested functions, subqueries) break to their own line.
+- Align `SELECT` continuation lines to the first column (column 7).
+- In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
+- In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.
+- Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
+- Keep an optimizer hint (`/*+ HINT */`) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
+- Do not put a trailing semicolon inside an embedded SQL string — `"SELECT ... ;"` is not the convention; end the SSL statement, not the SQL text.
+<!-- /rules -->
 
 **Example:**
 ```ssl

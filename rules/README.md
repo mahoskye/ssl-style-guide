@@ -5,8 +5,8 @@ the machine packs, and the rule lists in skills and guides are generated from
 the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
-**Pilot status:** only the `data-sources` domain is migrated. Every other rule
-is still hand-written where it always was.
+**Pilot status:** only the `data-sources` and `sql` domains are migrated.
+Every other rule is still hand-written where it always was.
 
 ## Layout
 
@@ -22,10 +22,10 @@ is still hand-written where it always was.
 | Output | From | Generator |
 |---|---|---|
 | `rules/INDEX.md` | all records | `tools/generate-rules.mjs` |
-| `module_structure.data_source_modules` in `ssl-style-guide/ssl-style-guide.schema.yaml` (between the `BEGIN GENERATED` / `END GENERATED` comments) | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
+| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` that `schema-base.yaml` lists (between the `BEGIN GENERATED` / `END GENERATED` comments) | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
 | Regions between `<!-- rules: … -->` and `<!-- /rules -->` in `agent-guides/` and `ssl-style-guide/` Markdown | the selected records' `rule` text | `tools/generate-rules.mjs` |
-| `must_follow` / `avoid` in `agent-guides/machine/categories/data-sources.json` | records with `machine.list`, in `categories.yaml` order | `tools/generate-machine-docs.mjs` |
-| Data-source bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable` | `tools/generate-machine-docs.mjs` |
+| `must_follow` / `avoid` in the packs under `agent-guides/machine/categories/` whose category has `lists_from_rules: true` | records with `machine.list`, in `categories.yaml` order | `tools/generate-machine-docs.mjs` |
+| Each migrated domain's Non-Negotiable bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable` | `tools/generate-machine-docs.mjs` |
 
 Placements outside a generated region (for example
 `module_structure.class_file_constraint.rule`) are not written; the check

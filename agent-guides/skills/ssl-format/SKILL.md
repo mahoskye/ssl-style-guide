@@ -76,53 +76,62 @@ The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part
 Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`, `LSelect1(`, `LSelectC(`, `GetDataSet(`, and similar DB function calls.
 
 ### General layout
-- SQL block indented 4 spaces inside the SSL string literal
-- Major clauses at column 0 (relative to the 4-space indent): `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`
-- ~90 char line target; break at logical points
+<!-- rules: id=sql_ssl_embedding_indent,sql_major_clause_column,sql_max_line_length -->
+- Indent the whole SQL block 4 spaces inside the SSL string literal.
+- Start each major clause at column 0 relative to the 4-space indent: `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`.
+- Keep SQL lines to about 90 characters, breaking at logical points.
+<!-- /rules -->
 
 ### Casing
-- SQL keywords and built-in functions: UPPERCASE
-- Table names, column names, aliases: preserve the author's casing (force-folding is dialect-conditional; lowercase only for Oracle-only code)
-- Preserve external schema/object casing when required
+<!-- rules: id=sql_keyword_case,sql_identifier_case,sql_preserve_external_casing -->
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+- Preserve external schema or object casing when the schema or object requires it.
+<!-- /rules -->
 
 ### Sub-clause indentation (2 spaces under parent)
-- `AND`/`OR` indented 2 under `WHERE`, `ON`, or `HAVING`
-- `ON` indented 2 under `JOIN`
-- `HAVING` indented 2 under `GROUP BY`
-- `BETWEEN...AND`: the `AND` aligns under `BETWEEN`
+<!-- rules: id=sql_and_or_indent,sql_on_indent,sql_having_indent,sql_between_and_align -->
+- Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
+- Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
+- Indent `HAVING` 2 spaces under `GROUP BY`.
+- When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`.
+<!-- /rules -->
 
 ### SELECT list
-- Pack columns onto lines up to ~90 chars
-- Short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line
-- Break complex expressions (CASE, nested functions, subqueries) to their own line
-- Continuation lines align to first column (col 7 from SELECT)
+<!-- rules: id=sql_select_packing,sql_select_continuation -->
+- Pack `SELECT` columns onto lines up to about 90 characters: short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line, and complex expressions (`CASE`, nested functions, subqueries) break to their own line.
+- Align `SELECT` continuation lines to the first column (column 7).
+<!-- /rules -->
 
 ### INSERT
-- Opening `(` on the `INSERT INTO` line
-- Columns indented 4 spaces inside
-- Closing `)` on its own line
-- Same pattern for `VALUES`
+<!-- rules: id=sql_insert_layout -->
+- In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
+<!-- /rules -->
 
 ### UPDATE
-- `SET` on the same line as `UPDATE`
-- Assignments indented 4 spaces below
+<!-- rules: id=sql_update_layout -->
+- In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
+<!-- /rules -->
 
 ### MERGE
 For formatting existing code only. Agents do not write `MERGE` (see the basic-SQL rule in the agent boundaries).
 
-- `ON` at column 0 (not indented under `USING`)
-- Multi-line ON conditions: `AND` indented 4 (aligned under first condition inside parens)
-- `UPDATE SET` / `INSERT` / `DELETE WHERE` indented 4 under `WHEN`
-- INSERT uses block-style parens
+<!-- rules: id=sql_merge_layout -->
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.
+<!-- /rules -->
 
 ### Set operations
-- Blank line before and after `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`
+<!-- rules: id=sql_set_operation_spacing -->
+- Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
+<!-- /rules -->
 
 ### CASE expressions
-- `WHEN`/`ELSE` indented 4 under `CASE`; `END` aligned with `CASE`
-- Within one CASE block: either all WHEN/THEN branches inline or all broken — don't mix
-- `ELSE` may stay inline when its value is short
-- When THEN breaks to new line, indent the value 4 under WHEN
+<!-- rules: id=sql_case_when_else_indent,sql_case_end_align,sql_case_branch_consistency,sql_case_then_break -->
+- Indent `WHEN`/`ELSE` 4 spaces under `CASE`.
+- Align `END` with its `CASE`.
+- Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short.
+- When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.
+<!-- /rules -->
 
 ```sql
 SELECT o.ordno,
@@ -134,8 +143,9 @@ FROM orders o
 ```
 
 ### Optimizer hints
-- `/*+ HINT */` stays immediately after the action keyword
-- Never remove or reformat hints
+<!-- rules: id=sql_optimizer_hints -->
+- Keep an optimizer hint (`/*+ HINT */`) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
+<!-- /rules -->
 
 ---
 

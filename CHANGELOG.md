@@ -29,6 +29,11 @@ Entries before this file existed are reconstructed from the release commits.
   `ssl-new-datasource` skill and the agent guide's §4A, and `rules/INDEX.md`;
   the data-sources pack lists and the foundation's data-source bullets come
   from the same records. The parsed schema is unchanged.
+- Rules source, SQL domain (#101): 33 records in `rules/sql/` generate the
+  schema's `sql.formatting` and `sql.parameters`, the `ssl-format` skill's SQL
+  rule lists, the agent guide's SQL quick-reference rules, the `database` and
+  `sql` pack lists, and the foundation's SQL bullets. The parsed schema is
+  unchanged.
 
 ### Changed
 - Element data is re-vendored from the published reference: 118 of 460

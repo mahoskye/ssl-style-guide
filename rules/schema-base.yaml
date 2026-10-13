@@ -8,9 +8,9 @@
 # rules/<domain>/<id>.md; edit everything else here. Never edit the generated
 # region of the schema by hand.
 #
-# Pilot (#101): only module_structure.data_source_modules is generated. The
-# rest of the schema is still hand-maintained, and records' placements outside
-# this subtree are checked against it instead of written.
+# Pilot (#101): only the subtrees below are generated. The rest of the schema
+# is still hand-maintained, and records' placements outside these subtrees are
+# checked against it instead of written.
 module_structure:
   data_source_modules:
     level: authoritative
@@ -91,3 +91,138 @@ module_structure:
       - !rule datasource_default_required
       - !rule no_flag_builder_directives
       - !rule datasource_undeclared_placeholder
+sql:
+  formatting:
+    level: style_only
+    style: canonicalCompact
+    reference: ssl-style-guide/sql-canonical-compact-reference.md
+    keyword_case: !rule sql_keyword_case
+    function_case: !rule sql_keyword_case
+    identifier_case: !rule sql_identifier_case
+    identifier_case_options:
+      - preserve
+      - lower
+      - upper
+    preserve_external_casing: !rule sql_preserve_external_casing
+    align_clauses: false
+    comma_style: !rule sql_trailing_commas
+    max_line_length: !rule sql_max_line_length
+    ssl_embedding:
+      indent: !rule sql_ssl_embedding_indent
+      note: entire SQL block indented 4 spaces inside the SSL string literal
+    indentation:
+      major_clauses: !rule sql_major_clause_column
+      major_clause_list:
+        - SELECT
+        - FROM
+        - WHERE
+        - INNER JOIN
+        - LEFT OUTER JOIN
+        - RIGHT OUTER JOIN
+        - FULL OUTER JOIN
+        - CROSS JOIN
+        - GROUP BY
+        - ORDER BY
+        - ORDER SIBLINGS BY
+        - UNION
+        - UNION ALL
+        - INTERSECT
+        - MINUS
+        - INSERT INTO
+        - VALUES
+        - DELETE FROM
+        - MERGE INTO
+        - USING
+        - WHEN MATCHED THEN
+        - WHEN NOT MATCHED THEN
+        - START WITH
+        - CONNECT BY
+        - PIVOT
+        - UNPIVOT
+        - FOR UPDATE
+        - RETURNING
+      sub_clause_indent: 2
+      sub_clauses:
+        on: !rule sql_on_indent
+        and_or: !rule sql_and_or_indent
+        having: !rule sql_having_indent
+        case_when_else: !rule sql_case_when_else_indent
+      select_continuation_align: !rule sql_select_continuation
+      select_continuation_column: !rule sql_select_continuation
+    statement_patterns:
+      select:
+        columns: !rule sql_select_packing
+        continuation: !rule sql_select_continuation
+      join:
+        on: !rule sql_on_indent
+        on_and: !rule sql_and_or_indent
+      where:
+        and_or: !rule sql_and_or_indent
+        between_and: !rule sql_between_and_align
+      group_by:
+        having: !rule sql_having_indent
+      case:
+        when_else: !rule sql_case_when_else_indent
+        end: !rule sql_case_end_align
+        then_value: !rule sql_case_then_break
+        consistency: !rule sql_case_branch_consistency
+        else_exception: !rule sql_case_branch_consistency
+      insert:
+        parens: !rule sql_insert_layout
+        columns: !rule sql_insert_layout
+        values: !rule sql_insert_layout
+      update:
+        set: !rule sql_update_layout
+        assignments: !rule sql_update_layout
+      merge:
+        on: !rule sql_merge_layout
+        on_and: !rule sql_merge_layout
+        update_set: !rule sql_merge_layout
+        insert: !rule sql_merge_layout
+      set_operations:
+        vertical_spacing: !rule sql_set_operation_spacing
+      optimizer_hints:
+        position: !rule sql_optimizer_hints
+        syntax: "/*+ HINT */"
+        note: !rule sql_optimizer_hints
+  parameters:
+    support_level: authoritative
+    named_supported_by: !rule named_sql_param_unsupported
+    positional_supported_by: !rule sql_positional_placeholders
+    at_name_supported_by: !rule getssldataset_at_name_markers
+    values_array_position: !rule sql_positional_placeholders
+    note: "Three placeholder shapes: ?name? for SQLExecute only (input substitution, never an output bind); positional ? with a values array for the other DB functions; @name with name and value arrays for GetSSLDataset. LSelect and LSelectC take an aFieldList second that is not implemented: skip it, because any value raises fieldList != NULL - Not implemented yet."
+    array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
+    placeholder_patterns:
+      - ?name?
+      - ?obj:Prop?
+      - ?arr[i]?
+      - ?Func()?
+      - '?'
+    scope_note: >
+      These patterns apply to SQL embedded in SSL strings (SQLExecute and
+      related functions). SQL data-source files are a different mechanism and
+      reference parameters as @name placeholders — see
+      module_structure.data_source_modules.sql_data_source.body_parameters.
+    guidance_level: style_only
+    prefer_named: true
+    validate_count_vs_bindings: warn
+    common_patterns:
+      select_queries: use SQLExecute
+      modification_queries: use RunSQL
+      single_value_lookup: use LSearch
+      multi_row_lookup: use LSelect1
+    functions:
+      - SQLExecute
+      - RunSQL
+      - LSearch
+      - LSelect
+      - LSelect1
+      - LSelectC
+      - GetDataSet
+      - GetDataSetEx
+      - GetDataSetWithSchemaFromSelect
+      - GetDataSetXMLFromSelect
+      - GetNETDataSet
+      - XmlExportSql
+      - GetTables
