@@ -89,7 +89,6 @@ Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`
 - `AND`/`OR` indented 2 under `WHERE`, `ON`, or `HAVING`
 - `ON` indented 2 under `JOIN`
 - `HAVING` indented 2 under `GROUP BY`
-- `WHEN`/`ELSE` indented 2 under `CASE`
 - `BETWEEN...AND`: the `AND` aligns under `BETWEEN`
 
 ### SELECT list
@@ -120,10 +119,19 @@ For formatting existing code only. Agents do not write `MERGE` (see the basic-SQ
 - Blank line before and after `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`
 
 ### CASE expressions
-- `WHEN`/`ELSE` indented 2 under `CASE`
+- `WHEN`/`ELSE` indented 4 under `CASE`; `END` aligned with `CASE`
 - Within one CASE block: either all WHEN/THEN branches inline or all broken — don't mix
 - `ELSE` may stay inline when its value is short
-- When THEN breaks to new line, indent value one level under WHEN
+- When THEN breaks to new line, indent the value 4 under WHEN
+
+```sql
+SELECT o.ordno,
+       CASE
+           WHEN o.status = 'L' THEN 'Logged'
+           ELSE 'Unknown'
+       END AS status_desc
+FROM orders o
+```
 
 ### Optimizer hints
 - `/*+ HINT */` stays immediately after the action keyword

@@ -20,6 +20,9 @@ Entries before this file existed are reconstructed from the release commits.
   Agents do not write `MERGE`.
 - The README no longer hard-codes the schema version.
 - The schema's `last_updated` now matches the 1.7.2 release date.
+- SQL `CASE` layout follows the formatter: `WHEN`/`ELSE` 4 spaces under
+  `CASE`, `END` aligned with `CASE`. The schema, the agent guide and
+  `ssl-format` said 2 (#106).
 
 ### Removed
 - The `agent-quality-lab/` ignore entry. The lab now lives in its own

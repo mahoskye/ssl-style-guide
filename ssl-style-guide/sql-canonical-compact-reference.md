@@ -34,7 +34,7 @@ readability within SSL string literals.
 | AND/OR | Indented 2 spaces under their parent clause |
 | ON | Indented 2 spaces under JOIN |
 | HAVING | Indented 2 spaces under GROUP BY (deliberate: HAVING is a sub-clause of GROUP BY here, unlike styles that put it at column 0) |
-| WHEN/ELSE | Indented 4 spaces under CASE |
+| WHEN/ELSE | Indented 4 spaces under CASE; END aligned with CASE |
 | Keyword casing | UPPERCASE — all SQL keywords and built-in functions |
 | Identifier casing | **preserve the author's casing** by default — see the note below; lowercase is an Oracle-safe opt-in |
 | External casing | Preserve when schema/object requires it |
