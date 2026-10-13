@@ -1,0 +1,436 @@
+/* ReconcileResultsTests - user-run SSL tests, locally unexecuted;
+/* Install drafts under Calibration and run this test script;
+/* Deterministic in-memory fixtures. No database reads or writes;
+:RETURN DoProc("RunTests");
+
+:PROCEDURE RunTests;
+	:DECLARE aResults;
+	aResults := {};
+	AAdd(aResults, DoProc("TestNormalizesAndPasses"));
+	AAdd(aResults, DoProc("TestLowerBoundInclusive"));
+	AAdd(aResults, DoProc("TestUpperBoundInclusive"));
+	AAdd(aResults, DoProc("TestBelowLimit"));
+	AAdd(aResults, DoProc("TestAboveLimit"));
+	AAdd(aResults, DoProc("TestMissingResult"));
+	AAdd(aResults, DoProc("TestLatestAttemptWins"));
+	AAdd(aResults, DoProc("TestInputOrderDoesNotChangeLatest"));
+	AAdd(aResults, DoProc("TestHigherWithdrawalWins"));
+	AAdd(aResults, DoProc("TestLatestConflict"));
+	AAdd(aResults, DoProc("TestLowerConflictSuperseded"));
+	AAdd(aResults, DoProc("TestUnitMismatch"));
+	AAdd(aResults, DoProc("TestEmptyInputs"));
+	AAdd(aResults, DoProc("TestWrongExpectedType"));
+	AAdd(aResults, DoProc("TestWrongReportType"));
+	AAdd(aResults, DoProc("TestWrongExpectedRow"));
+	AAdd(aResults, DoProc("TestWrongExpectedWidth"));
+	AAdd(aResults, DoProc("TestWrongExpectedSample"));
+	AAdd(aResults, DoProc("TestWrongExpectedTest"));
+	AAdd(aResults, DoProc("TestWrongExpectedUnit"));
+	AAdd(aResults, DoProc("TestBlankExpectedKey"));
+	AAdd(aResults, DoProc("TestBlankExpectedUnit"));
+	AAdd(aResults, DoProc("TestWrongMinimum"));
+	AAdd(aResults, DoProc("TestWrongMaximum"));
+	AAdd(aResults, DoProc("TestInvertedBounds"));
+	AAdd(aResults, DoProc("TestDuplicateNormalizedExpectation"));
+	AAdd(aResults, DoProc("TestWrongReportRow"));
+	AAdd(aResults, DoProc("TestWrongReportWidth"));
+	AAdd(aResults, DoProc("TestWrongReportSample"));
+	AAdd(aResults, DoProc("TestWrongReportTest"));
+	AAdd(aResults, DoProc("TestBlankReportKey"));
+	AAdd(aResults, DoProc("TestWrongReportUnit"));
+	AAdd(aResults, DoProc("TestWrongAttempt"));
+	AAdd(aResults, DoProc("TestZeroAttempt"));
+	AAdd(aResults, DoProc("TestFractionalAttempt"));
+	AAdd(aResults, DoProc("TestWrongStatus"));
+	AAdd(aResults, DoProc("TestUnknownStatus"));
+	AAdd(aResults, DoProc("TestWrongMeasurement"));
+	AAdd(aResults, DoProc("TestBlankCompleteUnit"));
+	AAdd(aResults, DoProc("TestUnexpectedPair"));
+	AAdd(aResults, DoProc("TestPrefixDistinctPair"));
+	AAdd(aResults, DoProc("TestUnknownReportsWithEmptyExpectations"));
+	AAdd(aResults, DoProc("TestSampleGroupingAndTotals"));
+	:RETURN DoProc("ReportResults", {aResults});
+:ENDPROC;
+
+/* TestNormalizesAndPasses verifies its public selection, failure, or count contract;
+:PROCEDURE TestNormalizesAndPasses;
+	:RETURN DoProc("RunCase", {"NormalizesAndPasses", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{" s1 ", "ph", 2, "mg/l", 1, "complete"}}}, {.T., {{{"S1", "PH", "PASS", 2,
+		"MG/L", 1, 1}}, {}, {{"S1", 1, 0, 0, 0, 0, 0, 0, 1}}, {1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0}}}});
+:ENDPROC;
+
+/* TestLowerBoundInclusive verifies its public selection, failure, or count contract;
+:PROCEDURE TestLowerBoundInclusive;
+	:RETURN DoProc("RunCase", {"LowerBoundInclusive", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{"S1", "PH", 1, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "PASS", 1, "MG/L",
+		1, 1}}, {}, {{"S1", 1, 0, 0, 0, 0, 0, 0, 1}}, {1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+		0}}}});
+:ENDPROC;
+
+/* TestUpperBoundInclusive verifies its public selection, failure, or count contract;
+:PROCEDURE TestUpperBoundInclusive;
+	:RETURN DoProc("RunCase", {"UpperBoundInclusive", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{"S1", "PH", 3, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "PASS", 3, "MG/L",
+		1, 1}}, {}, {{"S1", 1, 0, 0, 0, 0, 0, 0, 1}}, {1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+		0}}}});
+:ENDPROC;
+
+/* TestBelowLimit verifies its public selection, failure, or count contract;
+:PROCEDURE TestBelowLimit;
+	:RETURN DoProc("RunCase", {"BelowLimit", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1", "PH",
+		0.999, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "LOW", 0.999, "MG/L", 1,
+		1}}, {}, {{"S1", 0, 1, 0, 0, 0, 0, 0, 1}}, {1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestAboveLimit verifies its public selection, failure, or count contract;
+:PROCEDURE TestAboveLimit;
+	:RETURN DoProc("RunCase", {"AboveLimit", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1", "PH",
+		3.001, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "HIGH", 3.001, "MG/L", 1,
+		1}}, {}, {{"S1", 0, 0, 1, 0, 0, 0, 0, 1}}, {1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestMissingResult verifies its public selection, failure, or count contract;
+:PROCEDURE TestMissingResult;
+	:RETURN DoProc("RunCase", {"MissingResult", {{{"S1", "PH", "MG/L", 1, 3}}, {}}, {.T.,
+		{{{"S1", "PH", "MISSING", NIL, "MG/L", 0, 0}}, {}, {{"S1", 0, 0, 0, 1, 0, 0, 0,
+		1}}, {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestLatestAttemptWins verifies its public selection, failure, or count contract;
+:PROCEDURE TestLatestAttemptWins;
+	:RETURN DoProc("RunCase", {"LatestAttemptWins", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 9, "MG/L", 1, "COMPLETE"}, {"S1", "PH", 2, "MG/L", 2, "COMPLETE"}}}, {.T.,
+		{{{"S1", "PH", "PASS", 2, "MG/L", 2, 2}}, {}, {{"S1", 1, 0, 0, 0, 0, 0, 0, 1}},
+		{1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestInputOrderDoesNotChangeLatest verifies its public selection, failure, or count contract;
+:PROCEDURE TestInputOrderDoesNotChangeLatest;
+	:RETURN DoProc("RunCase", {"InputOrderDoesNotChangeLatest", {{{"S1", "PH", "MG/L", 1,
+		3}}, {{"S1", "PH", 2, "MG/L", 2, "COMPLETE"}, {"S1", "PH", 9, "MG/L", 1,
+		"COMPLETE"}}}, {.T., {{{"S1", "PH", "PASS", 2, "MG/L", 2, 1}}, {}, {{"S1", 1, 0,
+		0, 0, 0, 0, 0, 1}}, {1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestHigherWithdrawalWins verifies its public selection, failure, or count contract;
+:PROCEDURE TestHigherWithdrawalWins;
+	:RETURN DoProc("RunCase", {"HigherWithdrawalWins", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{"S1", "PH", 2, "MG/L", 1, "COMPLETE"}, {"S1", "PH", NIL, "", 2, "VOID"}}}, {.T.,
+		{{{"S1", "PH", "WITHDRAWN", NIL, "", 2, 2}}, {}, {{"S1", 0, 0, 0, 0, 1, 0, 0, 1}},
+		{1, 2, 2, 0, 0, 0, 0, 1, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestLatestConflict verifies its public selection, failure, or count contract;
+:PROCEDURE TestLatestConflict;
+	:RETURN DoProc("RunCase", {"LatestConflict", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, "MG/L", 2, "COMPLETE"}, {"S1", "PH", 2, "MG/L", 2, "COMPLETE"}}}, {.T.,
+		{{{"S1", "PH", "CONFLICT", NIL, "MG/L", 2, 0}}, {}, {{"S1", 0, 0, 0, 0, 0, 1, 0,
+		1}}, {1, 2, 2, 0, 0, 0, 0, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestLowerConflictSuperseded verifies its public selection, failure, or count contract;
+:PROCEDURE TestLowerConflictSuperseded;
+	:RETURN DoProc("RunCase", {"LowerConflictSuperseded", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{"S1", "PH", 1, "MG/L", 1, "COMPLETE"}, {"S1", "PH", 2, "MG/L", 1, "COMPLETE"},
+		{"S1", "PH", 2, "MG/L", 2, "COMPLETE"}}}, {.T., {{{"S1", "PH", "PASS", 2, "MG/L",
+		2, 3}}, {}, {{"S1", 1, 0, 0, 0, 0, 0, 0, 1}}, {1, 3, 3, 1, 0, 0, 0, 0, 0, 0,
+		0}}}});
+:ENDPROC;
+
+/* TestUnitMismatch verifies its public selection, failure, or count contract;
+:PROCEDURE TestUnitMismatch;
+	:RETURN DoProc("RunCase", {"UnitMismatch", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, "G/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "UNIT_MISMATCH", 2, "G/L",
+		1, 1}}, {}, {{"S1", 0, 0, 0, 0, 0, 0, 1, 1}}, {1, 1, 1, 0, 0, 0, 0, 0, 0, 1,
+		0}}}});
+:ENDPROC;
+
+/* TestEmptyInputs verifies its public selection, failure, or count contract;
+:PROCEDURE TestEmptyInputs;
+	:RETURN DoProc("RunCase", {"EmptyInputs", {{}, {}}, {.T., {{}, {}, {}, {0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongExpectedType verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongExpectedType;
+	:RETURN DoProc("RunCase", {"WrongExpectedType", {NIL, {}}, {.F.,
+		"INVALID_EXPECTATIONS"}});
+:ENDPROC;
+
+/* TestWrongReportType verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongReportType;
+	:RETURN DoProc("RunCase", {"WrongReportType", {{{"S1", "PH", "MG/L", 1, 3}}, NIL},
+		{.F., "INVALID_REPORTS"}});
+:ENDPROC;
+
+/* TestWrongExpectedRow verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongExpectedRow;
+	:RETURN DoProc("RunCase", {"WrongExpectedRow", {{NIL}, {}}, {.F.,
+		"INVALID_EXPECTATION_ROW"}});
+:ENDPROC;
+
+/* TestWrongExpectedWidth verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongExpectedWidth;
+	:RETURN DoProc("RunCase", {"WrongExpectedWidth", {{{"S1"}}, {}}, {.F.,
+		"INVALID_EXPECTATION_ROW"}});
+:ENDPROC;
+
+/* TestWrongExpectedSample verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongExpectedSample;
+	:RETURN DoProc("RunCase", {"WrongExpectedSample", {{{1, "PH", "MG/L", 1, 3}}, {}},
+		{.F., "INVALID_EXPECTATION_KEY"}});
+:ENDPROC;
+
+/* TestWrongExpectedTest verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongExpectedTest;
+	:RETURN DoProc("RunCase", {"WrongExpectedTest", {{{"S1", 1, "MG/L", 1, 3}}, {}}, {.F.,
+		"INVALID_EXPECTATION_KEY"}});
+:ENDPROC;
+
+/* TestWrongExpectedUnit verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongExpectedUnit;
+	:RETURN DoProc("RunCase", {"WrongExpectedUnit", {{{"S1", "PH", NIL, 1, 3}}, {}}, {.F.,
+		"INVALID_EXPECTATION_UNIT"}});
+:ENDPROC;
+
+/* TestBlankExpectedKey verifies its public selection, failure, or count contract;
+:PROCEDURE TestBlankExpectedKey;
+	:RETURN DoProc("RunCase", {"BlankExpectedKey", {{{" ", "PH", "MG/L", 1, 3}}, {}},
+		{.F., "INVALID_EXPECTATION_KEY"}});
+:ENDPROC;
+
+/* TestBlankExpectedUnit verifies its public selection, failure, or count contract;
+:PROCEDURE TestBlankExpectedUnit;
+	:RETURN DoProc("RunCase", {"BlankExpectedUnit", {{{"S1", "PH", " ", 1, 3}}, {}}, {.F.,
+		"INVALID_EXPECTATION_UNIT"}});
+:ENDPROC;
+
+/* TestWrongMinimum verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongMinimum;
+	:RETURN DoProc("RunCase", {"WrongMinimum", {{{"S1", "PH", "MG/L", NIL, 3}}, {}}, {.F.,
+		"INVALID_EXPECTATION_BOUNDS"}});
+:ENDPROC;
+
+/* TestWrongMaximum verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongMaximum;
+	:RETURN DoProc("RunCase", {"WrongMaximum", {{{"S1", "PH", "MG/L", 1, NIL}}, {}}, {.F.,
+		"INVALID_EXPECTATION_BOUNDS"}});
+:ENDPROC;
+
+/* TestInvertedBounds verifies its public selection, failure, or count contract;
+:PROCEDURE TestInvertedBounds;
+	:RETURN DoProc("RunCase", {"InvertedBounds", {{{"S1", "PH", "MG/L", 3, 1}}, {}}, {.F.,
+		"INVALID_EXPECTATION_BOUNDS"}});
+:ENDPROC;
+
+/* TestDuplicateNormalizedExpectation verifies its public selection, failure, or count contract;
+:PROCEDURE TestDuplicateNormalizedExpectation;
+	:RETURN DoProc("RunCase", {"DuplicateNormalizedExpectation", {{{"S1", "PH", "MG/L", 1,
+		3}, {" s1 ", "ph", "mg/l", 1, 3}}, {}}, {.F., "DUPLICATE_EXPECTATION"}});
+:ENDPROC;
+
+/* TestWrongReportRow verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongReportRow;
+	:RETURN DoProc("RunCase", {"WrongReportRow", {{{"S1", "PH", "MG/L", 1, 3}}, {NIL}},
+		{.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0, 0}}, {{1, "INVALID_REPORT_ROW"}},
+		{{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongReportWidth verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongReportWidth;
+	:RETURN DoProc("RunCase", {"WrongReportWidth", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{"S1"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0, 0}}, {{1,
+		"INVALID_REPORT_ROW"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0, 0, 0, 1, 0,
+		0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongReportSample verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongReportSample;
+	:RETURN DoProc("RunCase", {"WrongReportSample", {{{"S1", "PH", "MG/L", 1, 3}}, {{1,
+		"PH", 2, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "INVALID_REPORT_KEY"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongReportTest verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongReportTest;
+	:RETURN DoProc("RunCase", {"WrongReportTest", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		1, 2, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "INVALID_REPORT_KEY"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestBlankReportKey verifies its public selection, failure, or count contract;
+:PROCEDURE TestBlankReportKey;
+	:RETURN DoProc("RunCase", {"BlankReportKey", {{{"S1", "PH", "MG/L", 1, 3}}, {{" ",
+		"PH", 2, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "INVALID_REPORT_KEY"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongReportUnit verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongReportUnit;
+	:RETURN DoProc("RunCase", {"WrongReportUnit", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, NIL, 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "INVALID_REPORT_UNIT"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongAttempt verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongAttempt;
+	:RETURN DoProc("RunCase", {"WrongAttempt", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, "MG/L", NIL, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L",
+		0, 0}}, {{1, "INVALID_ATTEMPT"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestZeroAttempt verifies its public selection, failure, or count contract;
+:PROCEDURE TestZeroAttempt;
+	:RETURN DoProc("RunCase", {"ZeroAttempt", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1", "PH",
+		2, "MG/L", 0, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0, 0}},
+		{{1, "INVALID_ATTEMPT"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0, 0, 0, 1,
+		0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestFractionalAttempt verifies its public selection, failure, or count contract;
+:PROCEDURE TestFractionalAttempt;
+	:RETURN DoProc("RunCase", {"FractionalAttempt", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, "MG/L", 1.5, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L",
+		0, 0}}, {{1, "INVALID_ATTEMPT"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongStatus verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongStatus;
+	:RETURN DoProc("RunCase", {"WrongStatus", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1", "PH",
+		2, "MG/L", 1, NIL}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0, 0}}, {{1,
+		"INVALID_REPORT_STATUS"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0, 0, 0, 1,
+		0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestUnknownStatus verifies its public selection, failure, or count contract;
+:PROCEDURE TestUnknownStatus;
+	:RETURN DoProc("RunCase", {"UnknownStatus", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, "MG/L", 1, "DRAFT"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "INVALID_REPORT_STATUS"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0,
+		0, 0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestWrongMeasurement verifies its public selection, failure, or count contract;
+:PROCEDURE TestWrongMeasurement;
+	:RETURN DoProc("RunCase", {"WrongMeasurement", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", "2", "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L",
+		0, 0}}, {{1, "INVALID_MEASUREMENT"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0,
+		0, 0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestBlankCompleteUnit verifies its public selection, failure, or count contract;
+:PROCEDURE TestBlankCompleteUnit;
+	:RETURN DoProc("RunCase", {"BlankCompleteUnit", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S1",
+		"PH", 2, " ", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "INVALID_REPORT_UNIT"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0,
+		0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestUnexpectedPair verifies its public selection, failure, or count contract;
+:PROCEDURE TestUnexpectedPair;
+	:RETURN DoProc("RunCase", {"UnexpectedPair", {{{"S1", "PH", "MG/L", 1, 3}}, {{"S2",
+		"PH", 2, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL, "MG/L", 0,
+		0}}, {{1, "UNKNOWN_PAIR"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0, 0, 0, 0,
+		1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestPrefixDistinctPair verifies its public selection, failure, or count contract;
+:PROCEDURE TestPrefixDistinctPair;
+	:RETURN DoProc("RunCase", {"PrefixDistinctPair", {{{"S1", "PH", "MG/L", 1, 3}},
+		{{"S1", "PHA", 2, "MG/L", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH", "MISSING", NIL,
+		"MG/L", 0, 0}}, {{1, "UNKNOWN_PAIR"}}, {{"S1", 0, 0, 0, 1, 0, 0, 0, 1}}, {1, 1, 0,
+		0, 0, 0, 1, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestUnknownReportsWithEmptyExpectations verifies its public selection, failure, or count contract;
+:PROCEDURE TestUnknownReportsWithEmptyExpectations;
+	:RETURN DoProc("RunCase", {"UnknownReportsWithEmptyExpectations", {{}, {{"S1", "PH",
+		2, "MG/L", 1, "COMPLETE"}}}, {.T., {{}, {{1, "UNKNOWN_PAIR"}}, {}, {0, 1, 0, 0, 0,
+		0, 0, 0, 0, 0, 1}}}});
+:ENDPROC;
+
+/* TestSampleGroupingAndTotals verifies its public selection, failure, or count contract;
+:PROCEDURE TestSampleGroupingAndTotals;
+	:RETURN DoProc("RunCase", {"SampleGroupingAndTotals", {{{"S1", "PH", "MG/L", 1, 3},
+		{"S1", "COND", "US", 1, 5}, {"S2", "PH", "MG/L", 1, 3}}, {{"S1", "PH", 2, "MG/L",
+		1, "COMPLETE"}, {"S1", "COND", 9, "US", 1, "COMPLETE"}}}, {.T., {{{"S1", "PH",
+		"PASS", 2, "MG/L", 1, 1}, {"S1", "COND", "HIGH", 9, "US", 1, 2}, {"S2", "PH",
+		"MISSING", NIL, "MG/L", 0, 0}}, {}, {{"S1", 1, 0, 1, 0, 0, 0, 0, 2}, {"S2", 0, 0,
+		0, 1, 0, 0, 0, 1}}, {3, 2, 2, 1, 0, 1, 1, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* RunCase invokes the public script entry point only;
+:PROCEDURE RunCase;
+	:PARAMETERS sLabel, aArguments, aExpected;
+	:DECLARE aActual;
+	aActual := ExecFunction("Calibration.ReconcileResults", aArguments);
+	:RETURN DoProc("CheckEqual", {sLabel, aExpected, DoProc("Project", {aActual})});
+:ENDPROC;
+
+/* Project compares the requested public fields instead of object identity;
+:PROCEDURE Project;
+	:PARAMETERS aResult;
+	:DECLARE oReport;
+	:IF .NOT. aResult[1];
+		:RETURN aResult;
+	:ENDIF;
+	oReport := aResult[2];
+	:RETURN {.T., {oReport:items, oReport:issues, oReport:samples, oReport:summary}};
+:ENDPROC;
+
+/* ValuesEqual compares public return values recursively without coercing types;
+:PROCEDURE ValuesEqual;
+	:PARAMETERS vExpected, vActual;
+	:DECLARE sType, i;
+	sType := LimsTypeEx(vExpected);
+	:IF sType != LimsTypeEx(vActual);
+		:RETURN .F.;
+	:ENDIF;
+
+	:IF sType == "ARRAY";
+		:IF Len(vExpected) != Len(vActual);
+			:RETURN .F.;
+		:ENDIF;
+
+		:FOR i := 1 :TO Len(vExpected);
+			:IF .NOT. DoProc("ValuesEqual", {vExpected[i], vActual[i]});
+				:RETURN .F.;
+			:ENDIF;
+		:NEXT;
+		:RETURN .T.;
+	:ENDIF;
+	:RETURN vExpected == vActual;
+:ENDPROC;
+
+/* CheckEqual returns a label/pass pair and logs failed public-contract checks;
+:PROCEDURE CheckEqual;
+	:PARAMETERS sLabel, vExpected, vActual;
+	:DECLARE bPassed;
+	bPassed := DoProc("ValuesEqual", {vExpected, vActual});
+	:IF .NOT. bPassed;
+		ErrorMes("Calibration test", sLabel);
+	:ENDIF;
+	:RETURN {sLabel, bPassed};
+:ENDPROC;
+
+/* ReportResults logs the tally and returns the individual case outcomes;
+:PROCEDURE ReportResults;
+	:PARAMETERS aResults;
+	:DECLARE aResult, nPassed, i;
+	nPassed := 0;
+	:FOR i := 1 :TO Len(aResults);
+		aResult := aResults[i];
+		:IF aResult[2];
+			nPassed += 1;
+		:ENDIF;
+	:NEXT;
+	InfoMes("Calibration tests", LimsString(nPassed) + " / " + LimsString(Len(aResults)));
+	:RETURN aResults;
+:ENDPROC;

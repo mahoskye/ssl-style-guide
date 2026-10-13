@@ -176,6 +176,14 @@ repo (checked out locally as `ssl-docs`). Agents load the foundation first
 and retrieve task/category detail through the MCP `ssl_context_pack` tool or
 `ssl://machine/*` resources.
 
+## Style Calibration
+
+`style-calibration/` contains six new purpose-built review tasks spanning
+focused utilities, data sources, a policy class, and substantial workflows.
+The exercise develops preferred practices through human edits and recorded
+explanations before incorporating them into agent guidance or targeted LSP
+behavior. Initial drafts are not approved style examples or training data. See [the review workflow](style-calibration/README.md).
+
 ## Agent Skills
 
 `agent-guides/skills/` contains eight SSL workflow skills:
