@@ -166,10 +166,10 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 ---
 
 7. **Apply these rules:**
-   - Class name: PascalCase
    - Fields declared with `:DECLARE` at class level (not inside methods)
    - If a method has no parameters, omit `:PARAMETERS`
-   <!-- rules: id=me_base_for_method_calls,underscore_private_convention,visibility_annotations_script_only,base_constructor_with_parameters,execfunction_not_class_file,one_class_per_file,get_last_ssl_error_in_catch,clear_last_ssl_error_after_handling,raise_error_inside_handling_try,no_raise_error_in_catch,every_raise_has_handler_boundary wrap=80 -->
+   <!-- rules: id=procedure_class_pascal_case,me_base_for_method_calls,underscore_private_convention,visibility_annotations_script_only,base_constructor_with_parameters,execfunction_not_class_file,one_class_per_file,get_last_ssl_error_in_catch,clear_last_ssl_error_after_handling,raise_error_inside_handling_try,no_raise_error_in_catch,every_raise_has_handler_boundary wrap=80 -->
+   - Procedures and classes use PascalCase.
    - Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
    - Underscore-prefixed members (`_name`) are excluded from reflection — this
      is the SSL private convention.

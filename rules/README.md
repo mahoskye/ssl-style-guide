@@ -5,9 +5,12 @@ the machine packs, and the rule lists in skills and guides are generated from
 the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
-**Migration status:** the `language`, `data-sources`, `sql`,
-`server-scripts` and `classes` domains are migrated. The `naming` rules are
-still hand-written where they always were.
+**Migration status:** all six domains are migrated (`language`,
+`server-scripts`, `data-sources`, `sql`, `classes` and `naming`). Rule text
+that is still hand-written: the `files`, `email` and `security` pack lists in
+`CATEGORY_DEFS`, schema entries outside the generated subtrees that no record
+places, and the prose rule lists of skills and guides that have no region yet
+(phases 3 and 4).
 
 ## Layout
 
@@ -23,7 +26,7 @@ still hand-written where they always were.
 | Output | From | Generator |
 |---|---|---|
 | `rules/INDEX.md` | all records | `tools/generate-rules.mjs` |
-| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `comments.rules`; `lints.style_rules`, `lints.not_preferred_operators`, `lints.compile_errors`, `lints.type_safety`, `lints.variable_behavior`, `lints.label_behavior`, `lints.parameter_skipping_style`, `lints.class_rules`, `lints.coding_standards` and `lints.deprecated_keywords`; `procedures.visibility_annotations`; `error_handling.guidance`; `documentation.file_banner`; `module_structure.data_source_modules`; `sql.formatting` and `sql.parameters` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
+| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `comments.rules`; `lints.style_rules`, `lints.hungarian_notation`, `lints.not_preferred_operators`, `lints.compile_errors`, `lints.type_safety`, `lints.variable_behavior`, `lints.label_behavior`, `lints.parameter_skipping_style`, `lints.class_rules`, `lints.coding_standards` and `lints.deprecated_keywords`; `procedures.visibility_annotations`; `error_handling.guidance`; `documentation.file_banner`; `module_structure.data_source_modules`; `sql.formatting` and `sql.parameters` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
 | Regions between `<!-- rules: … -->` and `<!-- /rules -->` in `agent-guides/` and `ssl-style-guide/` Markdown | the selected records' `rule` text | `tools/generate-rules.mjs` |
 | `must_follow` / `avoid` in `agent-guides/machine/categories/<id>.json` for each category with `lists_from_rules: true` | records with `machine.list`, in that category's `order` | `tools/generate-machine-docs.mjs` |
 | Every bullet of the Non-Negotiable and Does Not Have lists in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable` or `does_not_have`, each placed by `renderFoundation` | `tools/generate-machine-docs.mjs` |

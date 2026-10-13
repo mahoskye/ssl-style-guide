@@ -48,6 +48,12 @@ Entries before this file existed are reconstructed from the release commits.
   foundation's class bullets, the class entries of `lints.class_rules`,
   `lints.compile_errors` and `lints.coding_standards`, and the
   `ssl-new-class` rule lists.
+- Rules source, naming (#101): 12 records in `rules/naming/` cover Hungarian
+  prefixes, length limits, casing and loop counters. They generate the
+  schema's `lints.hungarian_notation` (and so the foundation's prefix table),
+  the naming pack lists and the review skill's naming checks. Every foundation
+  rule bullet is now generated; the `files`, `email` and `security` packs are
+  the only hand-written pack lists left.
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.

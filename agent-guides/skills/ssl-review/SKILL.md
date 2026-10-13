@@ -58,12 +58,12 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 ## Check Categories
 
 ### `naming` — Hungarian notation and identifier conventions
-- Prefix mismatch: `s` = string, `n` = numeric, `b` = boolean, `d` = date,
-  `a` = array, `o` = object, `fn` = code block, `v` = variant/any
-- Identifiers should be camelCase after the prefix (`sMyVar`, not `s_my_var` or `SMYVAR`)
-- Class names should be PascalCase
-- Procedure names should be PascalCase (e.g., `GetInvoiceTotal`)
-- Constants should use UPPER_SNAKE_CASE
+<!-- rules: id=prefix_matches_type,hungarian_variable_names,procedure_class_pascal_case,constants_upper_snake_case -->
+- Make a variable's prefix match the type of the value it holds: `s` string, `n` numeric, `b` boolean, `d` date, `a` array, `o` object, `fn` code block, `v` variant/any.
+- Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (`sMyVar`, not `s_my_var` or `SMYVAR`).
+- Procedures and classes use PascalCase.
+- Constants use UPPER_SNAKE_CASE.
+<!-- /rules -->
 
 ### `formatting` — Syntax and structural formatting
 - Every statement (including comments) must end with `;`

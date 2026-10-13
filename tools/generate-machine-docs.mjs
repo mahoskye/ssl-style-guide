@@ -321,16 +321,7 @@ const CATEGORY_DEFS = [
     aliases: ['hungarian notation', 'identifiers', 'variable names'],
     summary: 'Procedure, class, variable, constant, and parameter naming conventions.',
     elements: ['DECLARE', 'PARAMETERS', 'PUBLIC'],
-    mustFollow: [
-      'Procedures and classes use PascalCase.',
-      'Variables use Hungarian-style camelCase.',
-      'Constants use UPPER_SNAKE_CASE.',
-      'Use documented prefixes: s, n, b, d, a, o, fn, and v.',
-    ],
-    avoid: [
-      'Do not rename values in behavior-preserving refactors unless the refactor scope includes naming cleanup.',
-      'Do not invent prefixes outside the documented set without a reason.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['formatting', 'classes', 'procedures'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.naming],
   },

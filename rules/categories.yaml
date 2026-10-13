@@ -8,10 +8,10 @@
 # `order` lists every record in the category, in the order packs, regions and
 # rules/INDEX.md show them.
 #
-# Generated (#101): every category except naming (its domain is next), and
-# files, email and security, whose lists are API and security guidance that
-# no domain record states yet. Labels, aliases, summaries and element lists
-# still live in CATEGORY_DEFS.
+# Generated (#101): every category except files, email and security, whose
+# lists are API and security guidance that no domain record states yet; they
+# stay hand-written in CATEGORY_DEFS. Labels, aliases, summaries and element
+# lists still live in CATEGORY_DEFS.
 categories:
   - id: control-flow
     lists_from_rules: true
@@ -116,6 +116,7 @@ categories:
     lists_from_rules: true
     order:
       - explicit_type_conversion
+      - builtin_function_canonical_casing
       - invariant_date_handling
       - check_builtin_parameter_types
   - id: classes
@@ -242,6 +243,20 @@ categories:
       - single_line_comment_form
       - multi_line_comment_layout
   - id: naming
+    lists_from_rules: true
+    order:
+      - procedure_class_pascal_case
+      - hungarian_variable_names
+      - constants_upper_snake_case
+      - documented_hungarian_prefixes
+      - builtin_function_canonical_casing
+      - no_rename_in_behavior_preserving_refactor
+      - prefix_matches_type
+      - identifier_length_limits
+      - loop_counter_names
+      - preserve_acronym_casing
+      - udo_property_lower_camel_case
+      - underscores_discouraged
   - id: types
     lists_from_rules: true
     order:

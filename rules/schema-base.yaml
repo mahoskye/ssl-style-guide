@@ -14,7 +14,7 @@
 # lints.compile_errors.rules.one_class_per_file.message.
 #
 # Only the subtrees below are generated (#101: data sources, SQL, server
-# scripts, language and classes). The rest of the schema is still
+# scripts, language, classes and naming). The rest of the schema is still
 # hand-maintained, and records' placements outside these subtrees are checked
 # against it instead of written.
 comments:
@@ -34,6 +34,14 @@ lints:
     limit_block_depth: !rule limit_block_depth
     max_params_per_procedure: !rule max_params_warning
     require_else_for_if: false
+  hungarian_notation:
+    enabled: true
+    strict_mode: true
+    prefixes: !rule documented_hungarian_prefixes
+    exceptions:
+      loop_counters: !rule loop_counter_names
+      ssl_constants: [NIL, .T., .F.]
+      preserve_existing_acronym_casing: !rule preserve_acronym_casing
   not_preferred_operators:
     - operator: "#"
       severity: info

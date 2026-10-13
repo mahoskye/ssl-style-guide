@@ -224,3 +224,20 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`class_name_not_builtin`](classes/class_name_not_builtin.md) | advisory | warning | `lsp:diag.class_name_collision` | Do not give a `:CLASS` the name of a built-in class such as `Email` or `SSLDataset`. |
 | [`field_vs_property_terminology`](classes/field_vs_property_terminology.md) | advisory | info | `reviewer` | Use field for `:DECLARE` slots on classes, and reserve property for dynamic-object members, `SSLExpando` members, and `AddProperty`-created members. |
 | [`builtin_classes_curly_braces`](classes/builtin_classes_curly_braces.md) | authoritative | error | `lsp:diag.class_instantiation_curly` | Instantiate directly creatable built-in classes with curly braces, for example `Email{}`. |
+
+## naming (12)
+
+| Id | Level | Severity | Enforced by | Rule |
+|---|---|---|---|---|
+| [`builtin_function_canonical_casing`](naming/builtin_function_canonical_casing.md) | style_only | info | `lsp:fmt.builtin_function_case` | Represent functions in PascalCase where applicable, while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`. |
+| [`procedure_class_pascal_case`](naming/procedure_class_pascal_case.md) | style_only | info | `reviewer` | Procedures and classes use PascalCase. |
+| [`hungarian_variable_names`](naming/hungarian_variable_names.md) | style_only | warning | `reviewer` | Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (`sMyVar`, not `s_my_var` or `SMYVAR`). |
+| [`constants_upper_snake_case`](naming/constants_upper_snake_case.md) | style_only | info | `reviewer` | Constants use UPPER_SNAKE_CASE. |
+| [`documented_hungarian_prefixes`](naming/documented_hungarian_prefixes.md) | style_only | warning | `reviewer` | Use documented prefixes: `s`, `n`, `b`, `d`, `a`, `o`, `fn`, and `v`. |
+| [`no_rename_in_behavior_preserving_refactor`](naming/no_rename_in_behavior_preserving_refactor.md) | advisory | info | `reviewer` | Do not rename values in behavior-preserving refactors unless the refactor scope includes naming cleanup. |
+| [`prefix_matches_type`](naming/prefix_matches_type.md) | style_only | warning | `lsp:diag.hungarian_type_mismatch` | Make a variable's prefix match the type of the value it holds: `s` string, `n` numeric, `b` boolean, `d` date, `a` array, `o` object, `fn` code block, `v` variant/any. |
+| [`identifier_length_limits`](naming/identifier_length_limits.md) | style_only | info | `lsp:diag.identifier_too_long` | Keep variable names to 20 characters after the type prefix, and procedure and function names to 30 characters. |
+| [`loop_counter_names`](naming/loop_counter_names.md) | style_only | info | `reviewer` | Loop counters may be `i`, `j`, `k`, `x`, `y` or `z` without a prefix only when declared; in a script that calls other scripts, prefer a script-specific name such as `nSampleIdx`. |
+| [`preserve_acronym_casing`](naming/preserve_acronym_casing.md) | style_only | info | `reviewer` | Preserve established acronym casing only when it already exists in the surrounding codebase or required external names. |
+| [`udo_property_lower_camel_case`](naming/udo_property_lower_camel_case.md) | style_only | info | `reviewer` | Name user-defined object properties in lowerCamelCase with no type prefix, for example `oOrder:orderNo`. |
+| [`underscores_discouraged`](naming/underscores_discouraged.md) | style_only | info | `reviewer` | Avoid underscores in variable and procedure names; file-level suffixes such as `_Core` and `_Batch` are standard. |

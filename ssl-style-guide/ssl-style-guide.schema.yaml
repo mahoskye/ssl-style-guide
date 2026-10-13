@@ -1544,6 +1544,7 @@ ssl_style_guide:
       max_params_per_procedure: 8 # Keep procedures to at most 8 parameters; more than 20 parameters on a procedure or method draws a warning, so group related state into arrays or objects.
       require_else_for_if: false
     # END GENERATED lints.style_rules
+    # BEGIN GENERATED lints.hungarian_notation: edit rules/ and run bun tools/generate-rules.mjs
     hungarian_notation:
       enabled: true
       strict_mode: true
@@ -1555,11 +1556,18 @@ ssl_style_guide:
         a: array
         o: object
         fn: code_block
-        v: variant  # any/variant — for variables whose type is unknown or changes
+        v: variant
       exceptions:
-        loop_counters: [i, j, k, x, y, z]  # only when declared; prefer a script-specific name in a script that calls other scripts
-        ssl_constants: [NIL, .T., .F.]
-        preserve_existing_acronym_casing: true
+        loop_counters:
+          - i
+          - j
+          - k
+          - x
+          - y
+          - z
+        ssl_constants: [ NIL, .T., .F. ]
+        preserve_existing_acronym_casing: true # Preserve established acronym casing only when it already exists in the surrounding codebase or required external names.
+    # END GENERATED lints.hungarian_notation
     security:
       prevent_sql_injection: true
       parameterized_queries_required: true
