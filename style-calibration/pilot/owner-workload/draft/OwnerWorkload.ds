@@ -1,0 +1,63 @@
+/* =============================================================================;
+/* Data source.. OwnerWorkload;
+/* Purpose...... Summarize one owner's item counts without changing records;
+/* Parameters... sOwner - Nonblank owner key, normalized before the query;
+/* Returns...... Count object, or NIL when the supplied owner is invalid;
+/* =============================================================================;
+:PARAMETERS sOwner := "";
+:DECLARE aRows, aRow, oSummary, nCount, nPriority, sStatus, i;
+
+:IF LimsTypeEx(sOwner) != "STRING";
+	:RETURN NIL;
+:ENDIF;
+
+sOwner := Upper(AllTrim(sOwner));
+:IF sOwner == "";
+	:RETURN NIL;
+:ENDIF;
+
+oSummary := CreateUdObject();
+oSummary:owner := sOwner;
+oSummary:pending := 0;
+oSummary:active := 0;
+oSummary:complete := 0;
+oSummary:other := 0;
+oSummary:highPriority := 0;
+oSummary:total := 0;
+
+aRows := SQLExecute("SELECT status, priority, COUNT(*) AS item_count
+	FROM calibration_item
+	WHERE owner_key = ?sOwner?
+	GROUP BY status, priority");
+
+:FOR i := 1 :TO Len(aRows);
+	aRow := aRows[i];
+	sStatus := aRow[1];
+	nPriority := aRow[2];
+	nCount := aRow[3];
+	oSummary:total += nCount;
+
+	:BEGINCASE;
+	:CASE sStatus == "PENDING";
+		oSummary:pending += nCount;
+		:EXITCASE;
+	:CASE sStatus == "ACTIVE";
+		oSummary:active += nCount;
+		:EXITCASE;
+	:CASE sStatus == "COMPLETE";
+		oSummary:complete += nCount;
+		:EXITCASE;
+	:OTHERWISE;
+		oSummary:other += nCount;
+		:EXITCASE;
+	:ENDCASE;
+
+	/* Completed and unrecognized statuses do not contribute to urgent work;
+	:IF nPriority >= 5;
+		:IF sStatus == "PENDING" .OR. sStatus == "ACTIVE";
+			oSummary:highPriority += nCount;
+		:ENDIF;
+	:ENDIF;
+:NEXT;
+
+:RETURN oSummary;

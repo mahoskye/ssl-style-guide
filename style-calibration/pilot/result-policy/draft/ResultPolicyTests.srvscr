@@ -1,0 +1,278 @@
+/* ResultPolicyTests - user-run SSL tests, locally unexecuted;
+/* Install drafts under Calibration and run this test script;
+/* No database fixture or writes required.;
+:RETURN DoProc("RunTests");
+
+:PROCEDURE RunTests;
+	:DECLARE aResults;
+	aResults := {};
+	AAdd(aResults, DoProc("TestLowerBoundInclusive"));
+	AAdd(aResults, DoProc("TestUpperBoundInclusive"));
+	AAdd(aResults, DoProc("TestOriginalValueBelowBound"));
+	AAdd(aResults, DoProc("TestOriginalValueAboveBound"));
+	AAdd(aResults, DoProc("TestNormalizesKey"));
+	AAdd(aResults, DoProc("TestUnknownAnalyte"));
+	AAdd(aResults, DoProc("TestInvalidAnalyte"));
+	AAdd(aResults, DoProc("TestBlankAnalyte"));
+	AAdd(aResults, DoProc("TestInvalidValue"));
+	AAdd(aResults, DoProc("TestEmptyConfiguration"));
+	AAdd(aResults, DoProc("TestRejectsEvaluationAfterBadSetup"));
+	AAdd(aResults, DoProc("TestWrongConfigurationType"));
+	AAdd(aResults, DoProc("TestWrongLimitRowType"));
+	AAdd(aResults, DoProc("TestWrongLimitWidth"));
+	AAdd(aResults, DoProc("TestWrongKeyType"));
+	AAdd(aResults, DoProc("TestBlankLimitKey"));
+	AAdd(aResults, DoProc("TestWrongMinimumType"));
+	AAdd(aResults, DoProc("TestWrongMaximumType"));
+	AAdd(aResults, DoProc("TestInvertedBounds"));
+	AAdd(aResults, DoProc("TestWrongDigitsType"));
+	AAdd(aResults, DoProc("TestDigitsOutOfRange"));
+	AAdd(aResults, DoProc("TestFractionalDigits"));
+	AAdd(aResults, DoProc("TestDuplicateNormalizedKeys"));
+	AAdd(aResults, DoProc("TestEmptySetupIsValid"));
+	:RETURN DoProc("ReportResults", {aResults});
+:ENDPROC;
+
+/* TestLowerBoundInclusive verifies the documented public contract;
+:PROCEDURE TestLowerBoundInclusive;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"LowerBoundInclusive", {.T., {"PASS", 1, 1, 3}},
+		oPolicy:Evaluate("A", 1)});
+:ENDPROC;
+
+/* TestUpperBoundInclusive verifies the documented public contract;
+:PROCEDURE TestUpperBoundInclusive;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"UpperBoundInclusive", {.T., {"PASS", 3, 1, 3}},
+		oPolicy:Evaluate("A", 3)});
+:ENDPROC;
+
+/* TestOriginalValueBelowBound verifies the documented public contract;
+:PROCEDURE TestOriginalValueBelowBound;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"OriginalValueBelowBound", {.T., {"LOW", 1, 1, 3}},
+		oPolicy:Evaluate("A", 0.999)});
+:ENDPROC;
+
+/* TestOriginalValueAboveBound verifies the documented public contract;
+:PROCEDURE TestOriginalValueAboveBound;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"OriginalValueAboveBound", {.T., {"HIGH", 3, 1, 3}},
+		oPolicy:Evaluate("A", 3.001)});
+:ENDPROC;
+
+/* TestNormalizesKey verifies the documented public contract;
+:PROCEDURE TestNormalizesKey;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"NormalizesKey", {.T., {"PASS", 2, 1, 3}},
+		oPolicy:Evaluate(" a ", 2)});
+:ENDPROC;
+
+/* TestUnknownAnalyte verifies the documented public contract;
+:PROCEDURE TestUnknownAnalyte;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"UnknownAnalyte", {.F., "UNKNOWN_ANALYTE"},
+		oPolicy:Evaluate("AB", 2)});
+:ENDPROC;
+
+/* TestInvalidAnalyte verifies the documented public contract;
+:PROCEDURE TestInvalidAnalyte;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"InvalidAnalyte", {.F., "INVALID_ANALYTE"},
+		oPolicy:Evaluate({}, 2)});
+:ENDPROC;
+
+/* TestBlankAnalyte verifies the documented public contract;
+:PROCEDURE TestBlankAnalyte;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"BlankAnalyte", {.F., "INVALID_ANALYTE"},
+		oPolicy:Evaluate(" ", 2)});
+:ENDPROC;
+
+/* TestInvalidValue verifies the documented public contract;
+:PROCEDURE TestInvalidValue;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"InvalidValue", {.F., "INVALID_VALUE"},
+		oPolicy:Evaluate("A", "2")});
+:ENDPROC;
+
+/* TestEmptyConfiguration verifies the documented public contract;
+:PROCEDURE TestEmptyConfiguration;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{}});
+	:RETURN DoProc("CheckEqual", {"EmptyConfiguration", {.F., "UNKNOWN_ANALYTE"},
+		oPolicy:Evaluate("A", 2)});
+:ENDPROC;
+
+/* TestRejectsEvaluationAfterBadSetup verifies the documented public contract;
+:PROCEDURE TestRejectsEvaluationAfterBadSetup;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {NIL});
+	:RETURN DoProc("CheckEqual", {"RejectsEvaluationAfterBadSetup", {.F.,
+		"INVALID_CONFIGURATION"},
+		oPolicy:Evaluate("A", 2)});
+:ENDPROC;
+
+/* TestWrongConfigurationType verifies the documented public contract;
+:PROCEDURE TestWrongConfigurationType;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {NIL});
+	:RETURN DoProc("CheckEqual", {"WrongConfigurationType", {"INVALID_LIMITS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestWrongLimitRowType verifies the documented public contract;
+:PROCEDURE TestWrongLimitRowType;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{NIL}});
+	:RETURN DoProc("CheckEqual", {"WrongLimitRowType", {"INVALID_LIMIT_ROW", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestWrongLimitWidth verifies the documented public contract;
+:PROCEDURE TestWrongLimitWidth;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1}}});
+	:RETURN DoProc("CheckEqual", {"WrongLimitWidth", {"INVALID_LIMIT_ROW", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestWrongKeyType verifies the documented public contract;
+:PROCEDURE TestWrongKeyType;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{7, 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"WrongKeyType", {"INVALID_LIMIT_KEY", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestBlankLimitKey verifies the documented public contract;
+:PROCEDURE TestBlankLimitKey;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{" ", 1, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"BlankLimitKey", {"INVALID_LIMIT_KEY", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestWrongMinimumType verifies the documented public contract;
+:PROCEDURE TestWrongMinimumType;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", NIL, 3, 2}}});
+	:RETURN DoProc("CheckEqual", {"WrongMinimumType", {"INVALID_LIMIT_BOUNDS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestWrongMaximumType verifies the documented public contract;
+:PROCEDURE TestWrongMaximumType;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, NIL, 2}}});
+	:RETURN DoProc("CheckEqual", {"WrongMaximumType", {"INVALID_LIMIT_BOUNDS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestInvertedBounds verifies the documented public contract;
+:PROCEDURE TestInvertedBounds;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 3, 1, 2}}});
+	:RETURN DoProc("CheckEqual", {"InvertedBounds", {"INVALID_LIMIT_BOUNDS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestWrongDigitsType verifies the documented public contract;
+:PROCEDURE TestWrongDigitsType;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, NIL}}});
+	:RETURN DoProc("CheckEqual", {"WrongDigitsType", {"INVALID_LIMIT_DIGITS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestDigitsOutOfRange verifies the documented public contract;
+:PROCEDURE TestDigitsOutOfRange;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 7}}});
+	:RETURN DoProc("CheckEqual", {"DigitsOutOfRange", {"INVALID_LIMIT_DIGITS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestFractionalDigits verifies the documented public contract;
+:PROCEDURE TestFractionalDigits;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 1.5}}});
+	:RETURN DoProc("CheckEqual", {"FractionalDigits", {"INVALID_LIMIT_DIGITS", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestDuplicateNormalizedKeys verifies the documented public contract;
+:PROCEDURE TestDuplicateNormalizedKeys;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{{"A", 1, 3, 2}, {" a ", 1, 3,
+		2}}});
+	:RETURN DoProc("CheckEqual", {"DuplicateNormalizedKeys", {"DUPLICATE_LIMIT_KEY", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* TestEmptySetupIsValid verifies the documented public contract;
+:PROCEDURE TestEmptySetupIsValid;
+	:DECLARE oPolicy;
+	oPolicy := CreateUdObject("Calibration.ResultPolicy", {{}});
+	:RETURN DoProc("CheckEqual", {"Empty setup", {"", 0},
+		{oPolicy:ConfigurationIssue(), oPolicy:LimitCount()}});
+:ENDPROC;
+
+/* ValuesEqual compares public return values recursively without coercing types;
+:PROCEDURE ValuesEqual;
+	:PARAMETERS vExpected, vActual;
+	:DECLARE sType, i;
+	sType := LimsTypeEx(vExpected);
+	:IF sType != LimsTypeEx(vActual);
+		:RETURN .F.;
+	:ENDIF;
+
+	:IF sType == "ARRAY";
+		:IF Len(vExpected) != Len(vActual);
+			:RETURN .F.;
+		:ENDIF;
+
+		:FOR i := 1 :TO Len(vExpected);
+			:IF .NOT. DoProc("ValuesEqual", {vExpected[i], vActual[i]});
+				:RETURN .F.;
+			:ENDIF;
+		:NEXT;
+		:RETURN .T.;
+	:ENDIF;
+	:RETURN vExpected == vActual;
+:ENDPROC;
+
+/* CheckEqual returns a label/pass pair and logs failed public-contract checks;
+:PROCEDURE CheckEqual;
+	:PARAMETERS sLabel, vExpected, vActual;
+	:DECLARE bPassed;
+	bPassed := DoProc("ValuesEqual", {vExpected, vActual});
+	:IF .NOT. bPassed;
+		ErrorMes("Calibration test", sLabel);
+	:ENDIF;
+	:RETURN {sLabel, bPassed};
+:ENDPROC;
+
+/* ReportResults logs the tally and returns the individual case outcomes;
+:PROCEDURE ReportResults;
+	:PARAMETERS aResults;
+	:DECLARE aResult, nPassed, i;
+	nPassed := 0;
+	:FOR i := 1 :TO Len(aResults);
+		aResult := aResults[i];
+		:IF aResult[2];
+			nPassed += 1;
+		:ENDIF;
+	:NEXT;
+	InfoMes("Calibration tests", LimsString(nPassed) + " / " + LimsString(Len(aResults)));
+	:RETURN aResults;
+:ENDPROC;

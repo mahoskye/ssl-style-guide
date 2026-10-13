@@ -1,0 +1,587 @@
+/* IntakePlanTests - user-run public-contract tests, locally unexecuted;
+/* Install drafts under Calibration and run this test script;
+/* Deterministic in-memory fixtures. No database reads or writes;
+:RETURN DoProc("RunTests");
+
+:PROCEDURE RunTests;
+	:DECLARE aResults;
+	aResults := {};
+	AAdd(aResults, DoProc("TestAcceptsNormalizedRow"));
+	AAdd(aResults, DoProc("TestEmptyInput"));
+	AAdd(aResults, DoProc("TestWrongRowsType"));
+	AAdd(aResults, DoProc("TestWrongMaterials"));
+	AAdd(aResults, DoProc("TestWrongMaterialRow"));
+	AAdd(aResults, DoProc("TestWrongMaterialWidth"));
+	AAdd(aResults, DoProc("TestWrongMaterialKey"));
+	AAdd(aResults, DoProc("TestBlankMaterialKey"));
+	AAdd(aResults, DoProc("TestWrongMaterialMinimum"));
+	AAdd(aResults, DoProc("TestWrongMaterialMaximum"));
+	AAdd(aResults, DoProc("TestInvertedMaterialBounds"));
+	AAdd(aResults, DoProc("TestNegativeMaterialMinimum"));
+	AAdd(aResults, DoProc("TestDuplicateMaterial"));
+	AAdd(aResults, DoProc("TestWrongTestRules"));
+	AAdd(aResults, DoProc("TestWrongTestRow"));
+	AAdd(aResults, DoProc("TestWrongTestWidth"));
+	AAdd(aResults, DoProc("TestWrongTestKey"));
+	AAdd(aResults, DoProc("TestBlankTestKey"));
+	AAdd(aResults, DoProc("TestWrongTestMaterial"));
+	AAdd(aResults, DoProc("TestUnknownTestMaterial"));
+	AAdd(aResults, DoProc("TestWrongTestVolume"));
+	AAdd(aResults, DoProc("TestNegativeTestVolume"));
+	AAdd(aResults, DoProc("TestDuplicateTestRule"));
+	AAdd(aResults, DoProc("TestWrongExistingRecords"));
+	AAdd(aResults, DoProc("TestWrongExistingRow"));
+	AAdd(aResults, DoProc("TestWrongExistingWidth"));
+	AAdd(aResults, DoProc("TestWrongExistingSample"));
+	AAdd(aResults, DoProc("TestWrongExistingContainer"));
+	AAdd(aResults, DoProc("TestBlankExistingKey"));
+	AAdd(aResults, DoProc("TestWrongRowType"));
+	AAdd(aResults, DoProc("TestWrongRowWidth"));
+	AAdd(aResults, DoProc("TestWrongRowKey"));
+	AAdd(aResults, DoProc("TestBlankRowKey"));
+	AAdd(aResults, DoProc("TestWrongOwner"));
+	AAdd(aResults, DoProc("TestBlankOwner"));
+	AAdd(aResults, DoProc("TestWrongVolume"));
+	AAdd(aResults, DoProc("TestWrongPriority"));
+	AAdd(aResults, DoProc("TestPriorityOutOfRange"));
+	AAdd(aResults, DoProc("TestFractionalPriority"));
+	AAdd(aResults, DoProc("TestUnknownMaterial"));
+	AAdd(aResults, DoProc("TestVolumeOutOfRange"));
+	AAdd(aResults, DoProc("TestWrongTestList"));
+	AAdd(aResults, DoProc("TestEmptyTestList"));
+	AAdd(aResults, DoProc("TestWrongRequestedTest"));
+	AAdd(aResults, DoProc("TestBlankRequestedTest"));
+	AAdd(aResults, DoProc("TestDuplicateRequestedTest"));
+	AAdd(aResults, DoProc("TestUnknownRequestedTest"));
+	AAdd(aResults, DoProc("TestIncompatibleTest"));
+	AAdd(aResults, DoProc("TestDemandExceedsVolume"));
+	AAdd(aResults, DoProc("TestExistingSample"));
+	AAdd(aResults, DoProc("TestExistingContainer"));
+	AAdd(aResults, DoProc("TestDuplicateAcceptedSample"));
+	AAdd(aResults, DoProc("TestContainerMaterialConflict"));
+	AAdd(aResults, DoProc("TestContainerVolumeConflict"));
+	AAdd(aResults, DoProc("TestSharedContainerDemand"));
+	AAdd(aResults, DoProc("TestRejectedRowDoesNotReserveKeys"));
+	AAdd(aResults, DoProc("TestPrefixDistinctTests"));
+	:RETURN DoProc("ReportResults", {aResults});
+:ENDPROC;
+
+/* TestAcceptsNormalizedRow checks the public outcome for its stated fixture;
+:PROCEDURE TestAcceptsNormalizedRow;
+	:RETURN DoProc("RunCase", {"AcceptsNormalizedRow", {{{" s1 ", "c1", "water", 10, 5,
+		"team", {"ph"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{{1,
+		"S1", "C1", "WATER", 10, 5, "TEAM", {"PH"}}}, {}, {{"C1", "WATER", 10, 2,
+		{"S1"}}}, {{"TEAM", 1, 1, {"S1"}}}, {1, 1, 0, 1, 1}}}});
+:ENDPROC;
+
+/* TestEmptyInput checks the public outcome for its stated fixture;
+:PROCEDURE TestEmptyInput;
+	:RETURN DoProc("RunCase", {"EmptyInput", {{}, {{"WATER", 1, 20}, {"SOLID", 1, 20}},
+		{{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER",
+		1}}, {}}, {.T., {{}, {}, {}, {}, {0, 0, 0, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongRowsType checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongRowsType;
+	:RETURN DoProc("RunCase", {"WrongRowsType", {NIL, {{"WATER", 1, 20}, {"SOLID", 1,
+		20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA",
+		"WATER", 1}}, {}}, {.F., "INVALID_ROWS"}});
+:ENDPROC;
+
+/* TestWrongMaterials checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongMaterials;
+	:RETURN DoProc("RunCase", {"WrongMaterials", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, NIL, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3},
+		{"PHA", "WATER", 1}}, {}}, {.F., "INVALID_MATERIAL_RULES"}});
+:ENDPROC;
+
+/* TestWrongMaterialRow checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongMaterialRow;
+	:RETURN DoProc("RunCase", {"WrongMaterialRow", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {NIL}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3},
+		{"PHA", "WATER", 1}}, {}}, {.F., "INVALID_MATERIAL_RULE"}});
+:ENDPROC;
+
+/* TestWrongMaterialWidth checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongMaterialWidth;
+	:RETURN DoProc("RunCase", {"WrongMaterialWidth", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER"}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F., "INVALID_MATERIAL_RULE"}});
+:ENDPROC;
+
+/* TestWrongMaterialKey checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongMaterialKey;
+	:RETURN DoProc("RunCase", {"WrongMaterialKey", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{1, 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F., "INVALID_MATERIAL_KEY"}});
+:ENDPROC;
+
+/* TestBlankMaterialKey checks the public outcome for its stated fixture;
+:PROCEDURE TestBlankMaterialKey;
+	:RETURN DoProc("RunCase", {"BlankMaterialKey", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{" ", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F., "INVALID_MATERIAL_KEY"}});
+:ENDPROC;
+
+/* TestWrongMaterialMinimum checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongMaterialMinimum;
+	:RETURN DoProc("RunCase", {"WrongMaterialMinimum", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", NIL, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1},
+		{"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F.,
+		"INVALID_MATERIAL_BOUNDS"}});
+:ENDPROC;
+
+/* TestWrongMaterialMaximum checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongMaterialMaximum;
+	:RETURN DoProc("RunCase", {"WrongMaterialMaximum", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, NIL}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1},
+		{"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F.,
+		"INVALID_MATERIAL_BOUNDS"}});
+:ENDPROC;
+
+/* TestInvertedMaterialBounds checks the public outcome for its stated fixture;
+:PROCEDURE TestInvertedMaterialBounds;
+	:RETURN DoProc("RunCase", {"InvertedMaterialBounds", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 20, 1}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1},
+		{"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F.,
+		"INVALID_MATERIAL_BOUNDS"}});
+:ENDPROC;
+
+/* TestNegativeMaterialMinimum checks the public outcome for its stated fixture;
+:PROCEDURE TestNegativeMaterialMinimum;
+	:RETURN DoProc("RunCase", {"NegativeMaterialMinimum", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", -1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1},
+		{"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F.,
+		"INVALID_MATERIAL_BOUNDS"}});
+:ENDPROC;
+
+/* TestDuplicateMaterial checks the public outcome for its stated fixture;
+:PROCEDURE TestDuplicateMaterial;
+	:RETURN DoProc("RunCase", {"DuplicateMaterial", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {" water ", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.F.,
+		"DUPLICATE_MATERIAL_RULE"}});
+:ENDPROC;
+
+/* TestWrongTestRules checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestRules;
+	:RETURN DoProc("RunCase", {"WrongTestRules", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, NIL, {}}, {.F.,
+		"INVALID_TEST_RULES"}});
+:ENDPROC;
+
+/* TestWrongTestRow checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestRow;
+	:RETURN DoProc("RunCase", {"WrongTestRow", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {NIL}, {}}, {.F.,
+		"INVALID_TEST_RULE"}});
+:ENDPROC;
+
+/* TestWrongTestWidth checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestWidth;
+	:RETURN DoProc("RunCase", {"WrongTestWidth", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH"}}, {}}, {.F.,
+		"INVALID_TEST_RULE"}});
+:ENDPROC;
+
+/* TestWrongTestKey checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestKey;
+	:RETURN DoProc("RunCase", {"WrongTestKey", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{1, "WATER", 2}}, {}}, {.F.,
+		"INVALID_TEST_KEY"}});
+:ENDPROC;
+
+/* TestBlankTestKey checks the public outcome for its stated fixture;
+:PROCEDURE TestBlankTestKey;
+	:RETURN DoProc("RunCase", {"BlankTestKey", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{" ", "WATER", 2}}, {}}, {.F.,
+		"INVALID_TEST_KEY"}});
+:ENDPROC;
+
+/* TestWrongTestMaterial checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestMaterial;
+	:RETURN DoProc("RunCase", {"WrongTestMaterial", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", NIL, 2}}, {}}, {.F.,
+		"INVALID_TEST_MATERIAL"}});
+:ENDPROC;
+
+/* TestUnknownTestMaterial checks the public outcome for its stated fixture;
+:PROCEDURE TestUnknownTestMaterial;
+	:RETURN DoProc("RunCase", {"UnknownTestMaterial", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "GAS", 2}}, {}},
+		{.F., "UNKNOWN_TEST_MATERIAL"}});
+:ENDPROC;
+
+/* TestWrongTestVolume checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestVolume;
+	:RETURN DoProc("RunCase", {"WrongTestVolume", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", NIL}}, {}}, {.F.,
+		"INVALID_TEST_VOLUME"}});
+:ENDPROC;
+
+/* TestNegativeTestVolume checks the public outcome for its stated fixture;
+:PROCEDURE TestNegativeTestVolume;
+	:RETURN DoProc("RunCase", {"NegativeTestVolume", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", -1}},
+		{}}, {.F., "INVALID_TEST_VOLUME"}});
+:ENDPROC;
+
+/* TestDuplicateTestRule checks the public outcome for its stated fixture;
+:PROCEDURE TestDuplicateTestRule;
+	:RETURN DoProc("RunCase", {"DuplicateTestRule", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"ph",
+		"WATER", 2}}, {}}, {.F., "DUPLICATE_TEST_RULE"}});
+:ENDPROC;
+
+/* TestWrongExistingRecords checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongExistingRecords;
+	:RETURN DoProc("RunCase", {"WrongExistingRecords", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, NIL}, {.F.,
+		"INVALID_EXISTING_RECORDS"}});
+:ENDPROC;
+
+/* TestWrongExistingRow checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongExistingRow;
+	:RETURN DoProc("RunCase", {"WrongExistingRow", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {NIL}}, {.F.,
+		"INVALID_EXISTING_RECORD"}});
+:ENDPROC;
+
+/* TestWrongExistingWidth checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongExistingWidth;
+	:RETURN DoProc("RunCase", {"WrongExistingWidth", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {{"S0"}}}, {.F.,
+		"INVALID_EXISTING_RECORD"}});
+:ENDPROC;
+
+/* TestWrongExistingSample checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongExistingSample;
+	:RETURN DoProc("RunCase", {"WrongExistingSample", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {{1, "C0"}}},
+		{.F., "INVALID_EXISTING_KEY"}});
+:ENDPROC;
+
+/* TestWrongExistingContainer checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongExistingContainer;
+	:RETURN DoProc("RunCase", {"WrongExistingContainer", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {{"S0", NIL}}},
+		{.F., "INVALID_EXISTING_KEY"}});
+:ENDPROC;
+
+/* TestBlankExistingKey checks the public outcome for its stated fixture;
+:PROCEDURE TestBlankExistingKey;
+	:RETURN DoProc("RunCase", {"BlankExistingKey", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {{" ", "C0"}}}, {.F.,
+		"INVALID_EXISTING_KEY"}});
+:ENDPROC;
+
+/* TestWrongRowType checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongRowType;
+	:RETURN DoProc("RunCase", {"WrongRowType", {{NIL}, {{"WATER", 1, 20}, {"SOLID", 1,
+		20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA",
+		"WATER", 1}}, {}}, {.T., {{}, {{1, "INVALID_ROW"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongRowWidth checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongRowWidth;
+	:RETURN DoProc("RunCase", {"WrongRowWidth", {{{"S1"}}, {{"WATER", 1, 20}, {"SOLID", 1,
+		20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA",
+		"WATER", 1}}, {}}, {.T., {{}, {{1, "INVALID_ROW"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongRowKey checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongRowKey;
+	:RETURN DoProc("RunCase", {"WrongRowKey", {{{7, "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_ROW_KEY"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestBlankRowKey checks the public outcome for its stated fixture;
+:PROCEDURE TestBlankRowKey;
+	:RETURN DoProc("RunCase", {"BlankRowKey", {{{"S1", " ", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_ROW_KEY"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongOwner checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongOwner;
+	:RETURN DoProc("RunCase", {"WrongOwner", {{{"S1", "C1", "WATER", 10, 5, NIL, {"PH"}}},
+		{{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1},
+		{"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_OWNER"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestBlankOwner checks the public outcome for its stated fixture;
+:PROCEDURE TestBlankOwner;
+	:RETURN DoProc("RunCase", {"BlankOwner", {{{"S1", "C1", "WATER", 10, 5, " ", {"PH"}}},
+		{{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1},
+		{"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_OWNER"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongVolume checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongVolume;
+	:RETURN DoProc("RunCase", {"WrongVolume", {{{"S1", "C1", "WATER", NIL, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_VOLUME"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongPriority checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongPriority;
+	:RETURN DoProc("RunCase", {"WrongPriority", {{{"S1", "C1", "WATER", 10, NIL, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_PRIORITY"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestPriorityOutOfRange checks the public outcome for its stated fixture;
+:PROCEDURE TestPriorityOutOfRange;
+	:RETURN DoProc("RunCase", {"PriorityOutOfRange", {{{"S1", "C1", "WATER", 10, 10,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{},
+		{{1, "INVALID_PRIORITY"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestFractionalPriority checks the public outcome for its stated fixture;
+:PROCEDURE TestFractionalPriority;
+	:RETURN DoProc("RunCase", {"FractionalPriority", {{{"S1", "C1", "WATER", 10, 1.5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{},
+		{{1, "INVALID_PRIORITY"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestUnknownMaterial checks the public outcome for its stated fixture;
+:PROCEDURE TestUnknownMaterial;
+	:RETURN DoProc("RunCase", {"UnknownMaterial", {{{"S1", "C1", "GAS", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"UNKNOWN_MATERIAL"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestVolumeOutOfRange checks the public outcome for its stated fixture;
+:PROCEDURE TestVolumeOutOfRange;
+	:RETURN DoProc("RunCase", {"VolumeOutOfRange", {{{"S1", "C1", "WATER", 21, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"VOLUME_OUT_OF_RANGE"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongTestList checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongTestList;
+	:RETURN DoProc("RunCase", {"WrongTestList", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		NIL}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_TEST_LIST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestEmptyTestList checks the public outcome for its stated fixture;
+:PROCEDURE TestEmptyTestList;
+	:RETURN DoProc("RunCase", {"EmptyTestList", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER",
+		1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"EMPTY_TEST_LIST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestWrongRequestedTest checks the public outcome for its stated fixture;
+:PROCEDURE TestWrongRequestedTest;
+	:RETURN DoProc("RunCase", {"WrongRequestedTest", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {1}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INVALID_REQUESTED_TEST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestBlankRequestedTest checks the public outcome for its stated fixture;
+:PROCEDURE TestBlankRequestedTest;
+	:RETURN DoProc("RunCase", {"BlankRequestedTest", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {" "}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{},
+		{{1, "INVALID_REQUESTED_TEST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestDuplicateRequestedTest checks the public outcome for its stated fixture;
+:PROCEDURE TestDuplicateRequestedTest;
+	:RETURN DoProc("RunCase", {"DuplicateRequestedTest", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH", "ph"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{},
+		{{1, "DUPLICATE_REQUESTED_TEST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestUnknownRequestedTest checks the public outcome for its stated fixture;
+:PROCEDURE TestUnknownRequestedTest;
+	:RETURN DoProc("RunCase", {"UnknownRequestedTest", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"UNKNOWN"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{},
+		{{1, "UNKNOWN_TEST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestIncompatibleTest checks the public outcome for its stated fixture;
+:PROCEDURE TestIncompatibleTest;
+	:RETURN DoProc("RunCase", {"IncompatibleTest", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"MASS"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{}, {{1,
+		"INCOMPATIBLE_TEST"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestDemandExceedsVolume checks the public outcome for its stated fixture;
+:PROCEDURE TestDemandExceedsVolume;
+	:RETURN DoProc("RunCase", {"DemandExceedsVolume", {{{"S1", "C1", "WATER", 1, 5,
+		"TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2},
+		{"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{},
+		{{1, "INSUFFICIENT_VOLUME"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestExistingSample checks the public outcome for its stated fixture;
+:PROCEDURE TestExistingSample;
+	:RETURN DoProc("RunCase", {"ExistingSample", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {{"S1", "C0"}}}, {.T.,
+		{{}, {{1, "SAMPLE_ALREADY_REGISTERED"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestExistingContainer checks the public outcome for its stated fixture;
+:PROCEDURE TestExistingContainer;
+	:RETURN DoProc("RunCase", {"ExistingContainer", {{{"S1", "C1", "WATER", 10, 5, "TEAM",
+		{"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND",
+		"WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {{"S0", "C1"}}}, {.T.,
+		{{}, {{1, "CONTAINER_ALREADY_REGISTERED"}}, {}, {}, {1, 0, 1, 0, 0}}}});
+:ENDPROC;
+
+/* TestDuplicateAcceptedSample checks the public outcome for its stated fixture;
+:PROCEDURE TestDuplicateAcceptedSample;
+	:RETURN DoProc("RunCase", {"DuplicateAcceptedSample", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}, {"s1", "C2", "WATER", 10, 2, "TEAM", {"COND"}}}, {{"WATER", 1,
+		20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{{1, "S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{2, "DUPLICATE_SAMPLE"}}, {{"C1", "WATER", 10, 2, {"S1"}}},
+		{{"TEAM", 1, 1, {"S1"}}}, {2, 1, 1, 1, 1}}}});
+:ENDPROC;
+
+/* TestContainerMaterialConflict checks the public outcome for its stated fixture;
+:PROCEDURE TestContainerMaterialConflict;
+	:RETURN DoProc("RunCase", {"ContainerMaterialConflict", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}, {"S2", "C1", "SOLID", 10, 2, "TEAM", {"MASS"}}}, {{"WATER", 1,
+		20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{{1, "S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{2, "CONTAINER_MATERIAL_CONFLICT"}}, {{"C1", "WATER", 10, 2,
+		{"S1"}}}, {{"TEAM", 1, 1, {"S1"}}}, {2, 1, 1, 1, 1}}}});
+:ENDPROC;
+
+/* TestContainerVolumeConflict checks the public outcome for its stated fixture;
+:PROCEDURE TestContainerVolumeConflict;
+	:RETURN DoProc("RunCase", {"ContainerVolumeConflict", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}, {"S2", "C1", "WATER", 12, 2, "TEAM", {"COND"}}}, {{"WATER", 1,
+		20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{{1, "S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{2, "CONTAINER_VOLUME_CONFLICT"}}, {{"C1", "WATER", 10, 2,
+		{"S1"}}}, {{"TEAM", 1, 1, {"S1"}}}, {2, 1, 1, 1, 1}}}});
+:ENDPROC;
+
+/* TestSharedContainerDemand checks the public outcome for its stated fixture;
+:PROCEDURE TestSharedContainerDemand;
+	:RETURN DoProc("RunCase", {"SharedContainerDemand", {{{"S1", "C1", "WATER", 3, 5,
+		"TEAM", {"PH"}}, {"S2", "C1", "WATER", 3, 2, "TEAM", {"COND"}}, {"S3", "C1",
+		"WATER", 3, 1, "TEAM", {"PH"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH",
+		"WATER", 2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}},
+		{}}, {.T., {{{1, "S1", "C1", "WATER", 3, 5, "TEAM", {"PH"}}, {2, "S2", "C1",
+		"WATER", 3, 2, "TEAM", {"COND"}}}, {{3, "INSUFFICIENT_VOLUME"}}, {{"C1", "WATER",
+		3, 3, {"S1", "S2"}}}, {{"TEAM", 2, 1, {"S1", "S2"}}}, {3, 2, 1, 1, 1}}}});
+:ENDPROC;
+
+/* TestRejectedRowDoesNotReserveKeys checks the public outcome for its stated fixture;
+:PROCEDURE TestRejectedRowDoesNotReserveKeys;
+	:RETURN DoProc("RunCase", {"RejectedRowDoesNotReserveKeys", {{{"S1", "C1", "WATER",
+		10, 5, "TEAM", {}}, {"S1", "C1", "WATER", 10, 5, "TEAM", {"PH"}}}, {{"WATER", 1,
+		20}, {"SOLID", 1, 20}}, {{"PH", "WATER", 2}, {"COND", "WATER", 1}, {"MASS",
+		"SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T., {{{2, "S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH"}}}, {{1, "EMPTY_TEST_LIST"}}, {{"C1", "WATER", 10, 2, {"S1"}}},
+		{{"TEAM", 1, 1, {"S1"}}}, {2, 1, 1, 1, 1}}}});
+:ENDPROC;
+
+/* TestPrefixDistinctTests checks the public outcome for its stated fixture;
+:PROCEDURE TestPrefixDistinctTests;
+	:RETURN DoProc("RunCase", {"PrefixDistinctTests", {{{"S1", "C1", "WATER", 10, 5,
+		"TEAM", {"PH", "PHA"}}}, {{"WATER", 1, 20}, {"SOLID", 1, 20}}, {{"PH", "WATER",
+		2}, {"COND", "WATER", 1}, {"MASS", "SOLID", 3}, {"PHA", "WATER", 1}}, {}}, {.T.,
+		{{{1, "S1", "C1", "WATER", 10, 5, "TEAM", {"PH", "PHA"}}}, {}, {{"C1", "WATER",
+		10, 3, {"S1"}}}, {{"TEAM", 1, 1, {"S1"}}}, {1, 1, 0, 1, 1}}}});
+:ENDPROC;
+
+/* RunCase calls only the script entry point and compares its public projection;
+:PROCEDURE RunCase;
+	:PARAMETERS sLabel, aArguments, aExpected;
+	:DECLARE aActual;
+	aActual := ExecFunction("Calibration.IntakePlan", aArguments);
+	:RETURN DoProc("CheckEqual", {sLabel, aExpected, DoProc("Project", {aActual})});
+:ENDPROC;
+
+/* Project exposes only the published plan fields for value comparison;
+:PROCEDURE Project;
+	:PARAMETERS aResult;
+	:DECLARE oPlan;
+	:IF .NOT. aResult[1];
+		:RETURN aResult;
+	:ENDIF;
+	oPlan := aResult[2];
+	:RETURN {.T., {oPlan:accepted, oPlan:issues, oPlan:containers,
+		oPlan:owners, oPlan:summary}};
+:ENDPROC;
+
+/* ValuesEqual compares public return values recursively without coercing types;
+:PROCEDURE ValuesEqual;
+	:PARAMETERS vExpected, vActual;
+	:DECLARE sType, i;
+	sType := LimsTypeEx(vExpected);
+	:IF sType != LimsTypeEx(vActual);
+		:RETURN .F.;
+	:ENDIF;
+
+	:IF sType == "ARRAY";
+		:IF Len(vExpected) != Len(vActual);
+			:RETURN .F.;
+		:ENDIF;
+
+		:FOR i := 1 :TO Len(vExpected);
+			:IF .NOT. DoProc("ValuesEqual", {vExpected[i], vActual[i]});
+				:RETURN .F.;
+			:ENDIF;
+		:NEXT;
+		:RETURN .T.;
+	:ENDIF;
+	:RETURN vExpected == vActual;
+:ENDPROC;
+
+/* CheckEqual returns a label/pass pair and logs failed public-contract checks;
+:PROCEDURE CheckEqual;
+	:PARAMETERS sLabel, vExpected, vActual;
+	:DECLARE bPassed;
+	bPassed := DoProc("ValuesEqual", {vExpected, vActual});
+	:IF .NOT. bPassed;
+		ErrorMes("Calibration test", sLabel);
+	:ENDIF;
+	:RETURN {sLabel, bPassed};
+:ENDPROC;
+
+/* ReportResults logs the tally and returns the individual case outcomes;
+:PROCEDURE ReportResults;
+	:PARAMETERS aResults;
+	:DECLARE aResult, nPassed, i;
+	nPassed := 0;
+	:FOR i := 1 :TO Len(aResults);
+		aResult := aResults[i];
+		:IF aResult[2];
+			nPassed += 1;
+		:ENDIF;
+	:NEXT;
+	InfoMes("Calibration tests", LimsString(nPassed) + " / " + LimsString(Len(aResults)));
+	:RETURN aResults;
+:ENDPROC;

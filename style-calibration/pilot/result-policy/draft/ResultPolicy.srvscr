@@ -1,0 +1,184 @@
+/* =============================================================================;
+/* Class........ ResultPolicy;
+/* Purpose...... Classify measurements using one validated set of analyte limits;
+/* Parameters... aLimits - Constructor rows with analyte, min, max, and digits;
+/* Returns...... Evaluate returns a classification envelope or a stable failure;
+/* =============================================================================;
+:CLASS ResultPolicy;
+:DECLARE aLimits, bConfigured, sConfigurationIssue;
+
+/*
+ * Procedure: Evaluate
+ * Description: Compare the original measurement and round only its display value.
+ * Parameters:
+ *   vAnalyte - Caller-supplied analyte key
+ *   vValue - Caller-supplied numeric measurement
+ * Returns: aResult - {true, {status, display, minimum, maximum}} or {false, code}
+;
+:PROCEDURE Evaluate;
+	:PARAMETERS vAnalyte, vValue;
+	:DECLARE aLimit, nIndex, nRounded, sAnalyte, sClassification;
+
+	:IF .NOT. Me:bConfigured;
+		:RETURN {.F., "INVALID_CONFIGURATION"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vAnalyte) != "STRING";
+		:RETURN {.F., "INVALID_ANALYTE"};
+	:ENDIF;
+
+	sAnalyte := Upper(AllTrim(vAnalyte));
+	:IF sAnalyte == "";
+		:RETURN {.F., "INVALID_ANALYTE"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vValue) != "NUMERIC";
+		:RETURN {.F., "INVALID_VALUE"};
+	:ENDIF;
+
+	nIndex := Me:FindLimit(sAnalyte);
+	:IF nIndex == 0;
+		:RETURN {.F., "UNKNOWN_ANALYTE"};
+	:ENDIF;
+
+	aLimit := Me:aLimits[nIndex];
+	sClassification := "PASS";
+	:IF vValue < aLimit[2];
+		sClassification := "LOW";
+	:ELSE;
+		:IF vValue > aLimit[3];
+			sClassification := "HIGH";
+		:ENDIF;
+	:ENDIF;
+
+	/* Rounding before comparison would move values across the acceptance bounds;
+	nRounded := Round(vValue, aLimit[4]);
+	:RETURN {.T., {sClassification, nRounded, aLimit[2], aLimit[3]}};
+:ENDPROC;
+
+/*
+ * Procedure: FindLimit
+ * Description: Locate a normalized key in the validated configuration.
+ * Parameters:
+ *   sAnalyte - Normalized key from this class's owning boundary
+ * Returns: nIndex - Matching row position, or zero when absent
+;
+:PROCEDURE FindLimit;
+	:PARAMETERS sAnalyte;
+	:DECLARE aLimit, i;
+
+	:FOR i := 1 :TO Len(Me:aLimits);
+		aLimit := Me:aLimits[i];
+		:IF aLimit[1] == sAnalyte;
+			:RETURN i;
+		:ENDIF;
+	:NEXT;
+
+	:RETURN 0;
+:ENDPROC;
+
+/*
+ * Procedure: ValidateLimit
+ * Description: Establish the shape and numeric invariants required by Evaluate.
+ * Parameters:
+ *   vLimit - One untrusted constructor row
+ * Returns: sIssue - Empty string when valid, otherwise a stable setup issue
+;
+:PROCEDURE ValidateLimit;
+	:PARAMETERS vLimit;
+
+	:IF LimsTypeEx(vLimit) != "ARRAY";
+		:RETURN "INVALID_LIMIT_ROW";
+	:ENDIF;
+
+	:IF Len(vLimit) != 4;
+		:RETURN "INVALID_LIMIT_ROW";
+	:ENDIF;
+
+	:IF LimsTypeEx(vLimit[1]) != "STRING";
+		:RETURN "INVALID_LIMIT_KEY";
+	:ENDIF;
+
+	:IF AllTrim(vLimit[1]) == "";
+		:RETURN "INVALID_LIMIT_KEY";
+	:ENDIF;
+
+	:IF LimsTypeEx(vLimit[2]) != "NUMERIC";
+		:RETURN "INVALID_LIMIT_BOUNDS";
+	:ENDIF;
+
+	:IF LimsTypeEx(vLimit[3]) != "NUMERIC";
+		:RETURN "INVALID_LIMIT_BOUNDS";
+	:ENDIF;
+
+	:IF vLimit[2] > vLimit[3];
+		:RETURN "INVALID_LIMIT_BOUNDS";
+	:ENDIF;
+
+	:IF LimsTypeEx(vLimit[4]) != "NUMERIC";
+		:RETURN "INVALID_LIMIT_DIGITS";
+	:ENDIF;
+
+	:IF vLimit[4] < 0 .OR. vLimit[4] > 6;
+		:RETURN "INVALID_LIMIT_DIGITS";
+	:ENDIF;
+
+	:IF Round(vLimit[4], 0) != vLimit[4];
+		:RETURN "INVALID_LIMIT_DIGITS";
+	:ENDIF;
+
+	:RETURN "";
+:ENDPROC;
+
+/* ConfigurationIssue returns the stable setup issue, empty for valid setup;
+:PROCEDURE ConfigurationIssue;
+	:RETURN Me:sConfigurationIssue;
+:ENDPROC;
+
+/* LimitCount returns zero after failed setup or for an empty configuration;
+:PROCEDURE LimitCount;
+	:RETURN Len(Me:aLimits);
+:ENDPROC;
+
+/*
+ * Procedure: Constructor
+ * Description: Install a complete validated copy or retain a setup issue.
+ * Parameters:
+ *   aLimits - Limit rows, defaulting to an empty valid configuration
+ * Returns: Nothing - Inspect ConfigurationIssue for the setup outcome
+;
+:PROCEDURE Constructor;
+	:PARAMETERS aLimits;
+	:DEFAULT aLimits, {};
+	:DECLARE aLimit, sKey, i;
+
+	Me:aLimits := {};
+	Me:bConfigured := .F.;
+	Me:sConfigurationIssue := "";
+
+	:IF LimsTypeEx(aLimits) != "ARRAY";
+		Me:sConfigurationIssue := "INVALID_LIMITS";
+	:ELSE;
+		:FOR i := 1 :TO Len(aLimits);
+			aLimit := aLimits[i];
+			Me:sConfigurationIssue := Me:ValidateLimit(aLimit);
+			:IF Me:sConfigurationIssue != "";
+				:EXITFOR;
+			:ENDIF;
+
+			sKey := Upper(AllTrim(aLimit[1]));
+			:IF Me:FindLimit(sKey) > 0;
+				Me:sConfigurationIssue := "DUPLICATE_LIMIT_KEY";
+				:EXITFOR;
+			:ENDIF;
+			AAdd(Me:aLimits, {sKey, aLimit[2], aLimit[3], aLimit[4]});
+		:NEXT;
+	:ENDIF;
+
+	:IF Me:sConfigurationIssue == "";
+		Me:bConfigured := .T.;
+	:ELSE;
+		/* A rejected configuration must not leave a usable partial policy;
+		Me:aLimits := {};
+	:ENDIF;
+:ENDPROC;

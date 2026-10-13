@@ -1,0 +1,104 @@
+/* OwnerWorkloadTests - user-run SSL tests, locally unexecuted;
+/* Install drafts under Calibration and run this test script;
+/* Read-only. Requires only the synthetic rows in FIXTURES.md;
+:RETURN DoProc("RunTests");
+
+:PROCEDURE RunTests;
+	:DECLARE aResults;
+	aResults := {};
+	AAdd(aResults, DoProc("TestNormalizesOwner"));
+	AAdd(aResults, DoProc("TestEmptyMatch"));
+	AAdd(aResults, DoProc("TestBlankOwner"));
+	AAdd(aResults, DoProc("TestInvalidOwner"));
+	:RETURN DoProc("ReportResults", {aResults});
+:ENDPROC;
+
+/* TestNormalizesOwner verifies the documented public contract;
+:PROCEDURE TestNormalizesOwner;
+	:DECLARE vResult;
+	vResult := RunDS("Calibration.OwnerWorkload", {{"sOwner", " a "}});
+	:RETURN DoProc("CheckEqual", {"NormalizesOwner", {"A", 3, 1, 3, 1, 3, 8},
+		DoProc("Project", {vResult})});
+:ENDPROC;
+
+/* TestEmptyMatch verifies the documented public contract;
+:PROCEDURE TestEmptyMatch;
+	:DECLARE vResult;
+	vResult := RunDS("Calibration.OwnerWorkload", {{"sOwner", "EMPTY"}});
+	:RETURN DoProc("CheckEqual", {"EmptyMatch", {"EMPTY", 0, 0, 0, 0, 0, 0},
+		DoProc("Project", {vResult})});
+:ENDPROC;
+
+/* TestBlankOwner verifies the documented public contract;
+:PROCEDURE TestBlankOwner;
+	:DECLARE vResult;
+	vResult := RunDS("Calibration.OwnerWorkload", {{"sOwner", " "}});
+	:RETURN DoProc("CheckEqual", {"BlankOwner", NIL, DoProc("Project", {vResult})});
+:ENDPROC;
+
+/* TestInvalidOwner verifies the documented public contract;
+:PROCEDURE TestInvalidOwner;
+	:DECLARE vResult;
+	vResult := RunDS("Calibration.OwnerWorkload", {{"sOwner", 7}});
+	:RETURN DoProc("CheckEqual", {"InvalidOwner", NIL, DoProc("Project", {vResult})});
+:ENDPROC;
+
+/* Project compares the documented count fields, not object identity;
+:PROCEDURE Project;
+	:PARAMETERS vResult;
+	:IF vResult == NIL;
+		:RETURN NIL;
+	:ENDIF;
+	:RETURN {vResult:owner, vResult:pending, vResult:active, vResult:complete,
+		vResult:other, vResult:highPriority, vResult:total};
+:ENDPROC;
+
+/* ValuesEqual compares public return values recursively without coercing types;
+:PROCEDURE ValuesEqual;
+	:PARAMETERS vExpected, vActual;
+	:DECLARE sType, i;
+	sType := LimsTypeEx(vExpected);
+	:IF sType != LimsTypeEx(vActual);
+		:RETURN .F.;
+	:ENDIF;
+
+	:IF sType == "ARRAY";
+		:IF Len(vExpected) != Len(vActual);
+			:RETURN .F.;
+		:ENDIF;
+
+		:FOR i := 1 :TO Len(vExpected);
+			:IF .NOT. DoProc("ValuesEqual", {vExpected[i], vActual[i]});
+				:RETURN .F.;
+			:ENDIF;
+		:NEXT;
+		:RETURN .T.;
+	:ENDIF;
+	:RETURN vExpected == vActual;
+:ENDPROC;
+
+/* CheckEqual returns a label/pass pair and logs failed public-contract checks;
+:PROCEDURE CheckEqual;
+	:PARAMETERS sLabel, vExpected, vActual;
+	:DECLARE bPassed;
+	bPassed := DoProc("ValuesEqual", {vExpected, vActual});
+	:IF .NOT. bPassed;
+		ErrorMes("Calibration test", sLabel);
+	:ENDIF;
+	:RETURN {sLabel, bPassed};
+:ENDPROC;
+
+/* ReportResults logs the tally and returns the individual case outcomes;
+:PROCEDURE ReportResults;
+	:PARAMETERS aResults;
+	:DECLARE aResult, nPassed, i;
+	nPassed := 0;
+	:FOR i := 1 :TO Len(aResults);
+		aResult := aResults[i];
+		:IF aResult[2];
+			nPassed += 1;
+		:ENDIF;
+	:NEXT;
+	InfoMes("Calibration tests", LimsString(nPassed) + " / " + LimsString(Len(aResults)));
+	:RETURN aResults;
+:ENDPROC;

@@ -1,0 +1,109 @@
+/* NormalizeKeyTests - user-run SSL tests, locally unexecuted;
+/* Install drafts under Calibration and run this test script;
+/* No database fixture or writes required.;
+:RETURN DoProc("RunTests");
+
+:PROCEDURE RunTests;
+	:DECLARE aResults;
+	aResults := {};
+	AAdd(aResults, DoProc("TestTrimsAndUppercases"));
+	AAdd(aResults, DoProc("TestPreservesInternalSpaces"));
+	AAdd(aResults, DoProc("TestBlankReturnsEmpty"));
+	AAdd(aResults, DoProc("TestNilReturnsEmpty"));
+	AAdd(aResults, DoProc("TestNumericIsRejected"));
+	AAdd(aResults, DoProc("TestArrayIsRejected"));
+	AAdd(aResults, DoProc("TestOmittedReturnsEmpty"));
+	:RETURN DoProc("ReportResults", {aResults});
+:ENDPROC;
+
+/* TestTrimsAndUppercases verifies the documented public contract;
+:PROCEDURE TestTrimsAndUppercases;
+	:RETURN DoProc("CheckEqual", {"TrimsAndUppercases", "AB-12",
+		ExecFunction("Calibration.NormalizeKey", {" ab-12 "})});
+:ENDPROC;
+
+/* TestPreservesInternalSpaces verifies the documented public contract;
+:PROCEDURE TestPreservesInternalSpaces;
+	:RETURN DoProc("CheckEqual", {"PreservesInternalSpaces", "A B",
+		ExecFunction("Calibration.NormalizeKey", {"a b"})});
+:ENDPROC;
+
+/* TestBlankReturnsEmpty verifies the documented public contract;
+:PROCEDURE TestBlankReturnsEmpty;
+	:RETURN DoProc("CheckEqual", {"BlankReturnsEmpty", "",
+		ExecFunction("Calibration.NormalizeKey", {"   "})});
+:ENDPROC;
+
+/* TestNilReturnsEmpty verifies the documented public contract;
+:PROCEDURE TestNilReturnsEmpty;
+	:RETURN DoProc("CheckEqual", {"NilReturnsEmpty", "",
+		ExecFunction("Calibration.NormalizeKey", {NIL})});
+:ENDPROC;
+
+/* TestNumericIsRejected verifies the documented public contract;
+:PROCEDURE TestNumericIsRejected;
+	:RETURN DoProc("CheckEqual", {"NumericIsRejected", NIL,
+		ExecFunction("Calibration.NormalizeKey", {7})});
+:ENDPROC;
+
+/* TestArrayIsRejected verifies the documented public contract;
+:PROCEDURE TestArrayIsRejected;
+	:RETURN DoProc("CheckEqual", {"ArrayIsRejected", NIL,
+		ExecFunction("Calibration.NormalizeKey", {{}})});
+:ENDPROC;
+
+/* TestOmittedReturnsEmpty verifies the documented public contract;
+:PROCEDURE TestOmittedReturnsEmpty;
+	:RETURN DoProc("CheckEqual", {"Omitted", "",
+		ExecFunction("Calibration.NormalizeKey")});
+:ENDPROC;
+
+/* ValuesEqual compares public return values recursively without coercing types;
+:PROCEDURE ValuesEqual;
+	:PARAMETERS vExpected, vActual;
+	:DECLARE sType, i;
+	sType := LimsTypeEx(vExpected);
+	:IF sType != LimsTypeEx(vActual);
+		:RETURN .F.;
+	:ENDIF;
+
+	:IF sType == "ARRAY";
+		:IF Len(vExpected) != Len(vActual);
+			:RETURN .F.;
+		:ENDIF;
+
+		:FOR i := 1 :TO Len(vExpected);
+			:IF .NOT. DoProc("ValuesEqual", {vExpected[i], vActual[i]});
+				:RETURN .F.;
+			:ENDIF;
+		:NEXT;
+		:RETURN .T.;
+	:ENDIF;
+	:RETURN vExpected == vActual;
+:ENDPROC;
+
+/* CheckEqual returns a label/pass pair and logs failed public-contract checks;
+:PROCEDURE CheckEqual;
+	:PARAMETERS sLabel, vExpected, vActual;
+	:DECLARE bPassed;
+	bPassed := DoProc("ValuesEqual", {vExpected, vActual});
+	:IF .NOT. bPassed;
+		ErrorMes("Calibration test", sLabel);
+	:ENDIF;
+	:RETURN {sLabel, bPassed};
+:ENDPROC;
+
+/* ReportResults logs the tally and returns the individual case outcomes;
+:PROCEDURE ReportResults;
+	:PARAMETERS aResults;
+	:DECLARE aResult, nPassed, i;
+	nPassed := 0;
+	:FOR i := 1 :TO Len(aResults);
+		aResult := aResults[i];
+		:IF aResult[2];
+			nPassed += 1;
+		:ENDIF;
+	:NEXT;
+	InfoMes("Calibration tests", LimsString(nPassed) + " / " + LimsString(Len(aResults)));
+	:RETURN aResults;
+:ENDPROC;
