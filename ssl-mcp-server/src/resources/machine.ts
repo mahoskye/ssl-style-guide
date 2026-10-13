@@ -1,5 +1,6 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Indices } from "../data/indices.js";
+import { templateVar } from "./template-vars.js";
 
 export function registerMachineResources(server: McpServer, indices: Indices): void {
   server.resource(
@@ -34,13 +35,29 @@ export function registerMachineResources(server: McpServer, indices: Indices): v
 
   server.resource(
     "ssl-machine-category",
-    "ssl://machine/categories/{category}",
-    { description: "Compact SSL machine-doc category pack" },
-    async (uri) => {
-      const category = uri.pathname
-        .replace(/^\/machine\/categories\//, "")
-        .replace(/^\/categories\//, "")
-        .replace(/^\//, "");
+    new ResourceTemplate("ssl://machine/categories/{category}", {
+      list: async () => ({
+        resources: Object.values(indices.machineDocs.categories)
+          .sort((a, b) => a.id.localeCompare(b.id))
+          .map((pack) => ({
+            uri: `ssl://machine/categories/${encodeURIComponent(pack.id)}`,
+            name: pack.id,
+            description: pack.summary,
+            mimeType: "application/json",
+          })),
+      }),
+      complete: {
+        category: (value) => {
+          const q = value.toLowerCase();
+          return Object.keys(indices.machineDocs.categories)
+            .filter((id) => id.startsWith(q))
+            .sort();
+        },
+      },
+    }),
+    { description: "Compact SSL machine-doc category pack", mimeType: "application/json" },
+    async (uri, variables) => {
+      const category = templateVar(variables, "category");
       const pack = indices.machineDocs.categories[category];
       if (!pack) {
         const available = Object.keys(indices.machineDocs.categories).sort().join(", ");
