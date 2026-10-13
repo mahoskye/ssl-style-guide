@@ -166,6 +166,7 @@ ssl_style_guide:
       exit: :EXITCASE  # Without :EXITCASE, later :CASE expressions are still evaluated and additional matching bodies may execute, but :OTHERWISE stays skipped once any case body has run
       end: :ENDCASE
       constraint: at_least_one_case  # :BEGINCASE requires at least one :CASE block
+      exitcase_placement: last statement of its :CASE/:OTHERWISE branch, directly in the branch body — a statement after it, or :EXITCASE nested inside :IF, is a compile error
     try:
       begin: :TRY
       catch: :CATCH
@@ -301,7 +302,14 @@ ssl_style_guide:
     - '/='
     - '^='
     - '%='
-    # Full precedence (low → high): .OR., .AND., equality/containment, relational,
+    assignment_semantics:
+      level: authoritative
+      targets: variable, object property (oTask:Status), or array element (aItems[1])
+      value: "An assignment evaluates to the assigned value; a compound assignment evaluates to the updated left-side value"
+      associativity: "right — chained assignment such as sStatus := sDefault := \"PENDING\"; is valid"
+      precedence: lowest of all operators
+      style: "Prefer one assignment per line; use a chained assignment only when every target should receive the same value"
+    # Full precedence (low → high): assignment, .OR., .AND., equality/containment, relational,
     # shift, additive, multiplicative, power (right-assoc), unary.
     # See ssl-ebnf-grammar.md for the canonical production chain.
     comparison_operators:
@@ -452,8 +460,10 @@ ssl_style_guide:
       syntax:
         - "/*@private;"
         - "/*@protected;"
-      placement: own line immediately before :PROCEDURE
-      effect: "Both keep the procedure callable from the same script (for example with DoProc) and block calls from external scripts (ExecFunction from another script)"
+      placement: own line immediately before :PROCEDURE, with no blank line between them (a blank line breaks the association)
+      exact_form: "Lowercase, with no space between /* and @ — /*@Private; or /* @private; is not recognized"
+      not_a_comment: "Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments; formatters must not respace, recase or separate them from :PROCEDURE"
+      effect: "Both block calls from other scripts; procedures in the same script can still call the procedure"
       class_restriction: "These annotations have no effect on class methods — class methods are always Public|Virtual"
     return:
       keyword: :RETURN
@@ -1023,13 +1033,13 @@ ssl_style_guide:
       level: authoritative
       note: "GetLastSSLError() returns an SSLError object with these members:"
       members:
-        - ":Message        # short error message"
-        - ":Description    # detailed description"
+        - ":Message        # alias of :Description"
+        - ":Description    # primary error message text"
         - ":Operation      # operation that caused the error"
-        - ":Code           # numeric error code"
-        - ":GenCode        # general/category error code"
-        - ":FullDescription      # combined message + description"
-        - ":FullDescriptionEx    # extended full description with inner exceptions"
+        - ":Code           # numeric error code (the code passed to RaiseError)"
+        - ":GenCode        # numeric error code"
+        - ":FullDescription      # multi-line diagnostic text with abbreviated stack details and nested causes"
+        - ":FullDescriptionEx    # multi-line diagnostic text with full stack details and nested causes"
         - ":InnerException       # nested SSLError from a chained exception"
         - ":NETException         # underlying .NET exception object (if available)"
     guidance:
@@ -1098,11 +1108,11 @@ ssl_style_guide:
       - DoProc("ProcedureName", {params})
       - ExecFunction("Category.Script", {params})
       - ExecFunction("Category.Script.Proc", {params})
-      - ExecUdf("UdfName", {params})
-      - Eval(vCode[, vArg1[, vArg2 ...]])
+      - ExecUdf(sCode, [aArgs], [bCacheCode])   # sCode is SSL source text, not a name
+      - Eval(fnCode, [vArg1], [vArg2], ...)    # fnCode is a code block; Eval does not compile source text
       - Branch(vTarget)
-    dynamic_procedures: GetRegion(sValue, vSrc, vDst)
-    inline_code: GetInlineCode(sValue, aVariables)
+    dynamic_procedures: GetRegion(sRegionName, [aSourceValues], [aDestinationValues])
+    inline_code: GetInlineCode(sValue, [aVariables])
     code_blocks: "{|params| expression}"
   special_literals:
     level: authoritative
@@ -1234,7 +1244,7 @@ ssl_style_guide:
     variable_naming:
       hungarian_notation_required: true
       meaningful_names: true
-      max_length: 20  # variables, 30 for functions
+      max_length: 20  # variable characters after the type prefix; 30 for procedure and function names
   security_best_practices:
     sql_injection_prevention:
       always_use_parameters: true
@@ -1535,7 +1545,7 @@ ssl_style_guide:
         fn: code_block
         v: variant  # any/variant — for variables whose type is unknown or changes
       exceptions:
-        loop_counters: [i, j, k, x, y, z]
+        loop_counters: [i, j, k, x, y, z]  # only when declared; prefer a script-specific name in a script that calls other scripts
         ssl_constants: [NIL, .T., .F.]
         preserve_existing_acronym_casing: true
     security:
@@ -1626,7 +1636,7 @@ ssl_style_guide:
       scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
     parameter_skipping_style:
       level: style_only
-      rule: "Skipped-argument commas must be adjacent with no intervening spaces: {param1,,param3} not {param1, , param3}."
+      rule: "House style: write skipped-argument commas adjacent with no intervening spaces — {param1,,param3}, not {param1, , param3}. Both forms are valid and behave the same."
       trailing_params: "Omit trailing optional parameters rather than passing empty values."
     class_rules:
       - rule: class_member_order
@@ -1645,7 +1655,7 @@ ssl_style_guide:
     coding_standards:
       - rule: limit_public_vars
         severity: warning
-        message: ":PUBLIC variables are call-stack scoped — visible to the declaring scope and every scope it calls, for the lifetime of the declaring frame — and risk namespace pollution. Prefer :DECLARE with parameter passing."
+        message: ":PUBLIC variables are shared across the running program — any procedure can read or update them, including procedures called after the declaring procedure has returned — and anything on the call stack can overwrite them. Prefer :DECLARE with parameter passing."
       - rule: prefer_exitcase
         severity: warning
         message: ":EXITCASE is syntactically optional, but without it later :CASE expressions are still evaluated and additional matching bodies may execute. :OTHERWISE still stays skipped once any earlier case body has run. Always include :EXITCASE unless multi-match behavior is intentional."

@@ -72,7 +72,7 @@ Refactored SSL scripts should follow this target structure in order:
 │    :INCLUDE LibraryName;               │
 ├────────────────────────────────────────┤
 │ 5. PUBLIC / DECLARATIONS               │
-│    :PUBLIC gSharedVar;                 │
+│    :PUBLIC sSharedValue;               │
 │    :DECLARE nVar1, sVar2;              │
 ├────────────────────────────────────────┤
 │ 6. MAIN SCRIPT LOGIC                   │
@@ -229,7 +229,7 @@ These formatting rules are style conventions and match the starlims-lsp formatte
 `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH`, `:FINALLY`
 
 **Regular statement (no indent change):**
-`:EXITCASE` - stays at content level, like a `break` statement
+`:EXITCASE` - stays at content level, like a `break` statement. It must be the last statement of its `:CASE` or `:OTHERWISE` branch, directly in the branch body: a statement after it, or an `:EXITCASE` nested inside an `:IF`, is a compile error. To leave the block from part of a branch, split the branch into separate `:CASE` conditions instead.
 
 `:CLASS` establishes class context, but because it has no closing keyword and a file
 contains only one class, class members stay at the file's top indentation level.
@@ -258,7 +258,7 @@ contains only one class, class members stay at the file's top indentation level.
 
 Multi-line function calls:
 ```ssl
-result := DoProc("ProcessData", {
+vResult := DoProc("ProcessData", {
     param1,
     param2,
     param3
@@ -335,7 +335,7 @@ aResults := SQLExecute("
 - Function/procedure names: maximum 30 characters
 
 **Exceptions:**
-- Loop counters: `i`, `j`, `k`, `x`, `y`, `z`
+- Loop counters: `i`, `j`, `k`, `x`, `y`, `z` — only when declared, and prefer a script-specific name (`nSampleIdx`) in a script that calls other scripts, because an undeclared counter can collide with a caller's variable of the same name
 - Constants: `ALL_CAPS_WITH_UNDERSCORES`
 
 ### 4.2 Procedure Names
@@ -381,11 +381,8 @@ Predefined globals are not part of the language. They are `:PUBLIC` variables th
 /* Log with current user;
 UsrMes("Action performed by: " + MYUSERNAME);
 
-/* Log a message with structured detail payload;
-UsrMes("This is the user message.", {{1, 2, 3}, "Treeflower", 245});
-/* Produces text similar to:
-/* This is the user message.
-/* {{1,2,3},Treeflower,245};
+/* Log a caption and a message built from the values you want recorded;
+UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows for " + sSiteCode);
 ```
 
 ---
@@ -602,13 +599,13 @@ For operations that need multiple entry points:
 
 ```ssl
 /* WRONG - SSL does not support direct calls to custom procedures;
-result := MyProcedure(arg1, arg2);
+vResult := MyProcedure(arg1, arg2);
 
 /* CORRECT - Use DoProc for same-file procedures;
-result := DoProc("MyProcedure", {arg1, arg2});
+vResult := DoProc("MyProcedure", {arg1, arg2});
 
 /* CORRECT - Use ExecFunction for other-file procedures;
-result := ExecFunction("Category.Script.Proc", {arg1, arg2});
+vResult := ExecFunction("Category.Script.Proc", {arg1, arg2});
 ```
 
 ### 7.2 DoProc Inside Class Methods
@@ -636,14 +633,14 @@ result := ExecFunction("Category.Script.Proc", {arg1, arg2});
 ### 7.2a Unqualified Class Field Access
 
 ```ssl
-/* WRONG - bare identifier resolves to a local, not the :DECLARE field;
+/* WRONG - a bare identifier never refers to the :DECLARE field;
 :CLASS Customer;
 :DECLARE sName, nBalance;
 
 :PROCEDURE Initialize;
     :PARAMETERS sNewName;
-    sName := sNewName;    /* creates a local sName; the field is untouched;
-    nBalance := 0;        /* same problem — writes to a local;
+    sName := sNewName;    /* never writes the field, may update a caller sName;
+    nBalance := 0;        /* same problem, the field is untouched;
 :ENDPROC;
 
 /* CORRECT - qualify class fields with Me: (or Base: for inherited fields);
@@ -661,24 +658,24 @@ result := ExecFunction("Category.Script.Proc", {arg1, arg2});
 
 ```ssl
 /* WRONG - Only SQLExecute supports ?varName? syntax;
-result := RunSQL("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
+vResult := RunSQL("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
 
 /* CORRECT - Other functions use positional ? with array;
-result := RunSQL("UPDATE table SET col = ? WHERE id = ?",, {sValue, nId});
+vResult := RunSQL("UPDATE table SET col = ? WHERE id = ?",, {sValue, nId});
 
 /* CORRECT - SQLExecute can use named parameters;
-result := SQLExecute("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
+vResult := SQLExecute("UPDATE table SET col = ?sValue? WHERE id = ?nId?");
 ```
 
 ### 7.3a UDObject Array Property in IN Clause
 
 ```ssl
 /* WRONG - runtime error: "The current array has more than 1 dimmension.";
-oFilter:StatusCodes := {"A", "P", "C"};
-aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:StatusCodes?)");
+oFilter:statusCodes := {"A", "P", "C"};
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:statusCodes?)");
 
 /* CORRECT - copy UDObject array property to a local variable first;
-aStatusCodes := oFilter:StatusCodes;
+aStatusCodes := oFilter:statusCodes;
 aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 ```
 
@@ -704,6 +701,8 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
     :EXITCASE;
 :ENDCASE;
 ```
+
+`:EXITCASE;` must be the last statement of its branch, directly in the branch body. It cannot be made conditional: an `:EXITCASE` inside an `:IF`, or any statement after it in the same branch, stops the script from compiling. When only part of a branch should end the block, split the branch into separate `:CASE` conditions.
 
 ### 7.5 Incomplete Refactoring
 

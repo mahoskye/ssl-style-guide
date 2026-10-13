@@ -32,13 +32,15 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - Never place `;` inside comment body text
    - `:PARAMETERS` must come immediately after `:PROCEDURE`
    - `:DEFAULT` must come immediately after `:PARAMETERS`
-   - `:DECLARE` must appear before body statements
+   - `:DECLARE` is a regular statement and may appear anywhere a statement is valid; declaring before body statements is a style check (see `formatting` below), not a language rule
    - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation
    - `DoProc` is invalid inside class methods; use `Me:` / `Base:`
    - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY` (no multi-catch)
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement; `:CATCH` body allows zero or more statements
    - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
    - `:BEGINCASE` requires at least one `:CASE`
+   - `:EXITCASE` must be the last statement of its branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error
+   - Access modifiers `/*@private;` / `/*@protected;` are not comments: they must be lowercase, have no space after `/*`, and sit on the line immediately before `:PROCEDURE` (a blank line between them breaks the modifier)
    - Use one statement per line
    - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
    - Inside SQL strings, uppercase SQL keywords; preserve the author's identifier casing (force-folding identifiers is dialect-conditional — do not flag mixed-case or uppercase identifiers)
@@ -133,10 +135,10 @@ types, 29 classes, 8 special forms, 12 return objects, 330 functions.
 
 - **Semicolons in comments:** `/* comment text;` — a `;` inside comment text ends the comment prematurely, turning the rest into executable code. Flag any `/* ... ; ...` where the semicolon is inside the comment body, not at the end.
 - **Missing `:EXITCASE`:** Each `:CASE` / `:OTHERWISE` block should end with `:EXITCASE;` unless multi-match behavior is intentional (without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute, but `:OTHERWISE` stays skipped once any earlier case body has run).
-- **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope. `ssl_diagnose` reports these as `undeclared_variable` warnings under the strict profile, but it validates one document in isolation, so before confirming one check for (a) an `:INCLUDE` — included scripts are spliced in full and may declare the variable, and the command-line validator cannot see them; (b) `:PUBLIC` — publics are call-stack scoped and may be established by a caller. Downgrade such cases to a note, not an error, and say which explains it.
+- **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope. `ssl_diagnose` reports these as `undeclared_variable` warnings under the strict profile, but it validates one document in isolation, so before confirming one check for (a) an `:INCLUDE` — included scripts are spliced in full and may declare the variable, and the command-line validator cannot see them; (b) `:PUBLIC` — publics are shared across the running program and may have been declared by a caller or by an earlier procedure, even one that has already returned. Downgrade such cases to a note, not an error, and say which explains it.
 - **Bare procedure calls:** Direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
 - **`DoProc` in class methods:** `DoProc` is rejected inside `:CLASS` methods — use `Me:Method()` instead.
-- **Unqualified class field access:** Inside a `:CLASS` method, any read or write of a name that appears in the class's `:DECLARE` list (and is not also a local or `:PARAMETERS` name) must be qualified with `Me:` (or `Base:` for an inherited field). A bare identifier creates/uses a local instead and silently leaves the field unchanged.
+- **Unqualified class field access:** Inside a `:CLASS` method, any read or write of a name that appears in the class's `:DECLARE` list (and is not also a local or `:PARAMETERS` name) must be qualified with `Me:` (or `Base:` for an inherited field). A bare identifier never refers to the field: it follows normal lookup (local, then caller scopes, then publics), so a read with nothing in reach raises `Variable [name] is undefined!` and a write may land on a caller's or a public variable, leaving the field unchanged.
 - **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended. Note: `!=` negates `==` (strict), not `=` (prefix), so `=` and `!=` are **not** logical opposites for strings.
 
 ---

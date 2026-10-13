@@ -60,6 +60,9 @@ The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part
 
 ### Blank lines
 - 1 blank line between procedures
+- Never insert a blank line between an access modifier (`/*@private;` or
+  `/*@protected;`) and the `:PROCEDURE` it precedes, and never respace or recase
+  the modifier: it is an access modifier, not a comment, and a blank line breaks it
 - 1 blank line between logical sections
 - Remove excessive consecutive blank lines (3+ becomes 1)
 
