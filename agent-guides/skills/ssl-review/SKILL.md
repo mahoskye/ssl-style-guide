@@ -156,11 +156,59 @@ At the end, provide a summary:
 Summary: N issues found (X errors, Y warnings, Z suggestions)
 ```
 
-Use **error** for language violations, **warning** for likely bugs or legacy patterns, **suggestion** for style improvements.
+Assign every severity from the **Severity rubric** below — never ad hoc.
 
 If no issues are found in a category, note "No issues found."
 
 ---
+
+## Severity rubric
+
+The same item gets the same severity in every review. Take the first
+rule that applies:
+
+1. **A validator finding keeps the validator's severity.** `error` is an
+   error, `warning` is a warning, and `info` and `hint` rows are
+   suggestions. The exceptions are the `undeclared_variable` cases under
+   *Not findings* below.
+2. **A schema rule with a `severity` sets it.** Confirm it with
+   `ssl_style_rule` or the schema itself: `error` is an error, `warning`
+   is a warning, and `info` is a suggestion. Do not raise or lower a
+   schema severity. A violated `level: authoritative` rule with no
+   `severity` is an error, because it is a language rule.
+3. **Otherwise, classify by what the defect does:**
+
+| Severity | Test | Examples |
+| --- | --- | --- |
+| error | It will not compile, it fails at run time on a path the code reaches, or it breaks the stated contract | a `;` inside comment text; an unresolved `DoProc` target, or an `ExecFunction` to a class file; a declared result that is never assigned, or a constant returned in its place; behavior the brief requires that is missing |
+| warning | It works on the expected path but misbehaves on some input, error path, or caller | SQL built by concatenating a value; `=` where an exact string match is meant; a commit flag that starts `.T.`; ending a transaction the code did not begin; a `:CATCH` that swallows an error, or clears one it did not read; a server script or class file with no banner, or a nontrivial procedure with no doc block |
+| suggestion | The code behaves the same either way; only reading it changes | declaration order within a `:DECLARE` group, or `:DECLARE` placement; banner or doc-block layout and field order; comment layout; line length and wrapping; SQL layout and keyword case; identifier length limits; region and blank-line use |
+
+When an item seems to fit two rows, apply each row's test to it and use
+the first test it passes, reading the table top to bottom. State the
+test in the finding.
+
+**Not findings.** Report none of these, not even as suggestions:
+
+- A connection argument the brief names. The rule to omit the connection
+  argument covers calls to the default database only. A named connection
+  does not deviate from it, so it is not a brief-required conflict
+  either.
+- No `Author` line in the banner of generated code. The banner template
+  omits it for generated code.
+- An `undeclared_variable` warning for a predefined global the code
+  reads on purpose (`ssl_server_script_style.md`, Predefined Globals),
+  or for a name an `:INCLUDE` or a caller's `:PUBLIC` explains. List
+  these as notes and say which explanation applies.
+
+**Brief-required or style.** A finding is brief-required only when you
+can quote the brief section that requires the behavior. It then goes in
+the brief-required conflicts section and does not count toward the
+verdict. When the brief is silent, the item is an ordinary finding at
+its rubric severity. When the rule does not apply to the code at all, as
+with a named connection, there is no finding.
+
+**Verdict.** Errors and warnings fail a review. Suggestions never do.
 
 ## References
 

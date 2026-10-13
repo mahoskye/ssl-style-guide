@@ -226,8 +226,8 @@ ssl_style_guide:
       rule: "Never include a semicolon inside comment text — it prematurely ends the comment, causing the remaining text to be parsed as executable code."
     - level: authoritative
       rule: "Single-line format: /* comment text here;"
-    - level: authoritative
-      rule: "Multi-line format: /*\\n  line1\\n  line2\\n;"
+    - level: style_only
+      rule: "Multi-line layout: /* alone on the first line, the text lines, then ; alone on the last line (examples.multi_line). The language accepts any layout, since the comment simply ends at the first semicolon, but use this one for new comments. The documentation_header form follows it, with ' * ' line prefixes. The file banner and procedure_headers templates carry the delimiters on their star rules instead."
     examples:
       single_line: "/* This is a single-line comment;"
       multi_line: |
@@ -1582,7 +1582,7 @@ ssl_style_guide:
         message: "The $ containment operator only works on strings. Non-string operands cause error."
       - rule: nil_in_operations
         severity: warning
-        message: "Using NIL in arithmetic or string operations causes error. Use Empty() to check for NIL first."
+        message: "Using NIL in arithmetic or string operations causes error. Check for NIL first: v == NIL when 0, .F., or an empty string is a valid value, because Empty() is also .T. for those. Use Empty() only when every empty value means the same as missing."
       - rule: code_block_comparison
         severity: warning
         message: "Code blocks (lambdas) cannot be compared with = or ==. This causes an error."
@@ -1668,6 +1668,21 @@ ssl_style_guide:
         Author....... : [Author initials]
         Date......... : YYYY-MM-DD
         ********************************************************************************;
+    file_banner:
+      required: true  # every server script and class file opens with one; data sources: see module_structure.data_source_modules
+      template: |  # same dot-leader fields as procedure_headers, describing the whole script
+        /* ********************************************************************************
+        Description.. : [The script's single responsibility, one sentence]
+        Parameters... : [Each top-level parameter and its business meaning]
+        Returns...... : [Exact result shape - success and failure on separate lines]
+        Author....... : [Author initials]
+        Date......... : YYYY-MM-DD
+        ********************************************************************************;
+      rules:
+        - "Continuation lines align under the first character after the colon and space."
+        - "Record later changes as new lines below Date in the same style: Modified..... : YYYY-MM-DD [initials] - [change]. Never rewrite an earlier entry."
+        - Generated code omits the Author line rather than inventing initials. A banner without Author is complete in that case.
+        - The banner is a single SSL comment, so it ends at the first semicolon. No semicolon may appear inside it.
     code_comments:
       style: SSL_comments  # /* comment; format
       placement: above_code_or_inline

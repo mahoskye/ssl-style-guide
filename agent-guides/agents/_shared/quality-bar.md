@@ -24,11 +24,14 @@ you touched:
   file — a handoff pass, or the user asking for it — run the formatter
   over the whole file and say so plainly, so the diff is expected.
 
-The formatter never touches embedded SQL strings; format those by hand
-to canonical-compact style per
-`agent-guides/skills/ssl-format/SKILL.md`. Treat its output as a draft:
-read what it changed and correct decisions that hurt readability or
-contradict the schema.
+The formatter also lays out embedded SQL. It re-indents a multi-line SQL
+string and breaks an over-long one into clauses, uppercasing SQL
+keywords as it goes. A SQL string that fits on one line is left exactly
+as written, keyword case included. So check every SQL string against
+canonical-compact style per `agent-guides/skills/ssl-format/SKILL.md`:
+correct what the formatter produced and finish by hand what it left.
+Treat all of its output as a draft: read what it changed and correct
+decisions that hurt readability or contradict the schema.
 
 `ssl_format` is expected to be idempotent. If it reports a result as
 unstable, that is a formatter bug: accept the output, review it by eye,
@@ -82,6 +85,13 @@ So the bar is:
 A file **you created** has no baseline: it finishes at zero errors and
 zero warnings outright, with nothing to excuse. The baseline exists for
 files that were already there.
+
+One warning is expected rather than a defect: `undeclared_variable` on
+a **predefined global** the code reads on purpose, such as `CRLF` or
+`Request`. Never declare the name to silence it; a local hides the
+global. Read it as `ssl_server_script_style.md` (Predefined Globals)
+describes and list each such warning in your report with the global it
+names. Any other `undeclared_variable` is a defect.
 
 Re-run after your last edit — a diagnostic from before your final change
 is stale evidence.

@@ -250,11 +250,12 @@ Authoritative rules describe documented language behavior; style recommendations
 
 * **Syntax:** Starts with `/*` and **must end with a semicolon `;`**.
 * **Single-line:** `/* This is a comment;`
-* **Multi-line:**
+* **Multi-line:** the comment ends at the first `;`, so any layout parses. The style layout (schema `comments.examples.multi_line`) puts `/*` and `;` on their own lines:
   ```ssl
-  /* This is a
-     multi-line comment
-     that spans several lines;
+  /*
+  This is a multi-line comment
+  that spans several lines.
+  ;
   ```
 * **Warning — semicolons inside comments:** Because `;` terminates the comment, any semicolon within the comment text will prematurely end it. For example:
   ```ssl
@@ -287,7 +288,7 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 ### Primitive Types & Literals
 
 * **Boolean:** `.T.` (True) and `.F.` (False).
-* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` function to check if a value is null, empty string, zero, or `.F.`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. Do not call instance methods on a `NIL` value (raises an error).
+* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` function to check if a value is null, empty string, zero, or `.F.`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. `Empty()` is not a NIL test: `Empty(0)` and `Empty(.F.)` are also `.T.`, so when `0` or `.F.` is a valid value, test for absence with `value == NIL`. Do not call instance methods on a `NIL` value (raises an error).
 * **Strings:**
     * Double quotes: `"Text"`
     * Single quotes: `'Text'`
