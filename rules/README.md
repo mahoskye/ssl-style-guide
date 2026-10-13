@@ -6,11 +6,11 @@ the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
 **Migration status:** all six domains are migrated (`language`,
-`server-scripts`, `data-sources`, `sql`, `classes` and `naming`). Rule text
+`server-scripts`, `data-sources`, `sql`, `classes` and `naming`), and the
+rule statements of every skill are generated regions (phase 3). Rule text
 that is still hand-written: the `files`, `email` and `security` pack lists in
 `CATEGORY_DEFS`, schema entries outside the generated subtrees that no record
-places, and the prose rule lists of skills and guides that have no region yet
-(phases 3 and 4).
+places, and the rule lists of the guides that have no region yet (phase 4).
 
 ## Layout
 

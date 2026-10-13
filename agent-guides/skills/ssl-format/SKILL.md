@@ -17,10 +17,16 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 3. **Read the file** at the given path.
 
-4. **Identify the file type.** If the file is a data source (SSL or SQL), be aware that:
-   - `:PARAMETERS` uses inline `:=` defaults — do not split into separate `:DEFAULT` statements
-   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — format these consistently but do not flag or remove them
-   - The SQL query body within data source files still follows canonical compact formatting rules
+4. **Identify the file type.** If the file is a data source (SSL or SQL), these rules apply:
+   <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_sql_body_compact_layout -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+   - SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.
+   - Lay out the query body of a SQL data source in the canonical compact SQL style, the same as SQL embedded in SSL strings.
+   <!-- /rules -->
+
+   SQL data sources may contain the builder directives `:DSN`, `:TABLENAME`,
+   `:NULLASBLANK` and `:INVARIANTDATECOLUMNS`. Format them consistently, but do
+   not flag or remove them.
 
 5. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
 
@@ -33,41 +39,54 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part 3) apply only when MCP `ssl_format` cannot be run.
 
 ### Indentation
-- Prefer tabs; if the file already uses spaces, preserve 4-space indentation
-- Indent one level inside blocks: `:IF`, `:ELSE`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:CASE`, `:OTHERWISE`, `:TRY`, `:CATCH`, `:FINALLY`, `:PROCEDURE`
-- Do not indent the class body solely because of `:CLASS`; class members stay at the file's top indentation level
-- Dedent closing keywords: `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`
-- Same-level keywords (dedent then re-indent): `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH`, `:FINALLY`
-- `:EXITCASE` stays at content level (no indent change)
+<!-- rules: id=indent_tabs_preferred,indent_block_bodies,class_members_top_level,dedent_closing_keywords,same_level_block_keywords,exitcase_statement_level -->
+- Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+- Indent the body of a block one level: `:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, `:PROCEDURE`, `:REGION` and `:BEGININLINECODE` open an indented body, and each nested block adds one more level.
+- Do not indent the class body because of `:CLASS`; class members stay at the file's top indentation level.
+- Dedent a closing keyword to the level of the keyword that opened its block: `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` and `:ENDINLINECODE`.
+- Put `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH` and `:FINALLY` at the level of the keyword that opened their block, then indent the body that follows them one level.
+- Indent `:EXITCASE` at the level of the other statements in its branch; it does not change the indentation.
+<!-- /rules -->
 
 ### Spacing
-- Space around `:=`, comparison operators, arithmetic operators
-- Space around `.AND.`, `.OR.`, `.NOT.`
-- Space after commas, not before
-- No space inside parentheses
-- No space before `(` in function calls
-- No space around `:` in member access (`oObj:Prop`, not `oObj : Prop`)
-- Adjacent commas for skipped params, no space (`RunSQL(sSQL,, {aVals})`)
+<!-- rules: id=operator_spacing,comma_spacing,no_space_inside_parens,no_space_before_call_paren,member_access_no_spaces,skip_commas_adjacent -->
+- Use spaces around assignment, arithmetic, comparison, and logical operators.
+- Put a space after each comma and none before it.
+- Do not put spaces just inside parentheses: `DoProc("Name", {args})`, not `DoProc( "Name", {args} )`.
+- Do not put a space between a function name and its `(`: `Len(sValue)`, not `Len (sValue)`.
+- Prefer no spaces around `:` in member access even though SSL accepts spaced forms.
+- Use adjacent commas with no spaces for skipped optional parameters.
+<!-- /rules -->
 
 ### Line length
-- Target ~90 characters
-- Break multi-line function calls after commas, indent continuation
-- Break multi-line conditions before `.AND.` / `.OR.`, indent continuation
+<!-- rules: id=ssl_max_line_length,continuation_line_breaks -->
+- Keep SSL lines to about 90 characters, breaking longer ones at logical points.
+- Break a multi-line function call after a comma and a multi-line condition before `.AND.` or `.OR.`, and indent each continuation line one level.
+<!-- /rules -->
 
 ### Semicolons
-- Ensure every statement ends with `;` (including comments)
-- Do NOT add semicolons to continuation lines within a multi-line expression
+<!-- rules: id=statement_semicolon,no_semicolon_on_continuation_lines -->
+- Almost every SSL statement, including comments, must end with a semicolon.
+- Do not end a continuation line of a multi-line statement with a semicolon; only the line that completes the statement takes one.
+<!-- /rules -->
 
 ### Blank lines
-- 1 blank line between procedures
-- Never insert a blank line between an access modifier (`/*@private;` or
-  `/*@protected;`) and the `:PROCEDURE` it precedes, and never respace or recase
-  the modifier: it is an access modifier, not a comment, and a blank line breaks it
-- 1 blank line between logical sections
-- Remove excessive consecutive blank lines (3+ becomes 1)
+<!-- rules: id=blank_line_between_procedures,visibility_annotation_form,visibility_annotation_exact_form,blank_line_between_sections,no_excess_blank_lines -->
+- Put one blank line between procedures.
+- Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.
+- Write an access modifier exactly as `/*@private;` or `/*@protected;`: lowercase, with no space between `/*` and `@`.
+- Put one blank line between logical sections and between regions.
+- Do not leave three or more consecutive blank lines; reduce such a run to one.
+<!-- /rules -->
+
+An access modifier (`/*@private;` or `/*@protected;`) is not a comment, so the
+comment layout rules do not apply to it, and a blank line after it breaks it.
 
 ### Region markers
-- Leave `/* region Name;` / `/* endregion;` markers as-is; `endregion` takes no name — never append one.
+Leave `/* region Name;` / `/* endregion;` markers as they are.
+<!-- rules: id=endregion_takes_no_name -->
+- Close a comment region with `/* endregion;` alone; `endregion` takes no name, so never append one.
+<!-- /rules -->
 
 ---
 

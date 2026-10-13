@@ -54,6 +54,15 @@ Entries before this file existed are reconstructed from the release commits.
   the naming pack lists and the review skill's naming checks. Every foundation
   rule bullet is now generated; the `files`, `email` and `security` packs are
   the only hand-written pack lists left.
+- Rules source, skills (#101 phase 3): the rule statements in every skill
+  are now generated regions: the `ssl-review` check lists and additional
+  checks, the `ssl-refactor` workflow steps, `ssl-new-procedure` step 6, the
+  `ssl-format` SSL scope, the data-source notes of the review, refactor,
+  refactor-plan and format skills, and the `ssl-unit-test` rule items.
+  21 new records hold the statements that had none, among them the SSL
+  indentation, spacing, line-length and blank-line rules, parameter defaults
+  by type, `udobject_array_in_clause`, `no_hardcoded_credentials` and
+  `validate_dynamic_call_targets`. No pack list changes.
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.

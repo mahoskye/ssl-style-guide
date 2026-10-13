@@ -62,17 +62,24 @@ you are unsure about any rule below.
    - One file should represent either a class definition, a script, or a data
      source.
    <!-- /rules -->
-   - Colon-prefixed keywords are UPPERCASE; almost every statement ends with `;`;
-     never place `;` inside comment body text
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text wrap=80 -->
+   - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example
+     `:IF` and `:BEGINCASE`.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Never include a semicolon inside comment text; the first semicolon ends the
+     comment and the remaining text becomes executable code.
+   <!-- /rules -->
 
 3. **Infer parameter types from Hungarian notation prefixes** and pick a matching
    inline default:
    - Recognized prefixes (`sName`, `nQty`, `bFlag`, `dDate`, `aItems`, `oObj`,
      `fnFilter`, `vValue`) — keep as-is
    - No recognizable prefix → default to `s` (string) and note the assumption
-   - Default value by type: string → `""`, numeric → `0`, boolean → `.F.`,
-     date → `NIL`, array → `{}`, object → `NIL`, code block → `NIL`,
-     variant → `NIL`
+   <!-- rules: id=default_value_by_type wrap=80 -->
+   - Default a parameter to the empty value of its prefix type: `""` for
+     strings, `0` for numbers, `.F.` for booleans, `{}` for arrays, and `NIL`
+     for dates, objects, code blocks and variants.
+   <!-- /rules -->
 
 4. **Generate the data source** for the requested variant (see templates below).
 

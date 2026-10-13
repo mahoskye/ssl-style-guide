@@ -50,6 +50,7 @@ categories:
       - getssldataset_at_name_markers
       - empty_optional_param_array
       - sqlexecute_no_values_array
+      - udobject_array_in_clause
   - id: sql
     lists_from_rules: true
     order:
@@ -142,6 +143,7 @@ categories:
       - base_member_access
       - underscore_private_convention
       - class_name_not_builtin
+      - class_fields_declared_at_class_level
   - id: objects
     lists_from_rules: true
     order:
@@ -176,6 +178,8 @@ categories:
       - no_positional_parameter_access
       - bare_calls_are_builtins
       - max_params_warning
+      - omit_parameters_when_none
+      - default_value_by_type
   - id: data-sources
     lists_from_rules: true
     order:
@@ -242,6 +246,21 @@ categories:
       - comments_explain_why
       - single_line_comment_form
       - multi_line_comment_layout
+      - indent_block_bodies
+      - dedent_closing_keywords
+      - same_level_block_keywords
+      - exitcase_statement_level
+      - consistent_indentation
+      - comma_spacing
+      - no_space_inside_parens
+      - no_space_before_call_paren
+      - ssl_max_line_length
+      - continuation_line_breaks
+      - no_semicolon_on_continuation_lines
+      - blank_line_between_procedures
+      - blank_line_between_sections
+      - no_excess_blank_lines
+      - endregion_takes_no_name
   - id: naming
     lists_from_rules: true
     order:
