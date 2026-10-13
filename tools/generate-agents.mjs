@@ -40,11 +40,11 @@ const HANDOFF_KEYS = new Set(['label', 'agent', 'prompt', 'send', 'model']);
 const REQUIRED_KEYS = ['name', 'description', 'version', 'tools'];
 const NEUTRAL_TOOLS = new Set(['read', 'edit', 'grep', 'glob', 'bash:read-only']);
 const VALID_MODES = new Set(['primary', 'subagent', 'all']);
-// The nine tools exposed by the ssl-reference MCP server.
+// The ten tools exposed by the ssl-reference MCP server.
 const VALID_SSL_REFERENCE_TOOLS = new Set([
   'ssl_lookup', 'ssl_search', 'ssl_signature', 'ssl_validate_naming',
-  'ssl_style_rule', 'ssl_category', 'ssl_context_pack', 'ssl_diagnose',
-  'ssl_format',
+  'ssl_style_rule', 'ssl_rules', 'ssl_category', 'ssl_context_pack',
+  'ssl_diagnose', 'ssl_format',
 ]);
 
 const AGENTS_BEGIN = '<!-- BEGIN generated agents -->';

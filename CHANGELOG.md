@@ -54,6 +54,23 @@ Entries before this file existed are reconstructed from the release commits.
   the naming pack lists and the review skill's naming checks. Every foundation
   rule bullet is now generated; the `files`, `email` and `security` packs are
   the only hand-written pack lists left.
+- Rules bundle (#101): `tools/generate-rules.mjs` also writes
+  `rules/rules.json`, every rule record as data (id, level, severity,
+  applies_to, rule text, rationale, exceptions, examples, enforcement,
+  categories, related elements, schema paths). `--check` covers it, and
+  `bundle-data` copies it to `ssl-mcp-server/data/rules.json`.
+- MCP: `ssl_style_rule` takes an `id` and returns the full rule record. It
+  also resolves a schema lint slug or path (`loop_in_finally`,
+  `lints.compile_errors.rules.loop_in_finally.message`) and a starlims-lsp
+  code (`lsp:diag.nested_iif`), and reports how it matched. The `topic` form
+  is unchanged.
+- MCP: new `ssl_rules` tool searches and lists rules by domain, category,
+  applies_to, level, severity, enforcement or text, and new resources
+  `ssl://rules` and `ssl://rules/{id}` serve the rule index and single
+  records.
+- `generate-rules.mjs --strict-severity` fails when a record's severity
+  differs from the default severity of the LSP diagnostic that enforces it
+  (D11). It is off by default, and CI does not pass it yet.
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.
