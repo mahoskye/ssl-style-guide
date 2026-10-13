@@ -10,7 +10,7 @@ const FormatSchema = z.object({
 export function registerFormat(server: McpServer): void {
   server.tool(
     "ssl_format",
-    "Format SSL source code using canonical style-guide rules. Returns the formatted code with proper indentation, keyword normalization, operator spacing, and semicolons. It does NOT format embedded SQL strings — format those by hand. Formatting is whole-file: on a legacy file it typically rewrites most lines, so reformatting a file you only made a small change to will bury that change in churn. Format files you created; for an existing file, reformat only when reformatting is the task. The result is checked for stability and flags the rare input the formatter cannot settle on. Pass code directly or a file path for large files.",
+    "Format SSL source code using canonical style-guide rules. Returns the formatted code with proper indentation, keyword normalization, operator spacing, and semicolons. It also lays out embedded SQL: multi-line and over-long SQL strings are re-indented into canonical-compact clauses with uppercase keywords, while a SQL string that fits on one line is left as written. Check every SQL string against the ssl-format skill's SQL rules. Formatting is whole-file: on a legacy file it typically rewrites most lines, so reformatting a file you only made a small change to will bury that change in churn. Format files you created; for an existing file, reformat only when reformatting is the task. The result is checked for stability and flags the rare input the formatter cannot settle on. Pass code directly or a file path for large files.",
     FormatSchema.shape,
     async ({ code, file }) => {
       if (!code && !file) {

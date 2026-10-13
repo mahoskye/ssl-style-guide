@@ -364,7 +364,7 @@ MAX_ATTEMPTS := 3;
 DEFAULT_TIMEOUT := 30;
 ```
 
-> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array.
+> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array. It is not a NIL test: when `0` or `.F.` is a valid value, use `var == NIL`.
 
 ---
 
@@ -973,8 +973,10 @@ NIL  /* Null (not the same as empty string);
 ```ssl
 /* Single line comment;
 
-/* Multi-line comment
-   that spans several lines;
+/*
+Multi-line comment
+that spans several lines.
+;
 ```
 
 > **Warning:** Comments are delimited by `/*` and `;`. A semicolon inside a comment will prematurely end it, potentially causing the remaining text to be interpreted as code. Avoid semicolons within comment text.
