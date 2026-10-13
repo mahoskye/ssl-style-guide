@@ -9,14 +9,12 @@
   ],
   "summary": "Dynamic objects, properties, built-in classes, and member-access conventions.",
   "must_follow": [
-    "Reserve property for dynamic-object members, SSLExpando members, and AddProperty-created members.",
-    "Use field for :DECLARE slots on classes.",
+    "Use field for :DECLARE slots on classes, and reserve property for dynamic-object members, SSLExpando members, and AddProperty-created members.",
     "Instantiate directly creatable built-in classes with curly braces, for example Email{}.",
-    "Use no spaces around member access colon."
+    "Prefer no spaces around : in member access even though SSL accepts spaced forms."
   ],
   "avoid": [
-    "Do not use CreateUdObject for built-in class instances.",
-    "Do not blur class fields and dynamic object properties in documentation or reviews."
+    "Do not instantiate built-in classes with CreateUdObject."
   ],
   "elements": [
     {

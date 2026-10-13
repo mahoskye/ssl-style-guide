@@ -21,7 +21,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - Do not apply the standard script layout (§2.1) to data source files
 
 3. **Use these core SSL rules throughout the refactor** (for server scripts and class files):
-   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,parameters_first,default_after_parameters,declare_locals_at_start,one_statement_per_line,indent_tabs_preferred,doproc_in_class,doproc_for_same_file_procedures,execfunction_for_external_scripts,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally,prefer_exitcase,begincase_requires_case,equals_vs_strict_equals,sql_keyword_case,sql_identifier_case -->
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,parameters_first,default_after_parameters,declare_locals_at_start,one_statement_per_line,indent_tabs_preferred,me_base_for_method_calls,doproc_in_class,doproc_for_same_file_procedures,execfunction_for_external_scripts,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally,prefer_exitcase,begincase_requires_case,equals_vs_strict_equals,sql_keyword_case,sql_identifier_case -->
    - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.
    - Almost every SSL statement, including comments, must end with a semicolon.
    - Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.
@@ -30,6 +30,7 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
    - Declare locals at the start of the script or procedure; this is a style preference, because `:DECLARE` is valid anywhere a statement is.
    - Use one statement per line.
    - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+   - Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
    - Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.
    - Use `DoProc("ProcName", {args})` for same-file script procedures.
    - Use `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external script entry points.

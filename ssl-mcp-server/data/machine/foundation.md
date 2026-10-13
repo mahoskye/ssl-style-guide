@@ -47,8 +47,10 @@ detail.
 - Use `ExecFunction("Category.Script", {args})` or
   `ExecFunction("Category.Script.Proc", {args})` for external script entry
   points.
-- Built-in classes instantiate with curly braces, for example `Email{}`.
-- User-defined classes instantiate with `CreateUdObject("Category.ClassName")`.
+- Instantiate directly creatable built-in classes with curly braces, for
+  example `Email{}`.
+- Use `CreateUdObject("Category.ClassName")` for user-defined classes; a
+  bare class name is looked up only among the default categories.
 - Inside class methods, access fields through `Me:fieldName` or
   `Base:fieldName`.
 - Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.

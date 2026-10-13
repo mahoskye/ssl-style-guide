@@ -8,10 +8,10 @@
 # `order` lists every record in the category, in the order packs, regions and
 # rules/INDEX.md show them.
 #
-# Generated (#101): every category except classes, objects and naming (their
-# domains are next), and files, email and security, whose lists are API and
-# security guidance that no domain record states yet. Labels, aliases,
-# summaries and element lists still live in CATEGORY_DEFS.
+# Generated (#101): every category except naming (its domain is next), and
+# files, email and security, whose lists are API and security guidance that
+# no domain record states yet. Labels, aliases, summaries and element lists
+# still live in CATEGORY_DEFS.
 categories:
   - id: control-flow
     lists_from_rules: true
@@ -119,7 +119,35 @@ categories:
       - invariant_date_handling
       - check_builtin_parameter_types
   - id: classes
+    lists_from_rules: true
+    order:
+      - class_member_order
+      - field_access_via_me
+      - me_base_for_method_calls
+      - createudobject_category_qualified
+      - inherit_qualified_name
+      - doproc_in_class
+      - no_createudobject_for_builtins
+      - execfunction_not_class_file
+      - visibility_annotations_script_only
+      - one_class_per_file
+      - class_ends_at_eof
+      - explicit_class_name
+      - class_members_top_level
+      - constructor_return_value
+      - constructor_outside_class
+      - base_constructor_with_parameters
+      - me_inside_class_only
+      - base_member_access
+      - underscore_private_convention
+      - class_name_not_builtin
   - id: objects
+    lists_from_rules: true
+    order:
+      - field_vs_property_terminology
+      - builtin_classes_curly_braces
+      - member_access_no_spaces
+      - no_createudobject_for_builtins
   - id: procedures
     lists_from_rules: true
     order:

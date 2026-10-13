@@ -42,6 +42,12 @@ Entries before this file existed are reconstructed from the release commits.
   foundation's language bullets and its whole "SSL Does Not Have" list, and
   rule regions in the review, refactor and new-procedure skills and the
   agent guide's style quick start. The parsed schema is unchanged.
+- Rules source, classes (#101): 19 records in `rules/classes/` cover member
+  order, `Me:`/`Base:` access, instantiation, `:INHERIT`, constructors and
+  class-file shape. They generate the classes and objects pack lists, the
+  foundation's class bullets, the class entries of `lints.class_rules`,
+  `lints.compile_errors` and `lints.coding_standards`, and the
+  `ssl-new-class` rule lists.
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.

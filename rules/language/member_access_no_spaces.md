@@ -9,7 +9,7 @@ applies_to: [server_script, class, ssl_data_source]
 rule: >-
   Prefer no spaces around `:` in member access even though SSL accepts spaced
   forms.
-categories: [operators]
+categories: [objects, operators]
 machine: { list: must_follow }
 related_elements: [me, base]
 enforced_by: [lsp:fmt.operator_spacing]

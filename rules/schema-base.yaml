@@ -14,7 +14,7 @@
 # lints.compile_errors.rules.one_class_per_file.message.
 #
 # Only the subtrees below are generated (#101: data sources, SQL, server
-# scripts and language). The rest of the schema is still
+# scripts, language and classes). The rest of the schema is still
 # hand-maintained, and records' placements outside these subtrees are checked
 # against it instead of written.
 comments:
@@ -62,7 +62,7 @@ lints:
       - rule: loop_outside_loop
         message: !rule loop_control_inside_loop
       - rule: one_class_per_file
-        message: "Only one :CLASS definition allowed per file."
+        message: !rule one_class_per_file
       - rule: class_or_script
         message: !rule one_class_or_script_per_file
       - rule: doproc_in_class
@@ -79,7 +79,7 @@ lints:
           but should not report the compile error. ExecFunction has no
           class-method restriction in any form.
       - rule: constructor_return_value
-        message: ":RETURN inside a Constructor cannot return a value."
+        message: !rule constructor_return_value
   type_safety:
     - !rule for_numeric_values
     - !rule dollar_string_only
@@ -105,15 +105,9 @@ lints:
     rule: !rule skip_commas_adjacent
     trailing_params: !rule empty_optional_param_array
   class_rules:
-    - rule: class_member_order
-      severity: info
-      message: "Tooling enforces the successful class member order used by this guide: :INHERIT, :DECLARE, regular methods, then Constructor."
-    - rule: underscore_private_convention
-      severity: info
-      message: "Underscore-prefixed members (_name) are excluded from reflection — this is the SSL private convention."
-    - rule: inherit_qualified_name
-      severity: error
-      message: ":INHERIT requires the full Category.ClassName of the parent class. A plain name is a compile-time error: Specify the full name of the class in :INHERIT : categoryname.scriptname!"
+    - !rule class_member_order
+    - !rule underscore_private_convention
+    - !rule inherit_qualified_name
     - rule: max_params_warning
       threshold: 20
       severity: warning
@@ -124,9 +118,7 @@ lints:
     - !rule parameters_first
     - !rule default_after_parameters
     - !rule include_early
-    - rule: constructor_outside_class
-      severity: warning
-      message: "Constructor syntax is only meaningful inside a :CLASS definition."
+    - !rule constructor_outside_class
   deprecated_keywords:
     - keyword: :ERROR
       severity: warning

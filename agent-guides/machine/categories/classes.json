@@ -10,16 +10,14 @@
   "summary": "User-defined class structure, field access, method calls, and built-in class creation.",
   "must_follow": [
     "Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.",
-    "Access class fields through Me:fieldName or Base:fieldName inside methods.",
+    "Inside class methods, access fields through Me:fieldName or Base:fieldName.",
     "Call sibling or inherited methods with Me:Method() and Base:Method().",
     "Use CreateUdObject(\"Category.ClassName\") for user-defined classes; a bare class name is looked up only among the default categories.",
-    "Write :INHERIT with the full Category.ClassName of the parent class."
+    "Write :INHERIT with the full Category.ClassName of the parent class; a plain class name is a compile-time error."
   ],
   "avoid": [
-    "Do not assign to class fields with bare identifiers inside methods.",
     "Do not call DoProc with a bare procedure name inside class methods; it is a compile-time error. Use Me:Method() or Base:Method().",
-    "Do not instantiate built-in classes with CreateUdObject.",
-    "Do not write :INHERIT with a plain class name; it is a compile-time error."
+    "Do not instantiate built-in classes with CreateUdObject."
   ],
   "elements": [
     {

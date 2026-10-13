@@ -198,19 +198,7 @@ const CATEGORY_DEFS = [
     aliases: ['class files', 'methods', 'fields', 'inheritance'],
     summary: 'User-defined class structure, field access, method calls, and built-in class creation.',
     elements: ['CLASS', 'INHERIT', 'DECLARE', 'PUBLIC', 'CreateUdObject', 'me', 'base'],
-    mustFollow: [
-      'Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.',
-      'Access class fields through Me:fieldName or Base:fieldName inside methods.',
-      'Call sibling or inherited methods with Me:Method() and Base:Method().',
-      'Use CreateUdObject("Category.ClassName") for user-defined classes; a bare class name is looked up only among the default categories.',
-      'Write :INHERIT with the full Category.ClassName of the parent class.',
-    ],
-    avoid: [
-      'Do not assign to class fields with bare identifiers inside methods.',
-      'Do not call DoProc with a bare procedure name inside class methods; it is a compile-time error. Use Me:Method() or Base:Method().',
-      'Do not instantiate built-in classes with CreateUdObject.',
-      'Do not write :INHERIT with a plain class name; it is a compile-time error.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['objects', 'procedures', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -220,16 +208,7 @@ const CATEGORY_DEFS = [
     aliases: ['dynamic objects', 'properties', 'built-in classes', 'member access'],
     summary: 'Dynamic objects, properties, built-in classes, and member-access conventions.',
     elements: ['CreateUdObject', 'AddProperty', 'SSLExpando', 'Email', 'SQLConnection', 'me', 'base'],
-    mustFollow: [
-      'Reserve property for dynamic-object members, SSLExpando members, and AddProperty-created members.',
-      'Use field for :DECLARE slots on classes.',
-      'Instantiate directly creatable built-in classes with curly braces, for example Email{}.',
-      'Use no spaces around member access colon.',
-    ],
-    avoid: [
-      'Do not use CreateUdObject for built-in class instances.',
-      'Do not blur class fields and dynamic object properties in documentation or reviews.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['classes', 'types', 'formatting'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -519,10 +498,10 @@ function categoryPack(category, elements, rules) {
   };
 }
 
-// Foundation bullets come from records, except the class bullets that the
-// classes domain will supply. Each call selects the records for its spot:
-// { domain: [...] } in record order, or { id: [...] } in the order given.
-// renderFoundation checks that every flagged record is placed exactly once.
+// Every Non-Negotiable and Does Not Have bullet comes from a record. Each call
+// selects the records for its spot: { domain: [...] } in record order, or
+// { id: [...] } in the order given. renderFoundation checks that every
+// flagged record is placed exactly once.
 function foundationBullets(rules, list, selector, placed) {
   let records = foundationRecords(rules.records, list);
   if (selector.id) {
@@ -598,13 +577,14 @@ ${bullets({
     'equals_vs_strict_equals',
     'doproc_for_same_file_procedures',
     'execfunction_for_external_scripts',
+    'builtin_classes_curly_braces',
+    'createudobject_category_qualified',
+    'field_access_via_me',
+    'prefer_try_over_error_resume',
+    'try_requires_handler',
+    'no_control_exit_in_finally',
   ],
 })}
-- Built-in classes instantiate with curly braces, for example \`Email{}\`.
-- User-defined classes instantiate with \`CreateUdObject("Category.ClassName")\`.
-- Inside class methods, access fields through \`Me:fieldName\` or
-  \`Base:fieldName\`.
-${bullets({ id: ['prefer_try_over_error_resume', 'try_requires_handler', 'no_control_exit_in_finally'] })}
 ${bullets({ domain: ['sql'] })}
 
 ## SSL Does Not Have
