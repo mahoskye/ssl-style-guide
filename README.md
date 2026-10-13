@@ -46,7 +46,7 @@ Rules, grammars, guides, agents and their formats stay here.
 | Agent guides, EBNF, machine packs | MCP server; agents | Bundled; read at run time |
 | Agent definitions and skills | Claude Code, opencode, Copilot, Codex | `tools/generate-agents.mjs`, `tools/deploy-agents.mjs`, `tools/deploy-skills.mjs` |
 | Tree-sitter grammar | Editors; other SSL tools (via a sibling checkout) | Grammar and queries |
-| TextMate grammar | The VS Code extension | Canonical here; the extension syncs from it |
+| TextMate grammar | The VS Code extension (planned) | Canonical here; the extension is to sync from it (mahoskye/vs-code-ssl-formatter#113) |
 
 **Agent interfaces.** Tools outside this repo can give the agents a *task
 brief* instead of a ticket. In return, the developer and reviewer report a
@@ -169,7 +169,7 @@ maintainer checkouts only.
 
 `ssl-style-guide/ssl.tmLanguage.updated.json` carries the syntax-highlighting
 inventory for editors that rely on TextMate grammars. It is canonical here, and
-the VS Code extension syncs from it.
+the VS Code extension is to sync from it (mahoskye/vs-code-ssl-formatter#113).
 
 Built-in function
 inventories should stay aligned with Tree-sitter highlighting and the checked-in
