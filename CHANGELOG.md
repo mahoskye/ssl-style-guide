@@ -12,6 +12,11 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## MCP 1.15.1 — 2026-10-13
+
+### Fixed
+- MCP: templated resources (`ssl://elements/{name}`, `ssl://classes/{name}/members`, `ssl://categories/{name}`, `ssl://machine/categories/{category}`, `ssl://style-guide/{section}`) are registered as resource templates, so reading a concrete URI such as `ssl://machine/categories/loops` works. They were registered as fixed URIs with literal braces.
+
 ## Schema 1.8.0, MCP 1.15.0 — 2026-10-13
 
 ### Added

@@ -1,5 +1,6 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Indices } from "../data/indices.js";
+import { templateVar } from "./template-vars.js";
 
 export function registerCategoryResources(server: McpServer, indices: Indices): void {
   // ssl://categories
@@ -18,10 +19,29 @@ export function registerCategoryResources(server: McpServer, indices: Indices): 
   // ssl://categories/{name}
   server.resource(
     "ssl-category-detail",
-    "ssl://categories/{name}",
-    { description: "Functions in a named category" },
-    async (uri) => {
-      const catName = uri.pathname.replace(/^\/categories\//, "");
+    new ResourceTemplate("ssl://categories/{name}", {
+      list: async () => ({
+        resources: Array.from(indices.elementsByCategory.keys())
+          .sort()
+          .map((cat) => ({
+            uri: `ssl://categories/${encodeURIComponent(cat)}`,
+            name: cat,
+            mimeType: "application/json",
+          })),
+      }),
+      complete: {
+        name: (value) => {
+          const q = value.toLowerCase();
+          return Array.from(indices.elementsByCategory.keys())
+            .filter((cat) => cat.toLowerCase().startsWith(q))
+            .sort()
+            .slice(0, 100);
+        },
+      },
+    }),
+    { description: "Functions in a named category", mimeType: "application/json" },
+    async (uri, variables) => {
+      const catName = templateVar(variables, "name");
       const key = Array.from(indices.elementsByCategory.keys()).find(
         (k) => k.toLowerCase() === catName.toLowerCase()
       );
