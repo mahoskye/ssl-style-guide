@@ -27,8 +27,8 @@
     {
       "name": "ErrorMes",
       "type": "function",
-      "syntax": "ErrorMes(vCaption, vMessage)",
-      "summary": "Logs an error message and returns the resulting message string."
+      "syntax": "ErrorMes(vCaption, [vMessage])",
+      "summary": "Writes an error message to the server log, even when user-message logging is disabled, and returns the formatted log entry."
     },
     {
       "name": "InfoMes",
