@@ -243,7 +243,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Inline Code & Regions (Functional Constructs)
 
-* **Inline Code Blocks (Legacy):** `:BEGININLINECODE Name;` / `:BEGININLINECODE "Name";` ... `:ENDINLINECODE;` defines a named block whose body is captured as raw text, re-parsed as a complete SSL compilation unit for validation, and stored for later retrieval via `GetInlineCode(sValue, aVariables)`.
+* **Inline Code Blocks (Legacy):** `:BEGININLINECODE Name;` / `:BEGININLINECODE "Name";` ... `:ENDINLINECODE;` defines a named block whose body is captured as raw text, re-parsed as a complete SSL compilation unit for validation, and stored for later retrieval via `GetInlineCode(sValue, aVariables)`. The block is stored when execution reaches it, like any other statement: a block with the same name that runs after `DeleteInlineCode` stores the name again.
   ```ssl
   :BEGININLINECODE "MyInlineCode";
   :DECLARE a;

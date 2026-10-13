@@ -184,7 +184,7 @@ ssl_style_guide:
       accepted_name_forms:
         - bare_identifier
         - quoted_identifier
-      note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue)."
+      note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue). The block is stored when execution reaches it, like any other statement, so a block with the same name that runs after DeleteInlineCode stores the name again."
     error:
       marker: :ERROR
       resume: :RESUME  # optional — last statement of the :ERROR handler; switches to resume mode
