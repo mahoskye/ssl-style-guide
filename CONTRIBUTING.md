@@ -88,3 +88,23 @@ repository, so `npm test` is a maintainer step.
   [starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference)
   repo; content corrections belong there, and flow here through the re-vendor
   scripts.
+- Add a line under `[Unreleased]` in `CHANGELOG.md` for any change a consumer
+  would notice (rules, schema, agents, skills, MCP behavior, grammars).
+
+## Releases
+
+A release is one PR titled `chore: release schema X.Y.Z and ssl-mcp-server A.B.C`
+(name only the artifacts that changed):
+
+1. Bump `metadata.version` and `metadata.last_updated` in
+   `ssl-style-guide/ssl-style-guide.schema.yaml`, and/or the version in
+   `ssl-mcp-server/package.json` and `ssl-mcp-server/src/constants.ts`.
+2. Regenerate: `bun tools/generate-machine-docs.mjs`, then
+   `cd ssl-mcp-server && bun run bundle-data`.
+3. Move the `[Unreleased]` entries in `CHANGELOG.md` under a new heading
+   for the release.
+4. After merging, tag the merge commit and push the tags:
+
+   ```bash
+   git tag schema-vX.Y.Z && git tag mcp-vA.B.C && git push origin --tags
+   ```

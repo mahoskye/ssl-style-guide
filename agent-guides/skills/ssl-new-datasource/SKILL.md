@@ -166,10 +166,7 @@ reusable elsewhere):
 :NULLASBLANK := true;
 :PARAMETERS sStatus := "A", nLimit := 50;
 
-SELECT
-    sampleid,
-    status,
-    createddate
+SELECT sampleid, status, createddate
 FROM sample
 WHERE status = @sStatus
 ORDER BY createddate DESC
