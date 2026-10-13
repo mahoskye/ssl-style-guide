@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
 /**
- * Validate every ```ssl example embedded in agent-guides/skills/.
+ * Validate every ```ssl example embedded in agent-guides/skills/, and the
+ * Good / Bad examples of the rule records in rules/.
  *
  * Skill templates are the strongest signal an agent gets about what good
  * SSL looks like — a model copies the example in front of it far more
@@ -17,6 +18,16 @@
  *   - validate under the strict agent profile with no errors and no
  *     warnings.
  *
+ * Rule record examples (rules/<domain>/<id>.md, `ssl` or `ssl kind=ds`
+ * fences; `text` fences are illustration and skipped) must:
+ *   - under ### Good: validate with no errors or warnings, and for `ssl`
+ *     fences be formatter-stable;
+ *   - for each `lsp:diag.X` in enforced_by: every ### Bad fence produces X
+ *     and no ### Good fence does;
+ *   - for each `lsp:fmt.X` in enforced_by: formatting every ### Bad `ssl`
+ *     fence changes it.
+ * --fix never rewrites rule records.
+ *
  * Usage:
  *   bun tools/check-skill-examples.mjs          # report and exit non-zero on failure
  *   bun tools/check-skill-examples.mjs --fix    # rewrite examples to formatter output
@@ -27,6 +38,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from 'os';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { loadRules, RulesError } from './lib/rules.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
@@ -52,6 +64,13 @@ if (!existsSync(BIN)) {
       `step must come after the fetch-lsp step).`
   );
   process.exit(1);
+}
+
+const VALIDATE_ARGS = ['--validate', '--info', '--hungarian-types', '--strict'];
+
+function validate(file) {
+  const result = JSON.parse(runLsp([...VALIDATE_ARGS, file]))[0];
+  return result.diagnostics ?? [];
 }
 
 function runLsp(args) {
@@ -137,13 +156,70 @@ for (const skill of readdirSync(SKILLS_DIR).sort()) {
   if (FIX && updated !== source) writeFileSync(path, updated);
 }
 
+// Rule record examples.
+let ruleChecked = 0;
+let records = [];
+try {
+  ({ records } = loadRules());
+} catch (error) {
+  if (!(error instanceof RulesError)) throw error;
+  failures.push(`rules/ does not load — run bun tools/generate-rules.mjs --check\n${error.message}`);
+}
+for (const record of records) {
+  if (record.status !== 'active') continue;
+  const diagCodes = record.enforced_by.filter((e) => e.startsWith('lsp:diag.')).map((e) => e.slice(9));
+  const fmtCodes = record.enforced_by.filter((e) => e.startsWith('lsp:fmt.'));
+  for (const kind of ['good', 'bad']) {
+    for (const [index, fence] of record.examples[kind].entries()) {
+      if (fence.info === 'text') continue;
+      ruleChecked += 1;
+      const suffix = fence.info === 'ssl kind=ds' ? '.ds' : '.ssl';
+      const file = resolve(scratch, `rule-${record.id}-${kind}-${index}${suffix}`);
+      writeFileSync(file, fence.code);
+      const label = `${record.file}:${fence.line} (${kind})`;
+      let diagnostics;
+      try {
+        diagnostics = validate(file);
+      } catch {
+        failures.push(`${label}: validator returned unparseable output`);
+        continue;
+      }
+      const codes = new Set(diagnostics.map((d) => d.code));
+      if (kind === 'good') {
+        for (const d of diagnostics) {
+          if (d.severity === 'error' || d.severity === 'warning') {
+            failures.push(`${label}: ${d.severity} ${d.code} — ${d.message}`);
+          }
+        }
+        for (const code of diagCodes) {
+          if (codes.has(code)) failures.push(`${label}: good example produces ${code}`);
+        }
+        if (suffix === '.ssl') {
+          const formatted = runLsp(['--format', file]);
+          if (formatted && formatted !== fence.code) failures.push(`${label}: not formatter-clean`);
+        }
+      } else {
+        for (const code of diagCodes) {
+          if (!codes.has(code)) failures.push(`${label}: bad example does not produce ${code}`);
+        }
+        if (fmtCodes.length > 0 && suffix === '.ssl') {
+          const formatted = runLsp(['--format', file]);
+          if (!formatted || formatted === fence.code) {
+            failures.push(`${label}: formatter leaves the bad example unchanged (${fmtCodes.join(', ')})`);
+          }
+        }
+      }
+    }
+  }
+}
+
 rmSync(scratch, { recursive: true, force: true });
 
 if (FIX) {
   console.log(`Checked ${checked} skill examples, reformatted ${fixed}.`);
 }
 if (failures.length > 0) {
-  console.error(`\n${failures.length} skill example problem(s):`);
+  console.error(`\n${failures.length} example problem(s):`);
   for (const f of failures) console.error(`  - ${f}`);
   console.error(
     '\nSkill examples are what agents copy. An unformatted or invalid one\n' +
@@ -152,3 +228,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 console.log(`All ${checked} skill SSL examples are formatter-clean and validate clean.`);
+console.log(`All ${ruleChecked} rule record examples behave as their records state.`);

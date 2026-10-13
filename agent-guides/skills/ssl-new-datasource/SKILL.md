@@ -26,15 +26,42 @@ you are unsure about any rule below.
      entry
 
 2. **Use these core data-source rules in the scaffold:**
-   - Parameters use inline `:=` defaults: `:PARAMETERS p1 := val1, p2 := val2;`
-   - **Every parameter MUST have a default** — the builder throws an error
-     otherwise
-   - **`:PARAMETERS;` with no parameters is an error** — omit `:PARAMETERS`
-     entirely when there are no parameters rather than emitting an empty one
-   - **Never use separate `:DEFAULT` statements** in a data source — defaults are
-     inline in `:PARAMETERS`
-   - Do not apply the standard script `:PARAMETERS` + `:DEFAULT` layout to data
-     source files
+   <!-- rules: domain=data-sources applies_to=ssl_data_source,sql_data_source wrap=80 -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of
+     separate `:DEFAULT` statements.
+   - Give every data-source parameter an inline `:=` default; a parameter
+     without one makes the data source fail when it runs.
+   - A data source that takes no parameters leaves the `:PARAMETERS` line out;
+     an empty `:PARAMETERS;` is an error.
+   - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source
+     files.
+   - Reference SQL data-source parameters in the SQL body as `@name`
+     placeholders, not `?name?` markers.
+   - Declare every `@name` placeholder of a SQL data-source body in
+     `:PARAMETERS`; an undeclared one is not substituted and fails when the
+     query executes.
+   - Use SQL comment syntax (`--` and `/* ... */`) in SQL data-source bodies,
+     not the SSL comment form.
+   - In a SQL data source, a semicolon only ends a builder directive or
+     `:PARAMETERS`; the body runs as one SQL command, so any other semicolon
+     outside a comment or string literal is misplaced.
+   - In a SQL data source, put the SQL body after the `:PARAMETERS` line; SQL
+     text placed before it is discarded.
+   - Lay out the query body of a SQL data source in the canonical compact SQL
+     style, the same as SQL embedded in SSL strings.
+   - SQL data-source builder directives are preprocessed before compilation and
+     are not normal SSL keywords.
+   - In an SSL data source, comments are SSL comments: they end at the first
+     `;`, and `*/` does not close them.
+   - In an SSL data source, use parameters as ordinary variables by their bare
+     names; `@name` placeholders are not part of this file type.
+   - The `RunDS` return-type argument (`"ssldataset"`, `"xml"`, and so on)
+     converts only an `SSLDataset` result; an SSL data source that callers
+     request in another return type returns an `SSLDataset`, for example from
+     `GetSSLDataset`.
+   - One file should represent either a class definition, a script, or a data
+     source.
+   <!-- /rules -->
    - Colon-prefixed keywords are UPPERCASE; almost every statement ends with `;`;
      never place `;` inside comment body text
 

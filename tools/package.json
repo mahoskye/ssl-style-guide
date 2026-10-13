@@ -9,6 +9,8 @@
     "check-agents": "bun generate-agents.mjs --check",
     "deploy-agents": "bun deploy-agents.mjs",
     "check-deployed-agents": "bun deploy-agents.mjs --check",
+    "generate-rules": "bun generate-rules.mjs",
+    "check-rules": "bun generate-rules.mjs --check",
     "generate-machine-docs": "bun generate-machine-docs.mjs",
     "check-machine-docs": "bun generate-machine-docs.mjs --check"
   },

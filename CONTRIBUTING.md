@@ -56,7 +56,8 @@ copies:
 
 | Canonical | Generated | Regenerate with |
 |-----------|-----------|-----------------|
-| `ssl-style-guide/`, `agent-guides/` docs and schema | `agent-guides/machine/` packs | `bun tools/generate-machine-docs.mjs` |
+| `rules/` records (see [rules/README.md](rules/README.md)) | `rules/INDEX.md`, the schema's generated regions, `<!-- rules: -->` regions in guides and skills | `bun tools/generate-rules.mjs`, then the machine docs |
+| `ssl-style-guide/`, `agent-guides/` docs and schema, `rules/` | `agent-guides/machine/` packs | `bun tools/generate-machine-docs.mjs` |
 | everything the MCP server serves | `ssl-mcp-server/data/` mirror | `cd ssl-mcp-server && bun run bundle-data` |
 | `agent-guides/agents/*.agent.md` and `agents/_shared/` | per-tool agent adapters (git-ignored) | `bun tools/generate-agents.mjs` |
 | starlims-ssl-reference element pages | `ssl-style-guide/ssl-element-reference.json` | `python3 tools/generate_element_reference.py` (see below) |
@@ -68,11 +69,11 @@ Run before opening a PR (CI runs the same):
 ```bash
 cd ssl-mcp-server
 bun run check              # TypeScript
-bun run check:consistency  # data mirror + machine docs + agent adapters
+bun run check:consistency  # data mirror + rules + machine docs + agent adapters
 cd ..
 bun tools/check-reference-drift.mjs   # inventory vs. reference repo (comparisons skip without ../ssl-docs)
 bun tools/check-agent-wiring.mjs      # delegation, read-only allowlists, editing protocols
-bun tools/check-skill-examples.mjs    # every skill example is formatted and validates clean (needs the LSP binary)
+bun tools/check-skill-examples.mjs    # skill and rule examples: formatted, validate clean (needs the LSP binary)
 ```
 
 The drift check reports content drift (vendored element data behind the

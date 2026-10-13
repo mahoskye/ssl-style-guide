@@ -1,0 +1,54 @@
+# Machine-pack categories, in pack order.
+#
+# Every rule record's `categories` must name ids from this list, and
+# tools/generate-machine-docs.mjs fails if its CATEGORY_DEFS ids drift from it.
+#
+# A category with `lists_from_rules: true` takes its must_follow / avoid lists
+# from the rule records (by `machine.list`) instead of hard-coded strings.
+# `order` lists every record in the category, in the order packs, regions and
+# rules/INDEX.md show them.
+#
+# Pilot (#101): only data-sources is generated. Labels, aliases, summaries and
+# element lists still live in CATEGORY_DEFS and move here in phase 2.
+categories:
+  - id: control-flow
+  - id: loops
+  - id: database
+  - id: sql
+  - id: transactions
+  - id: strings
+  - id: arrays
+  - id: dates
+  - id: classes
+  - id: objects
+  - id: procedures
+  - id: data-sources
+    lists_from_rules: true
+    order:
+      - runds_binds_by_position
+      - no_default_statements_in_datasource
+      - datasource_default_required
+      - datasource_empty_parameters
+      - datasource_not_script_layout
+      - datasource_sql_at_name_placeholders
+      - datasource_undeclared_placeholder
+      - datasource_sql_comment_syntax
+      - datasource_sql_semicolon
+      - datasource_sql_body_after_parameters
+      - datasource_sql_body_compact_layout
+      - no_flag_builder_directives
+      - builder_directives_datasource_only
+      - datasource_ssl_comment_syntax
+      - datasource_ssl_parameters_as_variables
+      - runds_return_type_needs_ssldataset
+      - one_class_or_script_per_file
+  - id: error-handling
+  - id: files
+  - id: email
+  - id: security
+  - id: formatting
+  - id: naming
+  - id: types
+  - id: operators
+  - id: logging
+  - id: module-structure

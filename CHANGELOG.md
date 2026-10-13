@@ -23,6 +23,12 @@ Entries before this file existed are reconstructed from the release commits.
 - A design proposal for a single rules source,
   `docs/design/rules-source.md`. It is not adopted (#105).
 - This changelog, and `schema-v*` / `mcp-v*` release tags (#100).
+- Rules source pilot (#101): the data-source rules are now 17 records in
+  `rules/data-sources/`. `tools/generate-rules.mjs` generates the schema's
+  `module_structure.data_source_modules`, the rule lists in the
+  `ssl-new-datasource` skill and the agent guide's §4A, and `rules/INDEX.md`;
+  the data-sources pack lists and the foundation's data-source bullets come
+  from the same records. The parsed schema is unchanged.
 
 ### Changed
 - Element data is re-vendored from the published reference: 118 of 460
