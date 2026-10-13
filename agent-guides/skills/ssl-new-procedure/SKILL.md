@@ -82,18 +82,19 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
 ```
 
 6. **Apply these rules:**
-   - Procedure name: PascalCase (e.g., `CalculateTotal`, `GetInvoiceData`)
-   - Parameter names: Hungarian notation (`sName`, `nQty`, `bFlag`, `dDate`,
-     `aItems`, `oObj`, `fnFilter`, `vValue`)
-   - `:DEFAULT` lines: one per parameter, placed immediately after `:PARAMETERS`
-     - String params default to `""`
-     - Numeric params default to `0`
-     - Boolean params default to `.F.`
-     - Date params default to `NIL`
-     - Array params default to `{}`
-     - Object params default to `NIL`
-     - Code block params default to `NIL`
-     - Variant params default to `NIL`
+   <!-- rules: id=procedure_class_pascal_case,hungarian_variable_names,default_after_parameters,default_value_by_type,statement_semicolon,indent_tabs_preferred wrap=80 -->
+   - Procedures and classes use PascalCase.
+   - Variables use Hungarian-style camelCase: a type prefix, then a camelCase
+     body (`sMyVar`, not `s_my_var` or `SMYVAR`).
+   - `:DEFAULT` must immediately follow `:PARAMETERS`.
+   - Default a parameter to the empty value of its prefix type: `""` for
+     strings, `0` for numbers, `.F.` for booleans, `{}` for arrays, and `NIL`
+     for dates, objects, code blocks and variants.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Prefer tabs for indentation; if the file already uses spaces, preserve
+     4-space indentation.
+   <!-- /rules -->
+   - Write one `:DEFAULT` line per parameter.
    - `:DECLARE` line: declare local variables, including an appropriately typed
      result variable when the procedure returns a value
    - Include `:TRY` / `:CATCH` / `:ENDTRY` skeleton around the body
@@ -110,13 +111,16 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
      surfaces to the end user as a server error.
    <!-- /rules -->
    - Include `:RETURN` at end of try body
-   - All statements must end with `;`
-   - Indentation: use tabs by default
-   - If the user says the procedure is an internal helper, add `/*@private;` on
-     the line above `:PROCEDURE` — this hides it from external dispatch (script
-     procedures only; it has no effect on class methods)
+   - If the user says the procedure is an internal helper, add `/*@private;`,
+     which hides it from external dispatch:
+     <!-- rules: id=visibility_annotation_form,visibility_annotations_script_only wrap=80 -->
+     - Put an access modifier on its own line immediately before `:PROCEDURE`,
+       with no blank line between them.
+     - Do not put `/*@private;` or `/*@protected;` on class methods; they affect
+       script procedures only, and class methods are always public.
+     <!-- /rules -->
 
-7. **If no parameters are provided:** omit `:PARAMETERS` and `:DEFAULT` blocks entirely.
+7. **If no parameters are provided:** <!-- rule: omit_parameters_when_none -->Leave out `:PARAMETERS` and `:DEFAULT` when a procedure or method takes no parameters.<!-- /rule -->
 
 8. **Output:** Present the generated procedure as an SSL code block. If the user
    provided a target file path, write it there; otherwise return the scaffold

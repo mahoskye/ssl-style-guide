@@ -6,11 +6,15 @@ the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
 **Migration status:** all six domains are migrated (`language`,
-`server-scripts`, `data-sources`, `sql`, `classes` and `naming`). Rule text
-that is still hand-written: the `files`, `email` and `security` pack lists in
-`CATEGORY_DEFS`, schema entries outside the generated subtrees that no record
-places, and the prose rule lists of skills and guides that have no region yet
-(phases 3 and 4).
+`server-scripts`, `data-sources`, `sql`, `classes` and `naming`). The rule
+statements of every skill (phase 3), and the rule lists, checklists and
+rule-like gotchas of the agent guide, the refactoring guide, the
+server-script baseline and the `_shared` quality bar (phase 4), are
+generated regions. Rule text that is still hand-written: the `files`,
+`email` and `security` pack lists in `CATEGORY_DEFS`, schema entries outside
+the generated subtrees that no record places, rules stated inside narrative
+paragraphs (for example the server-script baseline's "Main Orchestration"),
+the SQL compact reference, and the `_shared/boundaries.md` partial.
 
 ## Layout
 
@@ -109,10 +113,20 @@ Put an empty region where the list belongs and run the generator:
 Selectors are `id=`, `category=`, `domain=`, `level=` and `applies_to=`.
 Selectors combine with AND; comma-separated values within one selector
 combine with OR. A region selected only by `id=` lists its rules in the order
-it names them; any other region uses record order. `format=bullets` (the default) or `format=table` chooses the
-layout, and `wrap=<column>` wraps bullets. For a single rule inside a
-sentence, use `<!-- rule: <id> --><!-- /rule -->`. Never edit the text inside
-a region by hand.
+it names them; any other region uses record order. `format=bullets` (the
+default), `format=table` (rule, level and severity) or `format=checklist`
+(`- [ ] rule`, for validation checklists) chooses the layout, and
+`wrap=<column>` wraps bullets and checklist items. For a single rule inside a
+sentence, use `<!-- rule: <id> --><!-- /rule -->` on one line; the guides use
+it to keep a rule next to the hand-written facts that explain it, as in the
+agent guide's quick start and gotchas. Never edit the text inside a region by
+hand.
+
+A region holds rule statements only. Keep workflow steps, explanations,
+examples and facts (what the language does) hand-written around it, with a
+short lead-in where the list needs one, such as "Flag code that breaks these
+rules:". If a guide states a rule that no record holds, add the record
+first.
 
 ## Adding or changing a rule
 

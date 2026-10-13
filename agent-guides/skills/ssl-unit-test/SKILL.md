@@ -40,9 +40,15 @@ One test file per unit under test, named `<UnitName>Tests.ssl`, holding:
    assertion label, not in the name.
 4. Assertion helpers at the bottom.
 
-Same-file procedures are called with `DoProc("Name", {args})`. Never
-call them bare as `Name()` — that resolves to a built-in if one shares
-the name.
+Call the test file's own procedures as these rules say:
+
+<!-- rules: id=doproc_for_same_file_procedures,no_direct_procedure_calls,bare_calls_are_builtins wrap=72 -->
+- Use `DoProc("ProcName", {args})` for same-file script procedures.
+- Do not call custom script procedures directly as `MyProc()`.
+- A bare `Name(...)` call always means a built-in function, in scripts
+  and classes alike; any other name stops the script from compiling with
+  `Invalid built-in function: Name`.
+<!-- /rules -->
 
 ## Which cases to write
 
@@ -66,11 +72,17 @@ Prefer tests that need no database. When one genuinely does:
 
 - Read-only where possible. A test that writes data is a test that
   changes the environment it runs in — say so in the banner.
-- Basic SQL only: `SELECT` / `INSERT` / `UPDATE` / `DELETE`, ordinary
-  joins, `WHERE`, `GROUP BY`, `ORDER BY`. No temp tables, CTEs, window
-  functions, cursors, dynamic SQL, or control-flow blocks inside a SQL
-  string.
-- Parameterize every value.
+<!-- rules: id=sql_basic_sql_only,prevent_sql_injection wrap=72 -->
+- Keep SQL you write basic: plain `SELECT`, `INSERT`, `UPDATE` and
+  `DELETE` with ordinary joins, `WHERE`, `GROUP BY` and `ORDER BY`. Do
+  not write temp tables, table variables, CTEs, window functions,
+  cursors, dynamic SQL assembled at runtime, `MERGE`, stored-procedure
+  definitions, or control-flow blocks (`IF`, `WHILE`, `BEGIN…END`)
+  inside a SQL string; when a result needs that shape, compute it in SSL
+  across simpler queries.
+- Prefer parameterized database calls; do not concatenate user or
+  runtime values into SQL when placeholders can bind them.
+<!-- /rules -->
 - If the test needs data that must already exist, state the
   precondition in the banner. The user is the one who sets it up.
 
@@ -227,15 +239,21 @@ creates an instance and exercises it:
 :ENDPROC;
 ```
 
-`DoProc` is a compile error inside class methods, so assertion helpers
-live in the test script, never in the class under test.
+<!-- rules: id=doproc_in_class,createudobject_category_qualified,no_createudobject_for_builtins,builtin_classes_curly_braces wrap=72 -->
+- Do not call `DoProc` with a bare procedure name inside class methods;
+  it is a compile-time error. Use `Me:Method()` or `Base:Method()`.
+- Use `CreateUdObject("Category.ClassName")` for user-defined classes; a
+  bare class name is looked up only among the default categories.
+- Do not instantiate built-in classes with `CreateUdObject`.
+- Instantiate directly creatable built-in classes with curly braces, for
+  example `Email{}`.
+<!-- /rules -->
 
-Name the class as `Category.ClassName`, the category and script name of
-the class file. A bare class name is looked up only among the default
-categories, so it fails for a class in your own category. `ssl_lookup`
-covers built-ins only and cannot confirm a user class name: take the
-category and script name from the project. Built-in classes are never
-created this way — they use brace construction such as `Email{}`.
+Assertion helpers therefore live in the test script, never in the class
+under test. The `Category.ClassName` is the category and script name of the
+class file, so a bare class name fails for a class in your own category.
+`ssl_lookup` covers built-ins only and cannot confirm a user class name:
+take the category and script name from the project.
 
 ## Before you deliver
 

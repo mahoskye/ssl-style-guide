@@ -13,7 +13,7 @@
     "Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.",
     "Reference SQL data-source parameters in the SQL body as @name placeholders, not ?name? markers.",
     "Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.",
-    "SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.",
+    "SQL data-source builder directives (:DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.",
     "One file should represent either a class definition, a script, or a data source."
   ],
   "avoid": [

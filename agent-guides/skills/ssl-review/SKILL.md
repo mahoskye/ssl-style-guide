@@ -21,10 +21,13 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 4. **Apply the checks below** according to the focus area. For `all`, run every check.
 
 5. **Identify the file type** before applying rules. If the file is a data source (SSL or SQL),
-   parameter syntax and structure rules differ — see `ssl_agent_instructions.md` §4A:
-   - Data sources use `:PARAMETERS p1 := val;` (inline defaults), not separate `:DEFAULT` statements
-   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — do not flag these
-   - Do not apply the standard script layout order to data source files
+   parameter syntax and structure rules differ — see `ssl_agent_instructions.md` §4A.
+   For data sources:
+   <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_not_script_layout -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
+   - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source files.
+   <!-- /rules -->
 
 6. **Use these core SSL rules while reviewing** (for server scripts and class files):
    <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,parameters_first,default_after_parameters,declare_locals_at_start,indent_tabs_preferred,doproc_in_class,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally,begincase_requires_case,exitcase_last_in_branch,visibility_annotation_exact_form,visibility_annotation_form,one_statement_per_line,doproc_for_same_file_procedures,execfunction_for_external_scripts,sql_keyword_case,sql_identifier_case,prefer_exitcase,equals_vs_strict_equals -->
@@ -66,37 +69,52 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 <!-- /rules -->
 
 ### `formatting` — Syntax and structural formatting
-- Every statement (including comments) must end with `;`
-- Keywords must be UPPERCASE colon-prefixed: `:IF`, `:ENDIF`, `:FOR`, `:NEXT`, `:WHILE`, `:ENDWHILE`, `:BEGINCASE`, `:ENDCASE`, etc.
-- Indentation: prefer tabs; if the file already uses spaces, preserve consistent
-  4-space indentation and flag mixed indentation
-- No space around `:` in member access (`Me:Method()`, not `Me : Method()`)
-- `:DECLARE` placement before body statements is a suggestion-severity style check, not a language rule — the language allows `:DECLARE` anywhere in statement flow. `:PARAMETERS` must come before other statements.
-- `:DEFAULT` must immediately follow `:PARAMETERS`
+Flag code that breaks these rules:
+<!-- rules: id=statement_semicolon,keyword_uppercase,indent_tabs_preferred,consistent_indentation,member_access_no_spaces,declare_locals_at_start,parameters_first,default_after_parameters -->
+- Almost every SSL statement, including comments, must end with a semicolon.
+- Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.
+- Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+- Keep indentation consistent within a file; do not mix tabs and spaces.
+- Prefer no spaces around `:` in member access even though SSL accepts spaced forms.
+- Declare locals at the start of the script or procedure; this is a style preference, because `:DECLARE` is valid anywhere a statement is.
+- `:PARAMETERS` must appear before any other statements in a script or procedure body.
+- `:DEFAULT` must immediately follow `:PARAMETERS`.
+<!-- /rules -->
 
 ### `error_handling` — Error handling patterns
-- Flag use of legacy `:ERROR` / `:RESUME` — prefer `:TRY` / `:CATCH` / `:ENDTRY`
-- Verify `:TRY` blocks have at least one `:CATCH` or `:FINALLY`
-- Flag multiple `:CATCH` blocks on a single `:TRY` (only one allowed)
-- Flag `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside a `:FINALLY` block (rejected)
-- Flag empty `:CATCH` blocks (swallowed errors) unless intentional
-- Flag missing `:TRY` around external calls (`ExecFunction`, `SQLExecute`, DB functions)
+Flag code that breaks these rules:
+<!-- rules: id=prefer_try_over_error_resume,try_requires_handler,single_catch_per_try,no_control_exit_in_finally,no_silent_error_swallowing,wrap_execfunction_for_envelope -->
+- Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.
+- `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare `:TRY ... :ENDTRY` is invalid.
+- Only one `:CATCH` block is allowed per `:TRY`; there is no multi-catch.
+- Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY`.
+- Log errors with contextual identifiers; avoid swallowing errors silently.
+- When the current boundary promises a stable failure envelope, wrap `ExecFunction` in `:TRY`/`:CATCH` unless the deployed function has a documented no-throw contract, and validate the returned envelope even when the call is wrapped.
+<!-- /rules -->
 
 ### `sql` — SQL construction and parameterization
-- Flag string concatenation in SQL queries (injection risk): `"SELECT ... " + sVar`
-- `SQLExecute`: must use `?varName?` substitution for parameters
-- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, `GetDataSet`: use positional `?` with explicit parameter arrays
-- Flag UDObject array properties used directly in `IN (?obj:prop?)` expansion — must copy to local variable first (runtime error: "The current array has more than 1 dimmension.")
-- Flag direct variable embedding in SQL strings
-- Flag SQL strings that do not uppercase SQL keywords/functions; do not
-  flag identifier casing (author casing is preserved — see
-  `sql-canonical-compact-reference.md`, Identifier Casing)
+Flag code that breaks these rules:
+<!-- rules: id=prevent_sql_injection,named_sql_param_unsupported,sql_positional_placeholders,udobject_array_in_clause,sql_keyword_case,sql_identifier_case -->
+- Prefer parameterized database calls; do not concatenate user or runtime values into SQL when placeholders can bind them.
+- `SQLExecute` is the only database API that supports named `?param?` substitution; do not use `?param?` markers with other database functions. Its markers reference in-scope SSL variables by name. Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
+- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` markers with a value array in a later argument slot: fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`, and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the slot and skip unused optionals with adjacent commas. Canonical shape: `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`
+- Expand only a local array in `IN (?aValues?)`: a UDObject array property expanded directly raises a runtime error, so copy it to a local first.
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+<!-- /rules -->
+
+Do not flag identifier casing that follows the author's casing (see
+`sql-canonical-compact-reference.md`, Identifier Casing).
 
 ### `security` — Security-relevant patterns
-- SQL injection (see `sql` checks above)
-- Hardcoded credentials, passwords, or connection strings
-- Unvalidated user input passed to DB functions or `ExecFunction`
-- Overly broad error suppression
+- SQL injection (see the `sql` checks above)
+
+Flag code that breaks these rules:
+<!-- rules: id=no_hardcoded_credentials,validate_dynamic_call_targets,no_silent_error_swallowing -->
+- Do not hard-code credentials, passwords or connection strings in SSL code.
+- Do not execute code or procedure names derived from untrusted input without validation.
+- Log errors with contextual identifiers; avoid swallowing errors silently.
+<!-- /rules -->
 
 ### `inventory` — Cross-reference against the published SSL element inventory
 
@@ -123,9 +141,10 @@ types, 29 classes, 8 special forms, 12 return objects, 330 functions.
   as warnings — recommend the user verify the function still exists in
   their STARLIMS version and find a supported replacement. (Verify with
   `ssl_lookup` — the authoritative inventory; this list may lag it.)
-- **Built-in class collisions:** Flag any `:CLASS Foo;` declaration where
-  `Foo` matches a built-in class name (`AzureStorage`, `Email`,
-  `SQLConnection`, `SSLError`, `SSLDataset`, `WebServices`, etc.).
+- **Built-in class collisions:** <!-- rule: class_name_not_builtin -->Do not give a `:CLASS` the name of a built-in class such as `Email` or `SSLDataset`.<!-- /rule -->
+  Flag any `:CLASS Foo;` declaration where `Foo` matches a built-in class
+  name (`AzureStorage`, `Email`, `SQLConnection`, `SSLError`, `SSLDataset`,
+  `WebServices`, etc.).
 - **Argument-count mismatches:** For calls to documented built-in functions
   with a `parameters` table in the JSON, count required vs. optional
   parameters. Flag calls that pass fewer arguments than required or far
@@ -139,13 +158,13 @@ types, 29 classes, 8 special forms, 12 return objects, 330 functions.
 
 ## Additional Checks (always applied)
 
-- **Semicolons in comments:** `/* comment text;` — a `;` inside comment text ends the comment prematurely, turning the rest into executable code. Flag any `/* ... ; ...` where the semicolon is inside the comment body, not at the end.
-- **Missing `:EXITCASE`:** Each `:CASE` / `:OTHERWISE` block should end with `:EXITCASE;` unless multi-match behavior is intentional (without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute, but `:OTHERWISE` stays skipped once any earlier case body has run).
-- **Undeclared variables:** Variables used before a `:DECLARE` in the same procedure scope. `ssl_diagnose` reports these as `undeclared_variable` warnings under the strict profile, but it validates one document in isolation, so before confirming one check for (a) an `:INCLUDE` — included scripts are spliced in full and may declare the variable, and the command-line validator cannot see them; (b) `:PUBLIC` — publics are shared across the running program and may have been declared by a caller or by an earlier procedure, even one that has already returned. Downgrade such cases to a note, not an error, and say which explains it.
-- **Bare procedure calls:** Direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
-- **`DoProc` in class methods:** `DoProc` is rejected inside `:CLASS` methods — use `Me:Method()` instead.
-- **Unqualified class field access:** Inside a `:CLASS` method, any read or write of a name that appears in the class's `:DECLARE` list (and is not also a local or `:PARAMETERS` name) must be qualified with `Me:` (or `Base:` for an inherited field). A bare identifier never refers to the field: it follows normal lookup (local, then caller scopes, then publics), so a read with nothing in reach raises `Variable [name] is undefined!` and a write may land on a caller's or a public variable, leaving the field unchanged.
-- **`=` vs `==` for string equality:** `=` is prefix match for strings; `==` is exact equality. Flag `=` used where exact string comparison is likely intended. Note: `!=` negates `==` (strict), not `=` (prefix), so `=` and `!=` are **not** logical opposites for strings.
+- **Semicolons in comments:** <!-- rule: no_semicolon_in_comment_text -->Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.<!-- /rule --> Flag any `/* ... ; ...` where the semicolon is inside the comment body, not at the end.
+- **Missing `:EXITCASE`:** <!-- rule: prefer_exitcase -->End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.<!-- /rule --> Without `:EXITCASE`, later `:CASE` expressions are still evaluated and additional matching bodies may execute, but `:OTHERWISE` stays skipped once any earlier case body has run.
+- **Undeclared variables:** <!-- rule: declare_before_use -->Declare variables before use with `:DECLARE`.<!-- /rule --> Flag variables used before a `:DECLARE` in the same procedure scope. `ssl_diagnose` reports these as `undeclared_variable` warnings under the strict profile, but it validates one document in isolation, so before confirming one check for (a) an `:INCLUDE` — included scripts are spliced in full and may declare the variable, and the command-line validator cannot see them; (b) `:PUBLIC` — publics are shared across the running program and may have been declared by a caller or by an earlier procedure, even one that has already returned. Downgrade such cases to a note, not an error, and say which explains it.
+- **Bare procedure calls:** <!-- rule: no_direct_procedure_calls -->Do not call custom script procedures directly as `MyProc()`.<!-- /rule --> Flag direct calls to custom procedure names without `DoProc()` or `ExecFunction()`.
+- **`DoProc` in class methods:** <!-- rule: doproc_in_class -->Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.<!-- /rule -->
+- **Unqualified class field access:** <!-- rule: field_access_via_me -->Inside class methods, access fields through `Me:fieldName` or `Base:fieldName`.<!-- /rule --> Flag any read or write inside a `:CLASS` method of a name that appears in the class's `:DECLARE` list (and is not also a local or `:PARAMETERS` name) without `Me:` (or `Base:` for an inherited field). A bare identifier never refers to the field: it follows normal lookup (local, then caller scopes, then publics), so a read with nothing in reach raises `Variable [name] is undefined!` and a write may land on a caller's or a public variable, leaving the field unchanged.
+- **`=` vs `==` for string equality:** <!-- rule: equals_vs_strict_equals -->Use `==` for exact string equality; `=` is prefix-style for strings.<!-- /rule --> Flag `=` used where exact string comparison is likely intended. Note: `!=` negates `==` (strict), not `=` (prefix), so `=` and `!=` are **not** logical opposites for strings.
 
 ---
 

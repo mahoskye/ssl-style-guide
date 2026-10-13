@@ -32,6 +32,11 @@ categories:
       - prefer_positive_logic
       - no_nested_iif
       - limit_block_depth
+      - return_early_on_invalid
+      - begincase_for_multiway_choice
+      - exitcase_after_return
+      - no_duplicate_case_branches
+      - prefer_linear_success_path
   - id: loops
     lists_from_rules: true
     order:
@@ -50,6 +55,13 @@ categories:
       - getssldataset_at_name_markers
       - empty_optional_param_array
       - sqlexecute_no_values_array
+      - udobject_array_in_clause
+      - runsql_non_dml
+      - lsearch_for_single_values
+      - sql_properties_to_typed_locals
+      - empty_in_array_fallback
+      - omit_default_connection_argument
+      - guarded_write_verification
   - id: sql
     lists_from_rules: true
     order:
@@ -81,6 +93,10 @@ categories:
       - sql_no_mixed_placeholder_styles
       - sql_no_trailing_semicolon
       - sql_basic_sql_only
+      - unicode_literal_prefix
+      - unjustified_collate
+      - sql_structure_exposes_guards
+      - sql_lock_hints_deliberate
   - id: transactions
     lists_from_rules: true
     order:
@@ -95,6 +111,8 @@ categories:
       - commit_flag_starts_false
       - end_transaction_in_finally_when_started
       - guard_transaction_finalization
+      - isintransaction_for_ownership
+      - replay_aware_mutations
   - id: strings
     lists_from_rules: true
     order:
@@ -103,6 +121,11 @@ categories:
       - bracket_strings_for_quotes
       - dollar_string_only
       - prevent_sql_injection
+      - parse_delimited_input_locally
+      - alltrim_for_input_normalization
+      - format_for_composed_text
+      - format_arg_not_array
+      - ascanexact_for_fixed_sets
   - id: arrays
     lists_from_rules: true
     order:
@@ -113,6 +136,7 @@ categories:
       - check_alen_before_index
       - no_nil_target_array
       - array_literal_braces
+      - ascanexact_for_fixed_sets
   - id: dates
     lists_from_rules: true
     order:
@@ -143,6 +167,7 @@ categories:
       - base_member_access
       - underscore_private_convention
       - class_name_not_builtin
+      - class_fields_declared_at_class_level
   - id: objects
     lists_from_rules: true
     order:
@@ -150,6 +175,8 @@ categories:
       - builtin_classes_curly_braces
       - member_access_no_spaces
       - no_createudobject_for_builtins
+      - dot_property_access
+      - state_object_for_multistep
   - id: procedures
     lists_from_rules: true
     order:
@@ -177,6 +204,15 @@ categories:
       - no_positional_parameter_access
       - bare_calls_are_builtins
       - max_params_warning
+      - omit_parameters_when_none
+      - default_value_by_type
+      - doc_block_parameter_alignment
+      - declare_groups_by_purpose
+      - preserve_declaration_groups
+      - declare_group_order
+      - read_globals_undeclared
+      - global_assignment
+      - guard_optional_globals
   - id: data-sources
     lists_from_rules: true
     order:
@@ -225,6 +261,7 @@ categories:
       - no_raw_diagnostics_in_caller_failures
       - success_envelope_without_data
       - one_boundary_per_invariant
+      - pipeline_failure_capture
   - id: files
   - id: email
   - id: security
@@ -243,6 +280,26 @@ categories:
       - comments_explain_why
       - single_line_comment_form
       - multi_line_comment_layout
+      - indent_block_bodies
+      - dedent_closing_keywords
+      - same_level_block_keywords
+      - exitcase_statement_level
+      - consistent_indentation
+      - comma_spacing
+      - no_space_inside_parens
+      - no_space_before_call_paren
+      - ssl_max_line_length
+      - continuation_line_breaks
+      - no_semicolon_on_continuation_lines
+      - blank_line_between_procedures
+      - blank_line_between_sections
+      - no_excess_blank_lines
+      - endregion_takes_no_name
+      - align_related_elements
+      - expressions_on_one_line
+      - wrapped_list_alignment
+      - continuation_indent_shows_structure
+      - envelope_one_line
   - id: naming
     lists_from_rules: true
     order:
@@ -258,6 +315,7 @@ categories:
       - preserve_acronym_casing
       - udo_property_lower_camel_case
       - underscores_discouraged
+      - procedure_verb_noun_names
   - id: types
     lists_from_rules: true
     order:
@@ -274,6 +332,7 @@ categories:
       - nil_not_empty_string
       - numeric_type
       - limstypeex_numeric_not_number
+      - type_check_before_value_check
   - id: operators
     lists_from_rules: true
     order:
@@ -286,6 +345,8 @@ categories:
       - one_assignment_per_statement
       - no_ternary_operator
       - code_block_comparison
+      - bare_logical_operator
+      - dot_property_access
   - id: logging
     lists_from_rules: true
     order:
@@ -313,3 +374,8 @@ categories:
       - file_banner_modified_entries
       - generated_banner_omits_author
       - banner_has_no_semicolon
+      - banner_description_one_sentence
+      - banner_parameters_business_meaning
+      - banner_success_failure_labels
+      - banner_special_result_first
+      - banner_descriptions_operational
