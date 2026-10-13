@@ -107,12 +107,11 @@ Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`
 <!-- /rules -->
 
 ### Sub-clause indentation (2 spaces under parent)
-<!-- rules: id=sql_and_or_indent,sql_on_indent,sql_having_indent,sql_between_and_align,sql_case_when_else_indent -->
+<!-- rules: id=sql_and_or_indent,sql_on_indent,sql_having_indent,sql_between_and_align -->
 - Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
 - Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
 - Indent `HAVING` 2 spaces under `GROUP BY`.
 - When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`.
-- Indent `WHEN`/`ELSE` 2 spaces under `CASE`.
 <!-- /rules -->
 
 ### SELECT list
@@ -144,11 +143,21 @@ For formatting existing code only. Agents do not write `MERGE` (see the basic-SQ
 <!-- /rules -->
 
 ### CASE expressions
-<!-- rules: id=sql_case_when_else_indent,sql_case_branch_consistency,sql_case_then_break -->
-- Indent `WHEN`/`ELSE` 2 spaces under `CASE`.
+<!-- rules: id=sql_case_when_else_indent,sql_case_end_align,sql_case_branch_consistency,sql_case_then_break -->
+- Indent `WHEN`/`ELSE` 4 spaces under `CASE`.
+- Align `END` with its `CASE`.
 - Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short.
-- When a `THEN` value breaks to a new line, indent it one level under its `WHEN`.
+- When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.
 <!-- /rules -->
+
+```sql
+SELECT o.ordno,
+       CASE
+           WHEN o.status = 'L' THEN 'Logged'
+           ELSE 'Unknown'
+       END AS status_desc
+FROM orders o
+```
 
 ### Optimizer hints
 <!-- rules: id=sql_optimizer_hints -->
