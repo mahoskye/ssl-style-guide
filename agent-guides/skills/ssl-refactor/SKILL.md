@@ -83,7 +83,10 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 **SQL Safety:**
 - Replace string concatenation in SQL with proper parameterization
 - `SQLExecute`: use `?varName?` substitution
-- Other DB functions: use positional `?` with parameter arrays
+- Other DB functions: use positional `?` with a values array, in the slot the
+  signature gives (`LSearch`, `LSelect`, `LSelectC` take it fourth;
+  `GetDataSet` second)
+- `GetSSLDataset`: use `@name` markers with parallel name and value arrays
 - When using array expansion for `IN` clauses, ensure the array is a local variable — UDObject array properties cause a runtime error and must be copied to a local first
 - Inside SQL strings, uppercase SQL keywords and functions; preserve the
   author's casing for other SQL identifiers (never force-fold — it breaks
