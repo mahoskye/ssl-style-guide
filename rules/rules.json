@@ -281,7 +281,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.exitcase_last_in_branch"
       ],
       "categories": [
         "control-flow"
@@ -5075,7 +5075,7 @@
         "bad": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CountRows;\n\t:DECLARE nCount :DEFAULT 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CountRows;\n\t:DECLARE nCount; :DEFAULT nCount, 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ]
       },
@@ -5375,7 +5375,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.visibility_annotation"
       ],
       "categories": [
         "procedures"
@@ -8068,7 +8068,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.datasource_default_required"
       ],
       "categories": [
         "data-sources"
@@ -8118,7 +8118,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.empty_parameters"
       ],
       "categories": [
         "data-sources"
@@ -8205,7 +8205,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.datasource_sql_question_placeholder"
       ],
       "categories": [
         "data-sources"
@@ -8490,7 +8490,7 @@
         "class"
       ],
       "rule": "Do not treat builder directives as reusable SSL keywords outside data-source contexts.",
-      "rationale": "`:DSN`, `:TABLENAME`, `:NULLASBLANK` and `:INVARIANTDATECOLUMNS` are read by the\nSQL data source builder. They are not SSL keywords, so in a server script or a\nclass file they are unknown keywords. To get data through a data source from a\nscript, call the data source with `RunDS`.",
+      "rationale": "`:DSN`, `:TABLENAME`, `:NULLASBLANK` and `:INVARIANTDATECOLUMNS` are read by the\nSQL data source builder. They are not SSL keywords, so in a server script or a\nclass file they are errors. To get data through a data source from a\nscript, call the data source with `RunDS`.",
       "exceptions": null,
       "examples": {
         "good": [
@@ -8507,7 +8507,7 @@
         ]
       },
       "enforced_by": [
-        "lsp:diag.unknown_keyword"
+        "lsp:diag.builder_directive_outside_datasource"
       ],
       "categories": [
         "data-sources"
@@ -10819,18 +10819,19 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":CLASS Counter;\n:DECLARE nCount;\n\n:PROCEDURE Reset;\n\tMe:nCount := 0;\n:ENDPROC;\n"
+            "code": ":CLASS Counter;\n:DECLARE nCount, nLast;\n\n:PROCEDURE Reset;\n\tMe:nLast := Me:nCount;\n\tMe:nCount := 0;\n:ENDPROC;\n"
           }
         ],
         "bad": [
           {
             "lang": "ssl",
-            "code": ":CLASS Counter;\n:DECLARE nCount;\n\n:PROCEDURE Reset;\n\tnCount := 0;\n:ENDPROC;\n"
+            "code": ":CLASS Counter;\n:DECLARE nCount, nLast;\n\n:PROCEDURE Reset;\n\tMe:nLast := nCount;\n\tnCount := 0;\n:ENDPROC;\n"
           }
         ]
       },
       "enforced_by": [
-        "lsp:diag.unqualified_field_assignment"
+        "lsp:diag.unqualified_field_assignment",
+        "lsp:diag.unqualified_field_read"
       ],
       "categories": [
         "classes"
@@ -10955,13 +10956,13 @@
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": ":CLASS Counter;\n:INHERIT BaseCounter;\n"
+            "lang": "ssl",
+            "code": ":CLASS Counter;\n:INHERIT BaseCounter;\n:DECLARE nCount;\n\n:PROCEDURE Increment;\n\tBase:Increment();\n\tMe:nCount += 1;\n:ENDPROC;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.inherit_qualified_name"
       ],
       "categories": [
         "classes"
@@ -11092,7 +11093,7 @@
         ]
       },
       "enforced_by": [
-        "lsp:diag.unknown_keyword"
+        "lsp:diag.endclass_invalid"
       ],
       "categories": [
         "classes"

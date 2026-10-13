@@ -57,9 +57,23 @@ export interface LspRunResult {
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 /**
+ * Exit code both CLI modes use for a call that was wrong rather than input
+ * that has problems: an unknown flag, a bad flag value, or no inputs. The
+ * binary writes nothing to stdout and names the reason on stderr
+ * (starlims-lsp CLI contract, since v0.25.0 for --validate; --format has
+ * always done this).
+ */
+const USAGE_ERROR_EXIT = 2;
+
+/**
  * Run the LSP binary with the given CLI arguments, piping `input` to stdin.
  * Returns the captured stdout, stderr, and exit code.
  * Times out after 30 seconds to prevent indefinite hangs.
+ *
+ * Rejects on a usage error (exit 2) instead of resolving: there is no
+ * result to parse, so the call failed, and stderr is the reason. An
+ * unknown flag here means the bundled binary is older than the pinned
+ * release, so the error says how to update it.
  */
 export function runLsp(
   args: string[],
@@ -95,11 +109,18 @@ export function runLsp(
         reject(new Error(`LSP binary timed out after ${timeoutMs}ms`));
         return;
       }
-      resolve({
-        stdout: Buffer.concat(stdoutChunks).toString("utf-8"),
-        stderr: Buffer.concat(stderrChunks).toString("utf-8"),
-        exitCode: code ?? 1,
-      });
+      const stdout = Buffer.concat(stdoutChunks).toString("utf-8");
+      const stderr = Buffer.concat(stderrChunks).toString("utf-8");
+      if (code === USAGE_ERROR_EXIT) {
+        const reason =
+          stderr.trim().split("\n")[0].replace(/^Error:\s*/, "") || "usage error";
+        const hint = /unknown flag/i.test(reason)
+          ? ` The bundled binary may predate the pinned release; run "bun run fetch-lsp" in ssl-mcp-server/ to update it.`
+          : "";
+        reject(new Error(`starlims-lsp rejected the call (exit 2): ${reason}.${hint}`));
+        return;
+      }
+      resolve({ stdout, stderr, exitCode: code ?? 1 });
     });
 
     if (input) {
@@ -108,6 +129,11 @@ export function runLsp(
     child.stdin.end();
   });
 }
+
+/** SSL input: inline code or a file path, optionally marked as a data source. */
+export type SslInput = ({ code: string } | { file: string }) & {
+  isDataSource?: boolean;
+};
 
 /**
  * Validate SSL code. Pass code as a string, or a file path to read directly.
@@ -145,26 +171,38 @@ export function runLsp(
  * unprefixed names by construction.
  */
 export async function validateSsl(
-  input: ({ code: string } | { file: string }) & { isDataSource?: boolean }
+  input: SslInput
 ): Promise<LspRunResult> {
   const dsFlag = input.isDataSource ? ["--ds"] : [];
   const profile = ["--info", "--hungarian-types", "--strict"];
   if ("file" in input) {
-    return runLsp(["--validate", ...profile, ...dsFlag, input.file], "");
+    // `--` ends flag parsing, so a path that starts with a dash is still
+    // read as a path rather than rejected as an unknown flag.
+    return runLsp(["--validate", ...profile, ...dsFlag, "--", input.file], "");
   }
   return runLsp(["--validate", ...profile, "--stdin", ...dsFlag], input.code);
 }
 
+/** True for a path the LSP classifies as a data source by extension. */
+function isDataSourcePath(file: string): boolean {
+  const lower = file.toLowerCase();
+  return lower.endsWith(".ds") || lower.endsWith(".ds.txt");
+}
+
 /**
  * Format SSL code. Pass code as a string, or a file path to read directly.
+ *
+ * A data source whose body is SQL passes through the formatter unchanged,
+ * but only when the input is classified as a data source: a .ds/.ds.txt
+ * path, or --ds (since starlims-lsp v0.25.0, content alone no longer
+ * decides it). Inline code has no extension, so isDataSource sets --ds.
  */
-export async function formatSsl(
-  input: { code: string } | { file: string }
-): Promise<LspRunResult> {
+export async function formatSsl(input: SslInput): Promise<LspRunResult> {
+  const dsFlag = input.isDataSource ? ["--ds"] : [];
   if ("file" in input) {
-    return runLsp(["--format", input.file], "");
+    return runLsp(["--format", ...dsFlag, "--", input.file], "");
   }
-  return runLsp(["--format", "--stdin"], input.code);
+  return runLsp(["--format", "--stdin", ...dsFlag], input.code);
 }
 
 export interface FormatCheckResult extends LspRunResult {
@@ -189,13 +227,19 @@ export interface FormatCheckResult extends LspRunResult {
  * not a file the caller should work around.
  */
 export async function formatSslChecked(
-  input: { code: string } | { file: string }
+  input: SslInput
 ): Promise<FormatCheckResult> {
   const first = await formatSsl(input);
   if (first.exitCode !== 0 || !first.stdout) {
     return { ...first, unstable: false };
   }
-  const second = await runLsp(["--format", "--stdin"], first.stdout);
+  // The second pass reads stdin, which has no extension, so carry a .ds
+  // path's classification over as --ds. Without it a SQL-mode data source
+  // would pass through on the first pass and be formatted as SSL on the
+  // second, and every such file would report as unstable.
+  const isDataSource =
+    !!input.isDataSource || ("file" in input && isDataSourcePath(input.file));
+  const second = await formatSsl({ code: first.stdout, isDataSource });
   const unstable =
     second.exitCode === 0 && !!second.stdout && second.stdout !== first.stdout;
   return { ...first, unstable };

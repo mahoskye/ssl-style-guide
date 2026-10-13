@@ -12,7 +12,7 @@ rule: >-
 categories: [classes]
 machine: { list: must_follow }
 related_elements: [INHERIT]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.inherit_qualified_name]
 schema:
   - path: lints.class_rules
     form: lint
@@ -29,8 +29,8 @@ verification:
     Kept from the classes pack's must-follow item, with its avoid item ("Do
     not write :INHERIT with a plain class name; it is a compile-time error.")
     merged in. The schema lint inherit_qualified_name (word for word) and the
-    agent guide say the same. The starlims-lsp entry inherit_qualified_name
-    is removed, so the record is reviewer-enforced.
+    agent guide say the same. starlims-lsp reports it as
+    inherit_qualified_name (from v0.25.0).
 ---
 
 ## Rationale
@@ -55,7 +55,13 @@ compiles with `Specify the full name of the class in :INHERIT`.
 
 ### Bad
 
-```text
+```ssl
 :CLASS Counter;
 :INHERIT BaseCounter;
+:DECLARE nCount;
+
+:PROCEDURE Increment;
+	Base:Increment();
+	Me:nCount += 1;
+:ENDPROC;
 ```

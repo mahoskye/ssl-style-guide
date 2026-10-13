@@ -10,7 +10,7 @@ rule: >-
   `:CLASS` continues to end of file; there is no `:ENDCLASS`.
 categories: [classes]
 related_elements: [CLASS]
-enforced_by: [lsp:diag.unknown_keyword]
+enforced_by: [lsp:diag.endclass_invalid]
 schema:
   - path: blocks.class.end
     form: value
@@ -20,7 +20,8 @@ verification:
   note: >-
     Kept from the new-class skill, which states it twice. Merged: the schema's
     blocks.class.end and the agent guide's class definition section.
-    starlims-lsp reports :ENDCLASS as an unknown keyword.
+    starlims-lsp reports :ENDCLASS as endclass_invalid, an error (from
+    v0.25.0; earlier releases reported an unknown_keyword warning).
 ---
 
 ## Rationale

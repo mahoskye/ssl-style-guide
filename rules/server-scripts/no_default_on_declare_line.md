@@ -17,6 +17,9 @@ verification:
   note: >-
     Kept from the procedures pack and the foundation, which state it word for
     word. The agent guide's quick start (rule 3) says the same.
+    starlims-lsp's default_on_declare_line reports a :DEFAULT whose target is
+    not a :PARAMETERS name, on any line (re-scoped in v0.25.0), so it covers
+    this case and a :DEFAULT on a local anywhere else.
 ---
 
 ## Rationale
@@ -41,7 +44,7 @@ with `:DECLARE` starts empty; assign it a value in a separate statement.
 
 ```ssl
 :PROCEDURE CountRows;
-	:DECLARE nCount :DEFAULT 0;
+	:DECLARE nCount; :DEFAULT nCount, 0;
 
 	:RETURN nCount;
 :ENDPROC;

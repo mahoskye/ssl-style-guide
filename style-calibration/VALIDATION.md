@@ -23,9 +23,10 @@ positive on properties such as `oSummary:pending` and `oRequest:accepted`.
 The source fix in the sibling LSP excludes qualified members while preserving
 bare-global diagnostics, their ranges, and severity.
 
-Validation uses a locally rebuilt binary containing that fix. The MCP's bundled
-v0.24.0 binary has not been replaced and still reports those false positives.
-Reproduce the local check from the style-guide repository root:
+Validation used a locally rebuilt binary containing that fix. The fix shipped
+in starlims-lsp v0.25.0, which the MCP server now pins, so the bundled binary
+no longer reports those false positives. Reproduce the local check from the
+style-guide repository root:
 
 ```bash
 mkdir -p .calibration-cache

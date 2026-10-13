@@ -12,7 +12,7 @@ rule: >-
 categories: [data-sources]
 machine: { list: must_follow }
 related_elements: [PARAMETERS, SQLExecute]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.datasource_sql_question_placeholder]
 schema:
   - path: module_structure.data_source_modules.file_types.sql_data_source.body_parameters.syntax
     form: value
@@ -22,7 +22,9 @@ verification:
   note: >-
     Kept from the data-sources pack, which stated it twice (as a must-follow
     and as an avoid item); merged here. Matches the schema's body_parameters
-    entry and the agent guide (#51, #82).
+    entry and the agent guide (#51, #82). starlims-lsp reports a ?name?
+    marker in a SQL data source as datasource_sql_question_placeholder (from
+    v0.25.0).
 issues: ["#51", "#82"]
 ---
 

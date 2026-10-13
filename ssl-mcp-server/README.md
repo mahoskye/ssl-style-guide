@@ -42,15 +42,26 @@ v0.24.0 — so an input that comes back flagged as unstable indicates a
 formatter bug, and the note tells the caller to report it rather than
 loop chasing a fixed point.
 
-`--strict` requires starlims-lsp v0.24.0 or newer. Against an older
-binary the flag is read as a file path, and `ssl_diagnose` detects that
-and fails with an explicit message rather than returning wrong results.
+Both tools follow the starlims-lsp CLI contract that v0.25.0 wrote down.
+A file argument is passed after `--`, so a path that starts with a dash is
+still read as a path. Exit 2 means the call itself was wrong (an unknown
+flag, no input): the binary writes nothing to stdout, and the tools return
+its stderr message as the error instead of parsing empty output. A binary
+older than v0.25.0 reads a flag it does not know as a file path instead;
+`ssl_diagnose` detects the resulting phantom entry and fails with an
+explicit message rather than returning wrong results. Either way, the fix
+is `bun run fetch-lsp`.
+
+From v0.25.0 the formatter passes a SQL-mode data source through unchanged
+only when the input is classified as a data source, by a `.ds`/`.ds.txt`
+path or `--ds`, so `ssl_format` takes `isDataSource` for data-source content
+passed as `code`, as `ssl_diagnose` does.
 
 The `ssl_diagnose` and `ssl_format` tools require the `starlims-lsp` binary
 in `bin/lsp/` (gitignored — binaries are not tracked in this repository).
 `bun run fetch-lsp` downloads the release pinned in `lsp-version.json` for
 the current platform; add `--all` for every platform, or pass a tag
-(`bun run fetch-lsp v0.24.0`) to fetch that version and move the pin.
+(`bun run fetch-lsp v0.25.0`) to fetch that version and move the pin.
 Maintainers with a sibling `starlims-lsp` checkout can build instead with
 `bun run bundle-lsp` (requires Go), or `bun run bundle-lsp --copy` to copy
 already-built binaries.

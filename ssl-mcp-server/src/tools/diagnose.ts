@@ -37,7 +37,9 @@ export function registerDiagnose(server: McpServer): void {
         };
       }
 
-      // --validate outputs a JSON array to stdout
+      // --validate writes a JSON array to stdout and exits 0 (all valid)
+      // or 1 (an input has errors); a usage error (exit 2) was already
+      // rejected by runLsp.
       const output = result.stdout.trim();
       if (!output) {
         return {
@@ -57,12 +59,14 @@ export function registerDiagnose(server: McpServer): void {
       try {
         const parsed = JSON.parse(output);
         const entries: Array<{ file?: string }> = Array.isArray(parsed) ? parsed : [parsed];
-        // A binary older than the pinned release doesn't know a flag we
-        // pass and reads it as a file path, emitting a phantom
-        // failed-read entry alongside (or instead of) the real one. Fail
-        // loudly rather than returning the wrong entry. Matched on the
-        // `--` prefix rather than a list of flag names, so a future flag
-        // is covered the day it is added.
+        // Since starlims-lsp v0.25.0 an unknown flag exits 2 with nothing
+        // on stdout, which runLsp turns into an error before we get here.
+        // A binary older than v0.25.0 instead reads a flag it doesn't know
+        // (including the `--` separator) as a file path, emitting a
+        // phantom failed-read entry alongside (or instead of) the real
+        // one. Keep this guard for those binaries: fail loudly rather
+        // than return the wrong entry. Matched on the `--` prefix rather
+        // than a list of flag names, so any flag is covered.
         const unsupported = entries.find((e) => e?.file?.startsWith("--"));
         if (unsupported) {
           return {

@@ -11,7 +11,7 @@ rule: >-
   an empty `:PARAMETERS;` is an error.
 categories: [data-sources]
 related_elements: [PARAMETERS]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.empty_parameters]
 schema:
   - path: module_structure.data_source_modules.file_types.ssl_data_source.parameters.empty_parameters_error
     form: value
@@ -24,6 +24,8 @@ verification:
   note: >-
     Kept from the schema's empty_parameters_error flag, the ssl-new-datasource
     skill and the agent guide's data-source section, which agree.
+    starlims-lsp reports an empty :PARAMETERS; as empty_parameters, in any
+    file (from v0.25.0).
 ---
 
 ## Rationale

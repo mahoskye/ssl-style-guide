@@ -12,6 +12,40 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Changed
+- MCP 1.16.0: pins starlims-lsp v0.25.0. `ssl_diagnose` reports the new
+  error-severity codes (`exitcase_last_in_branch`, `include_quoted_target`,
+  `datasource_default_required`, `inline_default_outside_datasource`,
+  `inherit_qualified_name`, `inherit_position`, `endclass_invalid`,
+  `builder_directive_outside_datasource`, `empty_parameters`,
+  `datasource_sql_question_placeholder`, `stray_block_keyword`), so code that
+  carries one now comes back `valid: false`. `code_block_structure`,
+  `unknown_token`, `scientific_notation` and `named_sql_param_unsupported` are
+  now errors, and `global_assignment` is a warning.
+- MCP: `ssl_diagnose` and `ssl_format` follow the starlims-lsp CLI contract. A
+  usage error (exit 2, nothing on stdout) is returned as an error carrying the
+  binary's stderr message, rather than parsed as output, and a file argument
+  is passed after `--`. The phantom-entry guard stays for binaries older than
+  v0.25.0.
+- MCP: `ssl_format` takes `isDataSource` for data-source content passed as
+  `code`. From v0.25.0 the formatter leaves a SQL-mode data source unchanged
+  only when the input is classified as a data source, and the stability check
+  now carries a `.ds` path's classification to its second pass, so a SQL-mode
+  data source file no longer reports as unstable.
+- Rule records now cite the starlims-lsp diagnostic that enforces them:
+  `exitcase_last_in_branch`, `datasource_default_required`,
+  `inherit_qualified_name`, `datasource_empty_parameters` (`empty_parameters`),
+  `datasource_sql_at_name_placeholders` (`datasource_sql_question_placeholder`),
+  `visibility_annotation_exact_form` (`visibility_annotation`) and
+  `field_access_via_me` (adds `unqualified_field_read`) were reviewer-enforced
+  or partly enforced; `class_ends_at_eof` (`endclass_invalid`) and
+  `builder_directives_datasource_only` (`builder_directive_outside_datasource`)
+  replace `unknown_keyword`, which also clears their severity disagreement.
+  `no_default_on_declare_line` gets a Bad example the re-scoped
+  `default_on_declare_line` reports.
+- The skill-example check passes `--` before each file and reports a usage
+  error from the binary instead of an unparseable result.
+
 ## Schema 1.9.0, MCP 1.15.2 — 2026-10-13
 
 ### Added

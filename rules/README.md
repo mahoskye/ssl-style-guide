@@ -210,12 +210,22 @@ warning. `--strict-severity` makes it a failure (and requires the catalog):
 bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
 ```
 
-CI does not pass `--strict-severity` yet: seven records still disagree with
-starlims-lsp v0.24.0, and they are being triaged upstream (see
-[mahoskye/starlims-lsp#269](https://github.com/mahoskye/starlims-lsp/issues/269)).
-Once they are settled, either by changing the record or the LSP default,
-CI turns the flag on. Until then, use it locally to confirm a change adds no
-new disagreement.
+CI does not pass `--strict-severity` yet: six records still disagree with
+starlims-lsp v0.25.0.
+
+| Record | Record severity | LSP diagnostic | LSP default |
+|--------|-----------------|----------------|-------------|
+| `no_semicolon_in_comment_text` | error | `comment_text_after_terminator` | warning |
+| `banner_has_no_semicolon` | error | `comment_text_after_terminator` | warning |
+| `limit_public_vars` | warning | `limit_public_vars` | info |
+| `max_params_warning` | warning | `max_params_warning` | info |
+| `code_block_structure` | warning | `code_block_structure` | error |
+| `global_assignment` | error | `global_assignment` | warning |
+
+The last two follow from v0.25.0, which raised `code_block_structure` to
+error and lowered `global_assignment` to warning. Once each is settled,
+either by changing the record or the LSP default, CI turns the flag on.
+Until then, use it locally to confirm a change adds no new disagreement.
 
 A change to the generated schema is a schema change: add a CHANGELOG line, and
 bump `metadata.version` at release as usual.

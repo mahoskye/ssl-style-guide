@@ -12,7 +12,7 @@ rule: >-
   statement, is a compile error.
 categories: [control-flow]
 related_elements: [EXITCASE, CASE, OTHERWISE]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.exitcase_last_in_branch]
 schema:
   - path: blocks.case.exitcase_placement
     form: text
@@ -25,8 +25,9 @@ verification:
   note: >-
     Kept from the review skill's rule list. Merged: the refactor skill
     ("never nest it inside an :IF"), the agent guide's case-block section and
-    the schema's blocks.case.exitcase_placement. starlims-lsp v0.24.0 does not
-    report either form, so the record is reviewer-enforced.
+    the schema's blocks.case.exitcase_placement. starlims-lsp reports both
+    forms, and an :EXITCASE outside any :BEGINCASE, as
+    exitcase_last_in_branch (from v0.25.0).
 ---
 
 ## Rationale
