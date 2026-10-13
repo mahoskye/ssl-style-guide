@@ -41,7 +41,8 @@ copies:
 
 | Canonical | Generated | Regenerate with |
 |-----------|-----------|-----------------|
-| `ssl-style-guide/`, `agent-guides/` docs and schema | `agent-guides/machine/` packs | `bun tools/generate-machine-docs.mjs` |
+| `rules/` records (see [rules/README.md](rules/README.md)) | `rules/INDEX.md`, the schema's generated regions, `<!-- rules: -->` regions in guides and skills | `bun tools/generate-rules.mjs`, then the machine docs |
+| `ssl-style-guide/`, `agent-guides/` docs and schema, `rules/` | `agent-guides/machine/` packs | `bun tools/generate-machine-docs.mjs` |
 | everything the MCP server serves | `ssl-mcp-server/data/` mirror | `cd ssl-mcp-server && bun scripts/bundle-data.mjs` |
 | `agent-guides/agents/*.agent.md` | per-tool agent adapters (git-ignored) | `bun tools/generate-agents.mjs` |
 
@@ -52,8 +53,9 @@ Run before opening a PR (CI runs the same):
 ```bash
 cd ssl-mcp-server
 bun run check              # TypeScript
-bun run check:consistency  # data mirror + machine docs + agent adapters
+bun run check:consistency  # data mirror + rules + machine docs + agent adapters
 cd ..
+bun tools/check-skill-examples.mjs   # skill and rule examples (needs the LSP binary)
 bun tools/check-reference-drift.mjs  # inventory vs. reference repo (skips without sibling checkout)
 ```
 

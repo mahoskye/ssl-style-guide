@@ -1768,23 +1768,24 @@ ssl_style_guide:
         Development checkouts are often flat (loose .ssl files outside the
         export tree); tooling should degrade to script-basename matching
         when the canonical anchors are absent.
+    # BEGIN GENERATED module_structure.data_source_modules: edit rules/ and run bun tools/generate-rules.mjs
     data_source_modules:
       level: authoritative
       note: >
-        Data source files are preprocessed by server-side builders before SSL compilation.
-        They use different parameter syntax and may contain builder-specific directives
-        that are not part of the SSL grammar.
+        Data source files are preprocessed by server-side builders before SSL
+        compilation. They use different parameter syntax and may contain
+        builder-specific directives that are not part of the SSL grammar.
       file_types:
         ssl_data_source:
           preprocessor: ssl_data_source_preprocessor
           parameters:
             syntax: ":PARAMETERS p1 := val1, p2 := val2;"
-            inline_defaults: true  # := assignment, not separate :DEFAULT
-            default_required: true  # every parameter must have an inline default; one without fails when the data source runs
-            empty_parameters_error: true  # :PARAMETERS; with no params is an error — omit the line instead
+            inline_defaults: true # Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.
+            default_required: true # Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.
+            empty_parameters_error: true # A data source that takes no parameters leaves the :PARAMETERS line out; an empty :PARAMETERS; is an error.
             rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
           comments:
-            syntax: ssl  # /* text; — opened by /*, closed by the first ;
+            syntax: ssl # In an SSL data source, comments are SSL comments: they end at the first ;, and */ does not close them.
             note: >
               The body is SSL, so SSL comment rules apply throughout, including
               the optional header_comment. Parameters are referenced as ordinary
@@ -1798,16 +1799,16 @@ ssl_style_guide:
           preprocessor: sql_data_source_preprocessor
           parameters:
             syntax: ":PARAMETERS p1 := val1, p2 := val2;"
-            inline_defaults: true
-            default_required: true  # every parameter must have an inline default; one without fails when the data source runs
-            empty_parameters_error: true
+            inline_defaults: true # Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.
+            default_required: true # Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.
+            empty_parameters_error: true # A data source that takes no parameters leaves the :PARAMETERS line out; an empty :PARAMETERS; is an error.
           directives:
             - ":DSN := connectionName;  # database connection"
             - ":TABLENAME := name;  # dataset table name"
             - ":NULLASBLANK := true;  # null-to-blank conversion"
             - ":INVARIANTDATECOLUMNS := col1, col2;  # invariant date columns"
           comments:
-            syntax: sql
+            syntax: sql # Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.
             forms:
               - "-- line comment"
               - "/* block comment */"
@@ -1823,7 +1824,7 @@ ssl_style_guide:
               Optimizer-hint comments (/*+ ... */) are preserved verbatim, not
               treated as removable comments.
           body_parameters:
-            syntax: "@name"
+            syntax: "@name" # Reference SQL data-source parameters in the SQL body as @name placeholders, not ?name? markers.
             note: >
               The SQL body references :PARAMETERS values as @name placeholders;
               names match the :PARAMETERS declarations. Write @name regardless
@@ -1855,6 +1856,7 @@ ssl_style_guide:
         - rule: datasource_undeclared_placeholder
           severity: warning
           message: "A @name placeholder in a SQL data source body has no matching :PARAMETERS declaration — it is not substituted and fails when the query executes."
+    # END GENERATED module_structure.data_source_modules
   language_features:
     version: SSL v11
     case_sensitivity:

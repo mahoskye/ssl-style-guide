@@ -683,11 +683,26 @@ Use `GetDSParameters(sDsName)` to get a data source's parameter names in declara
 
 ### Key Takeaways for Agents
 
-1. **Do not flag `:=` parameter syntax as incorrect** in data source files — it is the required form
-2. **Do not flag builder directives** (`:DSN`, `:TABLENAME`, etc.) as unknown keywords — they are preprocessed
-3. **Do not use `:DEFAULT` statements** in data source files — use inline `:=` syntax instead
-4. **Do not apply standard script layout rules** to data source files — they have different structure
-5. **The tree-sitter grammar and TextMate grammar do not cover data source syntax** — these constructs exist only in the preprocessing layer
+<!-- rules: domain=data-sources -->
+- Invoke data sources with `RunDS("Category.DataSourceName", {values})`; values bind by position in `:PARAMETERS` order, not by name. `GetDSParameters` returns the parameter names in that order. Do not pass `{name, value}` pairs; each pair is bound whole to one parameter.
+- Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+- Give every data-source parameter an inline `:=` default; a parameter without one makes the data source fail when it runs.
+- A data source that takes no parameters leaves the `:PARAMETERS` line out; an empty `:PARAMETERS;` is an error.
+- Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source files.
+- Reference SQL data-source parameters in the SQL body as `@name` placeholders, not `?name?` markers.
+- Declare every `@name` placeholder of a SQL data-source body in `:PARAMETERS`; an undeclared one is not substituted and fails when the query executes.
+- Use SQL comment syntax (`--` and `/* ... */`) in SQL data-source bodies, not the SSL comment form.
+- In a SQL data source, a semicolon only ends a builder directive or `:PARAMETERS`; the body runs as one SQL command, so any other semicolon outside a comment or string literal is misplaced.
+- In a SQL data source, put the SQL body after the `:PARAMETERS` line; SQL text placed before it is discarded.
+- Lay out the query body of a SQL data source in the canonical compact SQL style, the same as SQL embedded in SSL strings.
+- SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.
+- Do not treat builder directives as reusable SSL keywords outside data-source contexts.
+- In an SSL data source, comments are SSL comments: they end at the first `;`, and `*/` does not close them.
+- In an SSL data source, use parameters as ordinary variables by their bare names; `@name` placeholders are not part of this file type.
+- The `RunDS` return-type argument (`"ssldataset"`, `"xml"`, and so on) converts only an `SSLDataset` result; an SSL data source that callers request in another return type returns an `SSLDataset`, for example from `GetSSLDataset`.
+- One file should represent either a class definition, a script, or a data source.
+<!-- /rules -->
+- **The tree-sitter grammar and TextMate grammar do not cover data source syntax** — these constructs exist only in the preprocessing layer
 
 ---
 

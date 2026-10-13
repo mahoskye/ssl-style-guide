@@ -19,6 +19,7 @@ import {
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import YAML from 'yaml';
+import { foundationRecords, loadRules, packLists, plainRule, wrapBullet } from './lib/rules.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
@@ -332,21 +333,7 @@ const CATEGORY_DEFS = [
     aliases: ['data source files', 'sql data sources', 'builder directives'],
     summary: 'SSL and SQL data-source syntax, inline defaults, and builder directives.',
     elements: ['PARAMETERS', 'RunDS', 'GetDSParameters', 'DSN', 'TABLENAME', 'NULLASBLANK', 'INVARIANTDATECOLUMNS'],
-    mustFollow: [
-      'Invoke data sources with RunDS("Category.DataSourceName", {values}); values bind by position in :PARAMETERS order, not by name. GetDSParameters returns the parameter names in that order.',
-      'Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.',
-      'Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.',
-      'Reference SQL data-source parameters in the SQL body as @name placeholders.',
-      'Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.',
-      'SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.',
-      'One file should represent either a class definition, a script, or a data source.',
-    ],
-    avoid: [
-      'Do not apply normal script :PARAMETERS/:DEFAULT layout to data-source files.',
-      'Do not pass {name, value} pairs to RunDS; each pair is bound whole to one parameter.',
-      'Do not write ?name? markers in a SQL data-source body; use @name.',
-      'Do not treat builder directives as reusable SSL keywords outside data-source contexts.',
-    ],
+    // must_follow / avoid come from rules/data-sources/ (rules/categories.yaml).
     related: ['database', 'sql', 'procedures'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.dataSources],
     allowMissingElements: ['DSN', 'TABLENAME', 'NULLASBLANK', 'INVARIANTDATECOLUMNS'],
@@ -621,21 +608,61 @@ function elementSummary(elements, name, category) {
   };
 }
 
-function categoryPack(category, elements) {
+// Categories marked lists_from_rules in rules/categories.yaml take their
+// must_follow / avoid lists from the rule records. For the others, any record
+// that names the category must appear word for word in the hard-coded list,
+// so the two copies cannot drift apart before that category is migrated.
+function ruleLists(category, rules) {
+  const owned = rules.categories.find((c) => c.id === category.id)?.owned ?? false;
+  if (owned) {
+    if (category.mustFollow || category.avoid) {
+      fail(`${category.id}: rule lists come from rules/; remove mustFollow/avoid from CATEGORY_DEFS`);
+    }
+    return packLists(rules.records, category.id);
+  }
+  for (const record of rules.records) {
+    if (!record.machine || !record.categories.includes(category.id)) continue;
+    const list = record.machine.list === 'avoid' ? category.avoid : category.mustFollow;
+    if (!list.includes(plainRule(record))) {
+      fail(
+        `${category.id}: rule ${record.id} (${record.file}) is not in CATEGORY_DEFS ` +
+          `${record.machine.list} word for word: ${JSON.stringify(plainRule(record))}`
+      );
+    }
+  }
+  return { must_follow: category.mustFollow, avoid: category.avoid };
+}
+
+function checkCategoryIds(rules) {
+  const defined = CATEGORY_DEFS.map((category) => category.id).join(', ');
+  const listed = rules.categories.map((category) => category.id).join(', ');
+  if (defined !== listed) {
+    fail(`CATEGORY_DEFS ids (${defined}) differ from rules/categories.yaml (${listed})`);
+  }
+}
+
+function categoryPack(category, elements, rules) {
+  const lists = ruleLists(category, rules);
   return {
     id: category.id,
     label: category.label,
     aliases: category.aliases,
     summary: category.summary,
-    must_follow: category.mustFollow,
-    avoid: category.avoid,
+    must_follow: lists.must_follow,
+    avoid: lists.avoid,
     elements: category.elements.map((name) => elementSummary(elements, name, category)),
     related_categories: category.related,
     source_paths: category.sourcePaths,
   };
 }
 
-function renderFoundation(schemaFacts) {
+function foundationBullets(rules, list) {
+  return foundationRecords(rules.records, list)
+    .map((record) => wrapBullet(record.rule, 74))
+    .join('\n');
+}
+
+function renderFoundation(schemaFacts, rules) {
   const prefixes = Object.entries(schemaFacts.prefixes)
     .map(([prefix, type]) => `- \`${prefix}\`: ${type}`)
     .join('\n');
@@ -676,8 +703,7 @@ detail.
 - Do not put \`:DEFAULT\` on a \`:DECLARE\` line.
 - In scripts and procedures, \`:PARAMETERS\` appears before any other statement
   and \`:DEFAULT\` immediately follows \`:PARAMETERS\`.
-- Data source files are different: \`:PARAMETERS\` uses inline \`:=\` defaults,
-  required on every parameter.
+${foundationBullets(rules, 'non_negotiable')}
 - SSL arrays are 1-based; collections on .NET objects reached via colon member
   access (for example \`dataSet:Tables[0]\`) are 0-based.
 - Use \`==\` for exact string equality; \`=\` is prefix-style for strings.
@@ -774,12 +800,14 @@ function stableJson(value) {
 function planOutputs() {
   const { elements } = loadReference();
   const schemaFacts = loadSchemaFacts();
-  const packs = CATEGORY_DEFS.map((category) => categoryPack(category, elements));
+  const rules = loadRules();
+  checkCategoryIds(rules);
+  const packs = CATEGORY_DEFS.map((category) => categoryPack(category, elements, rules));
   const outputs = [
     {
       label: 'agent-guides/machine/foundation.md',
       path: resolve(OUT_DIR, 'foundation.md'),
-      content: renderFoundation(schemaFacts),
+      content: renderFoundation(schemaFacts, rules),
     },
     {
       label: 'agent-guides/machine/category-index.json',

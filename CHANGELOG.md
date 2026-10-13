@@ -12,6 +12,14 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- Rules source pilot (#101): the data-source rules are now 17 records in
+  `rules/data-sources/`. `tools/generate-rules.mjs` generates the schema's
+  `module_structure.data_source_modules`, the rule lists in the
+  `ssl-new-datasource` skill and the agent guide's §4A, and `rules/INDEX.md`;
+  the data-sources pack lists and the foundation's data-source bullets come
+  from the same records. The parsed schema is unchanged.
+
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.
 - The `ssl-new-datasource` SQL template packs its column list, following the

@@ -1,0 +1,93 @@
+# Non-rule content of the generated regions of
+# ssl-style-guide/ssl-style-guide.schema.yaml.
+#
+# tools/generate-rules.mjs copies each subtree below into the schema, between
+# its "BEGIN GENERATED" and "END GENERATED" comments, after replacing every
+# `!rule <id>` node with that record's `schema` placement for the same path:
+# a value, or a {rule, severity, message} lint entry. Edit the rule text in
+# rules/<domain>/<id>.md; edit everything else here. Never edit the generated
+# region of the schema by hand.
+#
+# Pilot (#101): only module_structure.data_source_modules is generated. The
+# rest of the schema is still hand-maintained, and records' placements outside
+# this subtree are checked against it instead of written.
+module_structure:
+  data_source_modules:
+    level: authoritative
+    note: >
+      Data source files are preprocessed by server-side builders before SSL compilation.
+      They use different parameter syntax and may contain builder-specific directives
+      that are not part of the SSL grammar.
+    file_types:
+      ssl_data_source:
+        preprocessor: ssl_data_source_preprocessor
+        parameters:
+          syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+          inline_defaults: !rule no_default_statements_in_datasource
+          default_required: !rule datasource_default_required
+          empty_parameters_error: !rule datasource_empty_parameters
+          rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
+        comments:
+          syntax: !rule datasource_ssl_comment_syntax
+          note: >
+            The body is SSL, so SSL comment rules apply throughout, including
+            the optional header_comment. Parameters are referenced as ordinary
+            variables by bare name; @name placeholders are not part of this
+            file type.
+        structure:
+          - header_comment (optional)
+          - ":PARAMETERS with inline := defaults (omit the line when there are no parameters)"
+          - ssl_script_body
+      sql_data_source:
+        preprocessor: sql_data_source_preprocessor
+        parameters:
+          syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+          inline_defaults: !rule no_default_statements_in_datasource
+          default_required: !rule datasource_default_required
+          empty_parameters_error: !rule datasource_empty_parameters
+        directives:
+          - ":DSN := connectionName;  # database connection"
+          - ":TABLENAME := name;  # dataset table name"
+          - ":NULLASBLANK := true;  # null-to-blank conversion"
+          - ":INVARIANTDATECOLUMNS := col1, col2;  # invariant date columns"
+        comments:
+          syntax: !rule datasource_sql_comment_syntax
+          forms:
+            - "-- line comment"
+            - "/* block comment */"
+          note: >
+            SQL data sources use SQL comment syntax: '--' to end of line, and
+            '/* ... */' terminated by '*/'. Semicolons inside comments and
+            inside quoted SQL literals (e.g. 'all;msoffice->pdf') are content
+            with no syntactic significance. The SSL comment form (/* text;
+            with no */) is not part of this file type's grammar — an
+            unterminated /* comment reaches the database as malformed SQL and
+            fails there. Comments may appear anywhere, including before the
+            builder directives (the optional header_comment banner).
+            Optimizer-hint comments (/*+ ... */) are preserved verbatim, not
+            treated as removable comments.
+        body_parameters:
+          syntax: !rule datasource_sql_at_name_placeholders
+          note: >
+            The SQL body references :PARAMETERS values as @name placeholders;
+            names match the :PARAMETERS declarations. Write @name regardless
+            of database platform — the builder adapts placeholders to the
+            backend. Placeholders inside quoted SQL literals are not
+            substituted. A declared parameter never referenced in the body is
+            harmless; a @name with no matching declaration is not substituted
+            and fails when the query executes.
+        structure:
+          - header_comment (optional)
+          - builder_directives (optional)
+          - ":PARAMETERS with inline := defaults (optional — omit the line when there are no parameters)"
+          - sql_query
+        structure_note: >
+          The SQL body must follow the :PARAMETERS block when one is present;
+          SQL text placed before :PARAMETERS is discarded during
+          preprocessing. Builder directives and comments may precede it.
+        rewritten_to: "SSL script calling GetSSLDataset()"
+    lint_rules:
+      - !rule no_default_statements_in_datasource
+      - !rule datasource_default_required
+      - !rule no_flag_builder_directives
+      - !rule datasource_undeclared_placeholder

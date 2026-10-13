@@ -192,6 +192,22 @@ try {
   fail(`Agent adapters out of sync — run 'bun tools/generate-agents.mjs'.\n${detail}`);
 }
 
+// Rule-generated outputs (rules/INDEX.md, the schema's generated regions, and
+// the Markdown rule regions) must match the records in rules/
+// (see tools/generate-rules.mjs). Runs before the machine-docs check, which
+// reads the same records.
+try {
+  execFileSync('bun', [resolve(repoRoot, 'tools/generate-rules.mjs'), '--check'], {
+    stdio: 'pipe',
+  });
+} catch (error) {
+  const detail = [error.stdout, error.stderr]
+    .map((stream) => (stream ? stream.toString().trim() : ''))
+    .filter(Boolean)
+    .join('\n');
+  fail(`Rule outputs out of sync — run 'bun tools/generate-rules.mjs'.\n${detail}`);
+}
+
 try {
   execFileSync('bun', [resolve(repoRoot, 'tools/generate-machine-docs.mjs'), '--check'], {
     stdio: 'pipe',
