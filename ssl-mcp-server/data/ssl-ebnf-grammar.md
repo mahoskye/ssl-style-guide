@@ -113,12 +113,12 @@ This grammar uses Extended Backus-Naur Form (EBNF) with the following convention
 ```ebnf
 (*
     SSL (STARLIMS Scripting Language) Version 11 EBNF Grammar
-    Last updated: 2026-07-03
+    Last updated: 2026-10-13
     Documents the authoritative syntax of SSL v11.
 *)
 
 (* Top-level structure *)
-Program ::= ClassDefinition | {Statement} (* A script can be a class definition or a series of statements. :PARAMETERS must appear before any other statements. :DEFAULT must immediately follow :PARAMETERS. :INCLUDE is resolved as a textual paste before the rest of the file is read. :DECLARE and :PUBLIC can appear anywhere. Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE. *)
+Program ::= ClassDefinition | {Statement} [ErrorHandler] (* A script can be a class definition or a series of statements. A legacy :ERROR handler, when used, comes after the statements it protects (see ErrorHandler). :PARAMETERS must appear before any other statements. :DEFAULT must immediately follow :PARAMETERS. :INCLUDE is resolved as a textual paste before the rest of the file is read. :DECLARE and :PUBLIC can appear anywhere. Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE. *)
 
 (* Statement types *)
 (* CommentStatement includes its own terminating ";" as part of the comment syntax *)
@@ -135,7 +135,6 @@ BlockStatement ::=
     LoopStatement |
     SwitchStatement |
     ErrorHandlingStatement | (* :TRY/:CATCH blocks *)
-    ErrorBlockStanza |       (* :ERROR blocks *)
     RegionBlock |            (* :REGION/:ENDREGION keywords *)
     InlineCodeBlock          (* :BEGININLINECODE/:ENDINLINECODE keywords *)
 
@@ -148,7 +147,8 @@ MethodDeclaration ::= ProcedureStatement (* Methods are defined like procedures 
 ConstructorDeclaration ::= ProcedureStatement (* Must be named "Constructor" (case-insensitive); if omitted, an empty zero-argument constructor is auto-generated *)
 
 (* Procedure declarations *)
-ProcedureStatement ::= ProcedureStart [ParameterDeclaration] {DefaultParameterDeclaration} {Statement} ProcedureEnd
+ProcedureStatement ::= [AccessModifier] ProcedureStart [ParameterDeclaration] {DefaultParameterDeclaration} {Statement} [ErrorHandler] ProcedureEnd (* A legacy :ERROR handler, when present, is the last section of the procedure *)
+AccessModifier ::= "/*@private;" | "/*@protected;" (* Not a regular comment: SSL reads it as the visibility of the procedure that follows. Exact form only: no space after "/*" and a lowercase name. It must sit on the line immediately before ProcedureStart, with no blank line between. Any other spelling or placement is an ordinary comment and the procedure stays public. Has no effect on class methods. *)
 ProcedureStart ::= ":" "PROCEDURE" Identifier ";"
 ProcedureEnd ::= ":" "ENDPROC" ";"
 
@@ -180,7 +180,7 @@ LoopContinue ::= ":" "LOOP" ";" (* Represents a 'continue' for the current loop 
 (* Switch case statements *)
 SwitchStatement ::= BeginCaseStatement CaseBlock {CaseBlock} [OtherwiseBlock] EndCaseStatement (* At least one CASE is required *)
 BeginCaseStatement ::= ":" "BEGINCASE" ";"
-CaseBlock ::= CaseStatement {Statement} [ExitCaseStatement]
+CaseBlock ::= CaseStatement {Statement} [ExitCaseStatement] (* :EXITCASE, when present, is the last statement of the branch, directly in the branch body. A statement after it, or an :EXITCASE nested inside :IF or another block, is rejected. *)
 CaseStatement ::= ":" "CASE" Expression ";"
 OtherwiseBlock ::= OtherwiseStatement {Statement} [ExitCaseStatement]
 OtherwiseStatement ::= ":" "OTHERWISE" ";"
@@ -197,9 +197,10 @@ FinallyBlock ::= FinallyStatement Statement {Statement} (* FINALLY body requires
 FinallyStatement ::= ":" "FINALLY" ";"
 EndTryStatement ::= ":" "ENDTRY" ";"
 
-ErrorBlockStanza ::= ErrorMarker Statement {Statement} [ResumeStatement] (* For :ERROR structure — body requires >=1 statement; optional :RESUME switches to resume mode *)
+(* Legacy :ERROR handler — the last section of a procedure, running to :ENDPROC *)
+ErrorHandler ::= ErrorMarker Statement {Statement} [ResumeStatement] (* The statements BEFORE :ERROR are the protected region. The statements after it are the handler body, which runs only when a protected statement fails. The handler body requires >=1 statement. A handler placed first protects nothing: the code after it is handler code and never runs on the success path. *)
 ErrorMarker ::= ":" "ERROR" ";"
-ResumeStatement ::= ":" "RESUME" ";" (* Inside :ERROR handler — switches to resume mode, wrapping each subsequent statement in individual try/catch *)
+ResumeStatement ::= ":" "RESUME" ";" (* The last statement of the handler. With it, every failing protected statement runs the handler, and execution continues with the statement after the one that failed. Without it, the first failure runs the handler and the procedure ends. A procedure that uses :RESUME without an :ERROR handler does not compile. *)
 
 (* Declaration statements *)
 DeclarationStatement ::= (
@@ -218,9 +219,7 @@ IncludeTarget ::= Identifier | QualifiedIdentifier | StringLiteral (* quoted tar
 QualifiedIdentifier ::= Identifier {"." Identifier}
 
 (* Logic statements *)
-LogicStatement ::= Assignment | FunctionCall | Expression | ReturnStatement
-Assignment ::= (VariableAccess | PropertyAccess) AssignmentOperator Expression
-AssignmentOperator ::= ":=" | "+=" | "-=" | "*=" | "/=" | "^=" | "%="
+LogicStatement ::= Expression | ReturnStatement (* Assignments and function calls are expressions — see AssignmentExpression and FunctionCall *)
 ReturnStatement ::= ":" "RETURN" [Expression] (* Inside a Constructor, :RETURN cannot include an expression — bare :RETURN; only *)
 
 (* Function calls *)
@@ -230,7 +229,7 @@ IndirectFunctionCall ::= Identifier "(" StringLiteral ["," ArrayLiteral] ")" (* 
 ArgumentList ::= Expression {"," Expression}
 
 (* Comment statements *)
-CommentStatement ::= "/*" {Character} ";" (* All SSL comments use the same syntax: /* ... ; SSL does not distinguish single-line from multi-line — both forms are syntactically identical. Multi-line comments simply contain embedded newlines within the character sequence. *)
+CommentStatement ::= "/*" {Character} ";" (* A comment runs from "/*" to the first ";". Single-line and multi-line comments are the same syntax: a multi-line comment simply contains embedded newlines. Exception: the exact forms "/*@private;" and "/*@protected;" on the line immediately before :PROCEDURE are access modifiers, not regular comments — see AccessModifier. *)
 
 (* Special structures *)
 LabelStatement ::= ":" ("LABEL" Identifier {Identifier} | MashedLabelName) (* Accepted forms include :LABEL Name; and :LABELName; *)
@@ -259,8 +258,10 @@ MemberReceiver ::= Identifier | PropertyAccess | MethodCall | ArrayAccess | Func
 MethodCall ::= MemberReceiver ":" Identifier "(" [ArgumentList] ")" (* Object:Method() — distinguished from PropertyAccess by presence of parentheses; receiver can be any postfix expression, enabling chaining like obj:Method():Prop *)
 
 (* Expressions *)
-(* Note: The tree-sitter grammar extends Expression to include Assignment for editor chaining support. This EBNF keeps them separate to reflect the canonical grammar where assignment is a statement, not an expression. *)
-Expression ::= OrExpression
+Expression ::= AssignmentExpression | OrExpression (* Assignment has the lowest precedence *)
+AssignmentExpression ::= AssignmentTarget AssignmentOperator Expression (* Right-associative and value-producing: the expression evaluates to the stored value. sStatus := sDefault := "PENDING" assigns to sDefault, then to sStatus. (i += 1) <= nCount compares the updated value. *)
+AssignmentTarget ::= VariableAccess | PropertyAccess | ArrayAccess (* A literal, function result, or other non-storable left side is rejected *)
+AssignmentOperator ::= ":=" | "+=" | "-=" | "*=" | "/=" | "^=" | "%="
 OrExpression ::= AndExpression {".OR." AndExpression} (* .OR. — lowest logical precedence *)
 AndExpression ::= ComparisonExpression {".AND." ComparisonExpression} (* .AND. — binds tighter than .OR. *)
 ComparisonExpression ::= RelationalExpression {(EqualityOperator | ContainmentOperator) RelationalExpression}
@@ -360,6 +361,8 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
     - **Block comments**: Comments that span multiple lines (e.g., `/* This is a \n multi-line comment ;`)
     - **IDE folding comments**: Comments like `/* region` that provide editor folding hints (not language constructs)
 
+    **Access modifiers are not comments.** `/*@private;` and `/*@protected;` use comment syntax, but SSL reads them as the visibility of the procedure on the next line. They must be written exactly so: no space after `/*`, a lowercase name, and on the line immediately before `:PROCEDURE` with no blank line between. Any other spelling or placement is an ordinary comment, and the procedure stays public. They have no effect on class methods. See `AccessModifier` in the grammar.
+
 9. **Regions**: SSL supports functional regions for code templating:
     - **Functional regions**: `:REGION identifier; ... :ENDREGION;` - stored at runtime for dynamic code retrieval
     - **IDE folding regions**: `/* region description; ... /* endregion;` - editor folding markers, not language constructs. Closers are nameless (`/* endregion;`); nested regions pair last-opened-first-closed (LIFO), and any text after `endregion` is prose, never a name to match.
@@ -385,7 +388,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 18. **Object Creation**: Objects are created using constructor functions and properties are accessed using colon notation: `object:property`.
 
-19. **Error Handling**: SSL supports both traditional error handling with `:ERROR` and structured exception handling with `:TRY`/`:CATCH`/`:FINALLY`/`:ENDTRY`.
+19. **Error Handling**: SSL supports both legacy error handling with `:ERROR` and structured exception handling with `:TRY`/`:CATCH`/`:FINALLY`/`:ENDTRY`. `:ERROR` is the last section of a procedure: it protects the statements **before** it, and the statements after it, up to `:ENDPROC`, are the handler. A handler placed first protects nothing. `:RESUME`, when used, is the last statement of the handler.
 
 20. **Labels and Branching**: SSL supports legacy `:LABEL` and `Branch()` for label-based branching. The `StringLiteral` argument should typically be of the format `"LABEL actualLabelName"`. Structured control flow is generally preferred when it expresses the logic clearly.
 
@@ -397,7 +400,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 24. **String Operators**: `+` concatenates two strings. `-` trims trailing spaces from the left operand, then concatenates. `$` tests containment (`left $ right` returns `.T.` if left is found inside right). `=` is loose (prefix) equality and `==` is exact equality (see note 26).
 
-25. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`, `^=`).
+25. **Assignment Operators**: In addition to the standard assignment operator (`:=`), SSL supports compound assignment operators (`+=`, `-=`, `*=`, `/=`, `%=`, `^=`). Assignment is an expression with the lowest precedence. It is right-associative and evaluates to the stored value, so `sStatus := sDefault := "PENDING";` is valid. Targets are variables, properties (`oTask:Status`), and array elements (`aItems[1]`).
 
 26. **Object-Oriented Programming**: SSL supports class definitions with inheritance and methods using the `:CLASS`, `:INHERIT`, and `:PROCEDURE` keywords. A class definition encompasses the script in which it is declared, and there is no explicit `:ENDCLASS` keyword; the class structure ends with the file. One class per file (enforced by the language). A file is either a class OR a script, never both. Built-in classes use curly-brace instantiation (`Email{}`, `SSLDataset{}`); user-defined classes use `CreateUdObject("ClassName")`.
 
@@ -432,7 +435,9 @@ When implementing a formatter for SSL, consider the following specifics that may
 
 7. **Section Headers**: Consider preserving region markers and section headers as structural elements of the code.
 
-8. **Special Case Handling**: Take special care with:
+8. **Access Modifiers**: Treat `/*@private;` and `/*@protected;` as code, not as comments. Never add a space after `/*`, change the case of the name, reflow it, or insert a blank line between it and the `:PROCEDURE` line that follows. Any of these changes makes the procedure public.
+
+9. **Special Case Handling**: Take special care with:
     - String concatenation operators
     - Spacing around property access colons
     - Logical operators preceded by dots (`.AND.`, `.OR.`, `.T.`, `.F.`)
