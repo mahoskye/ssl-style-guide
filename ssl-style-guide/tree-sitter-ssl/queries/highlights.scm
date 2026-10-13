@@ -42,6 +42,10 @@
 
 ; Comments / strings / numbers
 (comment) @comment
+; Access modifiers use comment syntax, but SSL reads them as procedure
+; visibility, not as regular comments. The exact lowercase forms only.
+((comment) @attribute
+  (#match? @attribute "^/\\*@(private|protected);$"))
 (string) @string
 (quoted_identifier) @string.special
 (bracket_string) @string
@@ -125,3 +129,9 @@
 (procedure_declaration name: (identifier) @function)
 (class_method_declaration name: (non_constructor_identifier) @function.method)
 (class_constructor_declaration name: (constructor_name) @constructor)
+
+; Labels. The spaced form (:LABEL Name;) and the joined form (:LABELName;)
+; store different text, so they are different Branch() targets.
+(label_statement name: (identifier) @label)
+(label_statement name_extra: (identifier) @label)
+(label_statement joined_name: (label_suffix) @label)
