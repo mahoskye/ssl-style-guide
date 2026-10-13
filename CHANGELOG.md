@@ -12,7 +12,40 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- Task-brief and run-record interfaces (`agent-guides/agent-interfaces.md`),
+  wired into the planner, developer and reviewer. The README gains a *Role
+  and Interfaces* section, and a *Rule proposal* issue template is added.
+  `check-agent-contract.mjs` is renamed `check-agent-wiring.mjs` (#97).
+- `style-calibration/`: six purpose-built review tasks with specifications,
+  unapproved initial drafts and SSL tests, plus local revision and check
+  tools (#99).
+- A design proposal for a single rules source,
+  `docs/design/rules-source.md`. It is not adopted (#105).
+- This changelog, and `schema-v*` / `mcp-v*` release tags (#100).
+
 ### Changed
+- Element data is re-vendored from the published reference: 118 of 460
+  elements changed. The drift check now compares content, not only names
+  and totals, and reports drift as a warning (`--strict` makes it an
+  error) (#94).
+- Language corrections across the guides, schema, EBNF and skills. `:ERROR`
+  is a trailing handler that protects the statements before it. Class,
+  object, data-source, SQL-call, type, member, scope and naming claims are
+  corrected, along with assignment targets and access modifiers. Claims are
+  re-checked against the published reference (#96, #103, #104).
+- Agent tuning: a severity rubric in `ssl-review`, one fallback when the MCP
+  server is not attached, a cleanup worked example in the server-script
+  guide, and several guide contradictions resolved. Agent versions:
+  developer 23, reviewer 15, planner 12, handoff 8, docwriter 4 (#107).
+- Tree-sitter: comments parse (the comment token never matched before), the
+  joined label form `:LABELName;` gets its own field, and label names and
+  the `/*@private;` and `/*@protected;` forms are highlighted. The EBNF
+  models `:ERROR` as a trailing handler and assignment as an expression
+  (#102).
+- README, CONTRIBUTING and the agent, Tree-sitter and MCP READMEs describe
+  the repository after the drift audit: its role, the nine skills and six
+  agents, sibling checkouts, rule proposals and the full check list (#92).
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.
 - The `ssl-new-datasource` SQL template packs its column list, following the
   compact SQL rules that `ssl-format` applies to data-source bodies.
@@ -24,7 +57,6 @@ Entries before this file existed are reconstructed from the release commits.
 ### Removed
 - The `agent-quality-lab/` ignore entry. The lab now lives in its own
   private repository.
-
 ## MCP 1.14.0 — 2026-09-21
 - Agent roster rework. The MCP server's validation runs with strict
   diagnostics, which needs starlims-lsp v0.24.0 or later.

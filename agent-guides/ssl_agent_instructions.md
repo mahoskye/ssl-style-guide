@@ -44,7 +44,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Variable Declaration & Scope
 
-* **Declaration:** Variables must be declared before use using `:DECLARE`.
+* **Declaration:** Declare every variable with `:DECLARE` before use. This is a style rule, not a language rule: SSL does not enforce it (see §0, item 3).
     * Syntax: `:DECLARE varName1, varName2;`
     * **Default Value:** All declared variables start as empty string `""`.
     * **Dynamic Typing:** Variables are dynamically typed—their type changes when assigned a new value.

@@ -13,7 +13,9 @@ out the approximation explicitly.
 - SSL literals/constants such as `NIL`, `.T.`, and `.F.` are case-insensitive.
   `Me`, `Base`, and `Constructor` follow the same documented class-context
   rules as the canonical agent guide.
-- Comments begin with `/*` and terminate at the next semicolon `;`.
+- Comments begin with `/*` and end at the first semicolon `;`, and parse as
+  comments anywhere whitespace is allowed. The access-modifier comments
+  `/*@private;` and `/*@protected;` are highlighted as attributes.
 - Strings support `"double"`, `'single'`, and bracketed `[text]` literals.
 - Arrays use `{...}` and indexers use 1-based SSL indexing forms.
 - Built-in classes instantiate with curly braces, for example `Email{}`.
@@ -21,14 +23,23 @@ out the approximation explicitly.
   `obj : prop`, though the preferred style is the no-space form.
 - Control structures include `:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, and
   legacy constructs such as `:REGION` and `:BEGININLINECODE`.
+- Assignment (`:=`, `+=` and the other compound forms) is an expression with
+  the lowest precedence. It is right-associative and evaluates to the stored
+  value, so `a := b := 1` and `(i += 1) <= n` parse. Targets are variables,
+  properties and indexed elements.
+- Legacy labels come in two forms that are different branch targets. The
+  spaced form `:LABEL Name;` stores its name in the `name` field, and the
+  joined form `:LABELName;` stores it in `joined_name` (a `label_suffix`
+  node). Extra words after either form are in `name_extra`. Label names are
+  highlighted as labels.
 - Top-level parsing distinguishes scripts from class definitions so queries can
   treat them differently.
 - **Data source files are not covered by this grammar.** SSL and SQL data source
-  files are preprocessed by server-side builders before compilation. Their
+  files are preprocessed by server-side builders before they run. Their
   parameter syntax (`:PARAMETERS p1 := val;` with inline defaults) and builder
   directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`)
-  exist only in the preprocessing layer. This grammar targets the runtime SSL
-  language as seen by the compiler.
+  exist only in the preprocessing layer. This grammar targets the SSL language
+  itself.
 
 ## Known Approximations
 
@@ -43,6 +54,11 @@ out the approximation explicitly.
   `Constructor`.
 - `:INCLUDE` is modeled as a syntactic construct for tooling and accepts bare
   include names.
+- `:ERROR` is the last section of a procedure: the statements before it are
+  protected, and the statements after it (at least one) are the handler. For
+  editor tolerance the grammar accepts `:ERROR` in any statement position, but
+  its body always takes the statements that follow it. `:RESUME` is the last
+  statement of a handler.
 
 ## Structure
 
@@ -98,5 +114,5 @@ Practical notes:
   `Email{}` rather than treating every matching identifier as a constructor use.
 - `_AND`, `_OR`, `_XOR`, and `_NOT` are highlighted as built-in function calls,
   not as infix operators.
-- Because comments terminate at `;`, a semicolon inside comment text ends the
-  comment.
+- Because comments end at the first `;`, a semicolon inside comment text ends
+  the comment, and the rest of the line parses as code.
