@@ -381,11 +381,8 @@ Predefined globals are not part of the language. They are `:PUBLIC` variables th
 /* Log with current user;
 UsrMes("Action performed by: " + MYUSERNAME);
 
-/* Log a message with structured detail payload;
-UsrMes("This is the user message.", {{1, 2, 3}, "Treeflower", 245});
-/* Produces text similar to:
-/* This is the user message.
-/* {{1,2,3},Treeflower,245};
+/* Log a caption and a message built from the values you want recorded;
+UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows for " + sSiteCode);
 ```
 
 ---

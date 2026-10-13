@@ -1021,13 +1021,13 @@ ssl_style_guide:
       level: authoritative
       note: "GetLastSSLError() returns an SSLError object with these members:"
       members:
-        - ":Message        # short error message"
-        - ":Description    # detailed description"
+        - ":Message        # alias of :Description"
+        - ":Description    # primary error message text"
         - ":Operation      # operation that caused the error"
-        - ":Code           # numeric error code"
-        - ":GenCode        # general/category error code"
-        - ":FullDescription      # combined message + description"
-        - ":FullDescriptionEx    # extended full description with inner exceptions"
+        - ":Code           # numeric error code (the code passed to RaiseError)"
+        - ":GenCode        # numeric error code"
+        - ":FullDescription      # multi-line diagnostic text with abbreviated stack details and nested causes"
+        - ":FullDescriptionEx    # multi-line diagnostic text with full stack details and nested causes"
         - ":InnerException       # nested SSLError from a chained exception"
         - ":NETException         # underlying .NET exception object (if available)"
     guidance:
@@ -1096,11 +1096,11 @@ ssl_style_guide:
       - DoProc("ProcedureName", {params})
       - ExecFunction("Category.Script", {params})
       - ExecFunction("Category.Script.Proc", {params})
-      - ExecUdf("UdfName", {params})
-      - Eval(vCode[, vArg1[, vArg2 ...]])
+      - ExecUdf(sCode, [aArgs], [bCacheCode])   # sCode is SSL source text, not a name
+      - Eval(fnCode, [vArg1], [vArg2], ...)    # fnCode is a code block; Eval does not compile source text
       - Branch(vTarget)
-    dynamic_procedures: GetRegion(sValue, vSrc, vDst)
-    inline_code: GetInlineCode(sValue, aVariables)
+    dynamic_procedures: GetRegion(sRegionName, [aSourceValues], [aDestinationValues])
+    inline_code: GetInlineCode(sValue, [aVariables])
     code_blocks: "{|params| expression}"
   special_literals:
     level: authoritative
