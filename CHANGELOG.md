@@ -12,6 +12,13 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## MCP 1.15.1 — 2026-10-13
+
+### Fixed
+- MCP: templated resources (`ssl://elements/{name}`, `ssl://classes/{name}/members`, `ssl://categories/{name}`, `ssl://machine/categories/{category}`, `ssl://style-guide/{section}`) are registered as resource templates, so reading a concrete URI such as `ssl://machine/categories/loops` works. They were registered as fixed URIs with literal braces.
+
+## Schema 1.8.0, MCP 1.15.0 — 2026-10-13
+
 ### Added
 - Task-brief and run-record interfaces (`agent-guides/agent-interfaces.md`),
   wired into the planner, developer and reviewer. The README gains a *Role
@@ -21,7 +28,7 @@ Entries before this file existed are reconstructed from the release commits.
   unapproved initial drafts and SSL tests, plus local revision and check
   tools (#99).
 - A design proposal for a single rules source,
-  `docs/design/rules-source.md`. It is not adopted (#105).
+  `docs/design/rules-source.md`, adopted and implemented in #111–#117 (#105).
 - This changelog, and `schema-v*` / `mcp-v*` release tags (#100).
 - Rules source pilot (#101): the data-source rules are now 17 records in
   `rules/data-sources/`. `tools/generate-rules.mjs` generates the schema's
