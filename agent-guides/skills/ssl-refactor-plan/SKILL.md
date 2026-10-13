@@ -23,11 +23,17 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
      packs lack detail.
 
 3. **Identify the file type** before proposing changes. If the file is a data
-   source (SSL or SQL), it uses different parameter syntax and structure:
-   - Data sources use `:PARAMETERS p1 := val;`, not separate `:DEFAULT`
-   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`,
-     `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`)
-   - Do not apply the standard script layout to data source files
+   source (SSL or SQL), it uses different parameter syntax and structure. For
+   data sources:
+   <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_not_script_layout wrap=80 -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of
+     separate `:DEFAULT` statements.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`,
+     `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not
+     normal SSL keywords; do not flag them as unknown keywords.
+   - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source
+     files.
+   <!-- /rules -->
 
 4. **Study the code before writing the spec:**
    - Read the entire target file

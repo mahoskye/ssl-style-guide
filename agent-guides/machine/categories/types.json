@@ -8,15 +8,13 @@
   ],
   "summary": "SSL primitive/runtime types, literals, and type-sensitive comparisons.",
   "must_follow": [
-    "Use NIL for the nil literal and .T./.F. for booleans.",
+    "NULL: the absent-value literal is NIL (and the boolean literals are .T. and .F.).",
     "Look up function parameter types before relying on coercion.",
     "Strings, numbers, booleans, dates and arrays have no SSL-defined members; a : call reaches a case-sensitive native .NET member or raises (arrays have :Length, not :Count).",
-    "Convert types explicitly with Val() and LimsString(); only date ± number and date - date coerce."
+    "Convert types explicitly with Val() and LimsString(); only date ± number and date - date coerce.",
+    "SSL arrays are 1-based; loop over arrays from 1 through ALen(aArray)."
   ],
-  "avoid": [
-    "Do not assume every built-in coerces strings, numbers, dates, and NIL interchangeably.",
-    "Do not confuse SSL arrays with .NET zero-based collections."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "array",

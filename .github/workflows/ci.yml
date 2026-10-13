@@ -22,6 +22,13 @@ jobs:
       - name: Check out starlims-ssl-reference as sibling
         run: git clone --depth 1 https://github.com/mahoskye/starlims-ssl-reference.git ../ssl-docs
 
+      # The rules check resolves each record's enforced_by against the
+      # starlims-lsp behavior catalog at the LSP version this repo pins.
+      - name: Check out starlims-lsp catalog at the pinned version
+        run: |
+          tag=$(jq -r .version ssl-mcp-server/lsp-version.json)
+          git clone --depth 1 --branch "$tag" https://github.com/mahoskye/starlims-lsp.git ../starlims-lsp
+
       - name: Install tool dependencies
         working-directory: tools
         run: bun install --frozen-lockfile
@@ -38,6 +45,13 @@ jobs:
         working-directory: ssl-mcp-server
         run: bun run check:consistency
 
+      - name: Rules check (records, generated outputs, enforced_by vs LSP catalog)
+        run: bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog
+        # Severity disagreements with the LSP catalog are warnings for now (D11).
+        # Add --strict-severity here once the open mismatches are resolved
+        # (see rules/README.md, "Severity agreement with the LSP"):
+        # run: bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
+
       - name: Reference drift check
         run: bun tools/check-reference-drift.mjs
 
@@ -50,5 +64,5 @@ jobs:
           bun run fetch-lsp
           ./bin/lsp/starlims-lsp-linux-amd64 --version
 
-      - name: Skill example check (formatted + validates clean)
+      - name: Skill and rule example check (formatted, validates, diagnostics as stated)
         run: bun tools/check-skill-examples.mjs

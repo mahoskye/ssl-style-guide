@@ -11,14 +11,12 @@
   "must_follow": [
     "Use one statement per line.",
     "Almost every SSL statement, including comments, must end with a semicolon.",
-    "Never include a semicolon inside comment text.",
+    "Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.",
     "Use spaces around assignment, arithmetic, comparison, and logical operators.",
-    "Prefer /* region ...; and /* endregion; comments for editor grouping."
+    "Use /* region / /* endregion comments for editor grouping instead of :REGION / :ENDREGION.",
+    "Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation."
   ],
-  "avoid": [
-    "Do not use :REGION/:ENDREGION for code organization.",
-    "Do not normalize indentation globally; preserve 4-space files and prefer tabs otherwise."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "DECLARE",

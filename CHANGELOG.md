@@ -12,7 +12,121 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- Task-brief and run-record interfaces (`agent-guides/agent-interfaces.md`),
+  wired into the planner, developer and reviewer. The README gains a *Role
+  and Interfaces* section, and a *Rule proposal* issue template is added.
+  `check-agent-contract.mjs` is renamed `check-agent-wiring.mjs` (#97).
+- `style-calibration/`: six purpose-built review tasks with specifications,
+  unapproved initial drafts and SSL tests, plus local revision and check
+  tools (#99).
+- A design proposal for a single rules source,
+  `docs/design/rules-source.md`. It is not adopted (#105).
+- This changelog, and `schema-v*` / `mcp-v*` release tags (#100).
+- Rules source pilot (#101): the data-source rules are now 17 records in
+  `rules/data-sources/`. `tools/generate-rules.mjs` generates the schema's
+  `module_structure.data_source_modules`, the rule lists in the
+  `ssl-new-datasource` skill and the agent guide's §4A, and `rules/INDEX.md`;
+  the data-sources pack lists and the foundation's data-source bullets come
+  from the same records. The parsed schema is unchanged.
+- Rules source, SQL domain (#101): 33 records in `rules/sql/` generate the
+  schema's `sql.formatting` and `sql.parameters`, the `ssl-format` skill's SQL
+  rule lists, the agent guide's SQL quick-reference rules, the `database` and
+  `sql` pack lists, and the foundation's SQL bullets. The parsed schema is
+  unchanged.
+- Rules source, server scripts (#101): 66 records in `rules/server-scripts/`
+  cover file shape, banners and doc blocks, `:PARAMETERS`/`:DEFAULT` order,
+  calling convention, error handling, boundary contracts, transactions,
+  logging and access modifiers. They generate the schema's
+  `procedures.visibility_annotations`, `error_handling.guidance` and
+  `documentation.file_banner`, the transactions, procedures, error-handling,
+  logging and module-structure pack lists, the foundation's server-script
+  bullets, and rule regions in the `ssl-new-procedure` skill and the
+  server-script baseline. The parsed schema is unchanged.
+- Rules source, language (#101): 62 records in `rules/language/` cover
+  keywords, semicolons and comments, statement structure, operators and
+  equality, types and `NIL`, arrays, formatting and variable behavior, plus
+  `sqlexecute_no_values_array` in `rules/sql/`. They generate the schema's
+  `comments.rules` and most `lints` subtrees, the control-flow, loops,
+  strings, arrays, dates, formatting, types and operators pack lists, the
+  foundation's language bullets and its whole "SSL Does Not Have" list, and
+  rule regions in the review, refactor and new-procedure skills and the
+  agent guide's style quick start. The parsed schema is unchanged.
+- Rules source, classes (#101): 19 records in `rules/classes/` cover member
+  order, `Me:`/`Base:` access, instantiation, `:INHERIT`, constructors and
+  class-file shape. They generate the classes and objects pack lists, the
+  foundation's class bullets, the class entries of `lints.class_rules`,
+  `lints.compile_errors` and `lints.coding_standards`, and the
+  `ssl-new-class` rule lists.
+- Rules source, naming (#101): 12 records in `rules/naming/` cover Hungarian
+  prefixes, length limits, casing and loop counters. They generate the
+  schema's `lints.hungarian_notation` (and so the foundation's prefix table),
+  the naming pack lists and the review skill's naming checks. Every foundation
+  rule bullet is now generated; the `files`, `email` and `security` packs are
+  the only hand-written pack lists left.
+- Rules bundle (#101): `tools/generate-rules.mjs` also writes
+  `rules/rules.json`, every rule record as data (id, level, severity,
+  applies_to, rule text, rationale, exceptions, examples, enforcement,
+  categories, related elements, schema paths). `--check` covers it, and
+  `bundle-data` copies it to `ssl-mcp-server/data/rules.json`.
+- MCP: `ssl_style_rule` takes an `id` and returns the full rule record. It
+  also resolves a schema lint slug or path (`loop_in_finally`,
+  `lints.compile_errors.rules.loop_in_finally.message`) and a starlims-lsp
+  code (`lsp:diag.nested_iif`), and reports how it matched. The `topic` form
+  is unchanged.
+- MCP: new `ssl_rules` tool searches and lists rules by domain, category,
+  applies_to, level, severity, enforcement or text, and new resources
+  `ssl://rules` and `ssl://rules/{id}` serve the rule index and single
+  records.
+- `generate-rules.mjs --strict-severity` fails when a record's severity
+  differs from the default severity of the LSP diagnostic that enforces it
+  (D11). It is off by default, and CI does not pass it yet.
+- Rules source, skills (#101 phase 3): the rule statements in every skill
+  are now generated regions: the `ssl-review` check lists and additional
+  checks, the `ssl-refactor` workflow steps, `ssl-new-procedure` step 6, the
+  `ssl-format` SSL scope, the data-source notes of the review, refactor,
+  refactor-plan and format skills, and the `ssl-unit-test` rule items.
+  21 new records hold the statements that had none, among them the SSL
+  indentation, spacing, line-length and blank-line rules, parameter defaults
+  by type, `udobject_array_in_clause`, `no_hardcoded_credentials` and
+  `validate_dynamic_call_targets`. No pack list changes.
+- Rules source, guides (#101 phase 4): the rule lists, checklists and
+  rule-like gotchas of the agent guide (quick start, §2, SQL guidance, §5,
+  §7, §8), the refactoring guide (layout and data-source rules, Part 3
+  formatting, Part 4 naming, Part 7 notes, the Part 8 checklists, the
+  quick-reference class rules), the server-script baseline (every rule list)
+  and the `_shared` quality bar are generated from records. Mixed items keep
+  their facts hand-written beside inline rules. 45 new records, among them
+  `bare_logical_operator`, `dot_property_access`, `global_assignment`,
+  `exitcase_after_return`, `format_arg_not_array`, `runsql_non_dml`,
+  `unicode_literal_prefix` and `unjustified_collate` (all starlims-lsp
+  slugs), and the server-script baseline's banner, declaration-group,
+  control-flow, SQL and transaction rules. `no_flag_builder_directives` now
+  names the directives and says not to flag them. Region `format=checklist`
+  is new. `ssl-developer` is v24 (quality bar).
+
 ### Changed
+- Element data is re-vendored from the published reference: 118 of 460
+  elements changed. The drift check now compares content, not only names
+  and totals, and reports drift as a warning (`--strict` makes it an
+  error) (#94).
+- Language corrections across the guides, schema, EBNF and skills. `:ERROR`
+  is a trailing handler that protects the statements before it. Class,
+  object, data-source, SQL-call, type, member, scope and naming claims are
+  corrected, along with assignment targets and access modifiers. Claims are
+  re-checked against the published reference (#96, #103, #104).
+- Agent tuning: a severity rubric in `ssl-review`, one fallback when the MCP
+  server is not attached, a cleanup worked example in the server-script
+  guide, and several guide contradictions resolved. Agent versions:
+  developer 23, reviewer 15, planner 12, handoff 8, docwriter 4 (#107).
+- Tree-sitter: comments parse (the comment token never matched before), the
+  joined label form `:LABELName;` gets its own field, and label names and
+  the `/*@private;` and `/*@protected;` forms are highlighted. The EBNF
+  models `:ERROR` as a trailing handler and assignment as an expression
+  (#102).
+- README, CONTRIBUTING and the agent, Tree-sitter and MCP READMEs describe
+  the repository after the drift audit: its role, the nine skills and six
+  agents, sibling checkouts, rule proposals and the full check list (#92).
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.
 - The `ssl-new-datasource` SQL template packs its column list, following the
   compact SQL rules that `ssl-format` applies to data-source bodies.
@@ -20,11 +134,13 @@ Entries before this file existed are reconstructed from the release commits.
   Agents do not write `MERGE`.
 - The README no longer hard-codes the schema version.
 - The schema's `last_updated` now matches the 1.7.2 release date.
+- SQL `CASE` layout follows the formatter: `WHEN`/`ELSE` 4 spaces under
+  `CASE`, `END` aligned with `CASE`. The schema, the agent guide and
+  `ssl-format` said 2 (#106).
 
 ### Removed
 - The `agent-quality-lab/` ignore entry. The lab now lives in its own
   private repository.
-
 ## MCP 1.14.0 — 2026-09-21
 - Agent roster rework. The MCP server's validation runs with strict
   diagnostics, which needs starlims-lsp v0.24.0 or later.

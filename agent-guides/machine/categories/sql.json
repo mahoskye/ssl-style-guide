@@ -10,12 +10,13 @@
   "must_follow": [
     "Use multiline SQL strings for non-trivial queries and put major clauses on separate lines.",
     "Pre-compute complex values before interpolating them into SQLExecute placeholders.",
-    "Use PrepareArrayForIn or SQLExecute array expansion for dynamic IN clauses when appropriate.",
-    "Keep SQL keyword casing distinct from SSL identifier casing."
+    "Use PrepareArrayForIn or SQLExecute array expansion for dynamic IN clauses when appropriate; do not build an IN clause by hand when a safer array helper or parameter array is available.",
+    "Inside SQL strings, write SQL keywords and built-in functions in uppercase.",
+    "Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code."
   ],
   "avoid": [
-    "Do not build an IN clause by hand when a safer array helper or parameter array is available.",
-    "Do not mix named and positional placeholder mental models in the same call."
+    "Do not mix named and positional placeholder mental models in the same call.",
+    "Do not put a trailing semicolon inside an embedded SQL string — \"SELECT ... ;\" is not the convention; end the SSL statement, not the SQL text."
   ],
   "elements": [
     {

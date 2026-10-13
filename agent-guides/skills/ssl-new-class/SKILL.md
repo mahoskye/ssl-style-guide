@@ -30,22 +30,32 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    should resolve in the user's project.
 
 4. **Use these core SSL rules in the scaffold:**
-   - Colon-prefixed keywords must be UPPERCASE
-   - Almost every statement, including comments, must end with `;`
-   - Never place `;` inside comment body text
-   - `:DECLARE` class fields must appear before methods
-   - `:CLASS` continues to end of file; there is no `:ENDCLASS`
-   - Constructor must be the last procedure in the class
-   - Prefer tabs for indentation; if adapting to an existing space-indented file,
-     preserve 4-space indentation (the templates below display spaces for
-     readability — emit tabs in the generated file)
-   - Use one statement per line
-   - `DoProc` is invalid inside class methods (all forms, not just same-class); use `Me:` / `Base:`
-   - Built-in classes use `{}`; user-defined classes instantiate with
-     `CreateUdObject("Category.ClassName")`
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
-   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,class_member_order,class_ends_at_eof,indent_tabs_preferred,one_statement_per_line,doproc_in_class,builtin_classes_curly_braces,createudobject_category_qualified,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally wrap=80 -->
+   - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example
+     `:IF` and `:BEGINCASE`.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Never include a semicolon inside comment text; the first semicolon ends the
+     comment and the remaining text becomes executable code.
+   - Keep class member order as `:INHERIT`, `:DECLARE`, regular methods, then
+     `Constructor`.
+   - `:CLASS` continues to end of file; there is no `:ENDCLASS`.
+   - Prefer tabs for indentation; if the file already uses spaces, preserve
+     4-space indentation.
+   - Use one statement per line.
+   - Do not call `DoProc` with a bare procedure name inside class methods; it is
+     a compile-time error. Use `Me:Method()` or `Base:Method()`.
+   - Instantiate directly creatable built-in classes with curly braces, for
+     example `Email{}`.
+   - Use `CreateUdObject("Category.ClassName")` for user-defined classes; a bare
+     class name is looked up only among the default categories.
+   - `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare
+     `:TRY ... :ENDTRY` is invalid.
+   - Only one `:CATCH` block is allowed per `:TRY`; there is no multi-catch.
+   - The `:TRY` body requires at least one statement, and so does a `:FINALLY`
+     body; a `:CATCH` body may be empty.
+   - Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
+     `:FINALLY`.
+   <!-- /rules -->
 
 5. **Apply enforced member ordering** (required by the language):
    ```
@@ -156,26 +166,34 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
 ---
 
 7. **Apply these rules:**
-   - Class name: PascalCase
-   - Fields declared with `:DECLARE` at class level (not inside methods)
-   - Underscore-prefixed fields (`_sField`) are private by convention — excluded from reflection
-   - `/*@private;` and `/*@protected;` annotations have NO effect on class methods (class methods are always Public|Virtual) — do not use them
-   - `DoProc` cannot be used inside class methods — use `Me:Method()` for same-class calls, `Base:Method()` for inherited
-   - `:CLASS` continues to end of file; do not add `:ENDCLASS`
-   - Constructor must be the **last** procedure in the class
-   - With `:INHERIT`, the parent's parameterless `Constructor` runs automatically
-     first; a parent `Constructor` that takes parameters runs only if the derived
-     `Constructor` calls `Base:Constructor(args)`
-   - Class files have no script entry point — to instantiate: `CreateUdObject("Category.ClassName")`
-   - One class per file (enforced by the language)
-   - All statements end with `;`
-   - If a method has no parameters, omit `:PARAMETERS`
-   - Inside `:CATCH`, use `GetLastSSLError()` if you need error details, and call
-     `ClearLastSSLError()` once the error is handled
-   - If a method raises, call `RaiseError` directly inside the `:TRY` block whose
-     `:CATCH` handles it — never inside `:CATCH`, and never where nothing catches
-     it (an uncaught error surfaces to the end user as a server error)
-   - Indentation: use tabs by default
+   <!-- rules: id=class_fields_declared_at_class_level,omit_parameters_when_none,procedure_class_pascal_case,me_base_for_method_calls,underscore_private_convention,visibility_annotations_script_only,base_constructor_with_parameters,execfunction_not_class_file,one_class_per_file,get_last_ssl_error_in_catch,clear_last_ssl_error_after_handling,raise_error_inside_handling_try,no_raise_error_in_catch,every_raise_has_handler_boundary wrap=80 -->
+   - Declare class fields with `:DECLARE` at class level, not inside methods.
+   - Leave out `:PARAMETERS` and `:DEFAULT` when a procedure or method takes no
+     parameters.
+   - Procedures and classes use PascalCase.
+   - Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
+   - Underscore-prefixed members (`_name`) are excluded from reflection — this
+     is the SSL private convention.
+   - Do not put `/*@private;` or `/*@protected;` on class methods; they affect
+     script procedures only, and class methods are always public.
+   - With `:INHERIT`, the parent's parameterless `Constructor` runs
+     automatically first; a parent `Constructor` that takes parameters runs only
+     if the derived `Constructor` calls `Base:Constructor(args)`.
+   - Point `ExecFunction` at a script entry point or script procedure, never at
+     a class file; create class instances with `CreateUdObject` and call their
+     methods.
+   - Define only one `:CLASS` per file.
+   - Use `GetLastSSLError()` inside `:CATCH` to retrieve error details.
+   - Call `ClearLastSSLError()` after handling an error in `:CATCH`, so stale
+     error state does not leak into later handling.
+   - Place `RaiseError` directly inside the `:TRY` block whose `:CATCH` handles
+     it, so the raise can never escape.
+   - Never call `RaiseError` inside `:CATCH` — the error handler must not become
+     the thing that crashes.
+   - Every raise needs a `:TRY`/`:CATCH` (or legacy `:ERROR`/`:RESUME`) boundary
+     somewhere up the call stack; an uncaught error fails the invocation and
+     surfaces to the end user as a server error.
+   <!-- /rules -->
 
 8. **Output:** Present the generated class as an SSL code block. Include:
    - The class file should be named after the class in the appropriate SSL category

@@ -43,16 +43,22 @@ formatter's substantive changes, or `ssl_format → no changes`, or that
 you deliberately did not reformat an existing file. "Formatted the file"
 with nothing behind it does not satisfy this condition.
 
-**2. Documented.** Every file carries a banner; every procedure carries
-a doc block stating purpose, parameters, and what the caller receives on
-success, on failure, and on the empty case. Inside the body, comment the
-*why* wherever the logic is non-obvious — especially at SSL traps a
-reader will misread (`=` versus `==` string semantics, `:BEGINCASE`
-fallthrough, `Me:` field qualification, transaction ownership). Write
-the comments a careful developer leaves behind, not a restatement of the
-line below. Every comment ends with `;` alone — `*/` closes nothing, and
-a semicolon inside comment text ends the comment early and turns the
-rest into code.
+**2. Documented.** <!-- rule: file_banner_required -->Open every server script and class file with the standard file banner, using the dot-leader fields `Description`, `Parameters`, `Returns`, `Author` and `Date`.<!-- /rule -->
+Every procedure carries a doc block stating purpose, parameters, and
+what the caller receives on success, on failure, and on the empty case.
+Inside the body, comment the *why* wherever the logic is non-obvious —
+especially at SSL traps a reader will misread (`=` versus `==` string
+semantics, `:BEGINCASE` fallthrough, `Me:` field qualification,
+transaction ownership). Write the comments a careful developer leaves
+behind, not a restatement of the line below. Comment syntax:
+
+<!-- rules: id=no_c_style_comment_closer,no_semicolon_in_comment_text wrap=72 -->
+- `*/` comment closers: an SSL comment opens with `/*` and ends at the
+  first `;`. End every comment with `;` alone — the form `; */` leaves
+  an inert `*/` outside the comment and draws a diagnostic.
+- Never include a semicolon inside comment text; the first semicolon
+  ends the comment and the remaining text becomes executable code.
+<!-- /rules -->
 
 **3. Diagnostically clean — against a baseline.**
 
@@ -105,14 +111,30 @@ still hands back nothing.
 
 **4. Resolved.** Every call target exists. A `DoProc("Name", {...})`
 target resolves to a `:PROCEDURE` in the same file or a verified
-three-segment path; an `ExecFunction` root is a verified script entry
-point, never a class file. Before wrapping an unresolved name in
+three-segment path, and an `ExecFunction` root is a verified script entry
+point. <!-- rule: execfunction_not_class_file -->Point `ExecFunction` at a script entry point or script procedure, never at a class file; create class instances with `CreateUdObject` and call their methods.<!-- /rule --> Before wrapping an unresolved name in
 `DoProc`, check `ssl_lookup` — it may be a built-in you call directly.
 Every database call matches the shape `ssl_signature` returned: the
-marker style (`?name?` for `SQLExecute`, positional `?` for the LSelect
-family and the other database functions, `@name` for `GetSSLDataset`) and
-the slot the values occupy are copied from the signature, not assumed
-from another language's conventions.
+marker style and the slot the values occupy are copied from the
+signature, not assumed from another language's conventions. The marker
+rules:
+
+<!-- rules: id=named_sql_param_unsupported,sql_positional_placeholders,getssldataset_at_name_markers wrap=72 -->
+- `SQLExecute` is the only database API that supports named `?param?`
+  substitution; do not use `?param?` markers with other database
+  functions. Its markers reference in-scope SSL variables by name.
+  Canonical shape:
+  `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
+- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and
+  `GetDataSet` use positional `?` markers with a value array in a later
+  argument slot: fourth for `LSearch`, `LSelect` and `LSelectC`, second
+  for `GetDataSet`, and third for `RunSQL` and `LSelect1`. Check
+  `ssl_signature` for the slot and skip unused optionals with adjacent
+  commas. Canonical shape:
+  `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`
+- `GetSSLDataset` uses `@name` markers with parallel name and value
+  arrays.
+<!-- /rules -->
 
 **`ssl_diagnose` does not check built-in argument types.** It will
 accept `Str(sSomeString)` even though `Str` takes a number. A clean
