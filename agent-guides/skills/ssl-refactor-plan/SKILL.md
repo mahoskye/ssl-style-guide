@@ -23,11 +23,17 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
      packs lack detail.
 
 3. **Identify the file type** before proposing changes. If the file is a data
-   source (SSL or SQL), it uses different parameter syntax and structure:
-   - Data sources use `:PARAMETERS p1 := val;`, not separate `:DEFAULT`
-   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`,
-     `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`)
-   - Do not apply the standard script layout to data source files
+   source (SSL or SQL), it uses different parameter syntax and structure. For
+   data sources:
+   <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_not_script_layout wrap=80 -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of
+     separate `:DEFAULT` statements.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`,
+     `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not
+     normal SSL keywords; do not flag them as unknown keywords.
+   - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source
+     files.
+   <!-- /rules -->
 
 4. **Study the code before writing the spec:**
    - Read the entire target file
@@ -36,7 +42,8 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
    - Note internal calls (`DoProc`, `Me:`, `Base:`) and external calls
      (`ExecFunction`, database APIs)
    - Note `:INCLUDE` targets and `:PUBLIC` declarations — included scripts are
-     spliced in full and `:PUBLIC` variables are call-stack scoped, so the
+     spliced in full and `:PUBLIC` variables are shared across the running
+     program (any procedure can read or update them), so the
      file's real symbol surface may extend beyond its own text; record these in
      the spec's Current behavior section
    - Confirm built-in functions, classes, keywords, and operators with the
@@ -51,7 +58,7 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
    - Do not approve behavior-sensitive cleanup silently; put it in the spec
      with verification notes and open questions
 
-6. **Write the spec** to `specs/refactor-<kebab-file-or-goal>.md` by default
+6. **Write the spec** to `docs/specs/refactor-<kebab-file-or-goal>.md` by default
    unless the user provided a target path.
 
 ## Spec Format

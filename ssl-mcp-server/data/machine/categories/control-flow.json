@@ -9,15 +9,14 @@
   ],
   "summary": "Branching and early-return constructs for SSL scripts and procedures.",
   "must_follow": [
-    "Use uppercase colon-prefixed keywords in SSL code, for example :IF and :BEGINCASE.",
+    "Colon-prefixed SSL keywords are uppercase and case-sensitive, for example :IF and :BEGINCASE.",
     ":BEGINCASE requires at least one :CASE block.",
-    "Terminate each :CASE and :OTHERWISE block with :EXITCASE unless deliberate fallthrough is required.",
-    "Keep one statement per line and terminate every statement with a semicolon."
+    "End each :CASE / :OTHERWISE block with :EXITCASE; unless multi-match behavior is intentional.",
+    "Use one statement per line.",
+    "Almost every SSL statement, including comments, must end with a semicolon.",
+    "Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code."
   ],
-  "avoid": [
-    "Do not rely on BEGINCASE fallthrough accidentally.",
-    "Do not put semicolons inside comment text; the first semicolon ends the comment."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "IF",

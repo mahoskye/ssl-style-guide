@@ -4,7 +4,7 @@ description: >-
   Writes and changes STARLIMS SSL (v11) code, and writes SSL unit tests for
   it. Works from a spec when one exists. Delivers formatted, documented code
   that passes strict diagnostics clean. Use for any SSL implementation work.
-version: 21
+version: 24
 mode: all
 argument-hint: "<spec path or task description> [file-path]"
 model: inherit
@@ -64,7 +64,7 @@ follow it:
 | Task | Skill |
 | --- | --- |
 | Look up an element | `ssl-lookup` |
-| Format code, and all embedded SQL | `ssl_format` MCP tool, then `ssl-format` for the SQL |
+| Format code, and all embedded SQL | `ssl_format` MCP tool, then check its SQL against `ssl-format` |
 | Write unit tests | `ssl-unit-test` |
 | Scaffold a procedure / class / data source | `ssl-new-procedure` / `ssl-new-class` / `ssl-new-datasource` |
 | Restructure existing code | `ssl-refactor` |
@@ -73,6 +73,8 @@ In Claude Code and opencode these are registered skills you can invoke
 directly. In other tools, read the `SKILL.md` and follow its steps.
 
 {{shared:reuse-first}}
+
+{{shared:task-brief}}
 
 ## Design before syntax
 
@@ -155,20 +157,26 @@ Your final message is invalid without this, in this order:
    `ssl_diagnose` output and the final one, both pasted exactly as the
    tool returned them, plus one line naming which findings are new since
    the baseline. Paraphrased or remembered diagnostics are invalid.
-   `NOT RUN` is valid only when the MCP server itself was unavailable;
-   paste the error. The final output must be from after your last edit.
+   `NOT RUN` is valid only when neither the MCP server nor the
+   command-line fallback in Sources of truth could run; paste the
+   error. The final output must be from after your last edit.
    Any file left at NOT RUN or BLOCKED must also appear in Flags;
    `Flags: none` next to a NOT RUN diagnostic is an invalid report.
 4. **Formatting** — for each file, what `ssl_format` returned: its
    substantive changes, `ssl_format → no changes`, or
    `not reformatted — pre-existing file, change kept surgical`. Plus
-   confirmation that embedded SQL was formatted by hand, any formatter
+   confirmation that every embedded SQL string was checked against
+   canonical-compact style and finished by hand where needed, any formatter
    decision you overrode, and any file the tool reported as unstable.
    An assertion with no tool output behind it does not satisfy this.
 5. **Tests** — which procedures are covered, the test file path, and
    that they are unexecuted.
-6. **Flags** — everything unresolved, uncertain, or out of scope. When
+6. **Flags** — everything unresolved, uncertain, or out of scope,
+   including each `brief-required: <rule> — <brief section>` conflict. When
    empty, write `Flags: none` explicitly.
+7. **Run record** — the block below, last.
+
+{{shared:run-record}}
 
 ## Stop conditions
 
@@ -197,7 +205,14 @@ Stop and report rather than guessing when:
   actually produced on every path — trace it; `:CATCH` blocks follow
   read-before-clear and never clear an error they did not read;
   transaction finalization follows the ownership pattern with `bCommit`
-  set only after verified success.
+  starting `.F.` and set `.T.` only after verified success — never a
+  success flag that starts `.T.` (see the worked example "Error
+  Propagation Still Runs Cleanup" in `ssl_server_script_style.md`).
+- Declarations are ordered: locals sit in purpose-based `:DECLARE`
+  groups, and within each group variables are ordered by prefix, then
+  name (`ssl_server_script_style.md`, Naming And Formatting).
+- Predefined globals are read by name, never declared; each
+  `undeclared_variable` warning they cause is listed in the report.
 - File-type rules respected — no data source reformatted as a script.
 - SSL unit tests written for new or changed behavior, and marked
   unexecuted.

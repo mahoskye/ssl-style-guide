@@ -5,6 +5,7 @@ import { registerSearch } from "./tools/search.js";
 import { registerSignature } from "./tools/signature.js";
 import { registerValidateNaming } from "./tools/validate-naming.js";
 import { registerStyleRule } from "./tools/style-rule.js";
+import { registerRules } from "./tools/rules.js";
 import { registerCategory } from "./tools/category.js";
 import { registerContextPack } from "./tools/context-pack.js";
 import { registerDiagnose } from "./tools/diagnose.js";
@@ -15,6 +16,7 @@ import { registerCategoryResources } from "./resources/categories.js";
 import { registerStyleGuideResources } from "./resources/style-guide.js";
 import { registerReferenceResources } from "./resources/reference.js";
 import { registerMachineResources } from "./resources/machine.js";
+import { registerRuleResources } from "./resources/rules.js";
 import { registerCodeReviewPrompt } from "./prompts/code-review.js";
 import { registerRefactoringPrompt } from "./prompts/refactoring.js";
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from "./constants.js";
@@ -31,6 +33,7 @@ export function createServer(indices: Indices): McpServer {
   registerSignature(server, indices);
   registerValidateNaming(server, indices);
   registerStyleRule(server, indices);
+  registerRules(server, indices);
   registerCategory(server, indices);
   registerContextPack(server, indices);
   registerDiagnose(server);
@@ -43,6 +46,7 @@ export function createServer(indices: Indices): McpServer {
   registerStyleGuideResources(server, indices);
   registerReferenceResources(server, indices);
   registerMachineResources(server, indices);
+  registerRuleResources(server, indices);
 
   // Prompts
   registerCodeReviewPrompt(server, indices);

@@ -1,0 +1,381 @@
+# Machine-pack categories, in pack order.
+#
+# Every rule record's `categories` must name ids from this list, and
+# tools/generate-machine-docs.mjs fails if its CATEGORY_DEFS ids drift from it.
+#
+# A category with `lists_from_rules: true` takes its must_follow / avoid lists
+# from the rule records (by `machine.list`) instead of hard-coded strings.
+# `order` lists every record in the category, in the order packs, regions and
+# rules/INDEX.md show them.
+#
+# Generated (#101): every category except files, email and security, whose
+# lists are API and security guidance that no domain record states yet; they
+# stay hand-written in CATEGORY_DEFS. Labels, aliases, summaries and element
+# lists still live in CATEGORY_DEFS.
+categories:
+  - id: control-flow
+    lists_from_rules: true
+    order:
+      - keyword_uppercase
+      - keywords_colon_prefixed
+      - condition_keyword_semicolon
+      - begincase_requires_case
+      - prefer_exitcase
+      - exitcase_last_in_branch
+      - otherwise_for_default_handling
+      - one_statement_per_line
+      - statement_semicolon
+      - no_semicolon_in_comment_text
+      - no_truthy_falsy_coercion
+      - label_is_legacy
+      - branch_target_label
+      - prefer_positive_logic
+      - no_nested_iif
+      - limit_block_depth
+      - return_early_on_invalid
+      - begincase_for_multiway_choice
+      - exitcase_after_return
+      - no_duplicate_case_branches
+      - prefer_linear_success_path
+  - id: loops
+    lists_from_rules: true
+    order:
+      - arrays_one_based
+      - endfor_invalid
+      - step_spacing
+      - no_control_exit_in_finally
+      - loop_control_inside_loop
+      - for_numeric_values
+  - id: database
+    lists_from_rules: true
+    order:
+      - prevent_sql_injection
+      - named_sql_param_unsupported
+      - sql_positional_placeholders
+      - getssldataset_at_name_markers
+      - empty_optional_param_array
+      - sqlexecute_no_values_array
+      - udobject_array_in_clause
+      - runsql_non_dml
+      - lsearch_for_single_values
+      - sql_properties_to_typed_locals
+      - empty_in_array_fallback
+      - omit_default_connection_argument
+      - guarded_write_verification
+  - id: sql
+    lists_from_rules: true
+    order:
+      - sql_multiline_strings
+      - sql_ssl_embedding_indent
+      - sql_major_clause_column
+      - sql_max_line_length
+      - sql_trailing_commas
+      - complex_sql_placeholder
+      - sql_in_clause_array_expansion
+      - sql_keyword_case
+      - sql_identifier_case
+      - sql_preserve_external_casing
+      - sql_and_or_indent
+      - sql_on_indent
+      - sql_having_indent
+      - sql_between_and_align
+      - sql_case_when_else_indent
+      - sql_case_end_align
+      - sql_case_branch_consistency
+      - sql_case_then_break
+      - sql_select_packing
+      - sql_select_continuation
+      - sql_insert_layout
+      - sql_update_layout
+      - sql_merge_layout
+      - sql_set_operation_spacing
+      - sql_optimizer_hints
+      - sql_no_mixed_placeholder_styles
+      - sql_no_trailing_semicolon
+      - sql_basic_sql_only
+      - unicode_literal_prefix
+      - unjustified_collate
+      - sql_structure_exposes_guards
+      - sql_lock_hints_deliberate
+  - id: transactions
+    lists_from_rules: true
+    order:
+      - try_around_transactional_work
+      - get_last_ssl_error_in_catch
+      - explicit_rollback_for_partial_writes
+      - no_control_exit_in_finally
+      - explicit_transaction_boundaries
+      - transaction_owned_by_write_service
+      - atomic_writes_one_transaction
+      - match_begin_with_end_transaction
+      - commit_flag_starts_false
+      - end_transaction_in_finally_when_started
+      - guard_transaction_finalization
+      - isintransaction_for_ownership
+      - replay_aware_mutations
+  - id: strings
+    lists_from_rules: true
+    order:
+      - equals_vs_strict_equals
+      - dollar_for_containment
+      - bracket_strings_for_quotes
+      - dollar_string_only
+      - prevent_sql_injection
+      - parse_delimited_input_locally
+      - alltrim_for_input_normalization
+      - format_for_composed_text
+      - format_arg_not_array
+      - ascanexact_for_fixed_sets
+  - id: arrays
+    lists_from_rules: true
+    order:
+      - arrays_one_based
+      - net_collections_zero_based
+      - declare_arrays_before_use
+      - skip_commas_adjacent
+      - check_alen_before_index
+      - no_nil_target_array
+      - array_literal_braces
+      - ascanexact_for_fixed_sets
+  - id: dates
+    lists_from_rules: true
+    order:
+      - explicit_type_conversion
+      - builtin_function_canonical_casing
+      - invariant_date_handling
+      - check_builtin_parameter_types
+  - id: classes
+    lists_from_rules: true
+    order:
+      - class_member_order
+      - field_access_via_me
+      - me_base_for_method_calls
+      - createudobject_category_qualified
+      - inherit_qualified_name
+      - doproc_in_class
+      - no_createudobject_for_builtins
+      - execfunction_not_class_file
+      - visibility_annotations_script_only
+      - one_class_per_file
+      - class_ends_at_eof
+      - explicit_class_name
+      - class_members_top_level
+      - constructor_return_value
+      - constructor_outside_class
+      - base_constructor_with_parameters
+      - me_inside_class_only
+      - base_member_access
+      - underscore_private_convention
+      - class_name_not_builtin
+      - class_fields_declared_at_class_level
+  - id: objects
+    lists_from_rules: true
+    order:
+      - field_vs_property_terminology
+      - builtin_classes_curly_braces
+      - member_access_no_spaces
+      - no_createudobject_for_builtins
+      - dot_property_access
+      - state_object_for_multistep
+  - id: procedures
+    lists_from_rules: true
+    order:
+      - parameters_first
+      - default_after_parameters
+      - doproc_for_same_file_procedures
+      - execfunction_for_external_scripts
+      - no_direct_procedure_calls
+      - no_default_on_declare_line
+      - doproc_in_class
+      - declare_locals_at_start
+      - procedure_doc_block_required
+      - returns_entry_one_line
+      - execfunction_not_class_file
+      - prefer_unannotated_procedures
+      - private_raise_only_helpers
+      - visibility_annotation_form
+      - visibility_annotation_exact_form
+      - visibility_annotations_script_only
+      - declare_before_use
+      - declare_initializer
+      - redeclare_is_noop
+      - variable_lookup_order
+      - limit_public_vars
+      - no_positional_parameter_access
+      - bare_calls_are_builtins
+      - max_params_warning
+      - omit_parameters_when_none
+      - default_value_by_type
+      - doc_block_parameter_alignment
+      - declare_groups_by_purpose
+      - preserve_declaration_groups
+      - declare_group_order
+      - read_globals_undeclared
+      - global_assignment
+      - guard_optional_globals
+  - id: data-sources
+    lists_from_rules: true
+    order:
+      - runds_binds_by_position
+      - no_default_statements_in_datasource
+      - datasource_default_required
+      - datasource_empty_parameters
+      - datasource_not_script_layout
+      - datasource_sql_at_name_placeholders
+      - datasource_undeclared_placeholder
+      - datasource_sql_comment_syntax
+      - datasource_sql_semicolon
+      - datasource_sql_body_after_parameters
+      - datasource_sql_body_compact_layout
+      - no_flag_builder_directives
+      - builder_directives_datasource_only
+      - datasource_ssl_comment_syntax
+      - datasource_ssl_parameters_as_variables
+      - runds_return_type_needs_ssldataset
+      - one_class_or_script_per_file
+  - id: error-handling
+    lists_from_rules: true
+    order:
+      - prefer_try_over_error_resume
+      - try_requires_handler
+      - get_last_ssl_error_in_catch
+      - no_control_exit_in_finally
+      - message_functions_write_server_log
+      - single_catch_per_try
+      - catch_before_finally
+      - try_and_finally_bodies_not_empty
+      - no_mixed_error_handling_families
+      - error_handler_last_section
+      - raise_error_inside_handling_try
+      - no_raise_error_in_catch
+      - every_raise_has_handler_boundary
+      - private_raise_only_helpers
+      - clear_last_ssl_error_after_handling
+      - read_last_ssl_error_first
+      - bound_retained_diagnostics
+      - log_at_owning_boundary
+      - no_silent_error_swallowing
+      - wrap_execfunction_for_envelope
+      - validate_results_before_access
+      - propagate_or_replace_downstream_failure
+      - no_raw_diagnostics_in_caller_failures
+      - success_envelope_without_data
+      - one_boundary_per_invariant
+      - pipeline_failure_capture
+  - id: files
+  - id: email
+  - id: security
+  - id: formatting
+    lists_from_rules: true
+    order:
+      - one_statement_per_line
+      - statement_semicolon
+      - no_semicolon_in_comment_text
+      - no_c_style_comment_closer
+      - operator_spacing
+      - comment_regions_for_grouping
+      - indent_tabs_preferred
+      - comment_section_summaries
+      - comment_sentence_case
+      - comments_explain_why
+      - single_line_comment_form
+      - multi_line_comment_layout
+      - indent_block_bodies
+      - dedent_closing_keywords
+      - same_level_block_keywords
+      - exitcase_statement_level
+      - consistent_indentation
+      - comma_spacing
+      - no_space_inside_parens
+      - no_space_before_call_paren
+      - ssl_max_line_length
+      - continuation_line_breaks
+      - no_semicolon_on_continuation_lines
+      - blank_line_between_procedures
+      - blank_line_between_sections
+      - no_excess_blank_lines
+      - endregion_takes_no_name
+      - align_related_elements
+      - expressions_on_one_line
+      - wrapped_list_alignment
+      - continuation_indent_shows_structure
+      - envelope_one_line
+  - id: naming
+    lists_from_rules: true
+    order:
+      - procedure_class_pascal_case
+      - hungarian_variable_names
+      - constants_upper_snake_case
+      - documented_hungarian_prefixes
+      - builtin_function_canonical_casing
+      - no_rename_in_behavior_preserving_refactor
+      - prefix_matches_type
+      - identifier_length_limits
+      - loop_counter_names
+      - preserve_acronym_casing
+      - udo_property_lower_camel_case
+      - underscores_discouraged
+      - procedure_verb_noun_names
+  - id: types
+    lists_from_rules: true
+    order:
+      - null_literal_is_nil
+      - check_builtin_parameter_types
+      - dotnet_member_passthrough
+      - explicit_type_conversion
+      - arrays_one_based
+      - for_numeric_values
+      - no_truthy_falsy_coercion
+      - code_block_comparison
+      - code_block_structure
+      - nil_in_operations
+      - nil_not_empty_string
+      - numeric_type
+      - limstypeex_numeric_not_number
+      - type_check_before_value_check
+  - id: operators
+    lists_from_rules: true
+    order:
+      - assignment_operator
+      - equals_vs_strict_equals
+      - operator_spacing
+      - member_access_no_spaces
+      - dollar_string_only
+      - not_preferred_operator
+      - one_assignment_per_statement
+      - no_ternary_operator
+      - code_block_comparison
+      - bare_logical_operator
+      - dot_property_access
+  - id: logging
+    lists_from_rules: true
+    order:
+      - errormes_for_always_logged_messages
+      - no_secrets_in_logs
+      - message_functions_write_server_log
+      - logging_is_not_error_handling
+      - log_caption_tags
+      - no_error_logs_for_expected_rejections
+      - log_at_owning_boundary
+      - bound_retained_diagnostics
+      - no_silent_error_swallowing
+  - id: module-structure
+    lists_from_rules: true
+    order:
+      - one_class_or_script_per_file
+      - include_early
+      - script_declaration_order
+      - parameters_first
+      - server_script_file_shape
+      - regions_group_related_procedures
+      - file_banner_required
+      - banner_returns_exact_shape
+      - file_banner_continuation_alignment
+      - file_banner_modified_entries
+      - generated_banner_omits_author
+      - banner_has_no_semicolon
+      - banner_description_one_sentence
+      - banner_parameters_business_meaning
+      - banner_success_failure_labels
+      - banner_special_result_first
+      - banner_descriptions_operational

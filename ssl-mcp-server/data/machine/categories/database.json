@@ -9,14 +9,12 @@
   ],
   "summary": "SSL database APIs, query return shapes, and parameterization rules.",
   "must_follow": [
-    "Prefer parameterized database calls.",
-    "SQLExecute is the only database API that supports named ?param? substitution.",
-    "RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays.",
-    "Inside SQL strings, use uppercase SQL keywords and functions; preserve the author's casing for other SQL identifiers (force-folding is dialect-conditional and breaks case-sensitive SQL Server collations)."
+    "Prefer parameterized database calls; do not concatenate user or runtime values into SQL when placeholders can bind them.",
+    "SQLExecute is the only database API that supports named ?param? substitution; do not use ?param? markers with other database functions. Its markers reference in-scope SSL variables by name. Canonical shape: SQLExecute(\"UPDATE T SET COL = ?sValue? WHERE ID = ?nId?\");",
+    "RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? markers with a value array in a later argument slot: fourth for LSearch, LSelect and LSelectC, second for GetDataSet, and third for RunSQL and LSelect1. Check ssl_signature for the slot and skip unused optionals with adjacent commas. Canonical shape: aRows := LSelect(\"SELECT ID FROM T WHERE STATUS = ?\",,, {sStatus});",
+    "GetSSLDataset uses @name markers with parallel name and value arrays."
   ],
   "avoid": [
-    "Do not use ?param? named substitution with non-SQLExecute database functions.",
-    "Do not concatenate user or runtime values into SQL when placeholders can bind them.",
     "Do not pass empty trailing optional parameters when they can be omitted."
   ],
   "elements": [
@@ -30,12 +28,12 @@
       "name": "RunSQL",
       "type": "function",
       "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
-      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+      "summary": "Executes a non-query SQL statement and returns .T. on success. Under default settings, a failed statement raises an error."
     },
     {
       "name": "LSearch",
       "type": "function",
-      "syntax": "LSearch(sCommandString, vDefaultValue, [sConnectionName], [aArrayOfValues])",
+      "syntax": "LSearch(sCommandString, [vDefaultValue], [sConnectionName], [aArrayOfValues])",
       "summary": "Returns a single value from a SQL query, or a caller-supplied fallback when the query produces no scalar result."
     },
     {

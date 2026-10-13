@@ -1,0 +1,398 @@
+# Non-rule content of the generated regions of
+# ssl-style-guide/ssl-style-guide.schema.yaml.
+#
+# tools/generate-rules.mjs copies each subtree below into the schema, between
+# its "BEGIN GENERATED" and "END GENERATED" comments, after replacing every
+# `!rule <id>` node with that record's `schema` placement for the same path:
+# a value, a string, or a {rule, severity, message} lint entry. Edit the rule
+# text in rules/<domain>/<id>.md; edit everything else here. Never edit the
+# generated region of the schema by hand.
+#
+# A slot inside a list entry is addressed through the entry's `rule`,
+# `keyword` or `operator` value: the `message` slot of the compile_errors
+# entry whose rule is one_class_per_file is the placement path
+# lints.compile_errors.rules.one_class_per_file.message.
+#
+# Only the subtrees below are generated (#101: data sources, SQL, server
+# scripts, language, classes and naming). The rest of the schema is still
+# hand-maintained, and records' placements outside these subtrees are checked
+# against it instead of written.
+comments:
+  rules:
+    - !rule comment_section_summaries
+    - !rule comment_sentence_case
+    - !rule comments_explain_why
+    - !rule statement_semicolon
+    - !rule no_semicolon_in_comment_text
+    - !rule single_line_comment_form
+    - !rule multi_line_comment_layout
+lints:
+  style_rules:
+    disallow_globals: !rule limit_public_vars
+    prefer_positive_logic: !rule prefer_positive_logic
+    no_nested_ternaries: !rule no_nested_iif
+    limit_block_depth: !rule limit_block_depth
+    max_params_per_procedure: !rule max_params_warning
+    require_else_for_if: false
+  hungarian_notation:
+    enabled: true
+    strict_mode: true
+    prefixes: !rule documented_hungarian_prefixes
+    exceptions:
+      loop_counters: !rule loop_counter_names
+      ssl_constants: [NIL, .T., .F.]
+      preserve_existing_acronym_casing: !rule preserve_acronym_casing
+  not_preferred_operators:
+    - operator: "#"
+      severity: info
+      message: !rule not_preferred_operator
+      replacement: "!="
+    - operator: "<>"
+      severity: info
+      message: !rule not_preferred_operator
+      replacement: "!="
+  compile_errors:
+    level: authoritative
+    rules:
+      # These mirror current SSL validation rules — catch them early with clear messages
+      - rule: exitfor_in_finally
+        message: !rule no_control_exit_in_finally
+      - rule: exitwhile_in_finally
+        message: !rule no_control_exit_in_finally
+      - rule: loop_in_finally
+        message: !rule no_control_exit_in_finally
+      - rule: return_in_finally
+        message: !rule no_control_exit_in_finally
+      - rule: exitfor_outside_loop
+        message: !rule loop_control_inside_loop
+      - rule: exitwhile_outside_loop
+        message: !rule loop_control_inside_loop
+      - rule: loop_outside_loop
+        message: !rule loop_control_inside_loop
+      - rule: one_class_per_file
+        message: !rule one_class_per_file
+      - rule: class_or_script
+        message: !rule one_class_or_script_per_file
+      - rule: doproc_in_class
+        severity: error
+        message: !rule doproc_in_class
+        scope: >
+          The error fires only when the DoProc target is a string literal with
+          a bare (single-segment) procedure name. Fully qualified three-segment
+          'Category.Script.Procedure' literals are valid inside class methods.
+          Two-segment 'Category.Script' targets are not a class-specific issue —
+          they are rejected at runtime everywhere ("Invalid procedure name").
+          A target supplied as a variable or expression is not checked at
+          compile time, so tooling may warn on such calls in class methods
+          but should not report the compile error. ExecFunction has no
+          class-method restriction in any form.
+      - rule: constructor_return_value
+        message: !rule constructor_return_value
+  type_safety:
+    - !rule for_numeric_values
+    - !rule dollar_string_only
+    - !rule nil_in_operations
+    - !rule code_block_comparison
+    - !rule nil_not_empty_string
+    - !rule equals_vs_strict_equals
+  variable_behavior:
+    level: authoritative
+    rules:
+      - rule: redeclare_is_noop
+        message: !rule redeclare_is_noop
+      - rule: variable_lookup_order
+        message: !rule variable_lookup_order
+      - rule: numeric_type
+        message: !rule numeric_type
+  label_behavior:
+    level: authoritative
+    token_text: !rule branch_target_label
+    scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
+  parameter_skipping_style:
+    level: style_only
+    rule: !rule skip_commas_adjacent
+    trailing_params: !rule empty_optional_param_array
+  class_rules:
+    - !rule class_member_order
+    - !rule underscore_private_convention
+    - !rule inherit_qualified_name
+    - rule: max_params_warning
+      threshold: 20
+      severity: warning
+      message: !rule max_params_warning
+  coding_standards:
+    - !rule limit_public_vars
+    - !rule prefer_exitcase
+    - !rule parameters_first
+    - !rule default_after_parameters
+    - !rule include_early
+    - !rule constructor_outside_class
+  deprecated_keywords:
+    - keyword: :ERROR
+      severity: warning
+      message: !rule prefer_try_over_error_resume
+      replacement: :TRY
+      autofix: false
+    - keyword: :RESUME
+      severity: warning
+      message: !rule prefer_try_over_error_resume
+      replacement: :TRY
+      autofix: false
+    - keyword: :LABEL
+      severity: warning
+      message: !rule label_is_legacy
+      autofix: false
+procedures:
+  visibility_annotations:
+    level: authoritative
+    syntax:
+      - "/*@private;"
+      - "/*@protected;"
+    placement: !rule visibility_annotation_form
+    exact_form: !rule visibility_annotation_exact_form
+    not_a_comment: "Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments; formatters must not respace, recase or separate them from :PROCEDURE"
+    effect: "Both block calls from other scripts; procedures in the same script can still call the procedure"
+    class_restriction: !rule visibility_annotations_script_only
+error_handling:
+  guidance:
+    level: advisory
+    logging_guidance: !rule no_silent_error_swallowing
+    prefer_structured: !rule prefer_try_over_error_resume
+    traditional_error_blocks: supported  # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
+    raise_error_doctrine:
+      - !rule raise_error_inside_handling_try
+      - !rule no_raise_error_in_catch
+      - !rule every_raise_has_handler_boundary
+      - !rule private_raise_only_helpers
+      - !rule clear_last_ssl_error_after_handling
+documentation:
+  file_banner:
+    required: !rule file_banner_required
+    template: |  # same dot-leader fields as procedure_headers, describing the whole script
+      /* ********************************************************************************
+      Description.. : [The script's single responsibility, one sentence]
+      Parameters... : [Each top-level parameter and its business meaning]
+      Returns...... : [Exact result shape - success and failure on separate lines]
+      Author....... : [Author initials]
+      Date......... : YYYY-MM-DD
+      ********************************************************************************;
+    rules:
+      - !rule file_banner_continuation_alignment
+      - !rule file_banner_modified_entries
+      - !rule generated_banner_omits_author
+      - !rule banner_has_no_semicolon
+module_structure:
+  data_source_modules:
+    level: authoritative
+    note: >
+      Data source files are preprocessed by server-side builders before SSL compilation.
+      They use different parameter syntax and may contain builder-specific directives
+      that are not part of the SSL grammar.
+    file_types:
+      ssl_data_source:
+        preprocessor: ssl_data_source_preprocessor
+        parameters:
+          syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+          inline_defaults: !rule no_default_statements_in_datasource
+          default_required: !rule datasource_default_required
+          empty_parameters_error: !rule datasource_empty_parameters
+          rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
+        comments:
+          syntax: !rule datasource_ssl_comment_syntax
+          note: >
+            The body is SSL, so SSL comment rules apply throughout, including
+            the optional header_comment. Parameters are referenced as ordinary
+            variables by bare name; @name placeholders are not part of this
+            file type.
+        structure:
+          - header_comment (optional)
+          - ":PARAMETERS with inline := defaults (omit the line when there are no parameters)"
+          - ssl_script_body
+      sql_data_source:
+        preprocessor: sql_data_source_preprocessor
+        parameters:
+          syntax: ":PARAMETERS p1 := val1, p2 := val2;"
+          inline_defaults: !rule no_default_statements_in_datasource
+          default_required: !rule datasource_default_required
+          empty_parameters_error: !rule datasource_empty_parameters
+        directives:
+          - ":DSN := connectionName;  # database connection"
+          - ":TABLENAME := name;  # dataset table name"
+          - ":NULLASBLANK := true;  # null-to-blank conversion"
+          - ":INVARIANTDATECOLUMNS := col1, col2;  # invariant date columns"
+        comments:
+          syntax: !rule datasource_sql_comment_syntax
+          forms:
+            - "-- line comment"
+            - "/* block comment */"
+          note: >
+            SQL data sources use SQL comment syntax: '--' to end of line, and
+            '/* ... */' terminated by '*/'. Semicolons inside comments and
+            inside quoted SQL literals (e.g. 'all;msoffice->pdf') are content
+            with no syntactic significance. The SSL comment form (/* text;
+            with no */) is not part of this file type's grammar — an
+            unterminated /* comment reaches the database as malformed SQL and
+            fails there. Comments may appear anywhere, including before the
+            builder directives (the optional header_comment banner).
+            Optimizer-hint comments (/*+ ... */) are preserved verbatim, not
+            treated as removable comments.
+        body_parameters:
+          syntax: !rule datasource_sql_at_name_placeholders
+          note: >
+            The SQL body references :PARAMETERS values as @name placeholders;
+            names match the :PARAMETERS declarations. Write @name regardless
+            of database platform — the builder adapts placeholders to the
+            backend. Placeholders inside quoted SQL literals are not
+            substituted. A declared parameter never referenced in the body is
+            harmless; a @name with no matching declaration is not substituted
+            and fails when the query executes.
+        structure:
+          - header_comment (optional)
+          - builder_directives (optional)
+          - ":PARAMETERS with inline := defaults (optional — omit the line when there are no parameters)"
+          - sql_query
+        structure_note: >
+          The SQL body must follow the :PARAMETERS block when one is present;
+          SQL text placed before :PARAMETERS is discarded during
+          preprocessing. Builder directives and comments may precede it.
+        rewritten_to: "SSL script calling GetSSLDataset()"
+    lint_rules:
+      - !rule no_default_statements_in_datasource
+      - !rule datasource_default_required
+      - !rule no_flag_builder_directives
+      - !rule datasource_undeclared_placeholder
+sql:
+  formatting:
+    level: style_only
+    style: canonicalCompact
+    reference: ssl-style-guide/sql-canonical-compact-reference.md
+    keyword_case: !rule sql_keyword_case
+    function_case: !rule sql_keyword_case
+    identifier_case: !rule sql_identifier_case
+    identifier_case_options:
+      - preserve
+      - lower
+      - upper
+    preserve_external_casing: !rule sql_preserve_external_casing
+    align_clauses: false
+    comma_style: !rule sql_trailing_commas
+    max_line_length: !rule sql_max_line_length
+    ssl_embedding:
+      indent: !rule sql_ssl_embedding_indent
+      note: entire SQL block indented 4 spaces inside the SSL string literal
+    indentation:
+      major_clauses: !rule sql_major_clause_column
+      major_clause_list:
+        - SELECT
+        - FROM
+        - WHERE
+        - INNER JOIN
+        - LEFT OUTER JOIN
+        - RIGHT OUTER JOIN
+        - FULL OUTER JOIN
+        - CROSS JOIN
+        - GROUP BY
+        - ORDER BY
+        - ORDER SIBLINGS BY
+        - UNION
+        - UNION ALL
+        - INTERSECT
+        - MINUS
+        - INSERT INTO
+        - VALUES
+        - DELETE FROM
+        - MERGE INTO
+        - USING
+        - WHEN MATCHED THEN
+        - WHEN NOT MATCHED THEN
+        - START WITH
+        - CONNECT BY
+        - PIVOT
+        - UNPIVOT
+        - FOR UPDATE
+        - RETURNING
+      sub_clause_indent: 2
+      sub_clauses:
+        on: !rule sql_on_indent
+        and_or: !rule sql_and_or_indent
+        having: !rule sql_having_indent
+        case_when_else: !rule sql_case_when_else_indent
+      select_continuation_align: !rule sql_select_continuation
+      select_continuation_column: !rule sql_select_continuation
+    statement_patterns:
+      select:
+        columns: !rule sql_select_packing
+        continuation: !rule sql_select_continuation
+      join:
+        on: !rule sql_on_indent
+        on_and: !rule sql_and_or_indent
+      where:
+        and_or: !rule sql_and_or_indent
+        between_and: !rule sql_between_and_align
+      group_by:
+        having: !rule sql_having_indent
+      case:
+        when_else: !rule sql_case_when_else_indent
+        end: !rule sql_case_end_align
+        then_value: !rule sql_case_then_break
+        consistency: !rule sql_case_branch_consistency
+        else_exception: !rule sql_case_branch_consistency
+      insert:
+        parens: !rule sql_insert_layout
+        columns: !rule sql_insert_layout
+        values: !rule sql_insert_layout
+      update:
+        set: !rule sql_update_layout
+        assignments: !rule sql_update_layout
+      merge:
+        on: !rule sql_merge_layout
+        on_and: !rule sql_merge_layout
+        update_set: !rule sql_merge_layout
+        insert: !rule sql_merge_layout
+      set_operations:
+        vertical_spacing: !rule sql_set_operation_spacing
+      optimizer_hints:
+        position: !rule sql_optimizer_hints
+        syntax: "/*+ HINT */"
+        note: !rule sql_optimizer_hints
+  parameters:
+    support_level: authoritative
+    named_supported_by: !rule named_sql_param_unsupported
+    positional_supported_by: !rule sql_positional_placeholders
+    at_name_supported_by: !rule getssldataset_at_name_markers
+    values_array_position: !rule sql_positional_placeholders
+    note: "Three placeholder shapes: ?name? for SQLExecute only (input substitution, never an output bind); positional ? with a values array for the other DB functions; @name with name and value arrays for GetSSLDataset. LSelect and LSelectC take an aFieldList second that is not implemented: skip it, because any value raises fieldList != NULL - Not implemented yet."
+    array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
+    placeholder_patterns:
+      - ?name?
+      - ?obj:Prop?
+      - ?arr[i]?
+      - ?Func()?
+      - '?'
+    scope_note: >
+      These patterns apply to SQL embedded in SSL strings (SQLExecute and
+      related functions). SQL data-source files are a different mechanism and
+      reference parameters as @name placeholders — see
+      module_structure.data_source_modules.sql_data_source.body_parameters.
+    guidance_level: style_only
+    prefer_named: true
+    validate_count_vs_bindings: warn
+    common_patterns:
+      select_queries: use SQLExecute
+      modification_queries: use RunSQL
+      single_value_lookup: use LSearch
+      multi_row_lookup: use LSelect1
+    functions:
+      - SQLExecute
+      - RunSQL
+      - LSearch
+      - LSelect
+      - LSelect1
+      - LSelectC
+      - GetDataSet
+      - GetDataSetEx
+      - GetDataSetWithSchemaFromSelect
+      - GetDataSetXMLFromSelect
+      - GetNETDataSet
+      - XmlExportSql
+      - GetTables

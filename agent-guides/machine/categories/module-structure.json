@@ -10,12 +10,10 @@
   "must_follow": [
     "One file should represent either a class definition, a script, or a data source.",
     "Place :INCLUDE early — it textually includes the referenced source before the script runs.",
-    "Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE."
+    "Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.",
+    ":PARAMETERS must appear before any other statements in a script or procedure body."
   ],
-  "avoid": [
-    "Do not mix class definitions, script procedures, and data-source bodies in one file.",
-    "Do not move :PARAMETERS after other statements."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "INCLUDE",
@@ -27,7 +25,7 @@
       "name": "PUBLIC",
       "type": "keyword",
       "syntax": ":PUBLIC variable1[, variable2, ...];",
-      "summary": "Declares public variables shared down the call stack — visible to the declaring scope and every scope it calls."
+      "summary": "Declares public variables shared across the running program — reachable from any procedure until the program context clears them."
     },
     {
       "name": "PARAMETERS",

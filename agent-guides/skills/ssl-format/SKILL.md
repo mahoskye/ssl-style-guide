@@ -9,7 +9,7 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 ## Instructions
 
-1. **If MCP `ssl_format` is available, use it first.** Run `ssl_format` on the file for the SSL-code pass; it handles indentation, spacing, and keyword casing. Then review its diff — the formatter is not fully tuned and can make questionable decisions; correct any output that violates the rules below or clearly hurts readability. Apply the full manual SSL rules below only when the MCP is unavailable. Embedded-SQL canonical-compact formatting (the `sql` scope) is not performed by the formatter — always apply the SQL rules below manually.
+1. **If MCP `ssl_format` is available, use it first.** Run `ssl_format` on the file for the SSL-code pass; it handles indentation, spacing, and keyword casing. Then review its diff — the formatter is not fully tuned and can make questionable decisions; correct any output that violates the rules below or clearly hurts readability. If the MCP is unavailable, run the same formatter from the command line (`starlims-lsp --format <file>`, binary in `ssl-mcp-server/bin/lsp/`); apply the full manual SSL rules below only when neither can run. The formatter also lays out embedded SQL: it re-indents a multi-line SQL string and breaks an over-long one into canonical-compact clauses, uppercasing SQL keywords. It leaves a SQL string that fits on one line exactly as written, keyword case included. So the `sql` scope is never skipped: check every SQL string against the SQL rules below, correct what the formatter produced, and finish by hand what it left.
 
 2. **Parse arguments:** Extract `<file-path>` as `$0` and optional `[scope]` as `$1` (default: `all`).
    - If no file path is given, ask the user before continuing.
@@ -17,10 +17,14 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 3. **Read the file** at the given path.
 
-4. **Identify the file type.** If the file is a data source (SSL or SQL), be aware that:
-   - `:PARAMETERS` uses inline `:=` defaults — do not split into separate `:DEFAULT` statements
-   - SQL data sources may contain builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) — format these consistently but do not flag or remove them
-   - The SQL query body within data source files still follows canonical compact formatting rules
+4. **Identify the file type.** If the file is a data source (SSL or SQL), these rules apply:
+   <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_sql_body_compact_layout -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
+   - Lay out the query body of a SQL data source in the canonical compact SQL style, the same as SQL embedded in SSL strings.
+   <!-- /rules -->
+
+   Format builder directives consistently, but never remove them.
 
 5. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
 
@@ -33,38 +37,54 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part 3) apply only when MCP `ssl_format` cannot be run.
 
 ### Indentation
-- Prefer tabs; if the file already uses spaces, preserve 4-space indentation
-- Indent one level inside blocks: `:IF`, `:ELSE`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:CASE`, `:OTHERWISE`, `:TRY`, `:CATCH`, `:FINALLY`, `:PROCEDURE`
-- Do not indent the class body solely because of `:CLASS`; class members stay at the file's top indentation level
-- Dedent closing keywords: `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`
-- Same-level keywords (dedent then re-indent): `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH`, `:FINALLY`
-- `:EXITCASE` stays at content level (no indent change)
+<!-- rules: id=indent_tabs_preferred,indent_block_bodies,class_members_top_level,dedent_closing_keywords,same_level_block_keywords,exitcase_statement_level -->
+- Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+- Indent the body of a block one level: `:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, `:PROCEDURE`, `:REGION` and `:BEGININLINECODE` open an indented body, and each nested block adds one more level.
+- Do not indent the class body because of `:CLASS`; class members stay at the file's top indentation level.
+- Dedent a closing keyword to the level of the keyword that opened its block: `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` and `:ENDINLINECODE`.
+- Put `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH` and `:FINALLY` at the level of the keyword that opened their block, then indent the body that follows them one level.
+- Indent `:EXITCASE` at the level of the other statements in its branch; it does not change the indentation.
+<!-- /rules -->
 
 ### Spacing
-- Space around `:=`, comparison operators, arithmetic operators
-- Space around `.AND.`, `.OR.`, `.NOT.`
-- Space after commas, not before
-- No space inside parentheses
-- No space before `(` in function calls
-- No space around `:` in member access (`oObj:Prop`, not `oObj : Prop`)
-- Adjacent commas for skipped params, no space (`RunSQL(sSQL,, {aVals})`)
+<!-- rules: id=operator_spacing,comma_spacing,no_space_inside_parens,no_space_before_call_paren,member_access_no_spaces,skip_commas_adjacent -->
+- Use spaces around assignment, arithmetic, comparison, and logical operators.
+- Put a space after each comma and none before it.
+- Do not put spaces just inside parentheses: `DoProc("Name", {args})`, not `DoProc( "Name", {args} )`.
+- Do not put a space between a function name and its `(`: `Len(sValue)`, not `Len (sValue)`.
+- Prefer no spaces around `:` in member access even though SSL accepts spaced forms.
+- Use adjacent commas with no spaces for skipped optional parameters.
+<!-- /rules -->
 
 ### Line length
-- Target ~90 characters
-- Break multi-line function calls after commas, indent continuation
-- Break multi-line conditions before `.AND.` / `.OR.`, indent continuation
+<!-- rules: id=ssl_max_line_length,continuation_line_breaks -->
+- Keep SSL lines to about 90 characters, breaking longer ones at logical points.
+- Break a multi-line function call after a comma and a multi-line condition before `.AND.` or `.OR.`, and indent each continuation line one level.
+<!-- /rules -->
 
 ### Semicolons
-- Ensure every statement ends with `;` (including comments)
-- Do NOT add semicolons to continuation lines within a multi-line expression
+<!-- rules: id=statement_semicolon,no_semicolon_on_continuation_lines -->
+- Almost every SSL statement, including comments, must end with a semicolon.
+- Do not end a continuation line of a multi-line statement with a semicolon; only the line that completes the statement takes one.
+<!-- /rules -->
 
 ### Blank lines
-- 1 blank line between procedures
-- 1 blank line between logical sections
-- Remove excessive consecutive blank lines (3+ becomes 1)
+<!-- rules: id=blank_line_between_procedures,visibility_annotation_form,visibility_annotation_exact_form,blank_line_between_sections,no_excess_blank_lines -->
+- Put one blank line between procedures.
+- Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.
+- Write an access modifier exactly as `/*@private;` or `/*@protected;`: lowercase, with no space between `/*` and `@`.
+- Put one blank line between logical sections and between regions.
+- Do not leave three or more consecutive blank lines; reduce such a run to one.
+<!-- /rules -->
+
+An access modifier (`/*@private;` or `/*@protected;`) is not a comment, so the
+comment layout rules do not apply to it, and a blank line after it breaks it.
 
 ### Region markers
-- Leave `/* region Name;` / `/* endregion;` markers as-is; `endregion` takes no name — never append one.
+Leave `/* region Name;` / `/* endregion;` markers as they are.
+<!-- rules: id=endregion_takes_no_name -->
+- Close a comment region with `/* endregion;` alone; `endregion` takes no name, so never append one.
+<!-- /rules -->
 
 ---
 
@@ -73,56 +93,76 @@ The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part
 Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`, `LSelect1(`, `LSelectC(`, `GetDataSet(`, and similar DB function calls.
 
 ### General layout
-- SQL block indented 4 spaces inside the SSL string literal
-- Major clauses at column 0 (relative to the 4-space indent): `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`
-- ~90 char line target; break at logical points
+<!-- rules: id=sql_ssl_embedding_indent,sql_major_clause_column,sql_max_line_length -->
+- Indent the whole SQL block 4 spaces inside the SSL string literal.
+- Start each major clause at column 0 relative to the 4-space indent: `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`.
+- Keep SQL lines to about 90 characters, breaking at logical points.
+<!-- /rules -->
 
 ### Casing
-- SQL keywords and built-in functions: UPPERCASE
-- Table names, column names, aliases: preserve the author's casing (force-folding is dialect-conditional; lowercase only for Oracle-only code)
-- Preserve external schema/object casing when required
+<!-- rules: id=sql_keyword_case,sql_identifier_case,sql_preserve_external_casing -->
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+- Preserve external schema or object casing when the schema or object requires it.
+<!-- /rules -->
 
 ### Sub-clause indentation (2 spaces under parent)
-- `AND`/`OR` indented 2 under `WHERE`, `ON`, or `HAVING`
-- `ON` indented 2 under `JOIN`
-- `HAVING` indented 2 under `GROUP BY`
-- `WHEN`/`ELSE` indented 2 under `CASE`
-- `BETWEEN...AND`: the `AND` aligns under `BETWEEN`
+<!-- rules: id=sql_and_or_indent,sql_on_indent,sql_having_indent,sql_between_and_align -->
+- Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
+- Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
+- Indent `HAVING` 2 spaces under `GROUP BY`.
+- When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`.
+<!-- /rules -->
 
 ### SELECT list
-- Pack columns onto lines up to ~90 chars
-- Short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line
-- Break complex expressions (CASE, nested functions, subqueries) to their own line
-- Continuation lines align to first column (col 7 from SELECT)
+<!-- rules: id=sql_select_packing,sql_select_continuation -->
+- Pack `SELECT` columns onto lines up to about 90 characters: short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line, and complex expressions (`CASE`, nested functions, subqueries) break to their own line.
+- Align `SELECT` continuation lines to the first column (column 7).
+<!-- /rules -->
 
 ### INSERT
-- Opening `(` on the `INSERT INTO` line
-- Columns indented 4 spaces inside
-- Closing `)` on its own line
-- Same pattern for `VALUES`
+<!-- rules: id=sql_insert_layout -->
+- In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
+<!-- /rules -->
 
 ### UPDATE
-- `SET` on the same line as `UPDATE`
-- Assignments indented 4 spaces below
+<!-- rules: id=sql_update_layout -->
+- In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
+<!-- /rules -->
 
 ### MERGE
-- `ON` at column 0 (not indented under `USING`)
-- Multi-line ON conditions: `AND` indented 4 (aligned under first condition inside parens)
-- `UPDATE SET` / `INSERT` / `DELETE WHERE` indented 4 under `WHEN`
-- INSERT uses block-style parens
+For formatting existing code only. Agents do not write `MERGE` (see the basic-SQL rule in the agent boundaries).
+
+<!-- rules: id=sql_merge_layout -->
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.
+<!-- /rules -->
 
 ### Set operations
-- Blank line before and after `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`
+<!-- rules: id=sql_set_operation_spacing -->
+- Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
+<!-- /rules -->
 
 ### CASE expressions
-- `WHEN`/`ELSE` indented 2 under `CASE`
-- Within one CASE block: either all WHEN/THEN branches inline or all broken — don't mix
-- `ELSE` may stay inline when its value is short
-- When THEN breaks to new line, indent value one level under WHEN
+<!-- rules: id=sql_case_when_else_indent,sql_case_end_align,sql_case_branch_consistency,sql_case_then_break -->
+- Indent `WHEN`/`ELSE` 4 spaces under `CASE`.
+- Align `END` with its `CASE`.
+- Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short.
+- When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.
+<!-- /rules -->
+
+```sql
+SELECT o.ordno,
+       CASE
+           WHEN o.status = 'L' THEN 'Logged'
+           ELSE 'Unknown'
+       END AS status_desc
+FROM orders o
+```
 
 ### Optimizer hints
-- `/*+ HINT */` stays immediately after the action keyword
-- Never remove or reformat hints
+<!-- rules: id=sql_optimizer_hints -->
+- Keep an optimizer hint (`/*+ HINT */`) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
+<!-- /rules -->
 
 ---
 

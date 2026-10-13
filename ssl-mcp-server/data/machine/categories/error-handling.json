@@ -10,12 +10,11 @@
   "summary": "Modern SSL error handling with TRY/CATCH/FINALLY and error retrieval.",
   "must_follow": [
     "Prefer :TRY/:CATCH/:FINALLY over legacy :ERROR/:RESUME.",
-    ":TRY requires at least one of :CATCH or :FINALLY.",
+    ":TRY requires at least one of :CATCH or :FINALLY; a bare :TRY ... :ENDTRY is invalid.",
     "Use GetLastSSLError() inside :CATCH to retrieve error details.",
-    "Do not place :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
+    "Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
   ],
   "avoid": [
-    "Do not write bare :TRY ... :ENDTRY blocks.",
     "Do not assume UsrMes, ErrorMes, or InfoMes displays messages to users; they are server log functions."
   ],
   "elements": [
@@ -58,8 +57,8 @@
     {
       "name": "ErrorMes",
       "type": "function",
-      "syntax": "ErrorMes(vCaption, vMessage)",
-      "summary": "Logs an error message and returns the resulting message string."
+      "syntax": "ErrorMes(vCaption, [vMessage])",
+      "summary": "Writes an error message to the server log, even when user-message logging is disabled, and returns the formatted log entry."
     }
   ],
   "related_categories": [

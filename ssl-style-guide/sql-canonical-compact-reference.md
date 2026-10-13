@@ -34,7 +34,7 @@ readability within SSL string literals.
 | AND/OR | Indented 2 spaces under their parent clause |
 | ON | Indented 2 spaces under JOIN |
 | HAVING | Indented 2 spaces under GROUP BY (deliberate: HAVING is a sub-clause of GROUP BY here, unlike styles that put it at column 0) |
-| WHEN/ELSE | Indented 4 spaces under CASE |
+| WHEN/ELSE | Indented 4 spaces under CASE; END aligned with CASE |
 | Keyword casing | UPPERCASE — all SQL keywords and built-in functions |
 | Identifier casing | **preserve the author's casing** by default — see the note below; lowercase is an Oracle-safe opt-in |
 | External casing | Preserve when schema/object requires it |
@@ -936,32 +936,11 @@ WHERE ordno = '2025-001'
 
 ### 4.5 RETURNING Clause
 
-In SSL context, `RETURNING...INTO` is used with bind variables:
-
-```sql
-INSERT INTO orders (
-    ordno, status, logdate
-)
-VALUES (
-    '2025-999', 'Logged', SYSDATE
-)
-RETURNING order_id INTO ?nNewId?
-```
-
-```sql
-UPDATE ordtask SET
-    status = 'Complete',
-    completed_date = SYSDATE
-WHERE ordno = '2025-001'
-  AND testcode = 'pH'
-RETURNING task_id INTO ?nTaskId?
-```
-
-```sql
-DELETE FROM audit_log
-WHERE log_id = ?nLogId?
-RETURNING action INTO ?sAction?
-```
+`RETURNING ... INTO` cannot hand a value back to SSL. A `?name?` marker
+substitutes the variable's current value into the statement — it is input
+only, never an output bind — and `SQLExecute` returns a boolean for a
+non-SELECT statement. To read a generated key or a changed value, run the
+statement, then read the row back with a separate SELECT (see §7.5).
 
 ### 4.6 FOR UPDATE
 
@@ -1389,18 +1368,26 @@ RunSQL("
 ",, {sOrdNo});
 ```
 
-### 7.5 INSERT with RETURNING INTO
+### 7.5 INSERT, Then Read the New Key
+
+`?name?` markers are input only, so `RETURNING ... INTO ?nNewId?` does not
+fill `nNewId`. Insert the row, then read the key back with a separate query:
 
 ```ssl
-nNewId := SQLExecute("
+SQLExecute("
     INSERT INTO orders (
         ordno, status, logdate
     )
     VALUES (
         ?sOrdNo?, 'Logged', SYSDATE
     )
-    RETURNING order_id INTO ?nNewId?
 ");
+
+nNewId := LSearch("
+    SELECT order_id
+    FROM orders
+    WHERE ordno = ?
+",,, {sOrdNo});
 ```
 
 ### 7.6 Window Functions in SSL
@@ -1424,11 +1411,12 @@ aRanked := SQLExecute("
 | Function | Parameter Style | Example |
 |----------|----------------|---------|
 | `SQLExecute` | Named `?varName?` | `?sOrdNo?`, `?oObj:prop?`, `?aArr[1]?` (see note below) |
-| `RunSQL` | Positional `?` with array | `RunSQL(sSQL,, {val1, val2})` |
-| `LSearch` | Positional `?` with array | `LSearch(sSQL,, {val1})` |
-| `LSelect` | Positional `?` with array | `LSelect(sSQL,, {val1, val2})` |
-| `LSelect1` | Positional `?` with array | `LSelect1(sSQL,, {val1})` |
-| `LSelectC` | Positional `?` with array | `LSelectC(sSQL,, {val1})` |
-| `GetDataSet` | Positional `?` with array | `GetDataSet(sSQL,, {val1})` |
+| `RunSQL` | Positional `?` with array (third argument) | `RunSQL(sSQL,, {val1, val2})` |
+| `LSearch` | Positional `?` with array (fourth argument, after the default value and connection) | `LSearch(sSQL,,, {val1})` |
+| `LSelect` | Positional `?` with array (fourth argument; skip the unimplemented field list) | `LSelect(sSQL,,, {val1, val2})` |
+| `LSelect1` | Positional `?` with array (third argument) | `LSelect1(sSQL,, {val1})` |
+| `LSelectC` | Positional `?` with array (fourth argument; skip the unimplemented field list) | `LSelectC(sSQL,,, {val1})` |
+| `GetDataSet` | Positional `?` with array (second argument) | `GetDataSet(sSQL, {val1})` |
+| `GetSSLDataset` | `@name` with name and value arrays | `GetSSLDataset(sSQL,, {"@sStatus"}, {sStatus})` |
 
 > **Caveat:** Array expansion for `IN` clauses (`?arrayVar?`) requires a local variable. UDObject array properties used directly (e.g., `?oObj:ArrayProp?`) cause a runtime error: *"The current array has more than 1 dimmension."* Copy the array to a local variable first. Scalar UDObject properties are not affected.

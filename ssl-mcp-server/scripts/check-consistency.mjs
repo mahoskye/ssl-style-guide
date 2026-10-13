@@ -5,6 +5,7 @@ import { execFileSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { loadAllData } from '../src/data/loader.ts';
+import { buildRuleIndex, resolveRule } from '../src/data/rules.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverRoot = resolve(__dirname, '..');
@@ -15,6 +16,7 @@ const mirrorPairs = [
   ['agent-guides/ssl_agent_instructions.md', 'ssl-mcp-server/data/ssl_agent_instructions.md'],
   ['agent-guides/ssl_refactoring_guide.md', 'ssl-mcp-server/data/ssl_refactoring_guide.md'],
   ['ssl-style-guide/ssl-ebnf-grammar.md', 'ssl-mcp-server/data/ssl-ebnf-grammar.md'],
+  ['rules/rules.json', 'ssl-mcp-server/data/rules.json'],
 ];
 
 const mirrorDirs = [
@@ -192,6 +194,22 @@ try {
   fail(`Agent adapters out of sync — run 'bun tools/generate-agents.mjs'.\n${detail}`);
 }
 
+// Rule-generated outputs (rules/INDEX.md, the schema's generated regions, and
+// the Markdown rule regions) must match the records in rules/
+// (see tools/generate-rules.mjs). Runs before the machine-docs check, which
+// reads the same records.
+try {
+  execFileSync('bun', [resolve(repoRoot, 'tools/generate-rules.mjs'), '--check'], {
+    stdio: 'pipe',
+  });
+} catch (error) {
+  const detail = [error.stdout, error.stderr]
+    .map((stream) => (stream ? stream.toString().trim() : ''))
+    .filter(Boolean)
+    .join('\n');
+  fail(`Rule outputs out of sync — run 'bun tools/generate-rules.mjs'.\n${detail}`);
+}
+
 try {
   execFileSync('bun', [resolve(repoRoot, 'tools/generate-machine-docs.mjs'), '--check'], {
     stdio: 'pipe',
@@ -216,6 +234,58 @@ try {
     .filter(Boolean)
     .join('\n');
   fail(`Reference data drift detected.\n${detail}`);
+}
+
+// Every rule in the bundle must resolve through the lookup that ssl_style_rule
+// and ssl://rules/{id} use: by id and alias to that record, by each schema
+// path and LSP code to a set that contains it, and every lint slug in the
+// schema's lints to some record.
+{
+  const rules = buildRuleIndex(loadedData.rules);
+  assertEqual(loadedData.rules.rules.length, loadedData.rules.count, 'Rules bundle count');
+  const expectOne = (query, id, how) => {
+    const resolved = resolveRule(rules, query);
+    if (!resolved || resolved.rules.length !== 1 || resolved.rules[0].id !== id) {
+      fail(`Rule lookup: "${query}" should resolve to ${id} by ${how}, got ${JSON.stringify(resolved && { matched_by: resolved.matched_by, ids: resolved.rules.map((r) => r.id) })}`);
+    }
+    if (resolved.matched_by !== how) {
+      fail(`Rule lookup: "${query}" resolved to ${id} by ${resolved.matched_by}, expected ${how}`);
+    }
+  };
+  const expectAmong = (query, id) => {
+    const resolved = resolveRule(rules, query);
+    if (!resolved || !resolved.rules.some((r) => r.id === id)) {
+      fail(`Rule lookup: "${query}" does not reach ${id}`);
+    }
+  };
+  for (const rule of rules.all) {
+    expectOne(rule.id, rule.id, 'id');
+    expectOne(rule.id.toUpperCase(), rule.id, 'id');
+    for (const alias of rule.aliases) expectOne(alias, rule.id, 'alias');
+    for (const path of rule.schema_paths) expectAmong(path, rule.id);
+    for (const item of rule.enforced_by) {
+      if (item.startsWith('lsp:')) {
+        expectAmong(item, rule.id);
+        const hit = resolveRule(rules, item.replace(/^lsp:(diag|fmt)\./, ''));
+        if (!hit || hit.rules.length === 0) fail(`Rule lookup: bare code of ${item} resolves to nothing`);
+      }
+    }
+  }
+  const lintSlugs = new Set();
+  (function walk(node) {
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        if (item && typeof item === 'object' && /^[a-z][a-z0-9_]*$/.test(item.rule ?? '')) lintSlugs.add(item.rule);
+        walk(item);
+      }
+    } else if (node && typeof node === 'object') {
+      for (const value of Object.values(node)) walk(value);
+    }
+  })(styleGuide.lints);
+  for (const slug of lintSlugs) {
+    if (!resolveRule(rules, slug)) fail(`Rule lookup: schema lint slug "${slug}" resolves to no rule`);
+  }
+  if (resolveRule(rules, 'no_such_rule_slug')) fail('Rule lookup: an unknown id resolved');
 }
 
 // The version the server advertises over MCP must match package.json. These

@@ -1,0 +1,577 @@
+/* =============================================================================;
+/* Script....... IntakePlan;
+/* Purpose...... Plan intake rows and shared-container demand without writes;
+/* Parameters... aRows - Sample, container, material, volume, priority, owner, tests;
+/*               aMaterials - Material, minimum volume, maximum volume rules;
+/*               aTests - Test, compatible material, required volume rules;
+/*               aExisting - Registered sample and container pairs;
+/* Returns...... Success: {.T., plan with accepted, issues, containers, owners, summary};
+/*               Failure: {.F., stable request-level code};
+/* =============================================================================;
+:PARAMETERS aRows, aMaterials, aTests, aExisting;
+:DEFAULT aRows, {};
+:DEFAULT aMaterials, {};
+:DEFAULT aTests, {};
+:DEFAULT aExisting, {};
+:DECLARE aResult, oCandidate, oRequest, sIssue, i;
+
+:IF LimsTypeEx(aRows) != "ARRAY";
+	:RETURN {.F., "INVALID_ROWS"};
+:ENDIF;
+
+aResult := DoProc("BuildRequest", {aMaterials, aTests, aExisting});
+:IF .NOT. aResult[1];
+	:RETURN aResult;
+:ENDIF;
+oRequest := aResult[2];
+
+:FOR i := 1 :TO Len(aRows);
+	aResult := DoProc("PrepareRow", {oRequest, aRows[i], i});
+	:IF .NOT. aResult[1];
+		AAdd(oRequest:issues, {i, aResult[2]});
+	:ELSE;
+		oCandidate := aResult[2];
+		sIssue := DoProc("CheckCandidate", {oRequest, oCandidate});
+		:IF sIssue != "";
+			AAdd(oRequest:issues, {i, sIssue});
+		:ELSE;
+			DoProc("AcceptCandidate", {oRequest, oCandidate});
+		:ENDIF;
+	:ENDIF;
+:NEXT;
+
+:RETURN {.T., DoProc("BuildPlan", {oRequest, Len(aRows)})};
+
+/* region Request configuration;
+
+/*
+ * Procedure: BuildRequest
+ * Description: Establish request-owned configuration before accepting any row.
+ * Parameters:
+ *   aMaterials - Raw material rules
+ *   aTests - Raw test rules
+ *   aExisting - Raw registered-key pairs
+ * Returns: aResult - {true, request} or {false, stable configuration code}
+;
+:PROCEDURE BuildRequest;
+	:PARAMETERS aMaterials, aTests, aExisting;
+	:DECLARE oRequest, sIssue;
+
+	oRequest := CreateUdObject();
+	oRequest:materials := {};
+	oRequest:testRules := {};
+	oRequest:existing := {};
+	oRequest:accepted := {};
+	oRequest:issues := {};
+	oRequest:containers := {};
+	oRequest:owners := {};
+
+	sIssue := DoProc("LoadMaterials", {oRequest, aMaterials});
+	:IF sIssue != "";
+		:RETURN {.F., sIssue};
+	:ENDIF;
+	sIssue := DoProc("LoadTests", {oRequest, aTests});
+	:IF sIssue != "";
+		:RETURN {.F., sIssue};
+	:ENDIF;
+	sIssue := DoProc("LoadExisting", {oRequest, aExisting});
+	:IF sIssue != "";
+		:RETURN {.F., sIssue};
+	:ENDIF;
+
+	:RETURN {.T., oRequest};
+:ENDPROC;
+
+/*
+ * Procedure: LoadMaterials
+ * Description: Install unique material rules with numeric ordered volume bounds.
+ * Parameters:
+ *   oRequest - Internal request being constructed
+ *   aMaterials - Caller-owned material rows
+ * Returns: sIssue - Empty on success, stable configuration code on failure
+;
+:PROCEDURE LoadMaterials;
+	:PARAMETERS oRequest, aMaterials;
+	:DECLARE aRule, sKey, i;
+
+	:IF LimsTypeEx(aMaterials) != "ARRAY";
+		:RETURN "INVALID_MATERIAL_RULES";
+	:ENDIF;
+
+	:FOR i := 1 :TO Len(aMaterials);
+		aRule := aMaterials[i];
+		:IF LimsTypeEx(aRule) != "ARRAY";
+			:RETURN "INVALID_MATERIAL_RULE";
+		:ENDIF;
+
+		:IF Len(aRule) != 3;
+			:RETURN "INVALID_MATERIAL_RULE";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRule[1]) != "STRING";
+			:RETURN "INVALID_MATERIAL_KEY";
+		:ENDIF;
+		sKey := Upper(AllTrim(aRule[1]));
+		:IF sKey == "";
+			:RETURN "INVALID_MATERIAL_KEY";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRule[2]) != "NUMERIC";
+			:RETURN "INVALID_MATERIAL_BOUNDS";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRule[3]) != "NUMERIC";
+			:RETURN "INVALID_MATERIAL_BOUNDS";
+		:ENDIF;
+
+		:IF aRule[2] < 0 .OR. aRule[3] < aRule[2];
+			:RETURN "INVALID_MATERIAL_BOUNDS";
+		:ENDIF;
+
+		:IF DoProc("FindRule", {oRequest:materials, sKey}) > 0;
+			:RETURN "DUPLICATE_MATERIAL_RULE";
+		:ENDIF;
+		AAdd(oRequest:materials, {sKey, aRule[2], aRule[3]});
+	:NEXT;
+	:RETURN "";
+:ENDPROC;
+
+/*
+ * Procedure: LoadTests
+ * Description: Install unique tests linked to existing materials and required volume.
+ * Parameters:
+ *   oRequest - Request with validated material rules
+ *   aTests - Caller-owned test rules
+ * Returns: sIssue - Empty on success, stable configuration code on failure
+;
+:PROCEDURE LoadTests;
+	:PARAMETERS oRequest, aTests;
+	:DECLARE aRule, sKey, sMaterial, i;
+
+	:IF LimsTypeEx(aTests) != "ARRAY";
+		:RETURN "INVALID_TEST_RULES";
+	:ENDIF;
+
+	:FOR i := 1 :TO Len(aTests);
+		aRule := aTests[i];
+		:IF LimsTypeEx(aRule) != "ARRAY";
+			:RETURN "INVALID_TEST_RULE";
+		:ENDIF;
+
+		:IF Len(aRule) != 3;
+			:RETURN "INVALID_TEST_RULE";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRule[1]) != "STRING";
+			:RETURN "INVALID_TEST_KEY";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRule[2]) != "STRING";
+			:RETURN "INVALID_TEST_MATERIAL";
+		:ENDIF;
+		sKey := Upper(AllTrim(aRule[1]));
+		sMaterial := Upper(AllTrim(aRule[2]));
+		:IF sKey == "";
+			:RETURN "INVALID_TEST_KEY";
+		:ENDIF;
+
+		:IF DoProc("FindRule", {oRequest:materials, sMaterial}) == 0;
+			:RETURN "UNKNOWN_TEST_MATERIAL";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRule[3]) != "NUMERIC";
+			:RETURN "INVALID_TEST_VOLUME";
+		:ENDIF;
+
+		:IF aRule[3] < 0;
+			:RETURN "INVALID_TEST_VOLUME";
+		:ENDIF;
+
+		:IF DoProc("FindRule", {oRequest:testRules, sKey}) > 0;
+			:RETURN "DUPLICATE_TEST_RULE";
+		:ENDIF;
+		AAdd(oRequest:testRules, {sKey, sMaterial, aRule[3]});
+	:NEXT;
+	:RETURN "";
+:ENDPROC;
+
+/*
+ * Procedure: LoadExisting
+ * Description: Normalize occupied sample and container keys without changing them.
+ * Parameters:
+ *   oRequest - Internal request
+ *   aExisting - Caller-owned registered pairs
+ * Returns: sIssue - Empty on success, stable configuration code on failure
+;
+:PROCEDURE LoadExisting;
+	:PARAMETERS oRequest, aExisting;
+	:DECLARE aPair, sContainer, sSample, i;
+
+	:IF LimsTypeEx(aExisting) != "ARRAY";
+		:RETURN "INVALID_EXISTING_RECORDS";
+	:ENDIF;
+
+	:FOR i := 1 :TO Len(aExisting);
+		aPair := aExisting[i];
+		:IF LimsTypeEx(aPair) != "ARRAY";
+			:RETURN "INVALID_EXISTING_RECORD";
+		:ENDIF;
+
+		:IF Len(aPair) != 2;
+			:RETURN "INVALID_EXISTING_RECORD";
+		:ENDIF;
+
+		:IF LimsTypeEx(aPair[1]) != "STRING";
+			:RETURN "INVALID_EXISTING_KEY";
+		:ENDIF;
+
+		:IF LimsTypeEx(aPair[2]) != "STRING";
+			:RETURN "INVALID_EXISTING_KEY";
+		:ENDIF;
+		sSample := Upper(AllTrim(aPair[1]));
+		sContainer := Upper(AllTrim(aPair[2]));
+		:IF sSample == "" .OR. sContainer == "";
+			:RETURN "INVALID_EXISTING_KEY";
+		:ENDIF;
+		AAdd(oRequest:existing, {sSample, sContainer});
+	:NEXT;
+	:RETURN "";
+:ENDPROC;
+
+/* endregion;
+/* region Candidate preparation;
+
+/*
+ * Procedure: PrepareRow
+ * Description: Validate and normalize one row without reserving any keys.
+ * Parameters:
+ *   oRequest - Validated configuration
+ *   vRow - Caller row with seven required columns
+ *   nRow - Original input position
+ * Returns: aResult - {true, candidate} or {false, row issue code}
+;
+:PROCEDURE PrepareRow;
+	:PARAMETERS oRequest, vRow, nRow;
+	:DECLARE aMaterial, aResult, nMaterial, oCandidate, sMaterial, i;
+
+	:IF LimsTypeEx(vRow) != "ARRAY";
+		:RETURN {.F., "INVALID_ROW"};
+	:ENDIF;
+
+	:IF Len(vRow) != 7;
+		:RETURN {.F., "INVALID_ROW"};
+	:ENDIF;
+
+	:FOR i := 1 :TO 3;
+		:IF LimsTypeEx(vRow[i]) != "STRING";
+			:RETURN {.F., "INVALID_ROW_KEY"};
+		:ENDIF;
+
+		:IF AllTrim(vRow[i]) == "";
+			:RETURN {.F., "INVALID_ROW_KEY"};
+		:ENDIF;
+	:NEXT;
+
+	:IF LimsTypeEx(vRow[6]) != "STRING";
+		:RETURN {.F., "INVALID_OWNER"};
+	:ENDIF;
+
+	:IF AllTrim(vRow[6]) == "";
+		:RETURN {.F., "INVALID_OWNER"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[4]) != "NUMERIC";
+		:RETURN {.F., "INVALID_VOLUME"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[5]) != "NUMERIC";
+		:RETURN {.F., "INVALID_PRIORITY"};
+	:ENDIF;
+
+	:IF vRow[5] < 0 .OR. vRow[5] > 9;
+		:RETURN {.F., "INVALID_PRIORITY"};
+	:ENDIF;
+
+	:IF Round(vRow[5], 0) != vRow[5];
+		:RETURN {.F., "INVALID_PRIORITY"};
+	:ENDIF;
+
+	sMaterial := Upper(AllTrim(vRow[3]));
+	nMaterial := DoProc("FindRule", {oRequest:materials, sMaterial});
+	:IF nMaterial == 0;
+		:RETURN {.F., "UNKNOWN_MATERIAL"};
+	:ENDIF;
+	aMaterial := oRequest:materials[nMaterial];
+	:IF vRow[4] < aMaterial[2] .OR. vRow[4] > aMaterial[3];
+		:RETURN {.F., "VOLUME_OUT_OF_RANGE"};
+	:ENDIF;
+
+	aResult := DoProc("PrepareTests", {oRequest, vRow[7], sMaterial});
+	:IF .NOT. aResult[1];
+		:RETURN aResult;
+	:ENDIF;
+	oCandidate := CreateUdObject();
+	oCandidate:rowIndex := nRow;
+	oCandidate:sampleKey := Upper(AllTrim(vRow[1]));
+	oCandidate:containerKey := Upper(AllTrim(vRow[2]));
+	oCandidate:material := sMaterial;
+	oCandidate:volume := vRow[4];
+	oCandidate:priority := vRow[5];
+	oCandidate:ownerKey := Upper(AllTrim(vRow[6]));
+	oCandidate:tests := aResult[2][1];
+	oCandidate:requiredVolume := aResult[2][2];
+	:RETURN {.T., oCandidate};
+:ENDPROC;
+
+/*
+ * Procedure: PrepareTests
+ * Description: Normalize requested tests and calculate compatible volume demand.
+ * Parameters:
+ *   oRequest - Validated test registry
+ *   vTests - Caller-owned requested test list
+ *   sMaterial - Validated material key
+ * Returns: aResult - {true, {tests, demand}} or {false, issue code}
+;
+:PROCEDURE PrepareTests;
+	:PARAMETERS oRequest, vTests, sMaterial;
+	:DECLARE aRule, aTests, nIndex, nVolume, sTest, i;
+
+	:IF LimsTypeEx(vTests) != "ARRAY";
+		:RETURN {.F., "INVALID_TEST_LIST"};
+	:ENDIF;
+
+	:IF Len(vTests) == 0;
+		:RETURN {.F., "EMPTY_TEST_LIST"};
+	:ENDIF;
+	aTests := {};
+	nVolume := 0;
+	:FOR i := 1 :TO Len(vTests);
+		:IF LimsTypeEx(vTests[i]) != "STRING";
+			:RETURN {.F., "INVALID_REQUESTED_TEST"};
+		:ENDIF;
+		sTest := Upper(AllTrim(vTests[i]));
+		:IF sTest == "";
+			:RETURN {.F., "INVALID_REQUESTED_TEST"};
+		:ENDIF;
+
+		:IF AScanExact(aTests, sTest) > 0;
+			:RETURN {.F., "DUPLICATE_REQUESTED_TEST"};
+		:ENDIF;
+		nIndex := DoProc("FindRule", {oRequest:testRules, sTest});
+		:IF nIndex == 0;
+			:RETURN {.F., "UNKNOWN_TEST"};
+		:ENDIF;
+		aRule := oRequest:testRules[nIndex];
+		:IF aRule[2] != sMaterial;
+			:RETURN {.F., "INCOMPATIBLE_TEST"};
+		:ENDIF;
+		AAdd(aTests, sTest);
+		nVolume += aRule[3];
+	:NEXT;
+	:RETURN {.T., {aTests, nVolume}};
+:ENDPROC;
+
+/* endregion;
+/* region Cross-row acceptance;
+
+/*
+ * Procedure: CheckCandidate
+ * Description: Check occupancy and shared-container demand before state changes.
+ * Parameters:
+ *   oRequest - Accepted state so far
+ *   oCandidate - Prepared candidate from PrepareRow
+ * Returns: sIssue - Empty if acceptable, stable row issue otherwise
+;
+:PROCEDURE CheckCandidate;
+	:PARAMETERS oRequest, oCandidate;
+	:DECLARE aAccepted, aExisting, nContainer, oContainer, i;
+
+	:FOR i := 1 :TO Len(oRequest:existing);
+		aExisting := oRequest:existing[i];
+		:IF aExisting[1] == oCandidate:sampleKey;
+			:RETURN "SAMPLE_ALREADY_REGISTERED";
+		:ENDIF;
+
+		:IF aExisting[2] == oCandidate:containerKey;
+			:RETURN "CONTAINER_ALREADY_REGISTERED";
+		:ENDIF;
+	:NEXT;
+
+	:FOR i := 1 :TO Len(oRequest:accepted);
+		aAccepted := oRequest:accepted[i];
+		:IF aAccepted[2] == oCandidate:sampleKey;
+			:RETURN "DUPLICATE_SAMPLE";
+		:ENDIF;
+	:NEXT;
+
+	nContainer := DoProc("FindContainer", {oRequest:containers, oCandidate:containerKey});
+	:IF nContainer == 0;
+		:IF oCandidate:requiredVolume > oCandidate:volume;
+			:RETURN "INSUFFICIENT_VOLUME";
+		:ENDIF;
+	:ELSE;
+		oContainer := oRequest:containers[nContainer];
+		:IF oContainer:material != oCandidate:material;
+			:RETURN "CONTAINER_MATERIAL_CONFLICT";
+		:ENDIF;
+
+		:IF oContainer:availableVolume != oCandidate:volume;
+			:RETURN "CONTAINER_VOLUME_CONFLICT";
+		:ENDIF;
+
+		:IF oContainer:requiredVolume
+			+ oCandidate:requiredVolume > oContainer:availableVolume;
+			:RETURN "INSUFFICIENT_VOLUME";
+		:ENDIF;
+	:ENDIF;
+	:RETURN "";
+:ENDPROC;
+
+/*
+ * Procedure: AcceptCandidate
+ * Description: Record a candidate after all rejection decisions are complete.
+ * Parameters:
+ *   oRequest - Mutable request-owned state
+ *   oCandidate - Candidate approved by CheckCandidate
+ * Returns: Nothing - Updates accepted rows, allocations, and owner totals
+;
+:PROCEDURE AcceptCandidate;
+	:PARAMETERS oRequest, oCandidate;
+	:DECLARE nContainer, nOwner, oContainer, oOwner;
+
+	AAdd(oRequest:accepted, {oCandidate:rowIndex, oCandidate:sampleKey,
+		oCandidate:containerKey, oCandidate:material, oCandidate:volume,
+		oCandidate:priority, oCandidate:ownerKey, oCandidate:tests});
+
+	nContainer := DoProc("FindContainer", {oRequest:containers, oCandidate:containerKey});
+	:IF nContainer == 0;
+		oContainer := CreateUdObject();
+		oContainer:containerKey := oCandidate:containerKey;
+		oContainer:material := oCandidate:material;
+		oContainer:availableVolume := oCandidate:volume;
+		oContainer:requiredVolume := 0;
+		oContainer:sampleKeys := {};
+		AAdd(oRequest:containers, oContainer);
+	:ELSE;
+		oContainer := oRequest:containers[nContainer];
+	:ENDIF;
+	oContainer:requiredVolume += oCandidate:requiredVolume;
+	AAdd(oContainer:sampleKeys, oCandidate:sampleKey);
+
+	nOwner := DoProc("FindOwner", {oRequest:owners, oCandidate:ownerKey});
+	:IF nOwner == 0;
+		oOwner := CreateUdObject();
+		oOwner:ownerKey := oCandidate:ownerKey;
+		oOwner:totalSamples := 0;
+		oOwner:urgentSamples := 0;
+		oOwner:sampleKeys := {};
+		AAdd(oRequest:owners, oOwner);
+	:ELSE;
+		oOwner := oRequest:owners[nOwner];
+	:ENDIF;
+	oOwner:totalSamples += 1;
+	:IF oCandidate:priority >= 5;
+		oOwner:urgentSamples += 1;
+	:ENDIF;
+	AAdd(oOwner:sampleKeys, oCandidate:sampleKey);
+:ENDPROC;
+
+/* endregion;
+/* region Lookup and output;
+
+/*
+ * Procedure: FindRule
+ * Description: Find an exact key in an internal normalized rule table.
+ * Parameters:
+ *   aRules - Validated rule rows
+ *   sKey - Normalized lookup key
+ * Returns: nIndex - Matching row position, or zero when absent
+;
+:PROCEDURE FindRule;
+	:PARAMETERS aRules, sKey;
+	:DECLARE aRule, i;
+	:FOR i := 1 :TO Len(aRules);
+		aRule := aRules[i];
+		:IF aRule[1] == sKey;
+			:RETURN i;
+		:ENDIF;
+	:NEXT;
+	:RETURN 0;
+:ENDPROC;
+
+/*
+ * Procedure: FindContainer
+ * Description: Locate one allocation in request-owned container state.
+ * Parameters:
+ *   aContainers - Internal allocation objects
+ *   sKey - Normalized container key
+ * Returns: nIndex - Matching position, or zero when absent
+;
+:PROCEDURE FindContainer;
+	:PARAMETERS aContainers, sKey;
+	:DECLARE oContainer, i;
+	:FOR i := 1 :TO Len(aContainers);
+		oContainer := aContainers[i];
+		:IF oContainer:containerKey == sKey;
+			:RETURN i;
+		:ENDIF;
+	:NEXT;
+	:RETURN 0;
+:ENDPROC;
+
+/*
+ * Procedure: FindOwner
+ * Description: Locate one owner workload in request-owned state.
+ * Parameters:
+ *   aOwners - Internal owner objects
+ *   sKey - Normalized owner key
+ * Returns: nIndex - Matching position, or zero when absent
+;
+:PROCEDURE FindOwner;
+	:PARAMETERS aOwners, sKey;
+	:DECLARE oOwner, i;
+	:FOR i := 1 :TO Len(aOwners);
+		oOwner := aOwners[i];
+		:IF oOwner:ownerKey == sKey;
+			:RETURN i;
+		:ENDIF;
+	:NEXT;
+	:RETURN 0;
+:ENDPROC;
+
+/*
+ * Procedure: BuildPlan
+ * Description: Publish accepted state and counts in the requested result shape.
+ * Parameters:
+ *   oRequest - Completed request-owned state
+ *   nInputCount - Original input row count, including rejections
+ * Returns: oPlan - Accepted rows, issues, allocations, owners, and summary
+;
+:PROCEDURE BuildPlan;
+	:PARAMETERS oRequest, nInputCount;
+	:DECLARE aContainers, aOwners, oContainer, oOwner, oPlan, i;
+
+	aContainers := {};
+	:FOR i := 1 :TO Len(oRequest:containers);
+		oContainer := oRequest:containers[i];
+		AAdd(aContainers, {oContainer:containerKey, oContainer:material,
+			oContainer:availableVolume, oContainer:requiredVolume,
+			oContainer:sampleKeys});
+	:NEXT;
+	aOwners := {};
+	:FOR i := 1 :TO Len(oRequest:owners);
+		oOwner := oRequest:owners[i];
+		AAdd(aOwners, {oOwner:ownerKey, oOwner:totalSamples,
+			oOwner:urgentSamples, oOwner:sampleKeys});
+	:NEXT;
+	oPlan := CreateUdObject();
+	oPlan:accepted := oRequest:accepted;
+	oPlan:issues := oRequest:issues;
+	oPlan:containers := aContainers;
+	oPlan:owners := aOwners;
+	oPlan:summary := {nInputCount, Len(oRequest:accepted), Len(oRequest:issues),
+		Len(aContainers), Len(aOwners)};
+	:RETURN oPlan;
+:ENDPROC;
+
+/* endregion;

@@ -5,9 +5,9 @@ description: >-
   ssl-developer executes — for new features and for behavior-preserving
   refactors alike. Surveys what already exists before designing anything.
   Does not write production SSL.
-version: 10
+version: 12
 mode: all
-argument-hint: "<feature, ticket, or refactor to plan> [target-spec-path]"
+argument-hint: "<feature, ticket, task brief, or refactor to plan> [target-spec-path]"
 model: inherit
 tools:
   - read
@@ -57,6 +57,8 @@ the platform's grain rather than fighting it.
 {{shared:sources-of-truth}}
 
 {{shared:reuse-first}}
+
+{{shared:task-brief}}
 
 ## Spec tiers
 
@@ -130,6 +132,11 @@ In this order:
     work has no baseline, so it finishes at zero errors and zero
     warnings outright. Enough context to work from the document alone.
 
+When the spec comes from a task brief, add a **Brief conventions** section
+after Edge cases: the brief's Conventions verbatim, plus each place the
+brief overrides a style rule. Map the rest of the brief as
+`agent-guides/agent-interfaces.md` describes.
+
 Keep a spec short enough to read in one sitting. A large change splits
 into linked feature specs rather than becoming one monolith.
 
@@ -143,7 +150,8 @@ construct a way it changes behavior:
 - `:BEGINCASE` fallthrough — adding or moving `:EXITCASE` changes which
   case bodies run.
 - The symbol surface beyond the file's own text: `:INCLUDE` splicing and
-  call-stack-scoped `:PUBLIC` variables.
+  `:PUBLIC` variables, which any procedure in the running program can read
+  or update.
 - Data-source preprocessing — inline `:=` defaults and builder
   directives are not ordinary SSL.
 - Unqualified class-field access — adding or removing `Me:` changes

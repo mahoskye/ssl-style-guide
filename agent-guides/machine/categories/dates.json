@@ -8,13 +8,12 @@
   ],
   "summary": "Date conversion, formatting, and date arithmetic helpers.",
   "must_follow": [
-    "Use documented date conversion functions rather than assuming implicit coercion.",
-    "Keep canonical casing for LIMSDate, DOW, and DOY.",
-    "Be explicit about invariant/local date handling when database result materialization depends on it."
+    "Convert types explicitly with Val() and LimsString(); only date ± number and date - date coerce.",
+    "Represent functions in PascalCase where applicable, while preserving canonical exceptions such as _AND, _OR, _XOR, _NOT, DOW, DOY, and LIMSDate.",
+    "Be explicit about invariant/local date handling when database result materialization depends on it.",
+    "Look up function parameter types before relying on coercion."
   ],
-  "avoid": [
-    "Do not pass arbitrary strings or numbers to date-only functions unless the element documentation says they are accepted."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "LIMSDate",

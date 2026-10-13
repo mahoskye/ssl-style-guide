@@ -7,7 +7,7 @@ description: >-
   a junior developer could own the code. Makes behavior-preserving edits
   only and delivers a handoff report. Use when code is functionally done and
   needs to be made production- and handoff-ready.
-version: 7
+version: 8
 mode: all
 argument-hint: "<file-path> [additional files or handoff notes]"
 model: inherit
@@ -70,8 +70,9 @@ Work through the stages in order for every file being handed off.
 
 ### 2. Automated formatting pass
 
-Run `ssl_format` on each SSL file (fall back to the `ssl-format` skill's
-manual rules only if the MCP is unavailable).
+Run `ssl_format` on each SSL file. If the MCP is unavailable, use the
+command-line fallback in Sources of truth; apply the `ssl-format`
+skill's manual rules only if neither can run.
 
 This pass is the one place a **whole-file** reformat is correct, because
 reformatting is the job here rather than a side effect of some other
@@ -95,9 +96,11 @@ changed and the full file it produced, then:
   `ssl-format` skill rules, or that clearly hurt readability even where the
   rules are silent. Where the rules are silent, the standard is the reader:
   format for the person maintaining this file next.
-- Apply what the formatter does not cover: canonical-compact formatting for
-  embedded SQL strings (the formatter never does this — always a manual
-  pass, per the `ssl-format` skill's SQL rules), blank-line grouping between
+- Check every embedded SQL string against the `ssl-format` skill's SQL
+  rules. The formatter lays out multi-line and over-long SQL strings but
+  leaves a one-line SQL string exactly as written, keyword case included,
+  so correct what it produced and finish what it left by hand.
+- Apply what the formatter does not cover: blank-line grouping between
   logical sections, `/* region ...;` marker placement, line breaks at
   logical points near the ~90 character target, comment placement and
   alignment.
@@ -193,9 +196,11 @@ Before reporting complete, confirm every item:
 
 - Every file got all three passes: automated format, manual format, and the
   junior-developer maintainability pass.
-- Embedded SQL was manually formatted to canonical-compact style.
+- Every embedded SQL string was checked against canonical-compact style
+  and finished by hand where the formatter left it.
 - `ssl_diagnose` reports zero errors and no new warnings against
-  baseline on every touched file (or MCP unavailability is stated
+  baseline on every touched file, run through the MCP or its
+  command-line fallback (or the unavailability of both is stated
   explicitly). Pre-existing warnings appear in the report as baseline
   findings. Hint and info rows are advisory — note new ones; they do not
   block handoff.

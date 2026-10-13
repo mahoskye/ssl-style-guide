@@ -1,0 +1,94 @@
+{
+  "format_version": 1,
+  "status": "awaiting_user_review",
+  "generator": "Codex assistant session using the current repository guidance",
+  "source_basis": "Aggregate snapshot scale and structural categories only. No exported source or organization-specific behavior adapted.",
+  "training_classification": "unclassified",
+  "training_eligible": false,
+  "guidance_sha256": {
+    "ssl-style-guide/ssl-style-guide.schema.yaml": "d0ec6a56c98189948c35d60fad07c5500c5ef42eb31014afb0ea666197efd326",
+    "agent-guides/ssl_server_script_style.md": "dd4da50380251d1b9d4a62e36173252693662156123429ad120ea1bbd4b054f4",
+    "agent-guides/agents/ssl-developer.agent.md": "e133a360c7a2331d5de41e5b31012a5f4133eed9b70a52888c0e3370029a8ebc",
+    "agent-guides/machine/foundation.md": "3d028b7419c83522df111234b620eb7138dd1f7d6cef027783ab494bcf6d7b9b"
+  },
+  "tasks": [
+    {
+      "id": "intake-plan",
+      "status": "awaiting_user_review",
+      "implementation": "pilot/intake-plan/draft/IntakePlan.srvscr",
+      "physical_lines": 577,
+      "test_cases": 57,
+      "task_sha256": "ebf47a073ab85596c333df6078798cad01aedef8fccf11faa537878e1cf6d604",
+      "design_sha256": "1fdcddd195eb1320e8cfd54ca70df99e455ea524afb3bb804fc401f43415d99f",
+      "draft_sha256": {
+        "IntakePlan.srvscr": "a963bac1a689419f9618d32e5801255511b1bc80690befe95b95f08ac9d17b7f",
+        "IntakePlanTests.srvscr": "a6949cc2c2e880223a0aab56aa2b9137f329415189aeb60213c7d0bda6adbea6"
+      }
+    },
+    {
+      "id": "normalize-key",
+      "status": "awaiting_user_review",
+      "implementation": "pilot/normalize-key/draft/NormalizeKey.srvscr",
+      "physical_lines": 18,
+      "test_cases": 7,
+      "task_sha256": "15df326a304f870fc3435838804472e89c7ebb3b9869de0f5d0fb0a821d77fc7",
+      "design_sha256": "2b4eee7c7155dcd37d94ef1140ec86a5bc2ea5424e14e3987255cbe6ba2c83d8",
+      "draft_sha256": {
+        "NormalizeKey.srvscr": "2dc5fccf73efbd62ff2311ae13533bfd0be6be9800607780499f8d30aa39057f",
+        "NormalizeKeyTests.srvscr": "09264d44938a0893b895838b64fec18b42dfd575ffcf2c6e74bca11626792b5d"
+      }
+    },
+    {
+      "id": "owner-workload",
+      "status": "awaiting_user_review",
+      "implementation": "pilot/owner-workload/draft/OwnerWorkload.ds",
+      "physical_lines": 63,
+      "test_cases": 4,
+      "task_sha256": "99516a7920d893982ed59bde6a02171b19e786902356f36dce8a46c2484f185c",
+      "design_sha256": "7dd3954e43a6379927e52df0ced8f87b7db9941e560b3776545628ec87797556",
+      "draft_sha256": {
+        "OwnerWorkload.ds": "a80fa17be0e3785de30f1f16e6cc2ecc91012c7d4563aa22d2dcd41706e9ae86",
+        "OwnerWorkloadTests.srvscr": "a4839bf863bbd6ebdf1c45eb1628c862ea988d314b660a562d8631833e7e1f2d"
+      }
+    },
+    {
+      "id": "pending-items",
+      "status": "awaiting_user_review",
+      "implementation": "pilot/pending-items/draft/PendingItems.ds",
+      "physical_lines": 9,
+      "test_cases": 4,
+      "task_sha256": "56b647b49bd6cfa9cdaa81433a4a6fb2a5276bee015f4702d897a5361701c412",
+      "design_sha256": "2dea1385491d2e91fd5f6a6b040d284aa7b5e4ce3bc1c0a44658d4c15a29c475",
+      "draft_sha256": {
+        "PendingItems.ds": "dbfe4a360015eb8dba3675aacbc205a7cf6debb9764b77aea9ca607fa85f4d1d",
+        "PendingItemsTests.srvscr": "bae0131f84e4436d04a103e01e0f2df953ed838a8c749970239ef2ccc8e89a71"
+      }
+    },
+    {
+      "id": "reconcile-results",
+      "status": "awaiting_user_review",
+      "implementation": "pilot/reconcile-results/draft/ReconcileResults.srvscr",
+      "physical_lines": 464,
+      "test_cases": 43,
+      "task_sha256": "2cde0f8c26f6c2b1404a7e896bb47a28ab267b7e44d84a8e344c56ab4ca287b6",
+      "design_sha256": "87ccb0a63b929d44f2dfad4940226297252d96b92b638235bc95fc2ff5756b7c",
+      "draft_sha256": {
+        "ReconcileResults.srvscr": "5875f1e277319c9a9282db6fef003e609846ef541e9c773a2508451d765801b4",
+        "ReconcileResultsTests.srvscr": "1c2aaf8dfe5d5d00dc92ad741cfbe6c9d92998d91ec0cf2546db3c313a60cbcc"
+      }
+    },
+    {
+      "id": "result-policy",
+      "status": "awaiting_user_review",
+      "implementation": "pilot/result-policy/draft/ResultPolicy.srvscr",
+      "physical_lines": 184,
+      "test_cases": 24,
+      "task_sha256": "d0bc01839a222990a32e3f4edd2d4294b9c7cac66504530c0b232416641380f4",
+      "design_sha256": "acaaf1e3840092f86ff332633478790403357a3ff0ca84655a7e52bab5c56657",
+      "draft_sha256": {
+        "ResultPolicy.srvscr": "6dbb6325278b1f35275fc832101dc2392d8a950f9b87337b24b4fc4561efdc30",
+        "ResultPolicyTests.srvscr": "08275f048a17157e4caca1c1a20227559fff1b671af33dfbbdd9a7a77d26c2f6"
+      }
+    }
+  ]
+}

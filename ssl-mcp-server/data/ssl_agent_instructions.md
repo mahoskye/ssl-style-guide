@@ -7,23 +7,27 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Authoritative Language Rules
 
-1. **Colon-prefixed keywords are case-sensitive** and must be UPPERCASE (e.g., `:IF`, `:FOR`). **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
-2. **Semicolons are mandatory** for almost every statement, including comments.
-3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
-4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
-5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
-6. **Arrays are 1-based.** The first element is `aArray[1]`.
-7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
-8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
-9. **String comparison:** `=` is loose (prefix match for strings); `==` gives exact string equality and generally parallels `=` for other value types. `$` tests containment.
-10. **Comments use `/* ...;`** and must end with a semicolon. **A semicolon inside comment text will prematurely end the comment** — never include `;` within comment text as it becomes executable code after the unintended comment boundary.
+Each item states the rules for one topic, with the facts that explain them.
+
+1. **Case.** <!-- rule: keyword_uppercase -->Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.<!-- /rule --> **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
+2. **Semicolons.** <!-- rule: statement_semicolon -->Almost every SSL statement, including comments, must end with a semicolon.<!-- /rule -->
+3. **Declarations.** <!-- rule: declare_before_use -->Declare variables before use with `:DECLARE`.<!-- /rule --> SSL does not enforce this (an undeclared name is looked up in caller scopes and publics, and a write to it can change a caller's variable), so declaring every name is the safe default rather than a language rule. <!-- rule: no_default_on_declare_line -->Do not put `:DEFAULT` on a `:DECLARE` line.<!-- /rule -->
+4. **Declaration ordering.** <!-- rule: parameters_first -->`:PARAMETERS` must appear before any other statements in a script or procedure body.<!-- /rule --> <!-- rule: default_after_parameters -->`:DEFAULT` must immediately follow `:PARAMETERS`.<!-- /rule --> Zero or more `:DEFAULT` lines may follow, but only after `:PARAMETERS`. `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible. <!-- rule: include_early -->Place `:INCLUDE` early — it textually includes the referenced source before the script runs.<!-- /rule --> <!-- rule: script_declaration_order -->Recommended script order is `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.<!-- /rule --> **Data source files use different syntax** — see §4A.
+5. **Calling procedures.** <!-- rule: no_direct_procedure_calls -->Do not call custom script procedures directly as `MyProc()`.<!-- /rule --> <!-- rule: bare_calls_are_builtins -->A bare `Name(...)` call always means a built-in function, in scripts and classes alike; any other name stops the script from compiling with `Invalid built-in function: Name`.<!-- /rule --> <!-- rule: doproc_for_same_file_procedures -->Use `DoProc("ProcName", {args})` for same-file script procedures.<!-- /rule --> <!-- rule: execfunction_for_external_scripts -->Use `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external script entry points.<!-- /rule --> <!-- rule: doproc_in_class -->Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.<!-- /rule --> Fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed inside class methods.
+6. **Arrays.** <!-- rule: arrays_one_based -->SSL arrays are 1-based; loop over arrays from 1 through `ALen(aArray)`.<!-- /rule --> The first element is `aArray[1]`.
+7. **Object creation.** <!-- rule: builtin_classes_curly_braces -->Instantiate directly creatable built-in classes with curly braces, for example `Email{}`.<!-- /rule --> <!-- rule: no_createudobject_for_builtins -->Do not instantiate built-in classes with `CreateUdObject`.<!-- /rule --> <!-- rule: createudobject_category_qualified -->Use `CreateUdObject("Category.ClassName")` for user-defined classes; a bare class name is looked up only among the default categories.<!-- /rule --> `CreateUdObject("Category.ClassName", {args})` passes constructor arguments, `CreateUdObject()` creates an empty dynamic object, and `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
+8. **SQL parameterization.** <!-- rule: named_sql_param_unsupported -->`SQLExecute` is the only database API that supports named `?param?` substitution; do not use `?param?` markers with other database functions. Its markers reference in-scope SSL variables by name. Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`<!-- /rule --> <!-- rule: sql_positional_placeholders -->`RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` markers with a value array in a later argument slot: fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`, and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the slot and skip unused optionals with adjacent commas. Canonical shape: `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`<!-- /rule --> <!-- rule: getssldataset_at_name_markers -->`GetSSLDataset` uses `@name` markers with parallel name and value arrays.<!-- /rule -->
+9. **String comparison.** <!-- rule: equals_vs_strict_equals -->Use `==` for exact string equality; `=` is prefix-style for strings.<!-- /rule --> `==` generally parallels `=` for other value types. <!-- rule: dollar_for_containment -->Use `$` for containment tests.<!-- /rule -->
+10. **Comments.** <!-- rule: single_line_comment_form -->Write a single-line comment as `/* comment text here;`.<!-- /rule --> <!-- rule: no_semicolon_in_comment_text -->Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.<!-- /rule -->
 
 ### Style Guidance for New and Refactored Code
 
-1. **End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;`** unless multi-match behavior is intentional.
-2. **Prefer no spaces around `:`** in member access even though SSL accepts spaced forms.
-3. **Use `/* region` / `/* endregion` comments for editor grouping** instead of `:REGION` / `:ENDREGION`.
-4. **Prefer `:TRY` / `:CATCH` / `:FINALLY` over `:ERROR` / `:RESUME`** in new code.
+<!-- rules: id=prefer_exitcase,member_access_no_spaces,comment_regions_for_grouping,prefer_try_over_error_resume -->
+- End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+- Prefer no spaces around `:` in member access even though SSL accepts spaced forms.
+- Use `/* region` / `/* endregion` comments for editor grouping instead of `:REGION` / `:ENDREGION`.
+- Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.
+<!-- /rules -->
 
 ## 1. High-Level Overview
 
@@ -44,20 +48,23 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Variable Declaration & Scope
 
-* **Declaration:** Variables must be declared before use using `:DECLARE`.
+* **Declaration:** <!-- rule: declare_before_use -->Declare variables before use with `:DECLARE`.<!-- /rule --> This is a style rule, not a language rule: SSL does not enforce it (see §0, item 3).
     * Syntax: `:DECLARE varName1, varName2;`
     * **Default Value:** All declared variables start as empty string `""`.
     * **Dynamic Typing:** Variables are dynamically typed—their type changes when assigned a new value.
-    * **Re-declaration:** Re-declaring an existing variable with `:DECLARE` is silently ignored — no error is thrown and the existing value is preserved.
-    * *Constraint:* `:DEFAULT` cannot be used with `:DECLARE`.
+    * **No argument type checks before run time:** Whether a built-in function rejects a wrong-typed argument depends on the installation's `CompilerCheckParamType` setting. Where it is off, a string passed for a number reads as `0` and a number passed for a string reads as `""`, so the call quietly returns a wrong answer, and a non-array passed where an array is expected can crash the server process. Pass the documented types and do not rely on the setting.
+    * **Re-declaration:** <!-- rule: redeclare_is_noop -->Re-declaring an existing variable with `:DECLARE` is silently ignored — no error, existing value preserved.<!-- /rule -->
+    * *Constraint:* <!-- rule: no_default_on_declare_line -->Do not put `:DEFAULT` on a `:DECLARE` line.<!-- /rule -->
 
-* **Variable Lookup Order:** When a variable is referenced, lookup proceeds as **local scope** (current procedure) → **caller scopes** (up the call stack) → **public variables** (`:PUBLIC`). Accessing a caller's variable works but generates a warning — always declare variables locally with `:DECLARE`.
+* **Variable scope:** <!-- rule: variable_lookup_order -->Variable lookup: local scope → caller scopes (up call stack) → public variables (`:PUBLIC`).<!-- /rule --> Accessing a caller's variable works but generates a warning — always declare variables locally with `:DECLARE`.
+
+* **Predefined globals are installation variables, not language constants.** Names such as `CRLF`, `MYUSERNAME`, `UserLang` and `STARLIMSDEPT` are `:PUBLIC` variables that a base installation declares at startup. `CR`, `LF`, `TAB`, `sTab`, `sSQ`, `sDQ`, `MYUSERID`, `MYLANGID`, `MYDEPT` and `MYSITE` are **not** declared on a base installation, and reading one raises `Variable [<name>] is undefined!`. <!-- rule: guard_optional_globals -->Do not read a name the base installation does not declare (`CR`, `LF`, `TAB`, `sDQ`, `MYUSERID`, ...); use `Chr(...)` or the documented global instead, and guard a name that only some installations declare with `IsDefined("<name>")`.<!-- /rule --> Use `Chr(13)`, `Chr(10)` and `Chr(9)` (or `CRLF` for a line break), `Chr(34)` for a double quote, `MYUSERNAME` for the user, `UserLang` for the language and `STARLIMSDEPT` for the department.
 
 * **Parameters & Defaults:**
-    * **Placement:** `:PARAMETERS` must appear before any other statements in a script or procedure body. Inside a procedure, `:PARAMETERS` must immediately follow the `:PROCEDURE` line.
-    * **Defaults:** `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`).
-    * **`:INCLUDE`** is resolved as a textual paste before the rest of the file is read; it should appear early. **`:DECLARE`** and **`:PUBLIC`** are regular statements and can appear anywhere.
-    * **Recommended conventional order:** `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
+    * **Placement:** <!-- rule: parameters_first -->`:PARAMETERS` must appear before any other statements in a script or procedure body.<!-- /rule --> Inside a procedure, that puts `:PARAMETERS` immediately after the `:PROCEDURE` line.
+    * **Defaults:** <!-- rule: default_after_parameters -->`:DEFAULT` must immediately follow `:PARAMETERS`.<!-- /rule --> Zero or more `:DEFAULT` lines may follow, but only after `:PARAMETERS`. A `:DEFAULT` applies when the argument is omitted, passed as `NIL`, or left as an empty position (`{a,,c}`), so no extra `NIL` check is needed after it.
+    * **`:INCLUDE`** is resolved as a textual paste before the rest of the file is read. <!-- rule: include_early -->Place `:INCLUDE` early — it textually includes the referenced source before the script runs.<!-- /rule --> **`:DECLARE`** and **`:PUBLIC`** are regular statements and can appear anywhere.
+    * **Order:** <!-- rule: script_declaration_order -->Recommended script order is `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.<!-- /rule -->
     * Syntax:
       ```ssl
       :PROCEDURE MyProc;
@@ -80,8 +87,8 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Loop Control:** `:EXITFOR;`, `:EXITWHILE;`, `:LOOP;` (continues to next iteration).
 
 * **Case Blocks (Strict Structure):**
-    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is rejected). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
-    * **Style Guidance:** Include `:OTHERWISE` for default handling (advisory — not required by the language). End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch. <!-- rule: begincase_requires_case -->`:BEGINCASE` requires at least one `:CASE` block.<!-- /rule --> An empty `:BEGINCASE;` `:ENDCASE;` is rejected. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run. <!-- rule: exitcase_last_in_branch -->`:EXITCASE` must be the last statement of its `:CASE`/`:OTHERWISE` branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error.<!-- /rule -->
+    * **Style Guidance:** <!-- rule: otherwise_for_default_handling -->Include `:OTHERWISE` for default handling; the language does not require it.<!-- /rule --> <!-- rule: prefer_exitcase -->End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.<!-- /rule -->
     * Syntax:
       ```ssl
       :BEGINCASE;
@@ -95,8 +102,8 @@ Authoritative rules describe documented language behavior; style recommendations
       ```
 
 * **Labels & Branching (Legacy — prefer `:IF`/`:WHILE`/`:FOR` in new code):**
-    * `:LABEL` and `Branch()` are legacy flow control. Prefer structured constructs in new and refactored code.
-    * The `Branch` target string must include the word `LABEL`: `:LABEL SKIP;` is targeted as `Branch("LABEL SKIP")` and `:LABELSKIP;` as `Branch("LABELSKIP")`. Omitting `LABEL` from the Branch target string causes a runtime error.
+    * `:LABEL` and `Branch()` are legacy flow control. <!-- rule: label_is_legacy -->Prefer structured constructs (`:IF`/`:WHILE`/`:FOR`) over legacy `:LABEL` and `Branch()` in new code.<!-- /rule -->
+    * <!-- rule: branch_target_label -->Include the word `LABEL` in a `Branch()` target: `:LABEL SKIP;` is targeted as `Branch("LABEL SKIP")`, and the match is exact.<!-- /rule --> Likewise, `:LABELSKIP;` is targeted as `Branch("LABELSKIP")`. A target without the word `LABEL`, or with different spacing, matches no label. Labels are visible only within their own procedure or script body. A lowercase `:label` is not a label.
     * Example:
       ```ssl
       :IF ! Empty(bSomeVar);
@@ -111,11 +118,11 @@ Authoritative rules describe documented language behavior; style recommendations
       ```
 
 * **Error Handling:**
-    * **Try/Catch/Finally:** Structured exception handling (preferred). `:CATCH` and `:FINALLY` are both optional individually, but at least one must be present. Valid forms: `TRY...CATCH...ENDTRY`, `TRY...FINALLY...ENDTRY`, `TRY...CATCH...FINALLY...ENDTRY`. When both are present, **`:CATCH` must precede `:FINALLY`**.
-      **Body requirements:** The `:TRY` body requires **at least one statement**. The `:CATCH` body allows **zero or more statements** (an empty `:CATCH` block is valid). The `:FINALLY` body, if present, requires **at least one statement**.
-      **Only one `:CATCH` block is allowed per `:TRY`** — there is no multi-catch.
-      **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Message`, `:Description`, `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx`, `:InnerException`, and `:NETException`.
-      **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **rejected**.
+    * **Try/Catch/Finally:** Structured exception handling (preferred). <!-- rule: try_requires_handler -->`:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare `:TRY ... :ENDTRY` is invalid.<!-- /rule --> Valid forms: `TRY...CATCH...ENDTRY`, `TRY...FINALLY...ENDTRY`, `TRY...CATCH...FINALLY...ENDTRY`. <!-- rule: catch_before_finally -->When a `:TRY` has both handlers, `:CATCH` must precede `:FINALLY`.<!-- /rule -->
+      **Body requirements:** <!-- rule: try_and_finally_bodies_not_empty -->The `:TRY` body requires at least one statement, and so does a `:FINALLY` body; a `:CATCH` body may be empty.<!-- /rule -->
+      **One handler:** <!-- rule: single_catch_per_try -->Only one `:CATCH` block is allowed per `:TRY`; there is no multi-catch.<!-- /rule -->
+      **`:CATCH` does not name the exception.** <!-- rule: get_last_ssl_error_in_catch -->Use `GetLastSSLError()` inside `:CATCH` to retrieve error details.<!-- /rule --> It returns an `SSLError` object. Common `SSLError` members include `:Description` (the error message; `:Message` is an alias), `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx` (multi-line diagnostic text with stack details and nested causes), `:InnerException`, and `:NETException`.
+      **`:FINALLY` restrictions:** <!-- rule: no_control_exit_in_finally -->Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY`.<!-- /rule --> They are rejected.
       ```ssl
       :TRY;
           /* Code that might error;
@@ -127,42 +134,52 @@ Authoritative rules describe documented language behavior; style recommendations
       :ENDTRY;
       ```
     * **Raising errors:** `RaiseError(sMessage[, sLocation[, nErrorCode[, oInnerException]]])` throws immediately. Inside a `:TRY` block, the remaining statements in that block are skipped and `:CATCH` gets control — `GetLastSSLError()` retrieves the raised error (`sLocation` becomes `:Operation`, `nErrorCode` becomes `:Code`) — then execution continues normally after `:ENDTRY`. An uncaught error propagates up the call stack; if nothing catches it, the invocation fails and the end user sees a server error. A `NIL` message itself raises `RaiseError(): error message cannot be null.`
-      **Placement doctrine:** Place `RaiseError` directly inside the `:TRY` block whose `:CATCH` handles it, so the raise can never escape. Never call `RaiseError` inside `:CATCH` — the error handler must not become the thing that crashes. Every raise needs a `:TRY`/`:CATCH` (or legacy `:ERROR`/`:RESUME`) boundary somewhere up the call stack. Mark raise-only helper procedures `/*@private;` so callers cannot invoke them without the entry point that catches their errors. After handling an error in `:CATCH`, call `ClearLastSSLError()` so stale error state does not leak into later handling.
-    * **Error/Resume (Legacy):** `:ERROR` defines a handler for all subsequent code in the current scope and must contain at least one statement. `:RESUME` inside the handler switches execution to resume mode, which wraps each subsequent statement in its own individual try/catch to allow execution to continue after failures — this has significant performance cost. Prefer `:TRY/:CATCH/:FINALLY` when narrower block-scoped handling fits the code.
+      **Placement doctrine:** <!-- rule: raise_error_inside_handling_try -->Place `RaiseError` directly inside the `:TRY` block whose `:CATCH` handles it, so the raise can never escape.<!-- /rule --> <!-- rule: no_raise_error_in_catch -->Never call `RaiseError` inside `:CATCH` — the error handler must not become the thing that crashes.<!-- /rule --> <!-- rule: every_raise_has_handler_boundary -->Every raise needs a `:TRY`/`:CATCH` (or legacy `:ERROR`/`:RESUME`) boundary somewhere up the call stack; an uncaught error fails the invocation and surfaces to the end user as a server error.<!-- /rule --> <!-- rule: private_raise_only_helpers -->Mark raise-only helper procedures `/*@private;` so callers cannot bypass the entry point that catches their errors.<!-- /rule --> <!-- rule: clear_last_ssl_error_after_handling -->Call `ClearLastSSLError()` after handling an error in `:CATCH`, so stale error state does not leak into later handling.<!-- /rule -->
+    * **Error/Resume (Legacy):** `:ERROR;` starts the **last** section of a procedure and runs to `:ENDPROC`. It protects the statements **before** it; the statements after it are the handler body, which runs only when a protected statement fails, and must contain at least one statement. A handler placed first protects nothing. Without `:RESUME`, the first failure skips the rest of the protected region, runs the handler, and ends the procedure. With `:RESUME;` as the last handler statement, every failing protected statement runs the handler and execution continues at the statement after the one that failed — this has significant performance cost. <!-- rule: prefer_try_over_error_resume -->Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.<!-- /rule -->
       ```ssl
+      :PROCEDURE LoadSettings;
+          :DECLARE sTitle, oErr;
+
+          /* Protected region - every statement before :ERROR;
+          sTitle := ReadText("settings/title.txt");
+
+          :RETURN sTitle;
       :ERROR;
-          /* Handle any error — applies to all code below;
+          /* Handler - runs only when a statement above fails;
           oErr := GetLastSSLError();
+          UsrMes("Read failed: " + oErr:Description);
       :RESUME;
+      :ENDPROC;
       ```
       **Refactoring note:** When narrowing error scope, targeted `:TRY`/`:CATCH`/`:FINALLY` blocks provide more control than blanket resume-mode handling.
 
 ### Functions & Procedures
 
-* **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`. More than 20 parameters on a procedure or method triggers a performance warning; prefer grouping related state into arrays/objects.
-* **Return Values:** Use `:RETURN value;` to return a value from a procedure. Without `:RETURN`, procedures return no value / an empty result.
+* **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`. <!-- rule: max_params_warning -->Keep procedures to at most 8 parameters; more than 20 parameters on a procedure or method draws a warning, so group related state into arrays or objects.<!-- /rule -->
+* **Return Values:** Use `:RETURN value;` to return a value from a procedure. A procedure, method or script that ends without `:RETURN value;` (no `:RETURN`, or a bare `:RETURN;`) returns the empty string `""`, not `NIL`: `Empty(result)` is `.T.` but `result == NIL` is `.F.`. A `Constructor` returns nothing.
 * **Calling Convention (CRITICAL):**
-    * **Custom Procedures:** You **cannot** call custom procedures directly (e.g., `MyProc()`).
-    * **Same File:** Use `DoProc("ProcedureName", {arg1, arg2});` - second parameter is an array of arguments.
-    * **Different File / Entry Point:** Use `ExecFunction("Category.Script", {arg1, arg2});` - second parameter is an array of arguments.
-    * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
+    * **Custom Procedures:** <!-- rule: no_direct_procedure_calls -->Do not call custom script procedures directly as `MyProc()`.<!-- /rule -->
+    * **Same File:** <!-- rule: doproc_for_same_file_procedures -->Use `DoProc("ProcName", {args})` for same-file script procedures.<!-- /rule --> The second parameter is an array of arguments.
+    * **Different File:** <!-- rule: execfunction_for_external_scripts -->Use `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external script entry points.<!-- /rule --> The second parameter is an array of arguments; the three-segment form calls one procedure of the script.
+    * **One-segment `ExecFunction("Name")`** looks for a script in the default categories, not a procedure in the current script. Use `DoProc` for same-file procedures.
     * **First segment is never ambiguous:** Applications and server-script categories share a single namespace — a category cannot be created with the name of an existing application. The first segment of a dotted path therefore always resolves to exactly one container; there is no collision or precedence rule to consider.
-    * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
-      `DoProc("MyProc", {param1,,param3,,param5});` is valid, but
-      `DoProc("MyProc", {param1, , param3, , param5});` is not.
-    * **Omit trailing optional parameters** rather than passing empty values. For example, write `DoProc("MyProc")` not `DoProc("MyProc", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
+    * **Skip Parameters:** An empty position passes `NIL`. <!-- rule: skip_commas_adjacent -->Use adjacent commas with no spaces for skipped optional parameters.<!-- /rule --> Write
+      `DoProc("MyProc", {param1,,param3,,param5});` rather than
+      `DoProc("MyProc", {param1, , param3, , param5});`. Both forms are valid and behave the same.
+    * **Trailing optional parameters:** <!-- rule: empty_optional_param_array -->Do not pass empty trailing optional parameters when they can be omitted.<!-- /rule --> For example, write `DoProc("MyProc")` not `DoProc("MyProc", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
     * **Built-in Functions:** Can be called directly with standard syntax (e.g., `Len(sString)`).
 
 ### Objects & User-Defined Types
 
 * **Object Creation:**
-    * **Built-in Class:** `oObject := ClassName{};` — built-in classes cannot be instantiated via `CreateUdObject`. Known built-in classes: `AzureStorage`, `BatchSupport`, `CDataTable`, `Email`, `EnterpriseExporter`, `FtpsClient`, `HtmlConverter`, `PatcherSupport`, `PdfSupport`, `RegSetup`, `SDMS`, `SDMSDocUploader`, `SSLBaseDictionary`, `SSLCodeProvider`, `SSLDataset`, `SSLExpando`, `SSLIntDictionary`, `SSLRegex`, `SSLStringDictionary`, `Sequence`, `TablesImport`, `WebServices`.
+    * **Built-in Class:** `oObject := ClassName{};`. <!-- rule: builtin_classes_curly_braces -->Instantiate directly creatable built-in classes with curly braces, for example `Email{}`.<!-- /rule --> <!-- rule: no_createudobject_for_builtins -->Do not instantiate built-in classes with `CreateUdObject`.<!-- /rule --> Known built-in classes: `AzureStorage`, `BatchSupport`, `CDataTable`, `Email`, `EnterpriseExporter`, `FtpsClient`, `HtmlConverter`, `PatcherSupport`, `PdfSupport`, `RegSetup`, `SDMS`, `SDMSDocUploader`, `SSLCodeProvider`, `SSLDataset`, `SSLIntDictionary`, `SSLRegex`, `SSLStringDictionary`, `Sequence`, `TablesImport`, `WebServices`.
+    * **No direct constructor:** `SSLExpando{}` raises the compile-time error `Invalid built-in class: SSLExpando` — create dynamic objects with `CreateUdObject()`. `SSLBaseDictionary` has no direct constructor — use `SSLStringDictionary{}` or `SSLIntDictionary{}`.
     * **Dynamic Object:** `oExp := CreateUdObject();` (creates an empty `SSLExpando`)
-    * **User-Defined Class:** `oCustom := CreateUdObject("MyClass");` or `oCustom := CreateUdObject("MyClass", {arg1, arg2});` — for user-defined `:CLASS` files only
+    * **User-Defined Class:** `oCustom := CreateUdObject("Samples.SampleTicket");` or `oCustom := CreateUdObject("Samples.SampleTicket", {arg1, arg2});` — for user-defined `:CLASS` files only. <!-- rule: createudobject_category_qualified -->Use `CreateUdObject("Category.ClassName")` for user-defined classes; a bare class name is looked up only among the default categories.<!-- /rule --> A bare name raises `There is no script with name: <name> among default categories.` for a class in your own category.
     * **Anonymous Object:** `oAnon := CreateUdObject({{"PropName", value}, ...});` (creates `SSLExpando` with properties)
 
 * **Property Access:** Use colon notation: `oObject:PropertyName := value;`
-    * SSL also accepts spaced member access (`oObject : PropertyName` / `oObject : Method()`), but style should prefer no spaces around `:`.
+    * SSL also accepts spaced member access (`oObject : PropertyName` / `oObject : Method()`). <!-- rule: member_access_no_spaces -->Prefer no spaces around `:` in member access even though SSL accepts spaced forms.<!-- /rule -->
     * Example:
       ```ssl
       oEmail:To := {"user@example.com"};
@@ -172,24 +189,24 @@ Authoritative rules describe documented language behavior; style recommendations
       ```
 
 * **Class Definition:**
-    * `:CLASS [ClassName];` defines a class and continues until end of file (no end keyword). The class name is syntactically optional, but new and refactored code should always provide an explicit class name.
-    * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
+    * `:CLASS [ClassName];` defines a class. <!-- rule: class_ends_at_eof -->`:CLASS` continues to end of file; there is no `:ENDCLASS`.<!-- /rule --> <!-- rule: explicit_class_name -->Give every class an explicit name in `:CLASS`; the name is syntactically optional.<!-- /rule -->
+    * `:INHERIT Category.ClassName;` specifies inheritance (optional, follows `:CLASS`). <!-- rule: inherit_qualified_name -->Write `:INHERIT` with the full `Category.ClassName` of the parent class; a plain class name is a compile-time error.<!-- /rule --> Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
-    * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value.
-    * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. An unqualified `DoProc("ProcName", ...)` is rejected inside class methods; fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
-    * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
-    * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
-    * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
-    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
+    * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. <!-- rule: class_member_order -->Keep class member order as `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`.<!-- /rule --> <!-- rule: constructor_return_value -->`:RETURN` inside a `Constructor` cannot return a value.<!-- /rule --> <!-- rule: base_constructor_with_parameters -->With `:INHERIT`, the parent's parameterless `Constructor` runs automatically first; a parent `Constructor` that takes parameters runs only if the derived `Constructor` calls `Base:Constructor(args)`.<!-- /rule -->
+    * **Class method calls:** <!-- rule: me_base_for_method_calls -->Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.<!-- /rule --> <!-- rule: doproc_in_class -->Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.<!-- /rule --> Fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
+    * **Class fields must be qualified.** <!-- rule: field_access_via_me -->Inside class methods, access fields through `Me:fieldName` or `Base:fieldName`.<!-- /rule --> Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. A bare name follows normal variable lookup (local, then caller scopes, then publics): a read with nothing of that name in reach raises `Variable [name] is undefined!`, and a write may land on a caller's or a public variable. Neither touches the field.
+    * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. <!-- rule: execfunction_not_class_file -->Point `ExecFunction` at a script entry point or script procedure, never at a class file; create class instances with `CreateUdObject` and call their methods.<!-- /rule -->
+    * **Underscore-prefixed members:** <!-- rule: underscore_private_convention -->Underscore-prefixed members (`_name`) are excluded from reflection — this is the SSL private convention.<!-- /rule --> For example, `_myHelper` is effectively private.
+    * **Access modifiers (scripts only):** `/*@private;` and `/*@protected;` restrict access to a procedure. Both block calls from other scripts; procedures in the same script can still call it with `DoProc`. Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments, and a blank line between the modifier and `:PROCEDURE` breaks the association. <!-- rule: visibility_annotation_form -->Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.<!-- /rule --> <!-- rule: visibility_annotation_exact_form -->Write an access modifier exactly as `/*@private;` or `/*@protected;`: lowercase, with no space between `/*` and `@`.<!-- /rule --> <!-- rule: visibility_annotations_script_only -->Do not put `/*@private;` or `/*@protected;` on class methods; they affect script procedures only, and class methods are always public.<!-- /rule -->
       ```ssl
       /*@private;
       :PROCEDURE InternalHelper;
           /* This procedure cannot be called from other scripts;
       :ENDPROC;
       ```
-    * **`Me` form:** Self-reference to the current class instance. Use `Me:fieldName` or `Me:MethodName(args)`. Can only be used inside a `:CLASS` definition.
-    * **`Base` form:** Reference to the parent class in a `:CLASS` with `:INHERIT`. Must always be followed by `:MemberName` — cannot stand alone. Use `Base:MethodName(args)` to call overridden parent methods, or `Base:fieldName` to access an inherited field.
-    * **Terminology:** `:DECLARE` slots on a class are **fields**. Reserve "property" for `SSLExpando` / `AddProperty` / `CreateUdObject` anonymous-object members, which are a separate runtime mechanism.
+    * **`Me` form:** Self-reference to the current class instance. Use `Me:fieldName` or `Me:MethodName(args)`. <!-- rule: me_inside_class_only -->Use `Me` only inside a `:CLASS` definition.<!-- /rule -->
+    * **`Base` form:** Reference to the parent class. <!-- rule: base_member_access -->Use `Base` only in a class with `:INHERIT`, and always as `Base:MemberName`; it cannot stand alone.<!-- /rule --> Use `Base:MethodName(args)` to call overridden parent methods, or `Base:fieldName` to access an inherited field.
+    * **Terminology:** <!-- rule: field_vs_property_terminology -->Use field for `:DECLARE` slots on classes, and reserve property for dynamic-object members, `SSLExpando` members, and `AddProperty`-created members.<!-- /rule --> Those members are a separate runtime mechanism.
     * Example:
       ```ssl
       :CLASS MyClass;
@@ -214,17 +231,17 @@ Authoritative rules describe documented language behavior; style recommendations
       :ENDPROC;
       ```
 
-* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects, available only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is; in non-endpoint scripts the identifiers are not bound and references will fail at runtime.
+* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects that are meaningful only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is. They only describe an HTTP call inside endpoint scripts, but referencing them elsewhere does not raise an error (in a script run from Designer, `Request:UserAgent` returns the Designer client's user agent and `Response:Write` completes without an error), so neither a successful read nor a `:TRY` guard proves the script is running as an endpoint.
 
 ### Code Organization
 
-* **Code Folding (Comment Style):** Use `/* region` and `/* endregion` comments for IDE code folding.
+* **Code Folding (Comment Style):** <!-- rule: comment_regions_for_grouping -->Use `/* region` / `/* endregion` comments for editor grouping instead of `:REGION` / `:ENDREGION`.<!-- /rule -->
   ```ssl
   /* region Database Operations;
       /* Code here;
   /* endregion;
   ```
-* **Includes:** `:INCLUDE LibraryName;` or `:INCLUDE Category.ScriptName;` to include external SSL files. Resolved as a textual paste; place early in the file after `:PARAMETERS`/`:DEFAULT`.
+* **Includes:** `:INCLUDE LibraryName;` or `:INCLUDE Category.ScriptName;` to include external SSL files. Resolved as a textual paste. <!-- rule: include_early -->Place `:INCLUDE` early — it textually includes the referenced source before the script runs.<!-- /rule -->
 * **Public Variables:** `:PUBLIC varName1, varName2;` to declare global/public variables. Can appear anywhere in the statement flow.
 
 ### Inline Code & Regions (Functional Constructs)
@@ -249,18 +266,20 @@ Authoritative rules describe documented language behavior; style recommendations
 ### Comments
 
 * **Syntax:** Starts with `/*` and **must end with a semicolon `;`**.
-* **Single-line:** `/* This is a comment;`
-* **Multi-line:**
+* **Single-line:** <!-- rule: single_line_comment_form -->Write a single-line comment as `/* comment text here;`.<!-- /rule -->
+* **Multi-line:** the comment ends at the first `;`, so any layout parses. <!-- rule: multi_line_comment_layout -->Lay out a multi-line comment with `/*` alone on the first line, then the text lines, then `;` alone on the last line.<!-- /rule --> The schema shows it in `comments.examples.multi_line`:
   ```ssl
-  /* This is a
-     multi-line comment
-     that spans several lines;
+  /*
+  This is a multi-line comment
+  that spans several lines.
+  ;
   ```
 * **Warning — semicolons inside comments:** Because `;` terminates the comment, any semicolon within the comment text will prematurely end it. For example:
   ```ssl
   /* Set x := 0; then increment;
   ```
-  SSL reads this as the complete comment `/* Set x := 0;` followed by `then increment;`, which it then tries to run as a statement (and rejects). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
+  SSL reads this as the complete comment `/* Set x := 0;` followed by `then increment;`, which it then tries to run as a statement (and rejects). <!-- rule: no_semicolon_in_comment_text -->Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.<!-- /rule --> Restructure the comment to work around this limitation.
+* **Access modifiers are not comments:** `/*@private;` and `/*@protected;` use comment syntax but are access modifiers (see Objects & User-Defined Types above), so tools and refactors keep them as they are. <!-- rule: visibility_annotation_exact_form -->Write an access modifier exactly as `/*@private;` or `/*@protected;`: lowercase, with no space between `/*` and `@`.<!-- /rule --> <!-- rule: visibility_annotation_form -->Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.<!-- /rule -->
 
 ---
 
@@ -287,7 +306,7 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 ### Primitive Types & Literals
 
 * **Boolean:** `.T.` (True) and `.F.` (False).
-* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` function to check if a value is null, empty string, zero, or `.F.`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. Do not call instance methods on a `NIL` value (raises an error).
+* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` to check for an empty value: it returns `.T.` for `NIL`, an empty or whitespace-only string (spaces, tabs, line breaks), `0`, `.F.`, an empty date and an empty array. `Nothing(value)` is broader: it is also `.T.` for any value whose string form is `"0"`, such as the string `"0"`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. `Empty()` is not a NIL test: `Empty(0)` and `Empty(.F.)` are also `.T.`, so when `0` or `.F.` is a valid value, test for absence with `value == NIL`. Do not call instance methods on a `NIL` value (raises an error).
 * **Strings:**
     * Double quotes: `"Text"`
     * Single quotes: `'Text'`
@@ -319,10 +338,13 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 **Key Behaviors:**
 - **Equality (`=`)**: Returns `.T.` if the right operand is empty string OR if the left operand starts with the right operand
 - **Exact Equality (`==`)**: Returns `.T.` only if strings are exactly equal
+- **Not-equals (`!=`, `<>`, `#`)**: Exact comparison, not the prefix match of `=`
+- **Ordering (`<`, `>`, `<=`, `>=`)**: Strings order alphabetically; case only breaks ties, lowercase first (`"a" < "B"` and `"a" < "A"` are both `.T.`). `Max` and `Min` compare strings the same way.
+- **Case sensitivity of replacement:** `Replace` matches case-insensitively; `StrTran` matches case-sensitively.
 
 ### Number Details
 
-SSL has a single numeric type — all numbers are stored as 64-bit floating-point (`double`). There is no separate integer type. Division always produces a floating-point result (`5 / 2` yields `2.5`, not `2`). The `Integer()` function provides explicit truncation to whole numbers. Bitwise built-ins (`_AND`, `_OR`, `_XOR`, `_NOT`) and shift operators (`<<`, `>>`) require integer-valued operands (whole numbers) and raise errors on fractional values.
+SSL has a single numeric type for whole and fractional values. The underlying native type varies with the value — whole numbers report `System.Int32` and fractions `System.Double` — so the native `:` members available differ between them. Division always produces a floating-point result (`5 / 2` yields `2.5`, not `2`). The `Integer()` function provides explicit truncation to whole numbers. Bitwise built-ins (`_AND`, `_OR`, `_XOR`, `_NOT`) and shift operators (`<<`, `>>`) require integer-valued operands (whole numbers) and raise errors on fractional values.
 
 | Operator | SSL Syntax | Description |
 |----------|------------|-------------|
@@ -355,9 +377,10 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 
 **Key Behaviors:**
 - `.AND.` and `.OR.` use **short-circuit evaluation**: if the first operand determines the result, the second operand is not evaluated (e.g., `.F. .AND. SomeFunction()` will not call `SomeFunction()`)
+- **No truthy/falsy coercion.** Conditions in `:WHILE` and `:CASE`, and the left operand of `.AND.`/`.OR.`, must be logical values; other types raise an error. The right operand is not converted: `.F. .OR. "x"` returns `"x"`, so keep both operands boolean.
 - `Empty()` returns `.T.` if value is `.F.` (false equals empty)
-- `ToString()` returns `.T.` or `.F.`
-- `ToJson()` returns `"true"` or `"false"`
+- The native `bFlag:ToString()` returns `"True"` or `"False"`, not `.T.`/`.F.`; use `LimsString(bFlag)` for `.T.`/`.F.` text
+- `ToJson(bFlag)` returns `"true"` or `"false"`
 
 ### Date Details
 
@@ -367,30 +390,33 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 | Subtraction | `-` | Subtracts days from date, OR calculates difference between two dates (returns Number days) |
 
 **Key Behaviors:**
-- `Empty()` returns `.T.` if date equals `DateTime.MinValue`
-- `ToString()` returns date in `MM/dd/yyyy` format, or `"  /  /    "` if empty
-- `ToJson()` returns ISO 8601 formatted date string based on DateTimeKind
+- `Empty()` returns `.T.` for an empty date
+- The native `dDate:ToString()` returns date **and time** in the server's format (such as `9/30/2026 12:00:00 AM`), not a fixed `MM/dd/yyyy`. Pass a format (`dDate:ToString("yyyy-MM-dd")`) or use `DToC(dDate)` when the format matters
+- **Any `:` member access on an empty date raises** — guard with `Empty(dDate)` first
+- `ToJson(dDate)` returns a quoted timestamp string whose zone suffix depends on the date kind, or `null` for an empty date
 
 ### Array Details
 
 | Property | Description |
 |----------|-------------|
 | **1-based indexing** | First element is at index 1, not 0 |
-| `Count` | Returns the number of elements |
-| Deep clone | The `clone()` method recursively clones all elements |
+| Length | Use `ALen(aList)` or `Len(aList)`, or the native `aList:Length`. `aList:Count` raises `Invalid property: Count` |
+| Copy | The native `aList:Clone()` (capital C) copies the **top level only** — nested arrays are shared. `aList:clone()` raises `Invalid method: clone` |
+
+Arrays have no SSL-defined `:` members: calls such as `aList:Append(x)`, `aList:IsEmpty()` or `aList:ToJson()` raise. Use the array functions (`AAdd`, `ALen`, `AScan`, ...) instead.
 
 ### .NET Method Dispatch on Built-in Types
 
-SSL's built-in scalar and array types are backed by underlying .NET values, and member access with `:` forwards to that .NET object when no SSL-side member matches. This means a string value supports `:Length`, `:ToUpper()`, `:Substring(...)`, `:IndexOf(...)`, etc., a date value supports `:Year`, `:AddDays(...)`, a number value supports `:ToString(...)`, an array value exposes its underlying `:Count` and list members, and a boolean value supports `:ToString()`. Prefer SSL built-in functions (`Len`, `Upper`, `SubStr`, ...) for ordinary work — the implicit `:` dispatch is useful when the SSL surface does not cover what you need (formatted conversions, culture-aware comparisons, .NET-specific helpers), and it returns whatever the underlying .NET method returns, which may not be an SSL-friendly type. The same mechanism lets `MakeNETObject(value)` produce a wrapped value (`netobject`) that you then call .NET members on with `:`.
+SSL's built-in scalar and array types are backed by underlying .NET values. Strings, numbers, booleans, dates and arrays have **no SSL-defined members**, so every `:` call on one of them reaches a native .NET member or raises. Native member names are **case-sensitive** (`sText:ToUpper()` works, `sText:toupper()` raises). A string value supports `:Length`, `:ToUpper()`, `:Substring(...)`, `:IndexOf(...)`, etc., a date value supports `:Year`, `:AddDays(...)`, a number value supports `:ToString(...)`, an array value exposes `:Length` and `:Clone()` (no `:Count`), and a boolean value supports `:ToString()` (returning `"True"`/`"False"`). Prefer SSL built-in functions (`Len`, `Upper`, `SubStr`, ...) for ordinary work — the implicit `:` dispatch is useful when the SSL surface does not cover what you need (formatted conversions, culture-aware comparisons, .NET-specific helpers), and it returns whatever the underlying .NET method returns, which may not be an SSL-friendly type. The same mechanism lets `MakeNETObject(value)` produce a wrapped value (`netobject`) that you then call .NET members on with `:`.
 
 ### Operators Summary
 
-* **Assignment:** `:=`
-* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=`
+* **Assignment:** `:=` — the target can be a variable, an object property (`oTask:Status`) or an array element (`aItems[1]`). Assignment has the lowest precedence, is right-associative and evaluates to the assigned value, so `sStatus := sDefault := "PENDING";` is valid. <!-- rule: one_assignment_per_statement -->Prefer one assignment per line; use a chained assignment only when every target should receive the same value.<!-- /rule -->
+* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=` — each evaluates to the updated left-side value, so it can appear inside a condition such as `(nIndex += 1) <= nCount`.
 * **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=` — prefer `!=` over `<>` or `#` for not-equals
 * **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`)
 * **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `**` (power), `%` (modulo)
-* **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value.
+* **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value. The target can be a variable, an array element (`aCounts[1]++`) or an object property (`oStats:nHits++`) holding a number or a date (a date steps by one day).
 * **String:** `+` (concatenation), `-` (trim+concat), `$` (contains)
 * **Bitwise (function call syntax):** `_AND(a, b)`, `_OR(a, b)`, `_XOR(a, b)`, `_NOT(a)`, `<<`, `>>`
 
@@ -400,7 +426,11 @@ SSL's built-in scalar and array types are backed by underlying .NET values, and 
 
 ### SQLExecute Parameter Substitution
 
-`SQLExecute` is the **only** SSL database function that supports `?VarName?` dynamic variable substitution. All other database functions (`RunSQL`, `LSearch`, `LSelect`, `GetDataSet`) use positional `?` parameters with explicit value arrays.
+`SQLExecute` is the **only** SSL database function that supports `?VarName?` dynamic variable substitution. There are three placeholder shapes:
+
+- `?name?` — `SQLExecute` only; substitutes the value of an in-scope variable or expression (input only — it never receives an output value).
+- Positional `?` with a values array — `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, `GetDataSet` and the other database functions. The values array is not always the third argument: `LSearch`, `LSelect` and `LSelectC` take it fourth, and `GetDataSet` second.
+- `@name` with a names array and a values array — `GetSSLDataset(sSql,, {"@sStatus"}, {sStatus})`.
 
 #### Expression Types Supported
 
@@ -451,13 +481,18 @@ sSQL := "SELECT * FROM Sample WHERE Status = ?'A'?";
 These functions use positional `?` placeholders with explicit value arrays:
 
 ```ssl
-:DECLARE aResults, bSuccess, sSQL, sStatus, sSampleID, sSampleName;
+:DECLARE aResults, oErr, sSQL, sStatus, sSampleID, sSampleName, sXml;
 sStatus := "A";
 sSampleID := "12345";
 
-/* RunSQL - DML only (INSERT/UPDATE/DELETE), returns Boolean;
+/* RunSQL - INSERT/UPDATE/DELETE or DDL, a failure raises by default;
 sSQL := "UPDATE Sample SET Status = ? WHERE SampleID = ?";
-bSuccess := RunSQL(sSQL,, {sStatus, sSampleID});
+:TRY;
+    RunSQL(sSQL,, {sStatus, sSampleID});
+:CATCH;
+    oErr := GetLastSSLError();
+    ErrorMes("Status update failed: " + oErr:Description);
+:ENDTRY;
 
 /* LSearch - Single value lookup with default;
 sSampleName := LSearch("SELECT SampleName FROM Sample WHERE SampleID = ?", "DefaultName",, {sSampleID});
@@ -485,71 +520,78 @@ sXml := GetDataSet("SELECT * FROM Sample WHERE Status = ?", {sStatus});
 | Function | Purpose | Returns |
 |----------|---------|---------|
 | `SQLExecute` | Universal - routes automatically | Array, XML String, Object (dataset wrapper), or Bool |
-| `RunSQL` | **DML only** (INSERT/UPDATE/DELETE) | `Boolean` — `.T.` on success; a SQL failure raises by default. It returns `.F.` only when SQL error ignoring is enabled (then check `GetLastSQLError`) |
+| `RunSQL` | INSERT/UPDATE/DELETE and DDL statements (no rows returned) | `Boolean` — `.T.` on success; under the default settings a SQL failure raises, so wrap the call in `:TRY`/`:CATCH`. It returns `.F.` only after `ShowSqlErrors(.F.)` (with SQL error ignoring still on, its default); then check `GetLastSQLError`. `IgnoreSqlErrors(.T.)` alone does not stop the raise |
 | `LSearch` | Single value lookups | Single value with default |
-| `LSelect` | Multi-row SELECT queries (behaves like `LSelect1` when `aFieldList` is omitted) | 2D Array |
+| `LSelect` | Multi-row SELECT queries; skip `aFieldList` (any value raises `fieldList != NULL - Not implemented yet.`) and pass values fourth: `LSelect(sSQL,,, {v})` | 2D Array |
 | `LSelect1` | Multi-row SELECT queries | 2D Array |
-| `LSelectC` | Multi-row SELECT queries (delegates to `LSelect`) | 2D Array |
+| `LSelectC` | Multi-row SELECT queries; same argument layout as `LSelect` — skip `aFieldList` | 2D Array |
 | `GetDataSet` | XML dataset output | XML String |
 
 ### UDObject Array Property Caveat
 
-When using **array expansion** (`IN (?arrayVar?)`) with `SQLExecute`, the array **must be a local variable**. If the array is stored as a UDObject property, passing it directly causes a runtime error: `"The current array has more than 1 dimmension."` Scalar UDObject properties (e.g., `?oObj:ID?`) are not affected — only arrays used for `IN` expansion.
+<!-- rule: udobject_array_in_clause -->Expand only a local array in `IN (?aValues?)`: a UDObject array property expanded directly raises a runtime error, so copy it to a local first.<!-- /rule --> The runtime error is `"The current array has more than 1 dimmension."` Scalar UDObject properties (e.g., `?oObj:ID?`) are not affected — only arrays used for `IN` expansion.
 
 ```ssl
 /* WRONG - runtime error: "The current array has more than 1 dimmension.";
-oFilter:StatusCodes := {"A", "P", "C"};
-aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:StatusCodes?)");
+oFilter:statusCodes := {"A", "P", "C"};
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:statusCodes?)");
 
 /* CORRECT - copy to a local variable first;
-oFilter:StatusCodes := {"A", "P", "C"};
-aStatusCodes := oFilter:StatusCodes;
+oFilter:statusCodes := {"A", "P", "C"};
+aStatusCodes := oFilter:statusCodes;
 aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 ```
 
 ### SQL Guidance (Style/Advisory)
 
-1. **Use simple variables** for best performance
-2. **Pre-compute complex expressions** into variables before the SQL
-3. **Use array expansion** for dynamic `IN` clauses instead of string building — **always from a local variable, not a UDObject property**
-4. **Avoid complex expressions** in production code
-5. **Use `RunSQL`** for DML statements (INSERT, UPDATE, DELETE)
-6. **Use `LSearch`** for single-value lookups with explicit parameters
-7. **Inside SQL strings**, use uppercase SQL keywords and functions; preserve
-   the author's casing for other SQL identifiers (force-folding is
-   dialect-conditional — safe on Oracle, but breaks case-sensitive SQL
-   Server collations)
+<!-- rules: id=complex_sql_placeholder,sql_in_clause_array_expansion,udobject_array_in_clause,runsql_non_dml,lsearch_for_single_values,sql_keyword_case,sql_identifier_case -->
+- Pre-compute complex values before interpolating them into `SQLExecute` placeholders.
+- Use `PrepareArrayForIn` or `SQLExecute` array expansion for dynamic `IN` clauses when appropriate; do not build an `IN` clause by hand when a safer array helper or parameter array is available.
+- Expand only a local array in `IN (?aValues?)`: a UDObject array property expanded directly raises a runtime error, so copy it to a local first.
+- Use `RunSQL` for statements that return no rows (`INSERT`, `UPDATE`, `DELETE`, DDL), inside `:TRY`/`:CATCH`.
+- Use `LSearch` for single-value lookups, with explicit parameters.
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+<!-- /rules -->
+
+Simple variables in placeholders also perform best.
 
 ### SQL Formatting Quick Reference (Canonical Compact)
 
 SQL in SSL strings uses **canonical compact** style. Full reference with examples
 for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 
-**Layout rules:**
-- SQL block indented 4 spaces inside the SSL string literal
-- Major clauses (`SELECT`, `FROM`, `WHERE`, `JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, etc.) at column 0 relative to that indent
-- `AND`/`OR` indented 2 spaces under their parent clause (`WHERE`, `ON`, `HAVING`)
-- `ON` indented 2 spaces under `JOIN` (but column 0 in `MERGE`)
-- `HAVING` indented 2 spaces under `GROUP BY`
-- `WHEN`/`ELSE` indented 2 spaces under `CASE`
-- `SELECT` continuations aligned to first column (col 7)
-- Trailing commas, ~90 char line target
+**Rules:**
 
-**Casing:** SQL keywords and SQL functions UPPERCASE; preserve the author's
-identifier casing (lowercase is an Oracle-only opt-in — see the reference's
-Identifier Casing section).
-
-**INSERT:** Opening `(` on the `INSERT INTO` line, columns indented 4 spaces, closing `)` on its own line. Same pattern for `VALUES`.
-
-**UPDATE:** `SET` on same line as `UPDATE`, assignments indented 4 spaces below.
-
-**Set operations:** Blank line before and after `UNION`/`INTERSECT`/`MINUS`.
-
-**SELECT list packing:** Pack short items on one line up to ~90 chars. Break complex expressions (CASE, nested functions) to their own line.
-
-**CASE consistency:** Within one CASE block, either all branches inline or all broken — don't mix. `ELSE` may stay inline when short.
-
-**Optimizer hints:** `/*+ HINT */` after the action keyword — never strip without understanding the purpose.
+<!-- rules: domain=sql level=style_only applies_to=embedded_sql -->
+- Use multiline SQL strings for non-trivial queries and put major clauses on separate lines.
+- Indent the whole SQL block 4 spaces inside the SSL string literal.
+- Start each major clause at column 0 relative to the 4-space indent: `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`.
+- Keep SQL lines to about 90 characters, breaking at logical points.
+- Put commas at the end of the line (trailing comma style), not at the start of the next line.
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+- Preserve external schema or object casing when the schema or object requires it.
+- Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
+- Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
+- Indent `HAVING` 2 spaces under `GROUP BY`.
+- When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`.
+- Indent `WHEN`/`ELSE` 4 spaces under `CASE`.
+- Align `END` with its `CASE`.
+- Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short.
+- When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.
+- Pack `SELECT` columns onto lines up to about 90 characters: short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line, and complex expressions (`CASE`, nested functions, subqueries) break to their own line.
+- Align `SELECT` continuation lines to the first column (column 7).
+- In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
+- In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.
+- Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
+- Keep an optimizer hint (`/*+ HINT */`) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
+- Do not put a trailing semicolon inside an embedded SQL string — `"SELECT ... ;"` is not the convention; end the SSL statement, not the SQL text.
+- Use ordinary SQL string literals; add the `N` prefix only when the target explicitly requires Unicode literal semantics.
+- Let ordinary text comparisons use the schema or database collation; force `COLLATE` only for a documented comparison contract, and explain why the schema collation is insufficient immediately before the query.
+- Use structured SQL with clause-per-line formatting and indentation that exposes lock and guard conditions.
+<!-- /rules -->
 
 **Example:**
 ```ssl
@@ -589,15 +631,23 @@ In SSL data source files, `:PARAMETERS` uses inline `:=` assignment for defaults
 ```
 
 **Rules:**
-- Inline `:=` defaults are **optional** per parameter — `:PARAMETERS patOrigRec;` with no default is valid
-- `:PARAMETERS;` with no parameters is an error
-- There is no separate `:DEFAULT` statement — defaults are inline
-- The preprocessor rewrites the above into standard form before the script runs:
-  ```ssl
-  :PARAMETERS sStatus, nMaxRows;
-  :DEFAULT sStatus, "A";
-  :DEFAULT nMaxRows, 100;
-  ```
+
+<!-- rules: id=datasource_default_required,datasource_empty_parameters,no_default_statements_in_datasource -->
+- Give every data-source parameter an inline `:=` default; a parameter without one makes the data source fail when it runs.
+- A data source that takes no parameters leaves the `:PARAMETERS` line out; an empty `:PARAMETERS;` is an error.
+- Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+<!-- /rules -->
+
+A parameter with no default fails whatever the caller passes, with
+`Incorrect synatx in :PARAMETERS. No default value for one or more parameters.`
+The preprocessor rewrites the example above into standard form before the
+script runs:
+
+```ssl
+:PARAMETERS sStatus, nMaxRows;
+:DEFAULT sStatus, "A";
+:DEFAULT nMaxRows, 100;
+```
 
 ### SQL Data Source Directives
 
@@ -636,22 +686,41 @@ Data sources are invoked at runtime via `RunDS`:
 /* Call with default parameters;
 oResult := RunDS("Category.DataSourceName");
 
-/* Call with parameter overrides (array of {name, value} pairs);
-oResult := RunDS("Category.DataSourceName", {{"sStatus", "P"}, {"nLimit", 25}});
+/* Call with parameter overrides, in :PARAMETERS order;
+oResult := RunDS("Category.DataSourceName", {"P", 25});
 
 /* Return as SSLDataset;
 oDs := RunDS("Category.DataSourceName",, "ssldataset");
 ```
 
-Use `GetDSParameters(sDsName)` to introspect a data source's parameter metadata at runtime.
+Parameter values bind by **position**, in the order the data source declares them in `:PARAMETERS`; names are not matched. Trailing values left out take their inline defaults, and extra values are ignored. Passing `{name, value}` pairs does not work: each pair is bound whole to one parameter.
+
+The return-type argument (`"ssldataset"`, `"xml"`, and so on) converts only an `SSLDataset` result. A STARLIMS-mode data source whose body returns an array (for example from `SQLExecute`) returns that array whatever return type the caller asks for; return an `SSLDataset` (for example from `GetSSLDataset`) when callers need the other return types.
+
+Use `GetDSParameters(sDsName)` to get a data source's parameter names in declaration order, which is the order `RunDS` binds them.
 
 ### Key Takeaways for Agents
 
-1. **Do not flag `:=` parameter syntax as incorrect** in data source files — it is the required form
-2. **Do not flag builder directives** (`:DSN`, `:TABLENAME`, etc.) as unknown keywords — they are preprocessed
-3. **Do not use `:DEFAULT` statements** in data source files — use inline `:=` syntax instead
-4. **Do not apply standard script layout rules** to data source files — they have different structure
-5. **The tree-sitter grammar and TextMate grammar do not cover data source syntax** — these constructs exist only in the preprocessing layer
+<!-- rules: domain=data-sources -->
+- Invoke data sources with `RunDS("Category.DataSourceName", {values})`; values bind by position in `:PARAMETERS` order, not by name. `GetDSParameters` returns the parameter names in that order. Do not pass `{name, value}` pairs; each pair is bound whole to one parameter.
+- Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+- Give every data-source parameter an inline `:=` default; a parameter without one makes the data source fail when it runs.
+- A data source that takes no parameters leaves the `:PARAMETERS` line out; an empty `:PARAMETERS;` is an error.
+- Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source files.
+- Reference SQL data-source parameters in the SQL body as `@name` placeholders, not `?name?` markers.
+- Declare every `@name` placeholder of a SQL data-source body in `:PARAMETERS`; an undeclared one is not substituted and fails when the query executes.
+- Use SQL comment syntax (`--` and `/* ... */`) in SQL data-source bodies, not the SSL comment form.
+- In a SQL data source, a semicolon only ends a builder directive or `:PARAMETERS`; the body runs as one SQL command, so any other semicolon outside a comment or string literal is misplaced.
+- In a SQL data source, put the SQL body after the `:PARAMETERS` line; SQL text placed before it is discarded.
+- Lay out the query body of a SQL data source in the canonical compact SQL style, the same as SQL embedded in SSL strings.
+- SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
+- Do not treat builder directives as reusable SSL keywords outside data-source contexts.
+- In an SSL data source, comments are SSL comments: they end at the first `;`, and `*/` does not close them.
+- In an SSL data source, use parameters as ordinary variables by their bare names; `@name` placeholders are not part of this file type.
+- The `RunDS` return-type argument (`"ssldataset"`, `"xml"`, and so on) converts only an `SSLDataset` result; an SSL data source that callers request in another return type returns an `SSLDataset`, for example from `GetSSLDataset`.
+- One file should represent either a class definition, a script, or a data source.
+<!-- /rules -->
+- **The tree-sitter grammar and TextMate grammar do not cover data source syntax** — these constructs exist only in the preprocessing layer
 
 ---
 
@@ -659,7 +728,13 @@ Use `GetDSParameters(sDsName)` to introspect a data source's parameter metadata 
 
 ### Hungarian Notation
 
-Variables must be prefixed to indicate type:
+<!-- rules: id=hungarian_variable_names,documented_hungarian_prefixes,prefix_matches_type -->
+- Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (`sMyVar`, not `s_my_var` or `SMYVAR`).
+- Use documented prefixes: `s`, `n`, `b`, `d`, `a`, `o`, `fn`, and `v`.
+- Make a variable's prefix match the type of the value it holds: `s` string, `n` numeric, `b` boolean, `d` date, `a` array, `o` object, `fn` code block, `v` variant/any.
+<!-- /rules -->
+
+The prefixes:
 
 | Prefix | Type | Examples |
 |--------|------|----------|
@@ -673,22 +748,34 @@ Variables must be prefixed to indicate type:
 | `v` | Any/Variant | `vResult`, `vParam` |
 
 **Length limits:**
-- Variable names: maximum 20 characters (excluding prefix)
-- Function/procedure names: maximum 30 characters
+
+<!-- rules: id=identifier_length_limits -->
+- Keep variable names to 20 characters after the type prefix, and procedure and function names to 30 characters.
+<!-- /rules -->
 
 **Exceptions to Hungarian Notation:**
-* Loop counters: `i`, `j`, `k`, `x`, `y`, `z` (single letters allowed)
-* Global constants: `ALL_CAPS_NAMING` (e.g., `MAX_COUNT`, `DEFAULT_PATH`)
-* Special SSL literals/constants: `NIL`, `.T.`, `.F.`
-* Preserve established acronym casing only when it already exists in the surrounding codebase or required external names
+
+<!-- rules: id=loop_counter_names,constants_upper_snake_case,preserve_acronym_casing -->
+- Loop counters may be `i`, `j`, `k`, `x`, `y` or `z` without a prefix only when declared; in a script that calls other scripts, prefer a script-specific name such as `nSampleIdx`.
+- Constants use UPPER_SNAKE_CASE.
+- Preserve established acronym casing only when it already exists in the surrounding codebase or required external names.
+<!-- /rules -->
+
+An undeclared loop counter can collide with a caller's variable. The special
+SSL literals `NIL`, `.T.` and `.F.` take no prefix. Constant examples:
+`MAX_COUNT`, `DEFAULT_PATH`.
 
 ### Style Guidelines
 
-* Use consistent indentation (tabs preferred, or 4 spaces if the file already uses spaces)
-* Align related elements (parameters, SQL statements) for readability
-* Limit line lengths to approximately 90 characters, breaking logically
-* Include meaningful comments using SSL comment syntax (`/* comment;`)
-* Use proper SSL keywords with colon prefix (`:DECLARE`, `:IF`, `:PROCEDURE`, etc.)
+<!-- rules: id=indent_tabs_preferred,consistent_indentation,align_related_elements,ssl_max_line_length,comments_explain_why,single_line_comment_form,keyword_uppercase -->
+- Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+- Keep indentation consistent within a file; do not mix tabs and spaces.
+- Align related elements, such as parameters and SQL statements, for readability.
+- Keep SSL lines to about 90 characters, breaking longer ones at logical points.
+- Comments explain purpose, ownership, safety consequences, replay behavior, or a non-obvious ordering requirement; do not narrate assignments or restate syntax.
+- Write a single-line comment as `/* comment text here;`.
+- Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.
+<!-- /rules -->
 
 ---
 
@@ -716,7 +803,7 @@ Variables must be prefixed to indicate type:
     nTotal := 0;
 
     /* Create logger object;
-    oLogger := CreateUdObject("OrderLogger");
+    oLogger := CreateUdObject("Sales.OrderLogger");
 
     :TRY;
         /* Use ?param? syntax for SQLExecute - variable must be in scope;
@@ -742,7 +829,7 @@ Variables must be prefixed to indicate type:
         :ENDIF;
     :CATCH;
         /* Handle errors;
-        oLogger:LogError := GetLastSSLError();
+        oLogger:lastError := GetLastSSLError();
     :ENDTRY;
 
     :RETURN nTotal;
@@ -752,13 +839,13 @@ Variables must be prefixed to indicate type:
 ### 3. Complete Error Handling Pattern
 
 ```ssl
-:DECLARE sDatasetXml, sComplexQuery, oErr, sErrMsg;
+:DECLARE aRows, sComplexQuery, oErr, sErrMsg;
 sComplexQuery := "SELECT * FROM Sample";
 
 /* Structured exception handling;
 :TRY;
-    sDatasetXml := GetDataSet(sComplexQuery);
-    :IF Empty(sDatasetXml);
+    aRows := SQLExecute(sComplexQuery);
+    :IF Len(aRows) == 0;
         RaiseError("No data found for query");
     :ENDIF;
 :CATCH;
@@ -768,10 +855,8 @@ sComplexQuery := "SELECT * FROM Sample";
     ClearLastSSLError();
     :RETURN .F.;
 :FINALLY;
-    /* Cleanup resources;
-    :IF IsDefined("sDatasetXml");
-        sDatasetXml := "";
-    :ENDIF;
+    /* Runs on success and on failure;
+    UsrMes("Sample query finished");
 :ENDTRY;
 ```
 
@@ -807,7 +892,7 @@ sFormatted := Upper(sClean);        /* Convert to uppercase;
 nLength := Len(sInput);             /* Get string length;
 sSubstring := Left(sInput, 5);      /* Get leftmost characters;
 nPosition := At("STAR", sInput);    /* Find substring position;
-sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
+sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 ```
 
 ---
@@ -823,39 +908,57 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
 | **SQL Parameters** | `RunSQL("INSERT VALUES(?sVal?)")` | `RunSQL("INSERT INTO T VALUES(?)",, {sVal})` |
 | **Logical Operators** | `IF x > 5 AND y < 10;` | `:IF x > 5 .AND. y < 10;` |
 | **Array Indexing** | `aItems[0]` (0-based) | `aItems[1]` (1-based, first element) |
-| **Object Creation** | `oObj := new MyClass();` | `oObj := BuiltInClass{};` or `oObj := CreateUdObject("UserClass", {args});` |
+| **Object Creation** | `oObj := new MyClass();` | `oObj := BuiltInClass{};` or `oObj := CreateUdObject("Category.UserClass", {args});` |
 | **Object Property** | `oObj.Property` | `oObj:Property` |
 | **DS Parameters** | `:PARAMETERS p1; :DEFAULT p1, "val";` (in data source) | `:PARAMETERS p1 := "val";` (in data source) |
-| **DS Parameters** | `:PARAMETERS;` (empty, in data source) | `:PARAMETERS p1 := "default";` (at least one required) |
+| **DS Parameters** | `:PARAMETERS;` (empty, in data source) | `:PARAMETERS p1 := "default";`, or leave the line out when the data source takes no parameters |
+
+Each row breaks one of these rules, in order:
+
+<!-- rules: id=no_direct_procedure_calls,default_after_parameters,prefer_exitcase,keyword_uppercase,named_sql_param_unsupported,sql_positional_placeholders,bare_logical_operator,arrays_one_based,builtin_classes_curly_braces,createudobject_category_qualified,dot_property_access,no_default_statements_in_datasource,datasource_empty_parameters -->
+- Do not call custom script procedures directly as `MyProc()`.
+- `:DEFAULT` must immediately follow `:PARAMETERS`.
+- End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+- Colon-prefixed SSL keywords are uppercase and case-sensitive, for example `:IF` and `:BEGINCASE`.
+- `SQLExecute` is the only database API that supports named `?param?` substitution; do not use `?param?` markers with other database functions. Its markers reference in-scope SSL variables by name. Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
+- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` markers with a value array in a later argument slot: fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`, and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the slot and skip unused optionals with adjacent commas. Canonical shape: `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`
+- Write the logical operators with their periods: `.AND.`, `.OR.` and `.NOT.`, never bare `AND`, `OR` or `NOT`.
+- SSL arrays are 1-based; loop over arrays from 1 through `ALen(aArray)`.
+- Instantiate directly creatable built-in classes with curly braces, for example `Email{}`.
+- Use `CreateUdObject("Category.ClassName")` for user-defined classes; a bare class name is looked up only among the default categories.
+- Use colon-chained member access (`oObj:Property`, `oObj:Method():Value`), not dot-chained access (`oObj.Property`).
+- Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+- A data source that takes no parameters leaves the `:PARAMETERS` line out; an empty `:PARAMETERS;` is an error.
+<!-- /rules -->
 
 ---
 
 ## 8. Edge Cases & Gotchas
 
-1.  **Implicit Concatenation Error:** Do not try to put `:DEFAULT` on a `:DECLARE` line. They are separate steps.
-2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. Use `DoProc` or `ExecFunction` for script procedures, but inside `:CLASS` methods use `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods (fully qualified `DoProc("Category.Script.Proc", ...)` calls remain valid).
+1.  **Implicit Concatenation Error:** <!-- rule: no_default_on_declare_line -->Do not put `:DEFAULT` on a `:DECLARE` line.<!-- /rule --> They are separate steps.
+2.  **The "DoProc" Rule:** The most common error for agents is calling `MyFunc()` directly. <!-- rule: no_direct_procedure_calls -->Do not call custom script procedures directly as `MyProc()`.<!-- /rule --> <!-- rule: doproc_in_class -->Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.<!-- /rule --> Fully qualified `DoProc("Category.Script.Proc", ...)` calls remain valid in class methods.
 3.  **Case Sensitivity Inversion:** Unlike many languages where keywords are lower (`if`) and vars are sensitive, SSL is the opposite: Keywords are strict (`:IF`), identifiers are loose (`sVar` == `SVAR`).
-4.  **Semicolons:** Almost every line (including comments) must end with `;`.
-5.  **1-Based Arrays:** SSL arrays are 1-based, not 0-based. First element is `aArray[1]`.
-6.  **Logical Operators Must Have Periods:** Use `.AND.`, `.OR.`, `.NOT.` - not `AND`, `OR`, `NOT`.
-7.  **:EXITCASE controls multi-match behavior:** `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run, even if that earlier case omitted `:EXITCASE;`. Always end each `:CASE`/`:OTHERWISE` with `:EXITCASE;` unless multi-match behavior is intentional.
-8.  **Error Handling:** Use `:TRY`/`:CATCH`/`:FINALLY` for structured error handling.
-9.  **Object Property Access:** Use colon-chained access (`oObj:Property`, `oObj:Method():Value`), not dot-chained access (`oObj.Property`).
-10. **Function Name Casing:** Represent functions in PascalCase where applicable (`CreateUdObject`, `SQLExecute`, `AEval`, `AScan`), while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`.
-11. **Object Property Assignment:** Object property assignments (e.g., `oLogger:LogError := value;`) are NOT variable declarations - don't flag as undeclared.
+4.  **Semicolons:** <!-- rule: statement_semicolon -->Almost every SSL statement, including comments, must end with a semicolon.<!-- /rule -->
+5.  **1-Based Arrays:** <!-- rule: arrays_one_based -->SSL arrays are 1-based; loop over arrays from 1 through `ALen(aArray)`.<!-- /rule --> The first element is `aArray[1]`.
+6.  **Logical Operators Must Have Periods:** <!-- rule: bare_logical_operator -->Write the logical operators with their periods: `.AND.`, `.OR.` and `.NOT.`, never bare `AND`, `OR` or `NOT`.<!-- /rule -->
+7.  **:EXITCASE controls multi-match behavior:** `:BEGINCASE` is not a value-matching switch. Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run, even if that earlier case omitted `:EXITCASE;`. <!-- rule: prefer_exitcase -->End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.<!-- /rule -->
+8.  **Error Handling:** <!-- rule: prefer_try_over_error_resume -->Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.<!-- /rule -->
+9.  **Object Property Access:** <!-- rule: dot_property_access -->Use colon-chained member access (`oObj:Property`, `oObj:Method():Value`), not dot-chained access (`oObj.Property`).<!-- /rule -->
+10. **Function Name Casing:** <!-- rule: builtin_function_canonical_casing -->Represent functions in PascalCase where applicable, while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`.<!-- /rule --> For example `CreateUdObject`, `SQLExecute`, `AEval` and `AScan`.
+11. **Object Property Assignment:** Object property assignments (e.g., `oLogger:lastError := value;`) are NOT variable declarations - don't flag as undeclared.
 12. **SQL Parameter Case Insensitivity:** SQL parameter names in `?varName?` placeholders are case-insensitive - `?sID?` and `?SID?` reference the same variable.
 13. **Multi-line Function Calls:** Function calls and array literals can span multiple lines - proper indentation should be preserved.
 14. **Procedure References:** Procedure names should only be matched in execution contexts (`DoProc`, `ExecFunction`), not in comments, strings, or unrelated identifiers.
 15. **Comment Toggle:** SSL uses `/* ... ;` comment syntax. Toggling comments should add/remove this pattern, not `//` style comments.
-16. **:STEP Keyword Spacing:** The `:STEP` keyword in FOR loops should have a space before it: `:FOR i := 1 :TO 10 :STEP 2;` not `:FOR i := 1 :TO 10:STEP 2;`
-17. **:ENDFOR Is Not Valid:** Although `:ENDFOR` is a reserved word, it is **not a usable keyword**. FOR loops must be terminated with `:NEXT`, not `:ENDFOR` — using `:ENDFOR` is rejected as a syntax error.
-18. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match. **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=` but `!=` is preferred.
-19. **Default Variable Value:** All declared variables start as empty string `""`, not `NIL`.
-20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
-21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
-22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
-23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Defaults are optional per parameter. See §4A.
-24. **Data source directives are not SSL keywords.** `:DSN`, `:TABLENAME`, `:NULLASBLANK`, and `:INVARIANTDATECOLUMNS` only exist in SQL data source files and are handled by the data source preprocessor before the script runs. Do not flag them as unknown keywords.
+16. **:STEP Keyword Spacing:** <!-- rule: step_spacing -->Put a space before `:STEP` in `:FOR` headers.<!-- /rule --> Write `:FOR i := 1 :TO 10 :STEP 2;`, not `:FOR i := 1 :TO 10:STEP 2;`.
+17. **:ENDFOR Is Not Valid:** Although `:ENDFOR` is a reserved word, it is **not a usable keyword**; using it is rejected as a syntax error. SSL does not have <!-- rule: endfor_invalid -->`:ENDFOR`: a `:FOR` loop closes with `:NEXT`.<!-- /rule -->
+18. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. <!-- rule: equals_vs_strict_equals -->Use `==` for exact string equality; `=` is prefix-style for strings.<!-- /rule --> **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=`. <!-- rule: not_preferred_operator -->Prefer `!=` over `<>` or `#` for not-equals.<!-- /rule -->
+19. **Default Variable Value:** <!-- rule: nil_not_empty_string -->Do not treat `NIL` as an empty string, zero or `.F.`; declared variables start as an empty string, not `NIL`.<!-- /rule -->
+20. **SQLExecute Exclusivity:** <!-- rule: named_sql_param_unsupported -->`SQLExecute` is the only database API that supports named `?param?` substitution; do not use `?param?` markers with other database functions. Its markers reference in-scope SSL variables by name. Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`<!-- /rule --> <!-- rule: sql_positional_placeholders -->`RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` markers with a value array in a later argument slot: fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`, and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the slot and skip unused optionals with adjacent commas. Canonical shape: `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`<!-- /rule --> <!-- rule: getssldataset_at_name_markers -->`GetSSLDataset` uses `@name` markers with parallel name and value arrays.<!-- /rule -->
+21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. <!-- rule: complex_sql_placeholder -->Pre-compute complex values before interpolating them into `SQLExecute` placeholders.<!-- /rule -->
+22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. <!-- rule: comment_regions_for_grouping -->Use `/* region` / `/* endregion` comments for editor grouping instead of `:REGION` / `:ENDREGION`.<!-- /rule -->
+23. **Data source files use different parameter syntax.** <!-- rule: no_default_statements_in_datasource -->Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.<!-- /rule --> <!-- rule: datasource_default_required -->Give every data-source parameter an inline `:=` default; a parameter without one makes the data source fail when it runs.<!-- /rule --> See §4A.
+24. **Data source directives are not SSL keywords.** <!-- rule: no_flag_builder_directives -->SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.<!-- /rule --> They exist only in SQL data source files, where the data source preprocessor handles them before the script runs.
 25. **Data source parameter syntax is preprocessed.** The `:=` inline syntax in data source `:PARAMETERS` is rewritten by the preprocessor into standard `:PARAMETERS` + `:DEFAULT` before the script runs. The runtime never sees the `:=` form.
 
 ---
@@ -881,8 +984,8 @@ All keywords must be prefixed with `:` and are case-sensitive (UPPERCASE only):
 - `:TRY`, `:CATCH`, `:FINALLY`, `:ENDTRY`
 
 **Error Handling (Legacy Form):**
-- `:ERROR` - Legacy error handler; applies to all subsequent code in scope. Requires at least one statement.
-- `:RESUME` - Used within `:ERROR` to continue execution at the next statement after a failure.
+- `:ERROR` - Legacy error handler; the last section of a procedure, protecting the statements before it. The handler body requires at least one statement.
+- `:RESUME` - Last statement of an `:ERROR` handler; execution continues at the statement after the one that failed.
 
 Note: `:TRY`/`:CATCH`/`:FINALLY` is generally preferred when block-scoped handling is appropriate.
 
@@ -933,8 +1036,8 @@ Note: These are legacy functional body-capture constructs. They store content fo
 - `%` - Modulo
 
 **Unary Operators (2):**
-- `++` - Increment (numeric only)
-- `--` - Decrement (numeric only)
+- `++` - Increment: adds 1 to a number or one day to a date; works on a variable, an array element or an object property
+- `--` - Decrement: subtracts 1 from a number or one day from a date; works on a variable, an array element or an object property
 
 **String Operators (1):**
 - `$` - Contains (returns `.T.` if left string is found in right string)
@@ -963,38 +1066,40 @@ Note: These are legacy functional body-capture constructs. They store content fo
 - `Constructor` - Reserved constructor declaration name inside `:CLASS` (`:PROCEDURE Constructor; ... :ENDPROC`); not a normal method identifier or standalone value
 
 **Other special forms:**
-- Code Block - Lambda literal with syntax `{` `|param1, param2|` `expression` `}` — creates an SSLFunction object; at least one bound variable is required and the body is a single expression, not multiple statements
+- Code Block - Lambda literal with syntax `{` `|param1, param2|` `expression` `}` — creates a code block value; at least one bound variable is required and the body is a single expression, not multiple statements
 
 ---
 
 ## 10. Built-in Function Reference
 
-> Parameter prefixes: `s` = string, `n` = number, `b` = boolean, `d` = date, `a` = array, `o` = object, `v` = any/variant, `fn` = code block.
-> Calling-form note: canonical SSL call forms are `DoProc("ProcName", {args})`, `ExecFunction("Category.Script", {args})` / `ExecFunction("Category.Script.Proc", {args})`, `CreateUdObject()`, `CreateUdObject("ClassName", {args})`, and `CreateUdObject({{"Prop", value}, ...})`.
+> Parameter prefixes: `s` = string, `n` = number, `b` = boolean, `d` = date, `a` = array, `o` = object, `v` = any/variant, `fn` = code block. Square brackets mark an optional parameter (`[nCount]`); omit trailing optional arguments instead of passing `NIL` fillers.
+> Calling-form note: canonical SSL call forms are `DoProc("ProcName", {args})`, `ExecFunction("Category.Script", {args})` / `ExecFunction("Category.Script.Proc", {args})`, `CreateUdObject()`, `CreateUdObject("Category.ClassName", {args})`, and `CreateUdObject({{"Prop", value}, ...})`.
 
 ### Core Functions (Most Used)
 
 | Function | Signature |
 |---|---|
-| `SQLExecute` | `SQLExecute(vCommandString[, vFriendlyName[, vRollbackExistingTransaction[, vNullAsBlank[, vInvariantDateColumns[, vReturnType[, sTableName[, vIncludeSchema[, vIncludeHeader]]]]]]]])` |
+| `SQLExecute` | `SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])` |
 | `Empty` | `Empty(vValue)` |
-| `DoProc` | `DoProc(sProcedureName, aArguments)` |
+| `DoProc` | `DoProc(sProcedureName, [aArguments])` |
 | `Len` | `Len(vSource)` |
-| `LimsString` | `LimsString(vSource)` |
-| `ExecFunction` | `ExecFunction(sName[, aParameters])` |
-| `ExecUdf` | `ExecUdf(vCode[, aArgs[, bCacheCode]])` |
-| `ExecInternal` | `ExecInternal(vO, sMethodName, vArg01, vArg02, vArg03, vArg04, vArg05, vArg06, vArg07, vArg08, vArg09, vArg10, vArg11, vArg12, vArg13, vArg14, vArg15, vArg16, vArg17, vArg18, vArg19, vArg20, vArg21)` |
-| `Eval` | `Eval(vCode[, vArg1[, vArg2 ...]])` |
+| `LimsString` | `LimsString([vSource])` |
+| `ExecFunction` | `ExecFunction(sName, [aParameters])` |
+| `ExecUdf` | `ExecUdf(sCode, [aArgs], [bCacheCode])` |
+| `ExecInternal` | `ExecInternal(oTarget, sMethodName, [vArg01], [vArg02], [vArg03], [vArg04], [vArg05], [vArg06], [vArg07], [vArg08], [vArg09], [vArg10], [vArg11], [vArg12], [vArg13], [vArg14], [vArg15], [vArg16], [vArg17], [vArg18], [vArg19], [vArg20], [vArg21])` |
+| `Eval` | `Eval(fnCode, [vArg1], [vArg2], ...)` |
 | `Branch` | `Branch(vTarget)` |
-| `UsrMes` | `UsrMes(vArg1[, vArg2])` |
-| `ErrorMes` | `ErrorMes(vArg1[, vArg2])` |
-| `InfoMes` | `InfoMes(vArg1[, vArg2])` |
+| `UsrMes` | `UsrMes(vCaption, [vMessage])` |
+| `ErrorMes` | `ErrorMes(vCaption, [vMessage])` |
+| `InfoMes` | `InfoMes(vCaption, [vMessage])` |
 | `IIf` | `IIf(bCondition, vTrueValue, vFalseValue)` |
-| `CreateUdObject` | `CreateUdObject()` / `CreateUdObject(sClassName)` / `CreateUdObject(sClassName, aArgs)` / `CreateUdObject(aPropertyDefs)` |
-| `RaiseError` | `RaiseError(sMessage[, sLocation[, nErrorCode[, oInnerException]]])` |
+| `CreateUdObject` | `CreateUdObject()` / `CreateUdObject(aPropertyDefs)` / `CreateUdObject(sClassName, [aArgs])` |
+| `RaiseError` | `RaiseError(sMessage, [sLocation], [nErrorCode], [oInnerException])` |
 | `PrmCount` | `PrmCount()` |
 
-`UsrMes`, `ErrorMes`, and `InfoMes` all write to the server log via `UserLog.WriteInfo` with identical formatting: `user / date / time / version / location / process / caption\nmessage`. The only functional difference is the `forceWrite` flag: `ErrorMes` passes `forceWrite=true`, so it writes even when `UsrMes` logging is globally disabled (`GlobalSettings.UsrmesDisabled`). `UsrMes` and `InfoMes` are suppressed when disabled. `InfoMes` delegates directly to `UsrMes` (identical behavior). Use `ErrorMes` for messages that must always be recorded; use `UsrMes`/`InfoMes` for messages that administrators may suppress. They accept fluid stringified inputs — commonly called with just one argument, or with an array in the second argument so it is stringified into the log entry, for example `UsrMes(sMessage, {aVar, sVar, nVar})`.
+`PrmCount()` works only in a script's top-level code. Inside a `:PROCEDURE` (including one reached with `DoProc`) and in `ExecUdf` code it raises an error; there, give optional parameters `:DEFAULT` values instead.
+
+`UsrMes`, `ErrorMes`, and `InfoMes` all write to the server log with identical formatting: `user / date / time / version / location / process / caption\nmessage`. The only functional difference is that `ErrorMes` writes even when user-message logging is turned off. `UsrMes` and `InfoMes` are suppressed when disabled. `InfoMes` delegates directly to `UsrMes` (identical behavior). Use `ErrorMes` for messages that must always be recorded; use `UsrMes`/`InfoMes` for messages that administrators may suppress. The first argument is the caption and the optional second argument is the message, for example `UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows")`. Each argument is logged through its string form, so build the text you want recorded rather than passing arrays or objects, whose string form is rarely readable.
 
 ### String Functions
 
@@ -1008,27 +1113,27 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `LLower` | `LLower(sSource)` |
 | `Left` | `Left(sSource, nLength)` |
 | `Right` | `Right(sSource, nLength)` |
-| `SubStr` | `SubStr(sSource, nStart, nLength)` |
+| `SubStr` | `SubStr(sSource, [nStartPos], [nLength])` |
 | `At` | `At(sSubString, sSource)` |
-| `LimsAt` | `LimsAt(sSubString, sSource, nOffset)` |
-| `Rat` | `Rat(sSubStr, sSource)` |
-| `StrSrch` | `StrSrch(sSubStr, sSource, nIndexOrOccurence, bFlag)` |
-| `StrTran` | `StrTran(sSource, sSearchFor, sReplaceWith)` |
+| `LimsAt` | `LimsAt(sSubString, sSource, [nOffset])` |
+| `Rat` | `Rat(sSubString, sSource)` |
+| `StrSrch` | `StrSrch(sSubString, sSource, [nIndexOrOccurrence], [bFlag])` |
+| `StrTran` | `StrTran(sSource, sSearchFor, [sReplaceWith])` |
 | `Replace` | `Replace(sSource, sSearchFor, sReplaceWith)` |
 | `Replicate` | `Replicate(sSource, nCount)` |
-| `Chr` | `Chr(nAsciiCode)` |
+| `Chr` | `Chr([nAsciiCode])` |
 | `Asc` | `Asc(sSource)` |
-| `Str` | `Str(nNumber, nLength, nDecimals)` |
+| `Str` | `Str(nNumber, [nLength], [nDecimals])` |
 | `LStr` | `LStr(vNumber)` |
-| `StrZero` | `StrZero(nNumber, nLength, nDecimals)` |
-| `Val` | `Val(sSNumber)` |
+| `StrZero` | `StrZero(nNumber, [nLength], [nDecimals])` |
+| `Val` | `Val(sNumber)` |
 | `LFromHex` | `LFromHex(sSource)` |
-| `LToHex` | `LToHex(sSource)` |
+| `LToHex` | `LToHex(vSource)` |
 | `LHex2Dec` | `LHex2Dec(sSource)` |
 | `LTransform` | `LTransform(vExpression, sPicture)` |
-| `LCase` | `LCase(bCondition, sTrueValue, sFalseValue)` |
+| `LCase` | `LCase(bCondition, sTrueValue, [sFalseValue])` |
 | `AddColDelimiters` | `AddColDelimiters(sDSN, aCols, sTable)` |
-| `AddNameDelimiters` | `AddNameDelimiters([sDSN[, sName]])` |
+| `AddNameDelimiters` | `AddNameDelimiters(sDSN, sName)` |
 
 ### Array Functions
 
@@ -1036,24 +1141,24 @@ Note: These are legacy functional body-capture constructs. They store content fo
 |---|---|
 | `AAdd` | `AAdd(aTarget, vElement)` |
 | `ALen` | `ALen(aTarget)` |
-| `AEval` | `AEval(aTarget, fnBlock[, nStart[, nCount]])` |
-| `AEvalA` | `AEvalA(aTarget, fnBlock[, nStart[, nCount]])` |
-| `AFill` | `AFill(aTarget, vValue[, nStart[, nCount]])` |
-| `AScan` | `AScan(aTarget, vValueOrBlock[, nStart[, nCount]])` |
-| `AScanExact` | `AScanExact(aTarget, vValueOrBlock[, nStart[, nCount]])` |
-| `ArrayCalc` | `ArrayCalc(aTarget[, sOperation[, vValue[, nStart[, nCount]]]])` |
-| `ArrayNew` | `ArrayNew([nDim1[, nDim2[, nDim3]]])` |
-| `ArrayToTVP` | `ArrayToTVP(vValues, vDataType, sConnectionName)` |
-| `BuildArray` | `BuildArray(sText[, bCrlfOk[, sDelimiter[, bUnique[, bTrimSpaces]]]])` |
-| `BuildArray2` | `BuildArray2(sText[, sLineDelimiter[, sColDelimiter[, bCrlfOk[, bTrimSpaces]]]])` |
-| `BuildString` | `BuildString(aTarget[, nStart[, nCount[, sDelimiter]]])` |
-| `BuildString2` | `BuildString2(aTarget[, sLineDelimiter[, sColDelimiter]])` |
+| `AEval` | `AEval(aTarget, fnBlock, [nStart], [nCount])` |
+| `AEvalA` | `AEvalA(aTarget, fnBlock, [nStart], [nCount])` |
+| `AFill` | `AFill(aTarget, vValue, [nStart], [nCount])` |
+| `AScan` | `AScan(aTarget, vValueOrBlock, [nStart], [nCount])` |
+| `AScanExact` | `AScanExact(aTarget, vValueOrBlock, [nStart], [nCount])` |
+| `ArrayCalc` | `ArrayCalc(aTarget, [sOperation], [vValue], [nStart], [nCount])` |
+| `ArrayNew` | `ArrayNew([nDim1], [nDim2], [nDim3])` |
+| `ArrayToTVP` | `ArrayToTVP(aValues, [sDataType], [sConnectionName])` |
+| `BuildArray` | `BuildArray(sText, [bCrlfOk], [sDelimiter], [bUnique], [bTrimSpaces])` |
+| `BuildArray2` | `BuildArray2(sText, [sLineDelimiter], [sColDelimiter], [bCrlfOk], [bTrimSpaces])` |
+| `BuildString` | `BuildString(aTarget, [nStart], [nCount], [sDelimiter])` |
+| `BuildString2` | `BuildString2(aTarget, [sLineDelimiter], [sColDelimiter])` |
 | `BuildStringForIn` | `BuildStringForIn(aTarget)` |
-| `CompArray` | `CompArray(aA1, aA2)` |
+| `CompArray` | `CompArray(a1, a2)` |
 | `DelArray` | `DelArray(aTarget, nIndex)` |
 | `ExtractCol` | `ExtractCol(aTarget, nColumn)` |
-| `PrepareArrayForIn` | `PrepareArrayForIn(vArray, vItemType)` |
-| `SortArray` | `SortArray(aTarget, vNumeric)` |
+| `PrepareArrayForIn` | `PrepareArrayForIn(aTarget, sItemType)` |
+| `SortArray` | `SortArray(aTarget, [vNumeric])` |
 
 ### Date & Time Functions
 
@@ -1072,30 +1177,30 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `Seconds` | `Seconds()` |
 | `DOW` | `DOW(dDate)` |
 | `DOY` | `DOY(dDate)` |
-| `JDay` | `JDay(vDate)` |
+| `JDay` | `JDay([dDate])` |
 | `CMonth` | `CMonth(dDate)` |
 | `NoOfDays` | `NoOfDays(dDate)` |
-| `DateAdd` | `DateAdd(vDate, vNumber, vDatepart)` |
-| `DateDiff` | `DateDiff(vStartDate, vEndDate, vDatepart)` |
-| `DateDiffEx` | `DateDiffEx(vStartDate, vEndDate)` |
+| `DateAdd` | `DateAdd(dDate, nNumber, [sDatepart])` |
+| `DateDiff` | `DateDiff(dStartDate, dEndDate, [sDatepart])` |
+| `DateDiffEx` | `DateDiffEx(dStartDate, dEndDate)` |
 | `DateFormat` | `DateFormat(sNewFormat)` |
-| `DateFromNumbers` | `DateFromNumbers([vYear[, vMonth[, vDay[, vHour[, vMinute[, vSecond[, vMillisecond[, vMakeInvariant]]]]]]]])` |
-| `DateFromString` | `DateFromString(vDateAsString[, vFormat[, vUseLocalCulture[, vMakeInvariant]]])` |
-| `DateToString` | `DateToString(vDate, sFormat)` |
+| `DateFromNumbers` | `DateFromNumbers([nYear], [nMonth], [nDay], [nHour], [nMinute], [nSecond], [nMillisecond], [bMakeInvariant])` |
+| `DateFromString` | `DateFromString(sDateAsString, [vFormat], [bUseLocalCulture], [bMakeInvariant])` |
+| `DateToString` | `DateToString(dDate, [sFormat])` |
 | `StringToDate` | `StringToDate(sDateString, sDateFormat)` |
 | `CToD` | `CToD(sDateString)` |
 | `DToC` | `DToC(dDate)` |
 | `DToS` | `DToS(dDate)` |
-| `LIMSDate` | `LIMSDate(vDate, sFormat)` |
+| `LIMSDate` | `LIMSDate(vDate, [sFormat])` |
 | `LimsGetDateFormat` | `LimsGetDateFormat()` |
-| `ValidateDate` | `ValidateDate(sStringDate, vUseDateFormat)` |
-| `IsInvariantDate` | `IsInvariantDate(vDateValue)` |
-| `MakeDateInvariant` | `MakeDateInvariant(vDateValue, vColumnsIndex)` |
-| `MakeDateLocal` | `MakeDateLocal(vDateValue, vColumnsIndex)` |
-| `ClientEndOfDay` | `ClientEndOfDay(vDate)` |
-| `ClientStartOfDay` | `ClientStartOfDay(vDate)` |
-| `ServerEndOfDay` | `ServerEndOfDay(vDate)` |
-| `ServerStartOfDay` | `ServerStartOfDay(vDate)` |
+| `ValidateDate` | `ValidateDate(sDateString, [bUseDateFormat])` |
+| `IsInvariantDate` | `IsInvariantDate(dDate)` |
+| `MakeDateInvariant` | `MakeDateInvariant(vDate, [vColumnsIndex])` |
+| `MakeDateLocal` | `MakeDateLocal(vDate, [vColumnsIndex])` |
+| `ClientEndOfDay` | `ClientEndOfDay(dDate)` |
+| `ClientStartOfDay` | `ClientStartOfDay(dDate)` |
+| `ServerEndOfDay` | `ServerEndOfDay(dDate)` |
+| `ServerStartOfDay` | `ServerStartOfDay(dDate)` |
 | `ServerTimeZone` | `ServerTimeZone()` |
 | `UserTimeZone` | `UserTimeZone()` |
 
@@ -1107,22 +1212,22 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `_AND` | `_AND(nValue1, nValue2)` |
 | `_OR` | `_OR(nValue1, nValue2)` |
 | `_XOR` | `_XOR(nValue1, nValue2)` |
-| `_NOT` | `_NOT(nValue)` |
-| `Integer` | `Integer(nDecimalValue)` |
+| `_NOT` | `_NOT(nOperand)` |
+| `Integer` | `Integer(nValue)` |
 | `Max` | `Max(vValue1, vValue2)` |
 | `Min` | `Min(vValue1, vValue2)` |
-| `Round` | `Round(vValue, vDigits[, sMidPointRounding])` |
+| `Round` | `Round(nValue, nDigits, [sMidPointRounding])` |
 | `RoundPoint5` | `RoundPoint5(nNumber)` |
-| `StdRound` | `StdRound(sStandard, nNrDigits, nNumber)` |
-| `SigFig` | `SigFig(sStandard, nNrDigits, nNumber)` |
+| `StdRound` | `StdRound(sStandard, nDigits, nNumber)` |
+| `SigFig` | `SigFig(sStandard, nDigits, nValue)` |
 | `Sqrt` | `Sqrt(nNumber)` |
 | `Rand` | `Rand([nSeed])` |
 | `MatFunc` | `MatFunc(sFunctionName, nNumber)` |
-| `Scient` | `Scient(nDoubleValue)` |
-| `ToScientific` | `ToScientific(vNumber, vDecimalPlaces)` |
-| `ToNumeric` | `ToNumeric(vSNumber, vAllowHex)` |
-| `IsNumeric` | `IsNumeric(vSNumber, vAllowHex)` |
-| `ValidateNumeric` | `ValidateNumeric(sSNumber)` |
+| `Scient` | `Scient(nValue)` |
+| `ToScientific` | `ToScientific(nNumber, [nDecimalPlaces])` |
+| `ToNumeric` | `ToNumeric(sNumber, [bAllowHex])` |
+| `IsNumeric` | `IsNumeric(sNumber, [bAllowHex])` |
+| `ValidateNumeric` | `ValidateNumeric(sNumber)` |
 | `IsHex` | `IsHex(sSource)` |
 | `IsGuid` | `IsGuid(sGuid)` |
 | `LimsXOr` | `LimsXOr(nVal1, nVal2)` |
@@ -1131,9 +1236,9 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 | Function | Signature |
 |---|---|
-| `LimsType` | `LimsType(vParam)` |
-| `LimsTypeEx` | `LimsTypeEx(vValue)` |
-| `IsDefined` | `IsDefined(vVarName)` |
+| `LimsType` | `LimsType(sParam)` |
+| `LimsTypeEx` | `LimsTypeEx(vSource)` |
+| `IsDefined` | `IsDefined(sVarName)` |
 | `Empty` | `Empty(vValue)` |
 | `Nothing` | `Nothing(vValue)` |
 
@@ -1141,72 +1246,72 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 | Function | Signature |
 |---|---|
-| `SQLExecute` | `SQLExecute(vCommandString[, vFriendlyName[, vRollbackExistingTransaction[, vNullAsBlank[, vInvariantDateColumns[, vReturnType[, sTableName[, vIncludeSchema[, vIncludeHeader]]]]]]]])` |
-| `RunSQL` | `RunSQL(sCommandString[, sFriendlyName[, vValues]])` |
-| `RunDS` | `RunDS(vDataSourceName[, vParameters[, vReturnType]])` |
-| `LSearch` | `LSearch(sCommandString, vDefaultValue[, sFriendlyName[, aArrayOfValues]])` |
-| `LSelect` | `LSelect(sCommandString[, aFieldList[, sFriendlyName[, aArrayOfValues[, bNullAsBlank[, aInvariantDateColumns]]]]])` |
-| `LSelect1` | `LSelect1(sCommandString[, sFriendlyName[, aArrayOfValues[, bNullAsBlank[, aInvariantDateColumns]]]])` |
-| `LSelectC` | `LSelectC(sCommandString[, aFieldList[, sFriendlyName[, aArrayOfValues[, bNullAsBlank[, aInvariantDateColumns]]]]])` |
-| `GetDataSet` | `GetDataSet(sCommandString[, aArrayOfValues[, bIncludeSchema[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]])` |
-| `GetDataSetEx` | `GetDataSetEx(sCommandString[, sFriendlyName[, aArrayOfValues[, bIncludeSchema[, bIncludeHeader[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]]]])` |
-| `GetDataSetFromArray` | `GetDataSetFromArray(aArrayOfValues, aArrayFields)` |
-| `GetDataSetFromArrayEx` | `GetDataSetFromArrayEx(aArrayOfValues[, aArrayFields[, sTableName[, bIncludeHeader[, bIncludeSchema]]]])` |
-| `GetDataSetWithSchemaFromSelect` | `GetDataSetWithSchemaFromSelect(sCommandString, sFriendlyName, aArrayOfValues, aArrayOfPrimaryKeys, aArrayOfUniqueConstraints)` |
-| `GetDataSetXMLFromArray` | `GetDataSetXMLFromArray(aArrayOfValues, aArrayFields, sTableName, bIncludeHeader, bIncludeSchema)` |
-| `GetDataSetXMLFromSelect` | `GetDataSetXMLFromSelect(sCommandString[, sFriendlyName[, bIncludeHeader[, aArrayOfValues[, bIncludeSchema[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]]]])` |
-| `GetSSLDataset` | `GetSSLDataset(sSql[, sDSN[, aParamNames[, aParamValues[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]]])` |
-| `GetNETDataSet` | `GetNETDataSet(vCommandString, vFriendlyName, vArrayOfValues, sTableName, vReturnXml, vR1Compatible)` |
+| `SQLExecute` | `SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])` |
+| `RunSQL` | `RunSQL(sCommandString, [sConnectionName], [aValues])` |
+| `RunDS` | `RunDS(sDataSourceName, [aParameters], [vReturnType])` |
+| `LSearch` | `LSearch(sCommandString, [vDefaultValue], [sConnectionName], [aArrayOfValues])` |
+| `LSelect` | `LSelect(sCommandString, [aFieldList], [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])` |
+| `LSelect1` | `LSelect1(sCommandString, [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])` |
+| `LSelectC` | `LSelectC(sCommandString, [aFieldList], [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetDataSet` | `GetDataSet(sCommandString, [aValues], [bIncludeSchema], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetDataSetEx` | `GetDataSetEx(sCommandString, [sConnectionName], [aValues], [bIncludeSchema], [bIncludeHeader], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetDataSetFromArray` | `GetDataSetFromArray(aArrayOfValues, [aArrayFields])` |
+| `GetDataSetFromArrayEx` | `GetDataSetFromArrayEx(aArrayOfValues, [aArrayFields], [sTableName], [bIncludeHeader], [bIncludeSchema])` |
+| `GetDataSetWithSchemaFromSelect` | `GetDataSetWithSchemaFromSelect(sCommandString, [sConnectionName], [aValues], [aPrimaryKeys], [aUniqueConstraints])` |
+| `GetDataSetXMLFromArray` | `GetDataSetXMLFromArray(aArrayOfValues, [aArrayFields], [sTableName], [bIncludeHeader], [bIncludeSchema])` |
+| `GetDataSetXMLFromSelect` | `GetDataSetXMLFromSelect(sCommandString, [sConnectionName], [bIncludeHeader], [aValues], [bIncludeSchema], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetSSLDataset` | `GetSSLDataset(sSql, [sDsn], [aParamNames], [aParamValues], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetNETDataSet` | `GetNETDataSet(sCommandString, [sConnectionName], [aValues], [sTableName], [bReturnXml], [bR1Compatible])` |
 | `GetDSParameters` | `GetDSParameters(sDsName)` |
-| `BeginLimsTransaction` | `BeginLimsTransaction(vFriendlyName, vIsoLevel)` |
-| `EndLimsTransaction` | `EndLimsTransaction(sFriendlyName, bCommit)` |
-| `IsInTransaction` | `IsInTransaction(vConnection)` |
-| `GetTransactionsCount` | `GetTransactionsCount(vConnection)` |
+| `BeginLimsTransaction` | `BeginLimsTransaction([sConnectionName], [sIsoLevel])` |
+| `EndLimsTransaction` | `EndLimsTransaction([sConnectionName], [bCommit])` |
+| `IsInTransaction` | `IsInTransaction([vConnection])` |
+| `GetTransactionsCount` | `GetTransactionsCount()` / `GetTransactionsCount(sConnection)` |
 | `LimsRecordsAffected` | `LimsRecordsAffected()` |
 | `GetLastSQLError` | `GetLastSQLError()` |
 | `ReturnLastSQLError` | `ReturnLastSQLError()` |
-| `ShowSqlErrors` | `ShowSqlErrors(bFlag)` |
-| `IgnoreSqlErrors` | `IgnoreSqlErrors(bFlag)` |
-| `DetectSqlInjections` | `DetectSqlInjections(vOnOff, sConnectionName)` |
-| `SQLRemoveComments` | `SQLRemoveComments(vStatement)` |
-| `SetSqlTimeout` | `SetSqlTimeout(nTimeout, vConnection)` |
-| `LimsSqlConnect` | `LimsSqlConnect(sFriendlyName)` |
-| `LimsSqlDisconnect` | `LimsSqlDisconnect(sFriendlyName)` |
-| `IsDBConnected` | `IsDBConnected(vFriendlyName)` |
-| `GetConnectionByName` | `GetConnectionByName(sFriendlyName)` |
+| `ShowSqlErrors` | `ShowSqlErrors(bEnable)` |
+| `IgnoreSqlErrors` | `IgnoreSqlErrors(bEnable)` |
+| `DetectSqlInjections` | `DetectSqlInjections(bEnable, [sConnectionName])` |
+| `SQLRemoveComments` | `SQLRemoveComments(sStatement)` |
+| `SetSqlTimeout` | `SetSqlTimeout([nTimeout], [sConnection])` |
+| `LimsSqlConnect` | `LimsSqlConnect(sConnectionName)` |
+| `LimsSqlDisconnect` | `LimsSqlDisconnect(sConnectionName)` |
+| `IsDBConnected` | `IsDBConnected([sConnectionName])` |
+| `GetConnectionByName` | `GetConnectionByName([sConnectionName])` |
 | `GetConnectionStrings` | `GetConnectionStrings()` |
 | `GetDefaultConnection` | `GetDefaultConnection()` |
-| `SetDefaultConnection` | `SetDefaultConnection(vDefaultConnection)` |
-| `GetDBMSName` | `GetDBMSName(sFriendlyName)` |
-| `GetDBMSProviderName` | `GetDBMSProviderName(sFriendlyName)` |
-| `GetNoLock` | `GetNoLock(sConnectionName)` |
-| `GetRdbmsDelimiter` | `GetRdbmsDelimiter(sDSN, bOpen)` |
-| `GetTables` | `GetTables(sSql)` |
-| `IsTable` | `IsTable(sFriendlyName, sTableName)` |
-| `IsTableFld` | `IsTableFld(sFriendlyName, sTableName, sFieldName)` |
-| `TableFldLst` | `TableFldLst(sFriendlyName, sTableName)` |
-| `LimsSetCounter` | `LimsSetCounter(sTableName, sFieldName, sPrefix, aArrayOfFields, aArrayOfValues, vNull)` |
-| `RetrieveLong` | `RetrieveLong(sFriendlyName, sTableName, sColumnName, sWhereCondition, sOutputFilePath, bIsCompressed)` |
-| `UpdLong` | `UpdLong(sFriendlyName, sTableName, sColumnName, sWhereCondition, sInputFilePath, bIsCompressed)` |
-| `LimsOleConnect` | `LimsOleConnect(vV)` |
-| `EndLimsOleConnect` | `EndLimsOleConnect(vV)` |
-| `LimsExec` | `LimsExec(sApplication, bShow, sArguments)` |
-| `XmlExportSql` | `XmlExportSql(sSql, sFile[, sDb[, aSqlParams[, sTable]]])` |
+| `SetDefaultConnection` | `SetDefaultConnection(sDefaultConnection)` |
+| `GetDBMSName` | `GetDBMSName([sConnectionName])` |
+| `GetDBMSProviderName` | `GetDBMSProviderName([sConnectionName])` |
+| `GetNoLock` | `GetNoLock([sConnectionName])` |
+| `GetRdbmsDelimiter` | `GetRdbmsDelimiter([sDSN], bOpen)` |
+| `GetTables` | `GetTables([sSql])` |
+| `IsTable` | `IsTable(sConnectionName, sTableName)` |
+| `IsTableFld` | `IsTableFld(sConnectionName, sTableName, sFieldName)` |
+| `TableFldLst` | `TableFldLst([sConnectionName], sTableName)` |
+| `LimsSetCounter` | `LimsSetCounter(sTableName, sFieldName, [sPrefix], [aFields], [aValues], [nIncrementWith])` |
+| `RetrieveLong` | `RetrieveLong([sConnectionName], sTableName, sColumnName, sWhereCondition, sOutputFilePath, [bIsCompressed])` |
+| `UpdLong` | `UpdLong([sConnectionName], sTableName, sColumnName, sWhereCondition, sInputFilePath, [bIsCompressed])` |
+| `LimsOleConnect` | `LimsOleConnect(vProgId)` |
+| `EndLimsOleConnect` | `EndLimsOleConnect([oConnection])` |
+| `LimsExec` | `LimsExec(sApplication, [bShow], [sArguments])` |
+| `XmlExportSql` | `XmlExportSql(sSql, sFile, [sDb], [aSqlParams], [sTable])` |
 
 ### Object Functions
 
 | Function | Signature |
 |---|---|
-| `AddProperty` | `AddProperty(oO, vPropName)` |
-| `HasProperty` | `HasProperty(vO, sPropName)` |
-| `GetInternal` | `GetInternal(vO, sPropName)` |
-| `SetInternal` | `SetInternal(vO, sPropName, vPropValue)` |
-| `GetInternalC` | `GetInternalC(vO, sCollectionName, vArg1, vArg2, vArg3, vArg4, vArg5, vArg6)` |
-| `SetInternalC` | `SetInternalC(vO, sCollectionName, vValue, vArg1, vArg2, vArg3, vArg4, vArg5, vArg6)` |
+| `AddProperty` | `AddProperty(oTarget, vPropName)` |
+| `HasProperty` | `HasProperty(oTarget, sPropName)` |
+| `GetInternal` | `GetInternal(oTarget, sPropName)` |
+| `SetInternal` | `SetInternal(oTarget, sPropName, vPropValue)` |
+| `GetInternalC` | `GetInternalC(oTarget, sCollectionName, vArg1, [vArg2], [vArg3], [vArg4], [vArg5], [vArg6])` |
+| `SetInternalC` | `SetInternalC(oTarget, sCollectionName, vValue, vArg1, [vArg2], [vArg3], [vArg4], [vArg5], [vArg6])` |
 | `GetByName` | `GetByName(sName)` |
 | `SetByName` | `SetByName(sName, vValue)` |
-| `CreateLocal` | `CreateLocal(vVarName, vVarValue)` |
-| `CreatePublic` | `CreatePublic(vVarName, vVarValue)` |
+| `CreateLocal` | `CreateLocal(sVarName, [vVarValue])` |
+| `CreatePublic` | `CreatePublic(sVarName, [vVarValue])` |
 | `CreateORMSession` | `CreateORMSession()` |
 | `LKill` | `LKill(sVarName)` |
 | `MakeNETObject` | `MakeNETObject(vValue)` |
@@ -1217,21 +1322,21 @@ Note: These are legacy functional body-capture constructs. They store content fo
 |---|---|
 | `GetLastSSLError` | `GetLastSSLError()` |
 | `ClearLastSSLError` | `ClearLastSSLError()` |
-| `FormatErrorMessage` | `FormatErrorMessage(vV)` |
-| `FormatSqlErrorMessage` | `FormatSqlErrorMessage(vV)` |
+| `FormatErrorMessage` | `FormatErrorMessage(vError)` |
+| `FormatSqlErrorMessage` | `FormatSqlErrorMessage(vError)` |
 
 ### File & Directory Functions
 
 | Function | Signature |
 |---|---|
-| `ReadText` | `ReadText(sFileName[, nCharsToRead[, sEncoding]])` |
-| `WriteText` | `WriteText(sFileName, sCharsToWrite, sConfirmRequired[, sAppend[, sEncoding]])` |
+| `ReadText` | `ReadText(sFileName, [nCharsToRead], [sEncoding])` |
+| `WriteText` | `WriteText(sFileName, sCharsToWrite, [vConfirmRequired], [sAppend], [sEncoding])` |
 | `ReadBytesBase64` | `ReadBytesBase64(sFileName)` |
 | `WriteBytesBase64` | `WriteBytesBase64(sFileName, sBase64Data)` |
-| `Directory` | `Directory(sFilePattern, oAttributes)` |
-| `LDir` | `LDir(sFilePattern, oAttributes)` |
-| `FileSupport` | `FileSupport(vFileIdentifier, vRequest, vArg1, vArg2, sEncoding)` |
-| `CombineFiles` | `CombineFiles(aArFileNames, sSOutFile)` |
+| `Directory` | `Directory(sFilePattern, [sAttributes])` |
+| `LDir` | `LDir(sFilePattern, [sAttributes])` |
+| `FileSupport` | `FileSupport(vFileIdentifier, sRequest, [vArg1], [sArg2], [sEncoding])` |
+| `CombineFiles` | `CombineFiles(aFileNames, sOutFile)` |
 | `GetFileVersion` | `GetFileVersion(sFileName)` |
 | `GetPrinters` | `GetPrinters()` |
 | `ConvertReport` | `ConvertReport(sFile)` |
@@ -1244,18 +1349,18 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 | Function | Signature |
 |---|---|
-| `CheckOnFtp` | `CheckOnFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `CopyToFtp` | `CopyToFtp(sServerNameOrIP, sRemoteDirectory, aRemoteFileNames, sFileContents, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `DeleteDirOnFtp` | `DeleteDirOnFtp(sServerNameOrIP, sRemoteDirectory, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `DeleteFromFtp` | `DeleteFromFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `GetDirFromFtp` | `GetDirFromFtp(sServerNameOrIP, sRemoteDirectory, sFilePattern, sUserName, sPassword, nPort, sProxy, bUsePassive, bIsSFTP, sPrivateKeyFilePath)` |
-| `GetFromFtp` | `GetFromFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sLocalFileName, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `MakeDirOnFtp` | `MakeDirOnFtp(sServerNameOrIP, sRemoteDirectory, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `MoveInFtp` | `MoveInFtp(sServerNameOrIP, sRemoteDirectoryFrom, sRemoteDirectoryTo, sRemoteFileFrom, sRemoteFileTo, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `ReadFromFtp` | `ReadFromFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, nMaxSize, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `RenameOnFtp` | `RenameOnFtp(sServerNameOrIP, sRemoteDirectory, sFileNameOld, sFileNameNew, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `SendToFtp` | `SendToFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sLocalFileName, sUserName, sPassword, nPort, sProxy, bUsePassive, bIsSFTP, sPrivateKeyFilePath)` |
-| `WriteToFtp` | `WriteToFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sFileContents, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
+| `CheckOnFtp` | `CheckOnFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `CopyToFtp` | `CopyToFtp(sServerNameOrIP, sRemoteDirectory, aRemoteFileNames, [sFileContents], sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `DeleteDirOnFtp` | `DeleteDirOnFtp(sServerNameOrIP, sRemoteDirectory, [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `DeleteFromFtp` | `DeleteFromFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `GetDirFromFtp` | `GetDirFromFtp(sServerNameOrIP, [sRemoteDirectory], [sFilePattern], [sUserName], [sPassword], [nPort], [sProxy], [bUsePassive], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `GetFromFtp` | `GetFromFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, [sLocalFileName], [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `MakeDirOnFtp` | `MakeDirOnFtp(sServerNameOrIP, sRemoteDirectory, [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `MoveInFtp` | `MoveInFtp(sServerNameOrIP, [sRemoteDirectoryFrom], [sRemoteDirectoryTo], sRemoteFileFrom, [sRemoteFileTo], [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `ReadFromFtp` | `ReadFromFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, [nMaxSize], [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `RenameOnFtp` | `RenameOnFtp(sServerNameOrIP, [sRemoteDirectory], sFileNameOld, sFileNameNew, [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `SendToFtp` | `SendToFtp(sServerNameOrIP, sRemoteDirectory, [sRemoteFileName], sLocalFileName, sUserName, sPassword, [nPort], [sProxy], [bUsePassive], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `WriteToFtp` | `WriteToFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sFileContents, sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
 
 ### Session & Application Functions
 
@@ -1268,82 +1373,82 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `GetSetting` | `GetSetting(sName)` |
 | `GetSettings` | `GetSettings(aNames)` |
 | `GetUserData` | `GetUserData()` |
-| `SetUserData` | `SetUserData(vUserName)` |
-| `GetInlineCode` | `GetInlineCode(sValue, aVariables)` |
-| `DeleteInlineCode` | `DeleteInlineCode(sValue)` |
-| `GetRegion` | `GetRegion(sValue, vSrc, vDst)` |
-| `GetRegionEx` | `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` |
+| `SetUserData` | `SetUserData(sUserName)` |
+| `GetInlineCode` | `GetInlineCode(sValue, [aVariables])` |
+| `DeleteInlineCode` | `DeleteInlineCode(sName)` |
+| `GetRegion` | `GetRegion(sRegionName, [aSourceValues], [aDestinationValues])` |
+| `GetRegionEx` | `GetRegionEx(sRegionName, [aSourceValues], [aDestinationValues], [oLocalRegions])` |
 | `IsProductionModeOn` | `IsProductionModeOn()` |
 
-`GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` extracts text between two marker strings in an arbitrary string. It is a pure string utility — it does not require a compiled `:REGION` block. Use it in preference to `GetRegion` when working with string content rather than named code regions.
+`GetRegionEx` looks up a named region exactly like `GetRegion`, but first checks the caller-supplied local region map `oLocalRegions` when one is passed. Region names match case-insensitively. When both `aSourceValues` and `aDestinationValues` are supplied (parallel arrays of equal length), each replacement pair is applied in order to the retrieved text. A name found in neither the local map nor the current region scope raises an error, so guard the call with `:TRY` when the region may be missing. Prefer `GetRegion` unless you need local overrides.
 
 ### Security & Authentication Functions
 
 | Function | Signature |
 |---|---|
-| `EncryptData` | `EncryptData(sInputData, sPassword, sAlgorithm, sKey, sRetType)` |
+| `EncryptData` | `EncryptData(sInputData, sPassword, [sAlgorithm], [sKey], [sRetType])` |
 | `DecryptData` | `DecryptData(sInputData, sPassword)` |
-| `HashData` | `HashData(sInputData, sAlgorithm)` |
-| `VerifySignature` | `VerifySignature(sCertificateString, vData, sSignature)` |
-| `MimeEncode` | `MimeEncode(vV)` |
-| `MimeDecode` | `MimeDecode(vV)` |
-| `ChkPassword` | `ChkPassword(sUserName, sPassword)` |
+| `HashData` | `HashData(sInputData, [sAlgorithm])` |
+| `VerifySignature` | `VerifySignature(sCertificateString, sData, sSignature)` |
+| `MimeEncode` | `MimeEncode(sValue)` |
+| `MimeDecode` | `MimeDecode(sValue)` |
+| `ChkPassword` | `ChkPassword([sUserName], [sPassword])` |
 | `ChkNewPassword` | `ChkNewPassword(sPassword, vPrevPasswords)` |
 | `SetUserPassword` | `SetUserPassword(sUserName, sPassword)` |
-| `LDAPAuth` | `LDAPAuth(sLdapHost, nLdapPort, sLdapUserName, sLdapPassword, sLdapDistinctiveName, bSecure)` |
-| `LDAPAuthEX` | `LDAPAuthEX(sLdapHost, nLdapPort, sBindUserName, sBindUserPassword, sSearchUserName, sSearchUserPassword, sLdapDistinguishedName, sLdapDistinguishedNameStartSearch, sSearchFilter, sAuthAttribName, bSecure)` |
-| `SearchLDAPUser` | `SearchLDAPUser(sLdapHost, nLdapPort, sBindUserName, sBindUserPassword, sSearchUserName, sLdapDistinguishedNameStartSearch, sSearchFilter, bSecure)` |
+| `LDAPAuth` | `LDAPAuth(sLdapHost, [nLdapPort], sLdapUserName, sLdapPassword, [sLdapDistinctiveName], [bSecure])` |
+| `LDAPAuthEX` | `LDAPAuthEX(sLdapHost, [nLdapPort], sBindUserName, sBindUserPassword, [sSearchUserName], sSearchUserPassword, [sLdapDistinguishedName], sLdapDistinguishedNameStartSearch, [sSearchFilter], [sAuthAttribName], [bSecure])` |
+| `SearchLDAPUser` | `SearchLDAPUser(sLdapHost, [nLdapPort], sBindUserName, [sBindUserPassword], [sSearchUserName], sLdapDistinguishedNameStartSearch, [sSearchFilter], [bSecure])` |
 
 ### Web, XML & JSON Functions
 
 | Function | Signature |
 |---|---|
-| `ToXml` | `ToXml(vO, sTypeName)` |
+| `ToXml` | `ToXml(vValue)` / `ToXml(vValue, sTypeName)` |
 | `FromXml` | `FromXml(sXml)` |
 | `ToJson` | `ToJson(vValue)` |
 | `FromJson` | `FromJson(vValue)` |
-| `HtmlEncode` | `HtmlEncode(vData)` |
-| `HtmlDecode` | `HtmlDecode(vData)` |
-| `UrlEncode` | `UrlEncode(vData)` |
-| `UrlDecode` | `UrlDecode(vData)` |
-| `XmlDomToUdObject` | `XmlDomToUdObject(vXml, vPreserveWhitespace)` |
+| `HtmlEncode` | `HtmlEncode(sData)` |
+| `HtmlDecode` | `HtmlDecode(sData)` |
+| `UrlEncode` | `UrlEncode(sData)` |
+| `UrlDecode` | `UrlDecode(sData)` |
+| `XmlDomToUdObject` | `XmlDomToUdObject(sXml, [bPreserveWhitespace])` |
 
 ### Platform Integration Functions
 
 | Function | Signature |
 |---|---|
-| `LimsNETConnect` | `LimsNETConnect(sAssembly, sTypeName, aArgs, vAsStatic)` |
-| `LimsNETCast` | `LimsNETCast(vValue, sNewType)` |
-| `LimsNETTypeOf` | `LimsNETTypeOf(vTypeName)` |
+| `LimsNETConnect` | `LimsNETConnect([sAssembly], [sTypeName], [aArgs], [bAsStatic])` |
+| `LimsNETCast` | `LimsNETCast(vVal, sNewType)` |
+| `LimsNETTypeOf` | `LimsNETTypeOf(sTypeName)` |
 
 ### Email & Messaging Functions
 
 | Function | Signature |
 |---|---|
-| `SendLimsEmail` | `SendLimsEmail(sSMTP, aRecipients, sFromWho, sSubject, sMessageBody, aAttachList, aCClist, aBCClist, sReplyTo, nNPort, sUName, sUPass, bIgnoreErrors, bUseCDO, nTimeout, bUseSSL, bIsBodyHTML, sEncryptedData)` |
-| `SendToOutbox` | `SendToOutbox(sSMTP, aRecipients, sFromWho, sSubject, sMessageBody, aAttachList, aCClist, aBCClist, sReplyTo, nNPort, sUName, sUPass, bIgnoreErrors, bUseSSL, bIsBodyHTML, sEncryptedData)` |
-| `SendFromOutbox` | `SendFromOutbox(bIgnoreErrors, bUseCDO, nTimeout)` |
-| `SendOutlookReminder` | `SendOutlookReminder(sSMTP, nStart, dEnd, sSubject, sSummary, sLocation, sOrganizerName, sOrganizerEmail, sAttendeeName, sAttendeeEmail, nNPort, sUName, sUPass, bIgnoreErrors, bUseSSL)` |
+| `SendLimsEmail` | `SendLimsEmail(sSMTP, aRecipients, sFromWho, sSubject, [sMessageBody], [aAttachList], [aCCList], [aBCCList], [sReplyTo], [nPort], [sUName], [sUPass], [bIgnoreErrors], [bUseCDO], [nTimeout], [bUseSSL], [bIsBodyHTML], [sEncryptedData])` |
+| `SendToOutbox` | `SendToOutbox(sSMTP, aRecipients, sFromWho, [sSubject], [sMessageBody], [aAttachList], [aCCList], [aBCCList], [sReplyTo], [nPort], [sUName], [sUPass], [bIgnoreErrors], [bUseSSL], [bIsBodyHTML], [sEncryptedData])` |
+| `SendFromOutbox` | `SendFromOutbox([bIgnoreErrors], [bUseCDO], [nTimeout])` |
+| `SendOutlookReminder` | `SendOutlookReminder(sSMTP, dStart, dEnd, sSubject, sSummary, sLocation, sOrganizerName, sOrganizerEmail, sAttendeeName, sAttendeeEmail, [nPort], [sUName], [sUPass], bIgnoreErrors, [bUseSSL])` |
 
 ### Compression & Zip Functions
 
 | Function | Signature |
 |---|---|
-| `Compress` | `Compress(sSource, vToFile)` |
-| `Decompress` | `Decompress(sSource, vFromFile)` |
-| `CreateZip` | `CreateZip(sZipFileName, sSourceDirectory, bRecurse, sFileFilter, sPassword)` |
-| `ExtractZip` | `ExtractZip(sZipFileName, sTargetDirectory, sFileFilter, sPassword)` |
+| `Compress` | `Compress(sSource, [bToFile])` |
+| `Decompress` | `Decompress(sSource, [bFromFile])` |
+| `CreateZip` | `CreateZip(sZipFileName, sSourceDirectory, [bRecurse], [sFileFilter], [sPassword])` |
+| `ExtractZip` | `ExtractZip(sZipFileName, sTargetDirectory, [sFileFilter], [sPassword])` |
 
 ### Batch & System Functions
 
 | Function | Signature |
 |---|---|
-| `SubmitToBatch` | `SubmitToBatch(sCode, vParameters, sMode, sUserName, sPassword)` |
+| `SubmitToBatch` | `SubmitToBatch(sCode, [vParameters], [sMode], [sUserName], [sPassword])` |
 | `SubmitToBatchEx` | `SubmitToBatchEx(sCode)` |
 | `InBatchProcess` | `InBatchProcess()` |
-| `DosSupport` | `DosSupport(sCmd, sPrm, vDbg)` |
-| `RunApp` | `RunApp(sApplication, sArguments)` |
-| `LWait` | `LWait(nSeconds)` |
+| `DosSupport` | `DosSupport(sCmd, [sPrm], [vDbg])` |
+| `RunApp` | `RunApp(sApplication, [sArguments])` |
+| `LWait` | `LWait([nSeconds])` |
 | `CreateGUID` | `CreateGUID()` |
 | `SetDecimalSeparator` | `SetDecimalSeparator(sDecimalSep)` |
 | `GetDecimalSep` | `GetDecimalSep()` |
@@ -1360,34 +1465,34 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `DocLoginToDocumentum` | `DocLoginToDocumentum(sDocBase, sUser, sPassword)` |
 | `DocCommandFailed` | `DocCommandFailed()` |
 | `DocGetErrorMessage` | `DocGetErrorMessage()` |
-| `DocCreateCabinet` | `DocCreateCabinet(sName, sCabinetType, sAcl)` |
-| `DocDeleteCabinet` | `DocDeleteCabinet(sCabinetId, bDeepDelete)` |
+| `DocCreateCabinet` | `DocCreateCabinet(sCabinetName, [sCabinetType], [sAcl])` |
+| `DocDeleteCabinet` | `DocDeleteCabinet(sCabinetId, [bDeepDelete])` |
 | `DocGetCabinets` | `DocGetCabinets()` |
-| `DocCreateFolder` | `DocCreateFolder(sPath, sName, sAcl)` |
-| `DocDeleteFolder` | `DocDeleteFolder(sFolderId, bDeepDelete)` |
+| `DocCreateFolder` | `DocCreateFolder(sParentPath, sFolderName, [sAcl])` |
+| `DocDeleteFolder` | `DocDeleteFolder(sFolderId, [bDeepDelete])` |
 | `DocGetFolders` | `DocGetFolders(sParentPath)` |
-| `DocImportDocument` | `DocImportDocument(sDocFile, sDestinationPath, sDocName, sDocType, sAppCode, sAclName)` |
-| `DocExportDocument` | `DocExportDocument(sDocumentId, sFormat)` |
-| `DocGetDocuments` | `DocGetDocuments(sFolderPath, sDocTypes)` |
+| `DocImportDocument` | `DocImportDocument(sDocFile, sDestinationPath, [sDocName], [sDocType], [sAppCode], [sAclName])` |
+| `DocExportDocument` | `DocExportDocument(sDocumentId, [sFormat])` |
+| `DocGetDocuments` | `DocGetDocuments(sFolderPath, [sDocTypes])` |
 | `DocExists` | `DocExists(sObjId)` |
-| `DocDelete` | `DocDelete(sObjId, bAllVersions)` |
-| `DocCheckinDocument` | `DocCheckinDocument(sFilePath, sDocumentId, sVersion, bReplaceContent, bMajorVersion)` |
+| `DocDelete` | `DocDelete(sObjId, [bAllVersions])` |
+| `DocCheckinDocument` | `DocCheckinDocument(sFilePath, sDocumentId, [sVersion], [bReplaceContent], [bMajorVersion])` |
 | `DocCheckoutDocument` | `DocCheckoutDocument(sDocumentId)` |
 | `DocCancelCheckout` | `DocCancelCheckout(sDocumentId)` |
-| `DocGetMetadata` | `DocGetMetadata(sObjId, oAttributes)` |
-| `DocSetMetadata` | `DocSetMetadata(sObjId, oAttributes)` |
+| `DocGetMetadata` | `DocGetMetadata(sObjId, [sAttributes])` |
+| `DocSetMetadata` | `DocSetMetadata(sObjId, aAttributes)` |
 | `DocGetTypeAttributes` | `DocGetTypeAttributes(sTypeName)` |
 | `DocGetTypeAttributesAsDataset` | `DocGetTypeAttributesAsDataset(sTypeName)` |
-| `DocCreateACL` | `DocCreateACL(sName, sDescription, aGroups)` |
-| `DocCreateUser` | `DocCreateUser(sLoginName, sPassword, sUserName, sEMail, sDefaultFolder, sGroupName, sPermissionSet, nUserPrivileges)` |
-| `DocUpdateUser` | `DocUpdateUser(sLoginName, sPassword, sUserName, sEMail, sDefaultFolder, sGroupName, sPermissionSet, nUserPrivileges)` |
-| `DocDeleteUser` | `DocDeleteUser(sName)` |
+| `DocCreateACL` | `DocCreateACL(sAclName, [sDescription], [aGroups])` |
+| `DocCreateUser` | `DocCreateUser(sLoginName, sPassword, [sUserName], [sEmail], [sDefaultFolder], [sGroupName], [sPermissionSet], [nUserPrivileges])` |
+| `DocUpdateUser` | `DocUpdateUser(sLoginName, sPassword, [sUserName], [sEMail], [sDefaultFolder], [sGroupName], [sPermissionSet], [nUserPrivileges])` |
+| `DocDeleteUser` | `DocDeleteUser(sLoginName)` |
 | `DocExistsUser` | `DocExistsUser(sLoginName, sUserName)` |
-| `DocCreateGroup` | `DocCreateGroup(sName, sDescription)` |
+| `DocCreateGroup` | `DocCreateGroup(sGroupName, [sDescription])` |
 | `DocAddUsersToGroup` | `DocAddUsersToGroup(sGroupName, aUsers)` |
 | `DocRemoveUsersFromGroup` | `DocRemoveUsersFromGroup(sGroupName, aUsers)` |
 | `DocRemoveAllUsersFromGroup` | `DocRemoveAllUsersFromGroup(sGroupName)` |
-| `DocStartWorkflow` | `DocStartWorkflow(sWorkflowId, aDocumentIds, sPackageName)` |
+| `DocStartWorkflow` | `DocStartWorkflow(sWorkflowId, [aDocumentIds], [sPackageName])` |
 | `DocStopWorkflow` | `DocStopWorkflow(sWorkflowId)` |
 | `DocPauseWorkflow` | `DocPauseWorkflow(sWorkflowId)` |
 | `DocResumeWorkflow` | `DocResumeWorkflow(sWorkflowId)` |
@@ -1395,13 +1500,13 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `DocGetTasks` | `DocGetTasks(sWorkflowId)` |
 | `DocGetTasksCount` | `DocGetTasksCount()` |
 | `DocAcquireWorkitem` | `DocAcquireWorkitem(sWorkitemId)` |
-| `DocCompleteWorkitem` | `DocCompleteWorkitem(sWorkitemId, sSignOffUser, sSignOffPass, sSignOffReason)` |
-| `DocDelegateWorkitem` | `DocDelegateWorkitem(sWorkitemId, sUser)` |
-| `DocRepeatWorkitem` | `DocRepeatWorkitem(sWorkitemId, aUsers, sSignOffUser, sSignOffPass, sSignOffReason)` |
+| `DocCompleteWorkitem` | `DocCompleteWorkitem(sWorkitemId, [sSignOffUser], [sSignOffPass], [sSignOffReason])` |
+| `DocDelegateWorkitem` | `DocDelegateWorkitem(sWorkitemId, sTargetUser)` |
+| `DocRepeatWorkitem` | `DocRepeatWorkitem(sWorkitemId, aUsers, [sSignOffUser], [sSignOffPass], [sSignOffReason])` |
 | `DocGetWorkitemProperties` | `DocGetWorkitemProperties(sWorkitemId)` |
-| `DocSearchFullText` | `DocSearchFullText(sTextToSearch, sStartLocation, nResultSetSize)` |
-| `DocSearchAsDataset` | `DocSearchAsDataset(sContains, sStartLocation, sObjectType, sWhere, bAllVersions, nResultSetSize)` |
-| `DocSearchUsingDql` | `DocSearchUsingDql(sDql, nResultSetSize)` |
+| `DocSearchFullText` | `DocSearchFullText(sTextToSearch, [sStartLocation], [nResultSetSize])` |
+| `DocSearchAsDataset` | `DocSearchAsDataset([sContains], [sStartLocation], [sObjectType], [sWhere], [bAllVersions], [nResultSetSize])` |
+| `DocSearchUsingDql` | `DocSearchUsingDql(sDql, [nResultSetSize])` |
 
 ---
 
@@ -1436,14 +1541,14 @@ developer-accessible classes that are only reached indirectly as return values
 | `SDMS` | `SDMS{}` / `SDMS{oCredentials}` | SDMS client |
 | `SDMSDocUploader` | `SDMSDocUploader{}` / `SDMSDocUploader{oCredentials}` | SDMS document uploader |
 | `Sequence` | `Sequence{sPlatforma, sTableName, sFieldName, sPrefix}` | Database sequence helper |
-| `SSLBaseDictionary` | `SSLBaseDictionary{}` | Base dictionary class |
+| `SSLBaseDictionary` | No direct constructor — use `SSLStringDictionary{}` or `SSLIntDictionary{}` | Base dictionary class |
 | `SSLCodeProvider` | `SSLCodeProvider{}` | Code compilation utility |
 | `SSLDataset` | `SSLDataset{}` / `SSLDataset{vData, vNullAsBlank}` | Dataset wrapper |
 | `SSLError` | Returned by `GetLastSSLError()` | Exception object (`:Message`, `:Description`, `:Code`, `:GenCode`, `:Operation`, `:FullDescription`, `:FullDescriptionEx`, `:InnerException`, `:NETException`) |
-| `SSLExpando` | `SSLExpando{}` | Dynamic object |
+| `SSLExpando` | `CreateUdObject()` (`SSLExpando{}` does not compile) | Dynamic object |
 | `SSLIntDictionary` | `SSLIntDictionary{}` / `SSLIntDictionary{nLength}` | Numeric-keyed dictionary |
 | `SSLRegex` | `SSLRegex{sPattern}` / `SSLRegex{sPattern, bCaseSensitive}` | Regular expressions |
-| `SSLStringDictionary` | `SSLStringDictionary{}` / `SSLStringDictionary{vCaseSensitive, nLength}` | String-keyed dictionary |
+| `SSLStringDictionary` | `SSLStringDictionary{}` / `SSLStringDictionary{bCaseSensitive, nLength}` | String-keyed dictionary |
 | `TablesImport` | `TablesImport{sFolder}` | Table import utility |
 | `WebServices` | `WebServices{}` | HTTP/SOAP client factory |
 
@@ -1518,7 +1623,7 @@ oRegex := SSLRegex{sPattern, bCaseSensitive};
 oRegex:CaseSensitive → Boolean
 
 /* Methods;
-bMatch := oRegex:IsMatch(sInput, nStartAt);  → Boolean
+bMatch := oRegex:IsMatch(sInput, [nStartAt]);  → Boolean   /* nStartAt is 1-based;
 ```
 
 ### SSLStringDictionary
@@ -1528,13 +1633,19 @@ String-keyed dictionary with optional case sensitivity.
 ```ssl
 /* Constructors;
 oDict := SSLStringDictionary{};
-oDict := SSLStringDictionary{vCaseSensitive, nLength};
+oDict := SSLStringDictionary{bCaseSensitive, nLength};
+
+/* Properties (read-only);
+oDict:Count  → Number
+oDict:Keys   → Array
+oDict:Values → Array
 
 /* Methods;
-oDict:AddValue(sKey, vValue)        → Any
-oDict:GetValue(sKey, vDefault)    → Any
+oDict:Clear()                       → Boolean
+oDict:AddValue(sKey, vValue)        → Boolean
+oDict:GetValue(sKey, [vDefault])  → Any
 oDict:Contains(sKey)              → Boolean
-oDict:Remove(sKey)                → Any
+oDict:Remove(sKey)                → Boolean
 oDict:TryGetValue(sKey)           → Object   /* {Exists, Value};
 ```
 
@@ -1545,23 +1656,29 @@ Numeric-keyed dictionary.
 ```ssl
 /* Constructors;
 oDict := SSLIntDictionary{};
-oDict := SSLIntDictionary{nInitialLength};
+oDict := SSLIntDictionary{nLength};
+
+/* Properties (read-only);
+oDict:Count  → Number
+oDict:Keys   → Array
+oDict:Values → Array
 
 /* Methods;
-oDict:AddValue(nKey, vValue)        → Any
-oDict:GetValue(nKey, vDefault)    → Any
+oDict:Clear()                       → Boolean
+oDict:AddValue(nKey, vValue)        → Boolean
+oDict:GetValue(nKey, [vDefault])  → Any
 oDict:Contains(nKey)              → Boolean
-oDict:Remove(nKey)                → Any
+oDict:Remove(nKey)                → Boolean
 oDict:TryGetValue(nKey)           → Object   /* {Exists, Value};
 ```
 
 ### SSLBaseDictionary
 
-Base dictionary class (parent of SSLStringDictionary and SSLIntDictionary).
+Base dictionary class (parent of SSLStringDictionary and SSLIntDictionary). It has no direct constructor: create an `SSLStringDictionary{}` or `SSLIntDictionary{}` and use these shared members on it.
 
 ```ssl
-/* Constructor;
-oDict := SSLBaseDictionary{};
+/* No direct constructor - create a concrete dictionary;
+oDict := SSLStringDictionary{};
 
 /* Properties;
 oDict:Keys   → Array
@@ -1569,14 +1686,16 @@ oDict:Values → Array
 oDict:Count  → Number (read-only)
 
 /* Methods;
-oDict:AddValue(vKey, vValue)
-oDict:Clear()
+oDict:AddValue(vKey, vValue)      → Boolean
+oDict:Clear()                     → Boolean
 oDict:Contains(vKey)              → Boolean
-oDict:GetValue(vKey, vDefault)    → Any
-oDict:Invoke(vKey, aArgs)         → Any
-oDict:Remove(vKey)                → Any
+oDict:GetValue(vKey, [vDefault])  → Any
+oDict:InvokeMethod(sMethodName, aArgs) → Any   /* Invoke() raises, so call by name with InvokeMethod;
+oDict:Remove(vKey)                → Boolean
 oDict:TryGetValue(vKey)           → Object
 ```
+
+`Invoke` raises in every form; call the method directly, or use `InvokeMethod(sMethodName, aArgs)` when the method name is only known at run time.
 
 ### SSLExpando
 
@@ -1625,26 +1744,27 @@ oDataset:ToDataSet()  → Object
 
 ### SSLCodeProvider
 
-Code compilation utility.
+Compiles published server scripts and data sources and returns the compilation errors found. Every compile method returns an errors object; inspect it before treating a compile as clean. Single-item methods take a GUID or a full `category.name`; the category methods take category **GUIDs**, not category names.
 
 ```ssl
 /* Constructor;
 oProvider := SSLCodeProvider{};
 
-/* Methods;
-oProvider:CompileScript(sScript)
+/* Methods (each returns an errors object);
 oProvider:CompileAll()
-oProvider:CompileServerScript(sScript)
 oProvider:CompileAllServerScripts()
-oProvider:CompileDataSource(sDataSource)
 oProvider:CompileAllDataSources()
-oProvider:CompileServerScripts(aScripts)
-oProvider:CompileDataSources(aDataSources)
-oProvider:CompileServerScriptCategory(sCategory)
-oProvider:CompileServerScriptCategories(aCategories)
-oProvider:CompileDataSourceCategory(sCategory)
-oProvider:CompileDataSourceCategories(aCategories)
+oProvider:CompileServerScript(sScriptId)
+oProvider:CompileServerScripts(aScriptsIds)
+oProvider:CompileDataSource(sScriptId)
+oProvider:CompileDataSources(aScriptsIds)
+oProvider:CompileServerScriptCategory(sCategoryId)
+oProvider:CompileServerScriptCategories(aCategoriesIds)
+oProvider:CompileDataSourceCategory(sCategoryId)
+oProvider:CompileDataSourceCategories(aCategoriesIds)
 ```
+
+`CompileScript(sCode)` exists but raises `The method or operation is not implemented.` for any non-null input, so it cannot validate ad hoc code text.
 
 ### PdfSupport
 
@@ -1828,10 +1948,10 @@ bOk := oUploader:UploadNewRevisionForWorkflowDocument(sMessage) → Boolean
 
 These classes are available but less commonly used:
 
-- **`BatchSupport`** — Properties (read-only): `ActiveBatchesNumber`, `PhysicalMemory`, `VirtualMemory`. Methods: `Dispose()`, `IsRunning()`
-- **`EnterpriseExporter`** — Properties: `AbortOnError`, `LogFile`, `IsEnterpriseOnly`, `FromSQL`, `NullAsBlank`, `InvariantDateColumns`. Method: `DoExport()`
-- **`HtmlConverter`** — Properties: `OptionsXml` (write-only), `SimplifiedLog` (read-only), `Log` (read-only). Methods: `ClearLog()`, `Convert()`
-- **`PatcherSupport`** — Properties: `LogFilePath`, `ResultTable` (read-only), `InternalErrors` (read-only), `DiffDataTable` (read-only). Methods: `Compare()`, `ConnectToExternalSystem()`, `GetDataFromWholeDictionary()`, `GetAllFormsFromDictionary_Test()`
-- **`RegSetup`** — Methods: `RegCloseKey()`, `RegOpenKey()`, `RegQueryValue()`
-- **`TablesImport`** — Properties: `NullAsBlank`, `IncludeORIGREC`, `ErrMsg` (read-only). Method: `GetTable()`
+- **`BatchSupport`** — Properties (read-only): `ActiveBatchesNumber`, `PhysicalMemory`, `VirtualMemory`. Methods: `Dispose()`, `IsRunning(vBatchId)` → Boolean
+- **`EnterpriseExporter`** — Properties: `AbortOnError`, `LogFile`, `ErrorMsg`, `IsEnterpriseOnly` (write-only), `FromSQL` (write-only), `NullAsBlank` (write-only), `InvariantDateColumns` (write-only). Method: `DoExport()` → Boolean
+- **`HtmlConverter`** — Properties: `OptionsXml` (write-only), `SimplifiedLog` (read-only), `Log` (read-only). Methods: `ClearLog()`, `Convert(sXml, sXfdGuid, sHtmlGuid)` → String
+- **`PatcherSupport`** — Properties: `LogFilePath`, `ResultTable` (read-only), `InternalErrors` (read-only), `DiffDataTable` (read-only). Methods: `Compare(oDestinationDataTable)`, `ConnectToExternalSystem(sUrl, sUser, sPassword)`, `GetDataFromWholeDictionary()`, `GetAllFormsFromDictionary_Test()`
+- **`RegSetup`** — Methods: `RegOpenKey(sKey, nAccess)` → Boolean, `RegQueryValue(sSubKey, nType)`, `RegCloseKey()` → Boolean
+- **`TablesImport`** — Properties: `NullAsBlank`, `IncludeORIGREC`, `ErrMsg` (read-only). Method: `GetTable(sName)` → `CDataTable` (or `NIL` on failure)
 - **`WebServices`** — Methods: `CreateHttpClient()`, `CreateSoapClient()`

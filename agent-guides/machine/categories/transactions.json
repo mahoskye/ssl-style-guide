@@ -9,12 +9,12 @@
   "summary": "Transaction lifecycle functions and failure handling around database writes.",
   "must_follow": [
     "Use :TRY/:CATCH around multi-step transactional database work.",
-    "Call GetLastSSLError() inside :CATCH when error details are needed.",
-    "Make rollback behavior explicit for write operations that can partially fail."
+    "Use GetLastSSLError() inside :CATCH to retrieve error details.",
+    "Make rollback behavior explicit for write operations that can partially fail.",
+    "Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
   ],
   "avoid": [
-    "Do not leave transaction boundaries implicit in specs or refactors.",
-    "Do not put control-flow exits inside :FINALLY."
+    "Do not leave transaction boundaries implicit in specs or refactors."
   ],
   "elements": [
     {
@@ -51,7 +51,7 @@
       "name": "RunSQL",
       "type": "function",
       "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
-      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+      "summary": "Executes a non-query SQL statement and returns .T. on success. Under default settings, a failed statement raises an error."
     },
     {
       "name": "GetLastSSLError",

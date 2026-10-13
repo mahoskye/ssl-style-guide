@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 13
+version: 15
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -49,11 +49,14 @@ the report. A finding you could not defend is not a finding.
 
 {{shared:sources-of-truth}}
 
+{{shared:task-brief}}
+
 ## Workflow skills
 
 Read `agent-guides/skills/ssl-review/SKILL.md` at the start of every
 review and follow it — it defines the check categories, file-type
-handling, and output format. Read `ssl-lookup` before confirming any
+handling, output format, and the **Severity rubric** that sets the
+severity of every finding. Read `ssl-lookup` before confirming any
 element exists or checking a signature.
 
 ## Stage 1 — Gather
@@ -63,7 +66,9 @@ element exists or checking a signature.
    mark those findings "validator-confirmed". It runs the strict agent
    profile, so `undeclared_variable`, `unused_variable`, and
    `invalid_sql_param` appear — an `undeclared_variable` warning is
-   usually a typo'd read and is a real defect, not noise.
+   usually a typo'd read and is a real defect, not noise. The exception
+   is a predefined global the code reads on purpose, such as `CRLF`;
+   the rubric lists it under *Not findings*.
 3. Apply the `ssl-review` skill's categories for judgment findings the
    validator cannot catch: naming intent, security, SQL construction.
 4. Review against `ssl_server_script_style.md` section by section.
@@ -89,10 +94,11 @@ optional and not a formality.
 
 - Re-read the surrounding code. Does context legitimately explain the
   pattern — file type, an `:INCLUDE`-provided declaration,
-  call-stack-scoped `:PUBLIC`, intentional multi-match fallthrough,
+  a program-wide `:PUBLIC` declared elsewhere, intentional multi-match fallthrough,
   `.NET` member passthrough?
-- Confirm the rule you cite exists, at the severity you claim, in the
-  schema, `ssl_style_rule`, or the guides.
+- Confirm the rule you cite exists in the schema, `ssl_style_rule`, or
+  the guides, and that the severity you assign is the one the Severity
+  rubric gives it. A schema severity is never raised or lowered.
 - Re-verify every built-in the finding depends on.
 - Never dismiss a validator diagnostic from surface reading alone. A
   diagnostic that "fires inside a string or comment" usually means the
@@ -147,12 +153,16 @@ what makes the review invalid.
 After the protocol log: validator-confirmed findings, then judgment
 findings with their verdicts and quoted evidence, then a "References
 checked" note listing the skill, schema, guide, MCP or inventory sources
-used and any that were unavailable. Close with:
+used and any that were unavailable. When the code was written to a task
+brief, list brief-required conflicts in their own section; they do not
+count toward the verdict. Then the run record, and close with:
 
 `Verdict: PASS` — no errors or warnings — or
 `Verdict: FAIL — <n> errors, <m> warnings`
 
 so a dispatching agent can gate on it.
+
+{{shared:run-record}}
 
 {{shared:boundaries}}
 
@@ -173,7 +183,9 @@ so a dispatching agent can gate on it.
 - `ssl_diagnose` output is folded in, or its unavailability stated.
 - Every `DoProc` / `ExecFunction` target resolved or flagged.
 - Every kept finding is CONFIRMED with a cited rule or verified element,
-  plus file and line.
+  plus file and line, and its severity comes from the Severity rubric.
+- Nothing on the rubric's *Not findings* list was reported, and every
+  brief-required conflict quotes the brief section that requires it.
 - Refuted findings were dropped, not quietly kept.
-- The report ends with the `Verdict:` line, and "References checked" is
-  present.
+- The report ends with the run record and then the `Verdict:` line, and
+  "References checked" is present.

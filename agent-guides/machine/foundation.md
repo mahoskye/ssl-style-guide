@@ -2,7 +2,7 @@
 
 Generated compact baseline for SSL agents (source:
 ssl-style-guide.schema.yaml v1.7.2, last_updated
-2026-08-08, via tools/generate-machine-docs.mjs). Use this
+2026-09-20, via tools/generate-machine-docs.mjs). Use this
 first, then retrieve a category pack or element record for task-specific
 detail.
 
@@ -21,48 +21,57 @@ detail.
 
 ## Non-Negotiable SSL Rules
 
-- Colon-prefixed SSL keywords are uppercase and case-sensitive.
-- Almost every SSL statement, including comments, must end with a semicolon.
-- Never include a semicolon inside comment text; the first semicolon ends the
-  comment and the remaining text becomes executable code. End every comment
-  with `;` alone — the form `; */` leaves an inert `*/` outside the
-  comment and draws a diagnostic.
+- Colon-prefixed SSL keywords are uppercase and case-sensitive, for
+  example `:IF` and `:BEGINCASE`.
+- Almost every SSL statement, including comments, must end with a
+  semicolon.
+- Never include a semicolon inside comment text; the first semicolon ends
+  the comment and the remaining text becomes executable code.
 - Condition-bearing keyword lines are statements and end with a semicolon:
-  `:IF condition;`, `:WHILE condition;`, `:FOR i := 1 :TO n;`. Omitting
-  it makes the parser absorb the next line into the condition.
+  `:IF condition;`, `:WHILE condition;`, `:FOR i := 1 :TO n;`. Omitting it
+  absorbs the next line into the condition.
 - Declare variables before use with `:DECLARE`.
 - Do not put `:DEFAULT` on a `:DECLARE` line.
-- In scripts and procedures, `:PARAMETERS` appears before any other statement
-  and `:DEFAULT` immediately follows `:PARAMETERS`.
-- Data source files are different: `:PARAMETERS` uses inline `:=` defaults,
-  optional per parameter.
-- SSL arrays are 1-based; collections on .NET objects reached via colon member
-  access (for example `dataSet:Tables[0]`) are 0-based.
+- `:PARAMETERS` must appear before any other statements in a script or
+  procedure body.
+- `:DEFAULT` must immediately follow `:PARAMETERS`.
+- Data source files use inline `:PARAMETERS` defaults with `:=` instead of
+  separate `:DEFAULT` statements.
+- Give every data-source parameter an inline `:=` default; a parameter
+  without one makes the data source fail when it runs.
+- SSL arrays are 1-based; loop over arrays from 1 through `ALen(aArray)`.
+- Index collections on .NET objects reached via colon member access (for
+  example `dataSet:Tables[0]`) as 0-based.
 - Use `==` for exact string equality; `=` is prefix-style for strings.
 - Use `DoProc("ProcName", {args})` for same-file script procedures.
 - Use `ExecFunction("Category.Script", {args})` or
   `ExecFunction("Category.Script.Proc", {args})` for external script entry
   points.
-- Built-in classes instantiate with curly braces, for example `Email{}`.
-- User-defined classes instantiate with `CreateUdObject("ClassName")`.
+- Instantiate directly creatable built-in classes with curly braces, for
+  example `Email{}`.
+- Use `CreateUdObject("Category.ClassName")` for user-defined classes; a
+  bare class name is looked up only among the default categories.
 - Inside class methods, access fields through `Me:fieldName` or
   `Base:fieldName`.
-- Prefer `:TRY`/`:CATCH`/`:FINALLY`; bare `:TRY ... :ENDTRY` is invalid.
-- Do not put `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
+- Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.
+- `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare
+  `:TRY ... :ENDTRY` is invalid.
+- Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
   `:FINALLY`.
 - `SQLExecute` is the only database API that supports named `?param?`
-  substitution. Its markers reference in-scope SSL variables by name and
-  it has **no values-array parameter** (the second parameter is a
-  connection name). Canonical shape:
+  substitution; do not use `?param?` markers with other database
+  functions. Its markers reference in-scope SSL variables by name.
+  Canonical shape:
   `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
-- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and
-  `GetDataSet` use positional `?` markers with a value array in a
-  **later argument slot** — check `ssl_signature` for the slot and skip
-  unused optionals with adjacent commas. Canonical shape:
+- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet`
+  use positional `?` markers with a value array in a later argument slot:
+  fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`,
+  and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the
+  slot and skip unused optionals with adjacent commas. Canonical shape:
   `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`
 - Do not put a trailing semicolon inside an embedded SQL string —
-  `"SELECT ... ;"` is not the convention; end the SSL statement, not
-  the SQL text.
+  `"SELECT ... ;"` is not the convention; end the SSL statement, not the
+  SQL text.
 
 ## SSL Does Not Have
 
@@ -75,23 +84,25 @@ these is an error — never invent them:
   identifiers only — assign in a separate statement. Class constants are
   assigned in the Constructor.
 - `*/` comment closers: an SSL comment opens with `/*` and ends at the
-  first `;`.
+  first `;`. End every comment with `;` alone — the form `; */` leaves an
+  inert `*/` outside the comment and draws a diagnostic.
 - `:ENDFOR`: a `:FOR` loop closes with `:NEXT`.
-- `=` assignment: assignment is `:=` (plus `+=`, `-=`, ...);
-  `x = y` is a comparison expression, never an assignment.
-- `[a, b]` array literals: array literals use braces `{1, 2, 3}`;
-  square brackets are for indexing (`aRows[1]`) and are also a string
-  literal form (`[text]`), never an array constructor.
-- `NULL`: the absent-value literal is `NIL`.
-- Bare `If`/`Else`/`EndIf`/`While`/`EndWhile` keywords: SSL
-  keywords are colon-prefixed uppercase only (`:IF`/`:ELSE`/
-  `:ENDIF`/`:WHILE`/`:ENDWHILE`) — a bare form is an identifier,
-  not a keyword.
+- `=` assignment: assignment is `:=` (plus `+=`, `-=`, ...); `x = y` is a
+  comparison expression, never an assignment.
+- `[a, b]` array literals: array literals use braces `{1, 2, 3}`; square
+  brackets are for indexing (`aRows[1]`) and are also a string literal
+  form (`[text]`), never an array constructor.
+- `NULL`: the absent-value literal is `NIL` (and the boolean literals are
+  `.T.` and `.F.`).
+- Bare `If`/`Else`/`EndIf`/`While`/`EndWhile` keywords: SSL keywords are
+  colon-prefixed uppercase only
+  (`:IF`/`:ELSE`/`:ENDIF`/`:WHILE`/`:ENDWHILE`) — a bare form is an
+  identifier, not a keyword.
 - The C ternary `cond ? a : b`: use `IIf(bCondition, vTrue, vFalse)`
   (exactly three arguments; both branches are evaluated).
-- A values array on `SQLExecute`: `SQLExecute(sSql, {args})` passes
-  the array as a **connection name** — SQLExecute binds via `?name?`
-  markers only (see the database rules above).
+- A values array on `SQLExecute`: `SQLExecute(sSql, {args})` passes the
+  array as a **connection name** — SQLExecute binds via `?name?` markers
+  only (see the database rules above).
 
 ## Naming Prefixes
 

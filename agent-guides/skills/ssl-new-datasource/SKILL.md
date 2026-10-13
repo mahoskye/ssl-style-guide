@@ -26,26 +26,61 @@ you are unsure about any rule below.
      entry
 
 2. **Use these core data-source rules in the scaffold:**
-   - Parameters use inline `:=` defaults: `:PARAMETERS p1 := val1, p2 := val2;`
-   - **Every parameter MUST have a default** — the builder throws an error
-     otherwise
-   - **`:PARAMETERS;` with no parameters is an error** — omit `:PARAMETERS`
-     entirely when there are no parameters rather than emitting an empty one
-   - **Never use separate `:DEFAULT` statements** in a data source — defaults are
-     inline in `:PARAMETERS`
-   - Do not apply the standard script `:PARAMETERS` + `:DEFAULT` layout to data
-     source files
-   - Colon-prefixed keywords are UPPERCASE; almost every statement ends with `;`;
-     never place `;` inside comment body text
+   <!-- rules: domain=data-sources applies_to=ssl_data_source,sql_data_source wrap=80 -->
+   - Data source files use inline `:PARAMETERS` defaults with `:=` instead of
+     separate `:DEFAULT` statements.
+   - Give every data-source parameter an inline `:=` default; a parameter
+     without one makes the data source fail when it runs.
+   - A data source that takes no parameters leaves the `:PARAMETERS` line out;
+     an empty `:PARAMETERS;` is an error.
+   - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source
+     files.
+   - Reference SQL data-source parameters in the SQL body as `@name`
+     placeholders, not `?name?` markers.
+   - Declare every `@name` placeholder of a SQL data-source body in
+     `:PARAMETERS`; an undeclared one is not substituted and fails when the
+     query executes.
+   - Use SQL comment syntax (`--` and `/* ... */`) in SQL data-source bodies,
+     not the SSL comment form.
+   - In a SQL data source, a semicolon only ends a builder directive or
+     `:PARAMETERS`; the body runs as one SQL command, so any other semicolon
+     outside a comment or string literal is misplaced.
+   - In a SQL data source, put the SQL body after the `:PARAMETERS` line; SQL
+     text placed before it is discarded.
+   - Lay out the query body of a SQL data source in the canonical compact SQL
+     style, the same as SQL embedded in SSL strings.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`,
+     `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not
+     normal SSL keywords; do not flag them as unknown keywords.
+   - In an SSL data source, comments are SSL comments: they end at the first
+     `;`, and `*/` does not close them.
+   - In an SSL data source, use parameters as ordinary variables by their bare
+     names; `@name` placeholders are not part of this file type.
+   - The `RunDS` return-type argument (`"ssldataset"`, `"xml"`, and so on)
+     converts only an `SSLDataset` result; an SSL data source that callers
+     request in another return type returns an `SSLDataset`, for example from
+     `GetSSLDataset`.
+   - One file should represent either a class definition, a script, or a data
+     source.
+   <!-- /rules -->
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text wrap=80 -->
+   - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example
+     `:IF` and `:BEGINCASE`.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Never include a semicolon inside comment text; the first semicolon ends the
+     comment and the remaining text becomes executable code.
+   <!-- /rules -->
 
 3. **Infer parameter types from Hungarian notation prefixes** and pick a matching
    inline default:
    - Recognized prefixes (`sName`, `nQty`, `bFlag`, `dDate`, `aItems`, `oObj`,
      `fnFilter`, `vValue`) — keep as-is
    - No recognizable prefix → default to `s` (string) and note the assumption
-   - Default value by type: string → `""`, numeric → `0`, boolean → `.F.`,
-     date → `NIL`, array → `{}`, object → `NIL`, code block → `NIL`,
-     variant → `NIL`
+   <!-- rules: id=default_value_by_type wrap=80 -->
+   - Default a parameter to the empty value of its prefix type: `""` for
+     strings, `0` for numbers, `.F.` for booleans, `{}` for arrays, and `NIL`
+     for dates, objects, code blocks and variants.
+   <!-- /rules -->
 
 4. **Generate the data source** for the requested variant (see templates below).
 
@@ -54,14 +89,20 @@ you are unsure about any rule below.
      `Category.Name`); development checkouts may be flat `.ds` or `.ds.txt`
      files
    - Callers invoke it at runtime with `RunDS`, passing overrides as an array of
-     `{name, value}` pairs:
+     values **in `:PARAMETERS` order**. Values bind by position, not by name;
+     trailing values left out take their inline defaults. Passing
+     `{name, value}` pairs does not work — each pair is bound whole to one
+     parameter:
      ```ssl
      oResult := RunDS("Category.DataSourceName");
-     oResult := RunDS("Category.DataSourceName", {{"sStatus", "P"}, {"nLimit", 25}});
+     oResult := RunDS("Category.DataSourceName", {"P", 25});
      oDs := RunDS("Category.DataSourceName",, "ssldataset");
      ```
-   - `GetDSParameters("Category.DataSourceName")` introspects the parameter
-     metadata at runtime
+   - The `"ssldataset"` (or `"xml"`) return type converts only an `SSLDataset`
+     result. An SSL data source whose body returns an array returns that array
+     whatever return type the caller asks for
+   - `GetDSParameters("Category.DataSourceName")` returns the parameter names
+     in declaration order, which is the order `RunDS` binds them
 
 6. **Verify:** if the scaffold was written to a file and MCP `ssl_diagnose` is
    available, run it on the file and confirm it parses (the validator applies
@@ -85,24 +126,34 @@ the SSL script body.
 /* =============================================================================;
 /* DATA SOURCE: SampleList (SSL);
 /* PURPOSE:     [Describe what this data source returns];
-/* PARAMS:      sStatus  — record status filter;
-/*              nMaxRows — maximum rows to return;
+/* PARAMS:      sStatus — record status filter;
+/*              sFromId — first sample ID to return;
 /* =============================================================================;
-:PARAMETERS sStatus := "A", nMaxRows := 100;
+:PARAMETERS sStatus := "A", sFromId := "";
 
-/* SSL body: build and return the result set;
-:DECLARE oDataset;
-
-oDataset := GetSSLDataset("SELECT * FROM sample WHERE status = ?sStatus?",, {"sStatus"}, {sStatus});
-
-:RETURN oDataset;
+/* SSL body: SQLExecute marks parameters as ?name?;
+:RETURN SQLExecute("
+	SELECT sample_id, status, logdate
+	FROM sample
+	WHERE status = ?sStatus?
+		AND sample_id >= ?sFromId?
+	ORDER BY sample_id
+");
 ```
+
+The body returns the rows as an array. If callers need `RunDS(...,
+"ssldataset")`, return an `SSLDataset` instead, for example from
+`GetSSLDataset`, which marks SQL Server parameters as `@name` in both the SQL
+text and the names array:
+`GetSSLDataset("SELECT * FROM sample WHERE status = @sStatus",, {"@sStatus"}, {sStatus})`.
 
 ## Variant: SQL data source
 
 Structure: optional header comment, optional builder directives, optional
-`:PARAMETERS` with inline `:=` defaults, then the SQL query body. The SQL
-preprocessor rewrites the file into an SSL script that calls `GetSSLDataset()`.
+`:PARAMETERS` with inline `:=` defaults, then the SQL query body. The query
+references parameters as `@name`; the `?name?` markers used by `SQLExecute`
+do not work here. The SQL preprocessor rewrites the file into an SSL script
+that calls `GetSSLDataset()`.
 
 Builder directives (preprocessed — not SSL keywords, do not treat them as
 reusable elsewhere):
@@ -145,17 +196,14 @@ reusable elsewhere):
    DATA SOURCE: SampleList (SQL)
    PURPOSE:     [Describe what this query returns]
    ============================================================================= */
-:DSN := starlims;
+:DSN := DATABASE;
 :TABLENAME := sampleList;
 :NULLASBLANK := true;
 :PARAMETERS sStatus := "A", nLimit := 50;
 
-SELECT
-    sampleid,
-    status,
-    createddate
+SELECT sampleid, status, createddate
 FROM sample
-WHERE status = ?sStatus?
+WHERE status = @sStatus
 ORDER BY createddate DESC
 ```
 
