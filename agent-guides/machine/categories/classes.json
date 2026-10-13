@@ -9,7 +9,8 @@
   ],
   "summary": "User-defined class structure, field access, method calls, and built-in class creation.",
   "must_follow": [
-    "Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.",
+    "Order class members as :INHERIT, then the class-level :DECLARE fields, then the methods.",
+    "By convention, declare Constructor after the regular methods, as the last method of the class; a class that declares it first compiles and runs the same way.",
     "Inside class methods, access fields through Me:fieldName or Base:fieldName.",
     "Call sibling or inherited methods with Me:Method() and Base:Method().",
     "Use CreateUdObject(\"Category.ClassName\") for user-defined classes; a bare class name is looked up only among the default categories.",

@@ -3,40 +3,38 @@ id: class_member_order
 title: Class member order
 domain: classes
 status: active
-level: authoritative
+level: advisory
 severity: info
 applies_to: [class]
 rule: >-
-  Keep class member order as `:INHERIT`, `:DECLARE`, regular methods, then
-  `Constructor`.
+  Order class members as `:INHERIT`, then the class-level `:DECLARE` fields,
+  then the methods.
 categories: [classes]
 machine: { list: must_follow }
-related_elements: [CLASS, INHERIT, DECLARE, constructor]
+related_elements: [CLASS, INHERIT, DECLARE]
 enforced_by: [lsp:diag.class_member_order]
 schema:
   - path: lints.class_rules
     form: lint
     message: >-
-      Tooling enforces the successful class member order used by this guide:
-      :INHERIT, :DECLARE, regular methods, then Constructor.
-  - path: classes.signature.notes
-    form: text
-    message: Constructor must be declared after regular methods.
+      Class members are ordered :INHERIT, then class-level :DECLARE fields,
+      then methods.
 verification:
   basis: reference
   note: >-
-    Kept from the classes pack, which states it word for word. Merged: the
-    schema lint class_member_order (word for word) and
-    classes.signature.notes, module_structure.class_modules, the agent guide's
-    class definition section, and the new-class skill's ":DECLARE class
-    fields must appear before methods" and "Constructor must be the last
-    procedure in the class". starlims-lsp reports a :DECLARE after a method.
+    Kept from the classes pack. The earlier wording also put Constructor last
+    and called the whole order a compile requirement; a class that declares
+    Constructor before its other methods compiles and runs, so that part is
+    now the separate convention constructor_after_methods. starlims-lsp
+    reports a class-level :DECLARE after a method, or an :INHERIT after a
+    :DECLARE or a method, and does not check where Constructor sits.
 ---
 
 ## Rationale
 
-A class compiles only with its members in this order. Fields come before the
-methods that use them, and `Constructor` comes last.
+`:INHERIT` names the parent before anything else, and the fields come before
+the methods that use them, so a reader sees the object's shape before its
+behavior.
 
 ## Examples
 

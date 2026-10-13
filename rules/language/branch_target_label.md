@@ -8,7 +8,8 @@ severity: error
 applies_to: [server_script, class, ssl_data_source]
 rule: >-
   Include the word `LABEL` in a `Branch()` target: `:LABEL SKIP;` is
-  targeted as `Branch("LABEL SKIP")`, and the match is exact.
+  targeted as `Branch("LABEL SKIP")`, and the match is exact, including
+  case.
 categories: [control-flow]
 related_elements: [LABEL, Branch]
 enforced_by: [lsp:diag.branch_target_label]
@@ -22,13 +23,16 @@ verification:
   basis: reference
   note: >-
     Kept from the agent guide's labels section. Merged: the schema's
-    lints.label_behavior.token_text, which stays word for word.
+    lints.label_behavior.token_text, which stays word for word. Checked on
+    STARLIMS 12: a literal target that matches no label, including one that
+    differs only in case, fails to compile.
 ---
 
 ## Rationale
 
 The stored label text includes the keyword, so a target without `LABEL`, or
-with different spacing, matches no label.
+with different spacing or case, matches no label. A literal target that
+matches no label fails to compile.
 
 ## Examples
 

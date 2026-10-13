@@ -2463,7 +2463,7 @@
       "caveats": [
         "Calling DoProc() with no arguments stops the script from compiling, so no runtime error can be caught.",
         "A string literal name is resolved when the script compiles: DoProc(\"NoSuchProc\") stops the script from compiling with Invalid method: NoSuchProc, so no :TRY can catch it. The runtime \"not found\" error in Exceptions applies only to names built at runtime.",
-        "Inside class methods, DoProc with a bare procedure name is a compile-time error. Whether a fully qualified Category.Script.Procedure target is accepted there has not been confirmed. Call methods of the same class with Me:MethodName() or Base:MethodName().",
+        "Inside class methods, DoProc with a bare procedure name is a compile-time error. A fully qualified Category.Script.Procedure target, such as DoProc(\"Lab.Rules.Normalize\", {sValue}), is accepted and runs that procedure. Call methods of the same class with Me:MethodName() or Base:MethodName().",
         "The called procedure does not get an isolated set of variables. Names it never declares resolve outward into the calling scope, so an undeclared assignment in the procedure can overwrite a caller variable of the same name. See Variable Scope.",
         "One-segment names are resolved case-insensitively in the current script.",
         "A three-segment name calls Category.Script.Procedure the same way ExecFunction does."
@@ -2480,7 +2480,7 @@
           "Pass a scalar as the second argument. DoProc expects an array there.",
           "Assume argument-count mismatches raise an immediate DoProc error.",
           "Use a two-segment procedure name. That format is rejected.",
-          "Call a procedure by its bare name inside a class method. That is a compile-time error."
+          "Call a procedure by its bare name inside a class method. That is a compile-time error; only a fully qualified Category.Script.Procedure target is accepted there."
         ]
       }
     },
@@ -4239,6 +4239,7 @@
         "Calling ExecFunction() with no arguments stops the script from compiling, so no runtime error can be caught.",
         "A class file is not a runnable target: it has no script entry point, so a two-segment path naming a class file fails at runtime, and a three-segment path does not invoke its methods. Create the object with CreateUdObject and call the method on the instance instead.",
         "The called target does not get an isolated set of variables. Names it never declares resolve outward into this scope, so an undeclared assignment in the target — a :FOR counter especially — can overwrite a variable of the same name here. See Variable Scope.",
+        "ExecFunction works from inside class methods. Unlike DoProc, it has no bare-name restriction there.",
         "If the function name is misspelled, empty, or references a non-existent target, a runtime error is thrown with little context.",
         "All type validation is deferred to the time of invocation, so incorrect argument types or counts are only caught at runtime."
       ],
@@ -12445,7 +12446,7 @@
         "do": [
           "Put :INHERIT immediately after :CLASS when the class derives from another class.",
           "Keep class fields in :DECLARE statements near the top of the file so the object shape is easy to read.",
-          "Place regular methods before Constructor and keep the constructor last for predictable structure.",
+          "Place regular methods before Constructor and keep the constructor last for predictable structure. This is a convention: a class that declares Constructor first compiles and runs the same way.",
           "Instantiate user-defined classes with CreateUdObject instead of built-in-class curly-brace syntax.",
           "Use Me: for sibling method calls and Base: for inherited behavior inside class methods.",
           "Qualify every class-field reference inside a method with Me: (or Base: for a parent field). A bare name resolves to a local or parameter, not the class field."

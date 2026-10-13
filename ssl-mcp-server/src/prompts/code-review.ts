@@ -59,7 +59,7 @@ export function registerCodeReviewPrompt(server: McpServer, indices: Indices): v
 - SQL casing: Inside SQL strings, SQL keywords/functions should be UPPERCASE; preserve the author's identifier casing (force-folding is dialect-conditional — do not flag identifier case)
 - Legacy patterns: Flag :ERROR/:RESUME usage (prefer :TRY/:CATCH)
 - Variable declarations: Variables must be declared before use; local declarations are preferred over caller-scope lookup
-- Procedure calls: Flag bare custom procedure calls; same-file procedures must use DoProc and external entry points must use ExecFunction; DoProc is a compile-time error inside class methods
+- Procedure calls: Flag bare custom procedure calls; same-file procedures must use DoProc and external entry points must use ExecFunction; a DoProc call with a bare procedure name is a compile-time error inside class methods (fully qualified Category.Script.Procedure targets work)
 - Security: Flag hardcoded credentials, unvalidated user input in SQL or system calls
 - Data source files: If the code uses :PARAMETERS with inline := defaults (e.g., :PARAMETERS p1 := val;), it is a data source file — do not flag this as incorrect syntax, do not expect separate :DEFAULT statements, and do not flag builder directives (:DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS)
 - Focus: ${focus}`;

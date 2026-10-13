@@ -12,6 +12,38 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- Rule records `constructor_after_methods` (Constructor last is a style
+  convention) and `branch_literal_target` (pass `Branch()` a literal target)
+  (#88).
+
+### Changed
+- `class_member_order` now covers `:INHERIT`, `:DECLARE`, then methods only,
+  at level `advisory`. A class that declares `Constructor` before its other
+  methods compiles and runs, so the agent guide, `ssl-new-class` skill,
+  schema (`classes.signature.notes`, `module_structure.class_modules`), EBNF
+  and tree-sitter grammar no longer call Constructor-last a requirement; the
+  tree-sitter grammar accepts methods after `Constructor` (#88).
+- `.AND.`/`.OR.`: when the left operand does not decide the result, the
+  right operand is returned unchanged; `:IF` conditions, like `:WHILE` and
+  `:CASE`, must be logical (`no_truthy_falsy_coercion`, agent guide, schema
+  `expressions.logical_evaluation`) (#88).
+- Labels: matching is case-sensitive, a literal `Branch()` target that matches
+  no label fails to compile, an `:ERROR` handler can branch back to a body
+  label, and branching from the body into the handler raises (agent guide,
+  `branch_target_label`, schema `lints.label_behavior`, EBNF note 20) (#88).
+- Inline code and regions: a `:BEGININLINECODE` block is stored when execution
+  reaches it; `GetInlineCode` before its block is reached; the
+  block body does not run in place; region markers inside comments define
+  nothing; `GetRegion` sees regions from an `:INCLUDE`d script (agent guide,
+  schema) (#88).
+- `CreateUdObject`: missing constructor arguments arrive as NIL and extra
+  ones are ignored (agent guide, `ssl-new-class`) (#88).
+- `DoProc` in class methods: only a bare procedure name is rejected; the
+  schema's `class_method_restriction` and the MCP code-review prompt no longer
+  read as if every `DoProc` call were rejected. The element metadata is
+  refreshed from the reference (#88).
+
 ## MCP 1.15.1 — 2026-10-13
 
 ### Fixed

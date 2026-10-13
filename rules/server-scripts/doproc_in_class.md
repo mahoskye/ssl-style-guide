@@ -23,7 +23,10 @@ schema:
       referencing deployed script procedures are allowed.
   - path: function_calls.indirect_calls.class_method_restriction
     form: text
-    message: DoProc is rejected inside class methods; use Me:Method() or Base:Method() instead
+    message: >-
+      A DoProc target that is a bare procedure name is rejected inside class
+      methods; use Me:Method() or Base:Method() instead. Fully qualified
+      'Category.Script.Procedure' targets compile and run.
 verification:
   basis: reference
   note: >-
@@ -31,7 +34,9 @@ verification:
     procedures pack's "Do not use DoProc with a bare procedure name inside
     class methods; it is a compile-time error.", the schema's
     function_calls.indirect_calls.class_method_restriction, and the review and
-    refactor skills' rule lists.
+    refactor skills' rule lists. Checked on STARLIMS 12: inside a class
+    method, a fully qualified DoProc target compiles and runs, and so does
+    ExecFunction with a Category.Script.Procedure target.
 ---
 
 ## Rationale
@@ -43,7 +48,8 @@ reached through `Me:` and `Base:`.
 ## Exceptions
 
 A fully qualified `DoProc("Category.Script.Procedure", {args})` that calls a
-deployed script procedure compiles inside a class method. A target held in a
+deployed script procedure compiles and runs inside a class method, and so does
+`ExecFunction("Category.Script.Procedure", {args})`. A target held in a
 variable is not checked when the class compiles.
 
 ## Examples

@@ -49,9 +49,9 @@ out the approximation explicitly.
   as code. The grammar models the structure for editing and navigation.
 - `:REGION ... :ENDREGION` is a functional body-capture construct in SSL, not a
   normal statement block. The grammar still models it structurally.
-- The grammar enforces the successful class member ordering used by the current
-  repository guidance: `:INHERIT`, `:DECLARE`, regular methods, then
-  `Constructor`.
+- The grammar enforces the class member ordering `:INHERIT`, then `:DECLARE`,
+  then methods. `Constructor` may sit anywhere among the methods; placing it
+  last is a convention, not a language requirement.
 - `:INCLUDE` is modeled as a syntactic construct for tooling and accepts bare
   include names.
 - `:ERROR` is the last section of a procedure: the statements before it are

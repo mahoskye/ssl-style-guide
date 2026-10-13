@@ -29,6 +29,7 @@ categories:
       - no_truthy_falsy_coercion
       - label_is_legacy
       - branch_target_label
+      - branch_literal_target
       - prefer_positive_logic
       - no_nested_iif
       - limit_block_depth
@@ -148,6 +149,7 @@ categories:
     lists_from_rules: true
     order:
       - class_member_order
+      - constructor_after_methods
       - field_access_via_me
       - me_base_for_method_calls
       - createudobject_category_qualified

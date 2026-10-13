@@ -577,14 +577,14 @@ module.exports = grammar({
     // Class names are optional in the parser, but explicit names remain the
     // preferred maintained form. The top-level grammar remains either
     // script_file or class_file, matching the language's top-level split.
-    // Successful class code requires the ordering
-    // :INHERIT → :DECLARE → methods → Constructor.
+    // Class members are ordered :INHERIT → :DECLARE → methods. Constructor
+    // may sit anywhere among the methods (last is a convention only).
     class_declaration: $ => seq(
       $.kw_class, optional(field('name', $.identifier)), ';',
       optional(seq($.kw_inherit, field('base', choice($.identifier, $.qualified_identifier)), ';')),
       repeat($.class_field_declaration),
       repeat($.class_method_declaration),
-      optional($.class_constructor_declaration)
+      optional(seq($.class_constructor_declaration, repeat($.class_method_declaration)))
     ),
 
     class_field_declaration: $ => seq($.kw_declare, commaSep1($, field('field', $.identifier)), ';'),
