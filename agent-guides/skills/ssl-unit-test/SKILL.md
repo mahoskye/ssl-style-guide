@@ -182,8 +182,9 @@ Prefer tests that need no database. When one genuinely does:
   so `"000042" = "0"` is true and the assertion would pass on a wrong
   value.
 - `LimsString` builds the failure message, not `Str`. `Str` takes a
-  **number**; passing it a string is a type error that `ssl_diagnose`
-  does not catch, because the validator does not check built-in
+  **number**; given a string it either raises or quietly returns a padded
+  `"0"`, depending on the installation, and `ssl_diagnose` does not
+  catch it, because the validator does not check built-in
   argument types. `LimsString` accepts any value and renders NIL as
   `"NIL"`. `Str` is correct in `ReportResults`, where the arguments
   really are numbers.

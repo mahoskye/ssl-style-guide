@@ -52,7 +52,7 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
 /* PURPOSE:   [Describe what this procedure does];
 /* PARAMS:    paramName — description;
 /*            paramName — description;
-/* RETURNS:   [Return value description or "Nothing"];
+/* RETURNS:   [Return value description, or "" (empty string) if no value];
 /* =============================================================================;
 :PROCEDURE ProcedureName;
 	:PARAMETERS param1, param2;

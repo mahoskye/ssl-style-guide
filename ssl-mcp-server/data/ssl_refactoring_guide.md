@@ -370,7 +370,7 @@ DEFAULT_TIMEOUT := 30;
 
 ## Part 5: Global Variables
 
-Authoritative predefined globals should be documented conservatively. `MYUSERNAME` is included here as a common example of a predefined global in active use:
+Predefined globals are not part of the language. They are `:PUBLIC` variables that a base installation declares at startup, and installations can add, drop or change them. `MYUSERNAME` (equal to `GetUserData()`) is a common example. `CR`, `LF`, `TAB`, `sTab`, `MYUSERID` and `MYDEPT` are **not** declared on a base installation: use `Chr(13)`, `Chr(10)`, `Chr(9)` (or `CRLF`), `MYUSERNAME` and `STARLIMSDEPT` instead.
 
 | Variable | Type | Description |
 |----------|------|-------------|
