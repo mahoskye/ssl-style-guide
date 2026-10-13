@@ -18,6 +18,7 @@ Entries before this file existed are reconstructed from the release commits.
   (#88).
 
 ### Changed
+- `branch_literal_target` is now authoritative at error severity: a computed `Branch()` target never jumps and falls through silently (verified on STARLIMS 12). Element data re-vendored from the reference.
 - `class_member_order` now covers `:INHERIT`, `:DECLARE`, then methods only,
   at level `advisory`. A class that declares `Constructor` before its other
   methods compiles and runs, so the agent guide, `ssl-new-class` skill,
