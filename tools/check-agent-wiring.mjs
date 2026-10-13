@@ -18,7 +18,7 @@
  *   - Retired agents (`ssl-refactorer`, `ssl-verifier`) lingered in
  *     handoff and prose references after being deleted.
  *
- * Usage:  bun tools/check-agent-contract.mjs
+ * Usage:  bun tools/check-agent-wiring.mjs
  */
 
 import { readFileSync, readdirSync } from 'fs';
@@ -170,7 +170,7 @@ for (const name of names) {
   }
 
   // 8. Handoff targets must exist (generator checks this too; kept so
-  //    this file is a complete statement of the contract).
+  //    this file is a complete statement of the wiring rules).
   for (const h of canon.handoffs ?? []) {
     if (!known.has(h.agent)) fail(`${name}: handoff target '${h.agent}' is not an agent`);
   }
@@ -186,12 +186,12 @@ if (primaries.length !== 1) {
 }
 
 if (failures.length > 0) {
-  console.error(`\n${failures.length} agent contract failure(s):`);
+  console.error(`\n${failures.length} agent wiring failure(s):`);
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
 console.log(
-  `Agent contract holds for ${names.length} agents ` +
+  `Agent wiring holds for ${names.length} agents ` +
     `(${names.length * 3} adapters): partials expanded, edit protocols present, ` +
     `delegation wired, read-only boundaries enforced, one entry point.`
 );

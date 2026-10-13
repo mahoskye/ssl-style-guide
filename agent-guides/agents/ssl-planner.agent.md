@@ -7,7 +7,7 @@ description: >-
   Does not write production SSL.
 version: 11
 mode: all
-argument-hint: "<feature, ticket, or refactor to plan> [target-spec-path]"
+argument-hint: "<feature, ticket, task brief, or refactor to plan> [target-spec-path]"
 model: inherit
 tools:
   - read
@@ -57,6 +57,8 @@ the platform's grain rather than fighting it.
 {{shared:sources-of-truth}}
 
 {{shared:reuse-first}}
+
+{{shared:task-brief}}
 
 ## Spec tiers
 
@@ -129,6 +131,11 @@ In this order:
     against the baseline recorded before editing. A file created by this
     work has no baseline, so it finishes at zero errors and zero
     warnings outright. Enough context to work from the document alone.
+
+When the spec comes from a task brief, add a **Brief conventions** section
+after Edge cases: the brief's Conventions verbatim, plus each place the
+brief overrides a style rule. Map the rest of the brief as
+`agent-guides/agent-interfaces.md` describes.
 
 Keep a spec short enough to read in one sitting. A large change splits
 into linked feature specs rather than becoming one monolith.

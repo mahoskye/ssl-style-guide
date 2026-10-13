@@ -41,8 +41,8 @@ jobs:
       - name: Reference drift check
         run: bun tools/check-reference-drift.mjs
 
-      - name: Agent contract check (delegation, boundaries, protocols)
-        run: bun tools/check-agent-contract.mjs
+      - name: Agent wiring check (delegation, boundaries, protocols)
+        run: bun tools/check-agent-wiring.mjs
 
       - name: LSP binary fetch smoke test
         working-directory: ssl-mcp-server

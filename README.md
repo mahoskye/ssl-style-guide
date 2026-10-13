@@ -24,6 +24,55 @@ For prerequisites, setup, and the check commands, see
 - `agent-guides/ssl_refactoring_guide.md`
   Refactoring workflow, structure, and formatting guidance for maintained code.
 
+## Role and Interfaces
+
+**What this repository is for.** It is a best-effort definition of the
+STARLIMS Scripting Language for tooling, built from hands-on experience and from
+excerpts of official and unofficial documentation. It is the home for every SSL
+technical document and every language and style rule developed for SSL. That
+covers:
+
+- the rule schema and its severities;
+- the grammars: EBNF, tree-sitter and TextMate;
+- the agent guides;
+- the agent definitions and skills;
+- the formats agents exchange with other tools.
+
+Other projects sync *from* here, whether or not an artifact has a consumer
+today.
+
+The per-element reference that grew out of this work (signatures, behavior,
+errors) is now published separately as
+[starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference).
+Its element inventory is re-vendored here (see `CONTRIBUTING.md`), so a
+correction to an element's documented behavior is made there and flows back.
+
+**Who consumes what.**
+
+| Artifact | Consumers | How |
+|----------|-----------|-----|
+| `ssl-element-reference.json`, `ssl-element-meta.json` | starlims-lsp; this repo's MCP server | LSP vendors copies and checks them against a sibling checkout; MCP bundles them |
+| `ssl-style-guide.schema.yaml` | MCP server; starlims-lsp and the VS Code extension (rule slugs) | MCP bundles it; the LSP and extension mirror its rule slugs by hand |
+| Agent guides, EBNF, machine packs | MCP server; agents | Bundled; read at run time |
+| Agent definitions and skills | Claude Code, opencode, Copilot, Codex | `tools/generate-agents.mjs`, `tools/deploy-agents.mjs`, `tools/deploy-skills.mjs` |
+| Tree-sitter grammar | Editors; the private snapshot survey (via a sibling checkout) | Grammar and queries |
+| TextMate grammar | The VS Code extension | Canonical here; the extension syncs from it (see #91) |
+
+**Agent interfaces.** Tools outside this repo can give the agents a *task
+brief* instead of a ticket. In return, the developer and reviewer report a
+*run record* that traces what produced the code. Both formats are defined in
+[`agent-guides/agent-interfaces.md`](agent-guides/agent-interfaces.md), and
+this repository owns them.
+
+**Data boundary.** This repository is public. Tools here may be run against
+private code (for example `tools/style_review.py`), but their outputs, any
+code they read, and anything that identifies its authors never land here.
+Only reviewed, aggregate conclusions do.
+
+**Proposing a rule change.** Open an issue with the *Rule proposal* template.
+Findings from agent runs and style surveys come in the same way, and a
+maintainer reviews each one before any rule changes.
+
 ## Repo Contents
 
 - `ssl-style-guide/ssl-style-guide.schema.yaml`
