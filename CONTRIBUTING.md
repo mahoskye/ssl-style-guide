@@ -23,9 +23,9 @@ bun run fetch-lsp    # downloads the pinned starlims-lsp release binary
 cd ..
 
 # reference repo as a sibling checkout — OPTIONAL. Only the drift check's
-# name-set parity comparison uses it, and that check skips cleanly without
+# name-set and content comparisons use it, and they skip cleanly without
 # it. Every other check passes on a plain clone. CI clones it to get the
-# parity comparison too.
+# comparisons too.
 git clone https://github.com/mahoskye/starlims-ssl-reference.git ../ssl-docs
 ```
 
@@ -56,6 +56,24 @@ bun run check:consistency  # data mirror + machine docs + agent adapters
 cd ..
 bun tools/check-reference-drift.mjs  # inventory vs. reference repo (skips without sibling checkout)
 ```
+
+The drift check reports content drift (vendored element data behind the
+reference repo) as a warning, so reference-repo merges don't block unrelated
+PRs. Pass `--strict` to make it an error, for example before a release.
+
+## Re-vendoring reference data
+
+When the drift check reports content drift, refresh in this order:
+
+```bash
+cp ../ssl-docs/content/data/ssl-element-meta.json ssl-style-guide/ssl-element-meta.json
+python3 tools/generate_element_reference.py
+bun tools/generate-machine-docs.mjs
+cd ssl-mcp-server && bun run bundle-data && cd ..
+bun tools/check-reference-drift.mjs --strict
+```
+
+Note the reference-repo commit you vendored from in the PR description.
 
 The Tree-sitter grammar has its own commands (`npm run gen`, `npm test`) under
 `ssl-style-guide/tree-sitter-ssl/`; the test corpus is maintained outside the

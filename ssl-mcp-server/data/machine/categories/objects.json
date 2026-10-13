@@ -34,7 +34,7 @@
     {
       "name": "SSLExpando",
       "type": "class",
-      "summary": "SSLExpando is a built-in object class for storing named values whose shape is decided at runtime."
+      "summary": "SSLExpando is the class of dynamic objects created with CreateUdObject(), which store named values whose shape is decided at runtime."
     },
     {
       "name": "Email",
