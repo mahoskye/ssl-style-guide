@@ -44,7 +44,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Variable Declaration & Scope
 
-* **Declaration:** Variables must be declared before use using `:DECLARE`.
+* **Declaration:** Declare every variable with `:DECLARE` before use. This is a style rule, not a language rule: SSL does not enforce it (see §0, item 3).
     * Syntax: `:DECLARE varName1, varName2;`
     * **Default Value:** All declared variables start as empty string `""`.
     * **Dynamic Typing:** Variables are dynamically typed—their type changes when assigned a new value.
@@ -563,7 +563,7 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - `AND`/`OR` indented 2 spaces under their parent clause (`WHERE`, `ON`, `HAVING`)
 - `ON` indented 2 spaces under `JOIN` (but column 0 in `MERGE`)
 - `HAVING` indented 2 spaces under `GROUP BY`
-- `WHEN`/`ELSE` indented 2 spaces under `CASE`
+- `WHEN`/`ELSE` indented 4 spaces under `CASE`; `END` aligned with `CASE`
 - `SELECT` continuations aligned to first column (col 7)
 - Trailing commas, ~90 char line target
 

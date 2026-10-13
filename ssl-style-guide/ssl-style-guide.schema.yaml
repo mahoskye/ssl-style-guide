@@ -1328,7 +1328,7 @@ ssl_style_guide:
           on: 2
           and_or: 2
           having: 2
-          case_when_else: 2
+          case_when_else: 4
         select_continuation_align: first_column
         select_continuation_column: 7
       statement_patterns:
@@ -1344,8 +1344,9 @@ ssl_style_guide:
         group_by:
           having: indented 2 under GROUP BY
         case:
-          when_else: indented 2 under CASE
-          then_value: inline when short; next line (indented 2 under WHEN) when long
+          when_else: indented 4 under CASE
+          end: aligned with CASE
+          then_value: inline when short; next line (indented 4 under WHEN) when long
           consistency: all branches inline or all broken within one CASE block
           else_exception: ELSE value may stay inline when short
         insert:
