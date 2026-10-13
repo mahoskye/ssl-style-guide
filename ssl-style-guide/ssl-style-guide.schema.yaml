@@ -455,16 +455,18 @@ ssl_style_guide:
       - local_declarations
       - body
       - return
+    # BEGIN GENERATED procedures.visibility_annotations: edit rules/ and run bun tools/generate-rules.mjs
     visibility_annotations:
       level: authoritative
       syntax:
         - "/*@private;"
         - "/*@protected;"
-      placement: own line immediately before :PROCEDURE, with no blank line between them (a blank line breaks the association)
+      placement: "own line immediately before :PROCEDURE, with no blank line between them (a blank line breaks the association)"
       exact_form: "Lowercase, with no space between /* and @ — /*@Private; or /* @private; is not recognized"
       not_a_comment: "Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments; formatters must not respace, recase or separate them from :PROCEDURE"
       effect: "Both block calls from other scripts; procedures in the same script can still call the procedure"
       class_restriction: "These annotations have no effect on class methods — class methods are always Public|Virtual"
+    # END GENERATED procedures.visibility_annotations
     return:
       keyword: :RETURN
       allow_expression: true
@@ -1042,23 +1044,19 @@ ssl_style_guide:
         - ":FullDescriptionEx    # multi-line diagnostic text with full stack details and nested causes"
         - ":InnerException       # nested SSLError from a chained exception"
         - ":NETException         # underlying .NET exception object (if available)"
+    # BEGIN GENERATED error_handling.guidance: edit rules/ and run bun tools/generate-rules.mjs
     guidance:
       level: advisory
-      logging_guidance: Log errors with contextual identifiers; avoid swallowing errors silently.
-      prefer_structured: true
-      traditional_error_blocks: supported  # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
+      logging_guidance: "Log errors with contextual identifiers; avoid swallowing errors silently."
+      prefer_structured: true # Prefer :TRY/:CATCH/:FINALLY over legacy :ERROR/:RESUME.
+      traditional_error_blocks: supported # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
       raise_error_doctrine:
-        - Place RaiseError directly inside the :TRY block whose :CATCH handles it,
-          so the raise can never escape.
-        - Never call RaiseError inside :CATCH — the error handler must not become
-          the thing that crashes.
-        - Every raise needs a :TRY/:CATCH (or legacy :ERROR/:RESUME) boundary
-          somewhere up the call stack; an uncaught error fails the invocation and
-          surfaces to the end user as a server error.
-        - Mark raise-only helper procedures /*@private; so callers cannot bypass
-          the entry point that catches their errors.
-        - Call ClearLastSSLError() after handling an error in :CATCH, so stale
-          error state does not leak into later handling.
+        - "Place RaiseError directly inside the :TRY block whose :CATCH handles it, so the raise can never escape."
+        - "Never call RaiseError inside :CATCH — the error handler must not become the thing that crashes."
+        - "Every raise needs a :TRY/:CATCH (or legacy :ERROR/:RESUME) boundary somewhere up the call stack; an uncaught error fails the invocation and surfaces to the end user as a server error."
+        - "Mark raise-only helper procedures /*@private; so callers cannot bypass the entry point that catches their errors."
+        - "Call ClearLastSSLError() after handling an error in :CATCH, so stale error state does not leak into later handling."
+    # END GENERATED error_handling.guidance
   function_calls:
     direct_calls:
       syntax_level: authoritative
@@ -1709,9 +1707,10 @@ ssl_style_guide:
         Author....... : [Author initials]
         Date......... : YYYY-MM-DD
         ********************************************************************************;
+    # BEGIN GENERATED documentation.file_banner: edit rules/ and run bun tools/generate-rules.mjs
     file_banner:
-      required: true  # every server script and class file opens with one; data sources: see module_structure.data_source_modules
-      template: |  # same dot-leader fields as procedure_headers, describing the whole script
+      required: true # Open every server script and class file with the standard file banner, using the dot-leader fields Description, Parameters, Returns, Author and Date.
+      template: | # same dot-leader fields as procedure_headers, describing the whole script
         /* ********************************************************************************
         Description.. : [The script's single responsibility, one sentence]
         Parameters... : [Each top-level parameter and its business meaning]
@@ -1722,8 +1721,9 @@ ssl_style_guide:
       rules:
         - "Continuation lines align under the first character after the colon and space."
         - "Record later changes as new lines below Date in the same style: Modified..... : YYYY-MM-DD [initials] - [change]. Never rewrite an earlier entry."
-        - Generated code omits the Author line rather than inventing initials. A banner without Author is complete in that case.
-        - The banner is a single SSL comment, so it ends at the first semicolon. No semicolon may appear inside it.
+        - "Generated code omits the Author line rather than inventing initials. A banner without Author is complete in that case."
+        - "The banner is a single SSL comment, so it ends at the first semicolon. No semicolon may appear inside it."
+    # END GENERATED documentation.file_banner
     code_comments:
       style: SSL_comments  # /* comment; format
       placement: above_code_or_inline

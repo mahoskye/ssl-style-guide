@@ -21,7 +21,9 @@ verification:
   basis: reference
   note: >-
     Kept from the data-sources and module-structure packs, which state it
-    word for word, and the schema's class_file_constraint.
+    word for word, and the schema's class_file_constraint. Merged: the
+    module-structure pack's "Do not mix class definitions, script procedures,
+    and data-source bodies in one file."
 ---
 
 ## Rationale

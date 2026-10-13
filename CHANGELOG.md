@@ -34,6 +34,15 @@ Entries before this file existed are reconstructed from the release commits.
   rule lists, the agent guide's SQL quick-reference rules, the `database` and
   `sql` pack lists, and the foundation's SQL bullets. The parsed schema is
   unchanged.
+- Rules source, server scripts (#101): 66 records in `rules/server-scripts/`
+  cover file shape, banners and doc blocks, `:PARAMETERS`/`:DEFAULT` order,
+  calling convention, error handling, boundary contracts, transactions,
+  logging and access modifiers. They generate the schema's
+  `procedures.visibility_annotations`, `error_handling.guidance` and
+  `documentation.file_banner`, the transactions, procedures, error-handling,
+  logging and module-structure pack lists, the foundation's server-script
+  bullets, and rule regions in the `ssl-new-procedure` skill and the
+  server-script baseline. The parsed schema is unchanged.
 
 ### Changed
 - Element data is re-vendored from the published reference: 118 of 460

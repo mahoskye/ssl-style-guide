@@ -32,8 +32,9 @@ detail.
   it makes the parser absorb the next line into the condition.
 - Declare variables before use with `:DECLARE`.
 - Do not put `:DEFAULT` on a `:DECLARE` line.
-- In scripts and procedures, `:PARAMETERS` appears before any other statement
-  and `:DEFAULT` immediately follows `:PARAMETERS`.
+- `:PARAMETERS` must appear before any other statements in a script or
+  procedure body.
+- `:DEFAULT` must immediately follow `:PARAMETERS`.
 - Data source files use inline `:PARAMETERS` defaults with `:=` instead of
   separate `:DEFAULT` statements.
 - Give every data-source parameter an inline `:=` default; a parameter
@@ -49,8 +50,10 @@ detail.
 - User-defined classes instantiate with `CreateUdObject("Category.ClassName")`.
 - Inside class methods, access fields through `Me:fieldName` or
   `Base:fieldName`.
-- Prefer `:TRY`/`:CATCH`/`:FINALLY`; bare `:TRY ... :ENDTRY` is invalid.
-- Do not put `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
+- Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.
+- `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare
+  `:TRY ... :ENDTRY` is invalid.
+- Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
   `:FINALLY`.
 - `SQLExecute` is the only database API that supports named `?param?`
   substitution; do not use `?param?` markers with other database

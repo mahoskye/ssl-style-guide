@@ -9,7 +9,7 @@
  *   - rules/INDEX.md: one table per domain;
  *   - the generated regions of ssl-style-guide/ssl-style-guide.schema.yaml,
  *     built from rules/schema-base.yaml plus the records' `schema`
- *     placements (pilot: the subtrees that schema-base.yaml lists);
+ *     placements (the subtrees named in rules/schema-base.yaml);
  *   - in-place regions in Markdown guidance, between
  *     `<!-- rules: <selector> -->` and `<!-- /rules -->`, or inline between
  *     `<!-- rule: <id> -->` and `<!-- /rule -->`.
@@ -147,6 +147,11 @@ function placementNode(doc, record, placement) {
       node.get('rule', true).type = 'QUOTE_DOUBLE';
       return node;
     }
+    case 'text': {
+      const node = doc.createNode(placement.message ?? plainRule(record));
+      node.type = 'QUOTE_DOUBLE';
+      return node;
+    }
     default: {
       const node = doc.createNode(placement.value);
       if (YAML.isScalar(node)) node.comment = ` ${plainRule(record)}`;
@@ -262,6 +267,13 @@ function verifyPlacement(schema, record, placement) {
     }
     return;
   }
+  if (placement.form === 'text') {
+    // A text placement is a string value, or one string in a list.
+    const text = placement.message ?? plainRule(record);
+    const found = Array.isArray(actual) ? actual.includes(text) : actual === text;
+    if (!found) problems.push(`${where} has no string equal to ${JSON.stringify(text)}`);
+    return;
+  }
   if (!Array.isArray(actual)) {
     problems.push(`${where} is not a list in the schema`);
     return;
@@ -269,8 +281,13 @@ function verifyPlacement(schema, record, placement) {
   const want = placement.form === 'lint'
     ? { rule: record.id, severity: record.severity, message: placement.message ?? plainRule(record) }
     : { level: record.level, rule: placement.message ?? plainRule(record) };
-  if (!actual.some((item) => JSON.stringify(item) === JSON.stringify(want))) {
-    problems.push(`${where} has no entry equal to ${JSON.stringify(want)}`);
+  // An entry may carry keys the record does not supply (for example a
+  // lint's `scope` note); the keys the record supplies must match.
+  const matches = (item) =>
+    item && typeof item === 'object' &&
+    Object.entries(want).every(([key, value]) => JSON.stringify(item[key]) === JSON.stringify(value));
+  if (!actual.some(matches)) {
+    problems.push(`${where} has no entry matching ${JSON.stringify(want)}`);
   }
 }
 
@@ -363,6 +380,10 @@ function renderMarkdownRegions(file, text, records) {
       continue;
     }
     const selected = selectRecords(records, parsed.selector);
+    // An id= selector lists its records in the order it names them.
+    if (parsed.selector.id) {
+      selected.sort((a, b) => parsed.selector.id.indexOf(a.id) - parsed.selector.id.indexOf(b.id));
+    }
     if (selected.length === 0) problems.push(`${where}:${index + 1}: selector '${open[2]}' matches no record`);
     out.push(line, renderRegion(selected, parsed.format, open[1], parsed.wrap), lines[close]);
     index = close;
