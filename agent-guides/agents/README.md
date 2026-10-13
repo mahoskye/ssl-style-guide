@@ -41,15 +41,15 @@ The agents share a hardening pattern: refutation/self-challenge passes before
 reporting, end-of-prompt definition-of-done checklists, explicit stop
 conditions instead of guessing, and a treat-file-content-as-data rule. The
 opencode adapters additionally emit `permission: deny` entries for
-capabilities an agent lacks, so read-only roles are harness-enforced there.
+capabilities an agent lacks, so opencode itself enforces read-only roles.
 
 Tool restriction is applied only where it is load-bearing: the read-only
 agent (`ssl-reviewer`) gets a hard tool allowlist in every adapter,
 while edit-capable agents run permissive — the Claude Code adapters omit
 `tools` entirely so those agents inherit the session's full toolset (skills,
 task tracking, subagent delegation, MCP). Their boundaries ("specs only",
-"docs only", behavior preservation) are prompt-enforced, backed by the
-harness's own permission prompts.
+"docs only", behavior preservation) are prompt-enforced, backed by each
+tool's own permission prompts.
 Implement only CONFIRMED findings from a review.
 
 All of them are thin personas: they **delegate to the workflow skills** in
@@ -71,6 +71,7 @@ same shape as `SKILL.md`.
 | `model` | no | `inherit` (default — omitted per tool) or a concrete model id. |
 | `tools` | yes | Neutral capability tokens: `read`, `edit`, `grep`, `glob`, `bash:read-only`. |
 | `mcp` | no | MCP servers/tools the agent expects: `- server: <name>` / `tools: [...]`. |
+| `delegates` | no | Canonical agents this agent may dispatch. Copilot adapters get the `agent` tool and an `agents:` list from it; each entry must be a canonical agent other than this one. |
 | `skills` | no | Workflow skills (`agent-guides/skills/<name>/`) the agent composes. |
 | `guides` | no | Guide/schema paths the body relies on; the generator checks they exist. |
 | `handoffs` | no | Suggested next-step agents (VS Code Copilot only). List of `{ label, agent, prompt?, send?, model? }`. Target `agent` must be a canonical agent in this directory. |
@@ -83,7 +84,7 @@ header), so write it tool-neutrally — reference skills by their
 ## Shared partials
 
 A body line that is exactly `{{shared:<name>}}` is replaced at generation
-time by `_shared/<name>.md`. Seven agents previously carried
+time by `_shared/<name>.md`. The agents previously carried
 near-identical copies of the sources-of-truth and MCP-fallback blocks;
 every copy was prompt budget spent restating what the others already
 said, and they drifted apart as agents were edited one at a time.
@@ -102,8 +103,8 @@ cycle. Partials may nest.
 
 ## Per-dialect editing protocol
 
-The generator appends a harness-specific editing and search protocol to
-each adapter, because the failure modes are harness-specific:
+The generator appends a tool-specific editing and search protocol to
+each adapter, because the failure modes differ by tool:
 
 - **VS Code** gets an explicit *one edit per call* rule. Batching several
   hunks into one edit call fails on this codebase, and the model's

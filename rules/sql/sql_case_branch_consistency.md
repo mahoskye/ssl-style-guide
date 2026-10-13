@@ -24,7 +24,9 @@ verification:
   note: >-
     Merged from the ssl-format skill (two bullets: the consistency rule and
     the ELSE exception), the agent guide's "CASE consistency" paragraph,
-    which states both together, and the schema.
+    which states both together, and the schema. The formatter at the pinned
+    LSP joins a short broken branch back onto its WHEN line but does not lay
+    out an all-broken block, so a reviewer applies the rule.
 issues: ["#106"]
 ---
 
@@ -43,25 +45,31 @@ branches are broken.
 
 ### Good
 
-```text
-CASE
-  WHEN o.status = 'L' THEN 'Logged'
-  WHEN o.status = 'C' THEN 'Complete'
-  ELSE 'Unknown'
-END AS status_desc
+```ssl
+:DECLARE aRows;
+aRows := SQLExecute("
+    SELECT o.ordno,
+           CASE
+               WHEN o.status = 'L' THEN 'Logged'
+               WHEN o.status = 'C' THEN 'Complete'
+               ELSE 'Unknown'
+           END AS status_desc
+    FROM orders o
+");
 ```
 
 ### Bad
 
-```text
-CASE
-  WHEN o.status = 'L' THEN 'Logged'
-  WHEN o.status = 'C'
-    THEN 'Complete'
-  ELSE 'Unknown'
-END AS status_desc
+```ssl
+:DECLARE aRows;
+aRows := SQLExecute("
+    SELECT o.ordno,
+           CASE
+               WHEN o.status = 'L' THEN 'Logged'
+               WHEN o.status = 'C' THEN
+                   'Complete'
+               ELSE 'Unknown'
+           END AS status_desc
+    FROM orders o
+");
 ```
-
-## Notes
-
-`text` fences, for the reason given in `sql_case_when_else_indent`.

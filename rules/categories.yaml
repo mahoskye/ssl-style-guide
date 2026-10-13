@@ -68,6 +68,7 @@ categories:
       - sql_having_indent
       - sql_between_and_align
       - sql_case_when_else_indent
+      - sql_case_end_align
       - sql_case_branch_consistency
       - sql_case_then_break
       - sql_select_packing
