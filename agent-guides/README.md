@@ -5,7 +5,7 @@ Four layers, from reference to ready-to-run:
 
 | Layer | Path | What it is |
 | --- | --- | --- |
-| **Guidance documents** | `ssl_agent_instructions.md`, `ssl_refactoring_guide.md` | Detailed SSL language reference and the refactoring workflow. |
+| **Guidance documents** | `ssl_agent_instructions.md`, `ssl_refactoring_guide.md`, `ssl_server_script_style.md` | Detailed SSL language reference, the refactoring workflow, and the server-script style baseline. |
 | **Machine packs** | `machine/` | Generated compact foundation and searchable category packs for agent context retrieval. |
 | **Skills** | `skills/<name>/SKILL.md` | Self-contained task workflows an agent follows step by step. |
 | **Agents** | `agents/<name>.agent.md` | Canonical, tool-neutral developer personas that compose the skills. |
@@ -20,6 +20,8 @@ set. When sources disagree, prefer the schema and the checked-in code.
   validated behavior, semantics, and common pitfalls.
 - `ssl_refactoring_guide.md` — refactoring workflow, code structure, naming, and
   formatting expectations for maintained code.
+- `ssl_server_script_style.md` — the server-script style baseline: validation,
+  SQL, transaction and error-handling practices, with worked examples.
 
 These are reference material. Skills and agents cite them rather than restating
 their rules.
@@ -59,7 +61,10 @@ plus step-by-step instructions:
 - `ssl-unit-test` — write unit tests as SSL procedures the user runs in STARLIMS
 
 In Claude Code and opencode these are registered skills an agent can invoke
-directly; in other tools they are Markdown files an agent reads and follows.
+directly (`bun tools/deploy-skills.mjs` installs them into `.claude/skills/`,
+which both discover); in other tools they are Markdown files an agent reads and
+follows. `bun tools/check-skill-examples.mjs` checks that every SSL example in a
+skill is formatted and validates clean under the strict agent profile.
 
 ## Agents
 
@@ -77,13 +82,19 @@ developer agents:
 Each agent is a thin persona: it delegates to the skills above and cites the
 guidance documents rather than carrying its own copy of the rules. Content
 common to several agents lives once in `agents/_shared/` and is spliced in at
-generation time. Each agent is
-authored once here; `tools/generate-agents.mjs` emits git-ignored per-tool
+generation time. Each agent is authored once here; `tools/generate-agents.mjs` emits git-ignored per-tool
 adapters for GitHub Copilot (`.github/agents/`), OpenCode (`.opencode/agents/`),
 and Claude Code (`.claude/agents/`). Only the canonical sources are tracked.
 Use `bun tools/deploy-agents.mjs` to install the generated adapters into
 user-level agent directories for use across workspaces. See `agents/README.md`
 for the canonical format, regeneration command, and deployment locations.
+
+## Agent interfaces
+
+`agent-interfaces.md` defines the two formats the agents exchange with tools
+outside this repository: the *task brief* a caller can hand the planner,
+developer or reviewer instead of a ticket, and the *run record* that ends developer and
+reviewer reports. This repository owns both formats.
 
 ## How the layers relate
 

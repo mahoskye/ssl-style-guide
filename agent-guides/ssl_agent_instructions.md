@@ -44,7 +44,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Variable Declaration & Scope
 
-* **Declaration:** Variables must be declared before use using `:DECLARE`.
+* **Declaration:** Declare every variable with `:DECLARE` before use. This is a style rule, not a language rule: SSL does not enforce it (see §0, item 3).
     * Syntax: `:DECLARE varName1, varName2;`
     * **Default Value:** All declared variables start as empty string `""`.
     * **Dynamic Typing:** Variables are dynamically typed—their type changes when assigned a new value.
@@ -572,9 +572,10 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
 - Indent `HAVING` 2 spaces under `GROUP BY`.
 - When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`.
-- Indent `WHEN`/`ELSE` 2 spaces under `CASE`.
+- Indent `WHEN`/`ELSE` 4 spaces under `CASE`.
+- Align `END` with its `CASE`.
 - Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short.
-- When a `THEN` value breaks to a new line, indent it one level under its `WHEN`.
+- When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.
 - Pack `SELECT` columns onto lines up to about 90 characters: short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line, and complex expressions (`CASE`, nested functions, subqueries) break to their own line.
 - Align `SELECT` continuation lines to the first column (column 7).
 - In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
