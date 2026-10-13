@@ -383,20 +383,23 @@ export function loadRules() {
 }
 
 export function sortRecords(records, categories) {
-  // Rank by the first generated category that lists the record (in
+  // Rank by the first owned category that lists the record (in
   // categories.yaml order), then by its position in that category's order.
   const rank = new Map();
-  for (const [position, category] of categories.filter((c) => c.owned).entries()) {
+  for (const [categoryIndex, category] of categories.entries()) {
+    if (!category.owned) continue;
     for (const [index, id] of category.order.entries()) {
-      if (!rank.has(id)) rank.set(id, position * 100000 + index);
+      if (!rank.has(id)) rank.set(id, [categoryIndex, index]);
     }
   }
+  const none = [Infinity, Infinity];
   return [...records].sort((a, b) => {
     const domain = DOMAINS.indexOf(a.domain) - DOMAINS.indexOf(b.domain);
     if (domain !== 0) return domain;
-    const ra = rank.has(a.id) ? rank.get(a.id) : Infinity;
-    const rb = rank.has(b.id) ? rank.get(b.id) : Infinity;
-    if (ra !== rb) return ra - rb;
+    const [ca, ia] = rank.get(a.id) ?? none;
+    const [cb, ib] = rank.get(b.id) ?? none;
+    if (ca !== cb) return ca - cb;
+    if (ia !== ib) return ia - ib;
     return a.id.localeCompare(b.id);
   });
 }

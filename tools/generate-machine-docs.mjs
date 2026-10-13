@@ -101,18 +101,6 @@ const CATEGORY_DEFS = [
       'SetDefaultConnection',
       'LimsRecordsAffected',
     ],
-    mustFollow: [
-      'Prefer parameterized database calls.',
-      'SQLExecute is the only database API that supports named ?param? substitution.',
-      'RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays; LSearch, LSelect and LSelectC take the array fourth and GetDataSet second.',
-      'GetSSLDataset uses @name markers with parallel name and value arrays.',
-      'Inside SQL strings, use uppercase SQL keywords and functions; preserve the author\'s casing for other SQL identifiers (force-folding is dialect-conditional and breaks case-sensitive SQL Server collations).',
-    ],
-    avoid: [
-      'Do not use ?param? named substitution with non-SQLExecute database functions.',
-      'Do not concatenate user or runtime values into SQL when placeholders can bind them.',
-      'Do not pass empty trailing optional parameters when they can be omitted.',
-    ],
     related: ['sql', 'transactions', 'data-sources', 'arrays'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.database],
   },
@@ -122,16 +110,6 @@ const CATEGORY_DEFS = [
     aliases: ['sql formatting', 'query style', 'sql strings'],
     summary: 'SQL formatting and query-construction conventions inside SSL strings.',
     elements: ['SQLExecute', 'RunSQL', 'LSearch', 'LSelect1', 'GetDataSet', 'BuildStringForIn', 'PrepareArrayForIn'],
-    mustFollow: [
-      'Use multiline SQL strings for non-trivial queries and put major clauses on separate lines.',
-      'Pre-compute complex values before interpolating them into SQLExecute placeholders.',
-      'Use PrepareArrayForIn or SQLExecute array expansion for dynamic IN clauses when appropriate.',
-      'Keep SQL keyword casing distinct from SSL identifier casing.',
-    ],
-    avoid: [
-      'Do not build an IN clause by hand when a safer array helper or parameter array is available.',
-      'Do not mix named and positional placeholder mental models in the same call.',
-    ],
     related: ['database', 'transactions', 'strings', 'arrays'],
     sourcePaths: [
       SOURCE_PATHS.schema,
@@ -692,19 +670,7 @@ ${bullets({ id: ['doproc_for_same_file_procedures', 'execfunction_for_external_s
 - Inside class methods, access fields through \`Me:fieldName\` or
   \`Base:fieldName\`.
 ${bullets({ id: ['prefer_try_over_error_resume', 'try_requires_handler', 'no_control_exit_in_finally'] })}
-- \`SQLExecute\` is the only database API that supports named \`?param?\`
-  substitution. Its markers reference in-scope SSL variables by name and
-  it has **no values-array parameter** (the second parameter is a
-  connection name). Canonical shape:
-  \`SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");\`
-- \`RunSQL\`, \`LSearch\`, \`LSelect\`, \`LSelect1\`, \`LSelectC\`, and
-  \`GetDataSet\` use positional \`?\` markers with a value array in a
-  **later argument slot** — check \`ssl_signature\` for the slot and skip
-  unused optionals with adjacent commas. Canonical shape:
-  \`aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});\`
-- Do not put a trailing semicolon inside an embedded SQL string —
-  \`"SELECT ... ;"\` is not the convention; end the SSL statement, not
-  the SQL text.
+${bullets({ domain: ['sql'] })}
 
 ## SSL Does Not Have
 

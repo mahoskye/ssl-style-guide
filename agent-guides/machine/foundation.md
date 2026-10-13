@@ -56,18 +56,20 @@ detail.
 - Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
   `:FINALLY`.
 - `SQLExecute` is the only database API that supports named `?param?`
-  substitution. Its markers reference in-scope SSL variables by name and
-  it has **no values-array parameter** (the second parameter is a
-  connection name). Canonical shape:
+  substitution; do not use `?param?` markers with other database
+  functions. Its markers reference in-scope SSL variables by name and it
+  has no values-array parameter (the second parameter is a connection
+  name). Canonical shape:
   `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
-- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and
-  `GetDataSet` use positional `?` markers with a value array in a
-  **later argument slot** — check `ssl_signature` for the slot and skip
-  unused optionals with adjacent commas. Canonical shape:
+- `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet`
+  use positional `?` markers with a value array in a later argument slot:
+  fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`,
+  and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the
+  slot and skip unused optionals with adjacent commas. Canonical shape:
   `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`
 - Do not put a trailing semicolon inside an embedded SQL string —
-  `"SELECT ... ;"` is not the convention; end the SSL statement, not
-  the SQL text.
+  `"SELECT ... ;"` is not the convention; end the SSL statement, not the
+  SQL text.
 
 ## SSL Does Not Have
 

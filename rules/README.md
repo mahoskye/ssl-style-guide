@@ -5,8 +5,8 @@ the machine packs, and the rule lists in skills and guides are generated from
 the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
-**Migration status:** the `data-sources` and `server-scripts` domains are
-migrated. Every other rule is still hand-written where it always was.
+**Migration status:** the `data-sources`, `sql` and `server-scripts` domains
+are migrated. Every other rule is still hand-written where it always was.
 
 ## Layout
 
@@ -22,10 +22,10 @@ migrated. Every other rule is still hand-written where it always was.
 | Output | From | Generator |
 |---|---|---|
 | `rules/INDEX.md` | all records | `tools/generate-rules.mjs` |
-| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `module_structure.data_source_modules`, `procedures.visibility_annotations`, `error_handling.guidance` and `documentation.file_banner` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
+| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `module_structure.data_source_modules`, `sql.formatting`, `sql.parameters`, `procedures.visibility_annotations`, `error_handling.guidance` and `documentation.file_banner` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
 | Regions between `<!-- rules: … -->` and `<!-- /rules -->` in `agent-guides/` and `ssl-style-guide/` Markdown | the selected records' `rule` text | `tools/generate-rules.mjs` |
 | `must_follow` / `avoid` in `agent-guides/machine/categories/<id>.json` for each category with `lists_from_rules: true` | records with `machine.list`, in that category's `order` | `tools/generate-machine-docs.mjs` |
-| Data-source and server-script bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable`, each placed by `renderFoundation` | `tools/generate-machine-docs.mjs` |
+| Data-source, SQL and server-script bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable`, each placed by `renderFoundation` | `tools/generate-machine-docs.mjs` |
 
 Placements outside a generated region (for example
 `module_structure.class_file_constraint.rule`) are not written; the check
