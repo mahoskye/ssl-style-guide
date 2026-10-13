@@ -54,14 +54,20 @@ you are unsure about any rule below.
      `Category.Name`); development checkouts may be flat `.ds` or `.ds.txt`
      files
    - Callers invoke it at runtime with `RunDS`, passing overrides as an array of
-     `{name, value}` pairs:
+     values **in `:PARAMETERS` order**. Values bind by position, not by name;
+     trailing values left out take their inline defaults. Passing
+     `{name, value}` pairs does not work — each pair is bound whole to one
+     parameter:
      ```ssl
      oResult := RunDS("Category.DataSourceName");
-     oResult := RunDS("Category.DataSourceName", {{"sStatus", "P"}, {"nLimit", 25}});
+     oResult := RunDS("Category.DataSourceName", {"P", 25});
      oDs := RunDS("Category.DataSourceName",, "ssldataset");
      ```
-   - `GetDSParameters("Category.DataSourceName")` introspects the parameter
-     metadata at runtime
+   - The `"ssldataset"` (or `"xml"`) return type converts only an `SSLDataset`
+     result. An SSL data source whose body returns an array returns that array
+     whatever return type the caller asks for
+   - `GetDSParameters("Category.DataSourceName")` returns the parameter names
+     in declaration order, which is the order `RunDS` binds them
 
 6. **Verify:** if the scaffold was written to a file and MCP `ssl_diagnose` is
    available, run it on the file and confirm it parses (the validator applies
@@ -85,24 +91,34 @@ the SSL script body.
 /* =============================================================================;
 /* DATA SOURCE: SampleList (SSL);
 /* PURPOSE:     [Describe what this data source returns];
-/* PARAMS:      sStatus  — record status filter;
-/*              nMaxRows — maximum rows to return;
+/* PARAMS:      sStatus — record status filter;
+/*              sFromId — first sample ID to return;
 /* =============================================================================;
-:PARAMETERS sStatus := "A", nMaxRows := 100;
+:PARAMETERS sStatus := "A", sFromId := "";
 
-/* SSL body: build and return the result set;
-:DECLARE oDataset;
-
-oDataset := GetSSLDataset("SELECT * FROM sample WHERE status = ?sStatus?",, {"sStatus"}, {sStatus});
-
-:RETURN oDataset;
+/* SSL body: SQLExecute marks parameters as ?name?;
+:RETURN SQLExecute("
+	SELECT sample_id, status, logdate
+	FROM sample
+	WHERE status = ?sStatus?
+		AND sample_id >= ?sFromId?
+	ORDER BY sample_id
+");
 ```
+
+The body returns the rows as an array. If callers need `RunDS(...,
+"ssldataset")`, return an `SSLDataset` instead, for example from
+`GetSSLDataset`, which marks SQL Server parameters as `@name` in both the SQL
+text and the names array:
+`GetSSLDataset("SELECT * FROM sample WHERE status = @sStatus",, {"@sStatus"}, {sStatus})`.
 
 ## Variant: SQL data source
 
 Structure: optional header comment, optional builder directives, optional
-`:PARAMETERS` with inline `:=` defaults, then the SQL query body. The SQL
-preprocessor rewrites the file into an SSL script that calls `GetSSLDataset()`.
+`:PARAMETERS` with inline `:=` defaults, then the SQL query body. The query
+references parameters as `@name`; the `?name?` markers used by `SQLExecute`
+do not work here. The SQL preprocessor rewrites the file into an SSL script
+that calls `GetSSLDataset()`.
 
 Builder directives (preprocessed — not SSL keywords, do not treat them as
 reusable elsewhere):
@@ -145,7 +161,7 @@ reusable elsewhere):
    DATA SOURCE: SampleList (SQL)
    PURPOSE:     [Describe what this query returns]
    ============================================================================= */
-:DSN := starlims;
+:DSN := DATABASE;
 :TABLENAME := sampleList;
 :NULLASBLANK := true;
 :PARAMETERS sStatus := "A", nLimit := 50;
@@ -155,7 +171,7 @@ SELECT
     status,
     createddate
 FROM sample
-WHERE status = ?sStatus?
+WHERE status = @sStatus
 ORDER BY createddate DESC
 ```
 

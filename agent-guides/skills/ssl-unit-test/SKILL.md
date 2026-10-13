@@ -214,7 +214,7 @@ creates an instance and exercises it:
 	/* Creates the class under test and exercises one method;
 	:DECLARE oApprover, bActual;
 
-	oApprover := CreateUdObject("SampleApprover");
+	oApprover := CreateUdObject("Samples.SampleApprover");
 	bActual := oApprover:CanApprove(42);
 
 	:RETURN DoProc("CheckTrue", {"CanApprove accepts a valid sample", bActual});
@@ -224,9 +224,12 @@ creates an instance and exercises it:
 `DoProc` is a compile error inside class methods, so assertion helpers
 live in the test script, never in the class under test.
 
-Verify the exact class-name string with `ssl_lookup` rather than
-assuming a dotted path resolves. Built-in classes are never created this
-way — they use brace construction such as `Email{}`.
+Name the class as `Category.ClassName`, the category and script name of
+the class file. A bare class name is looked up only among the default
+categories, so it fails for a class in your own category. `ssl_lookup`
+covers built-ins only and cannot confirm a user class name: take the
+category and script name from the project. Built-in classes are never
+created this way — they use brace construction such as `Email{}`.
 
 ## Before you deliver
 
