@@ -47,6 +47,10 @@ jobs:
 
       - name: Rules check (records, generated outputs, enforced_by vs LSP catalog)
         run: bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog
+        # Severity disagreements with the LSP catalog are warnings for now (D11).
+        # Add --strict-severity here once the open mismatches are resolved
+        # (see rules/README.md, "Severity agreement with the LSP"):
+        # run: bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
 
       - name: Reference drift check
         run: bun tools/check-reference-drift.mjs

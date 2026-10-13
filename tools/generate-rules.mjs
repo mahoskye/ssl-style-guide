@@ -7,6 +7,8 @@
  * docs/design/rules-source.md). This tool validates the records and writes:
  *
  *   - rules/INDEX.md: one table per domain;
+ *   - rules/rules.json: the machine-readable rules bundle that the MCP
+ *     server serves (copied into ssl-mcp-server/data/ by bundle-data);
  *   - the generated regions of ssl-style-guide/ssl-style-guide.schema.yaml,
  *     built from rules/schema-base.yaml plus the records' `schema`
  *     placements (the subtrees named in rules/schema-base.yaml);
@@ -24,15 +26,17 @@
  *   - with a starlims-lsp catalog: every lsp:diag/lsp:fmt in enforced_by is an
  *     active catalog entry; severity and status disagreements, and catalog
  *     schema_refs into generated regions that do not resolve, are warnings.
+ *     --strict-severity makes a severity disagreement a failure.
  *
  * The record examples are validated with the LSP binary by
  * tools/check-skill-examples.mjs.
  *
  * Usage:
- *   bun tools/generate-rules.mjs [--check] [--lsp-catalog <dir>]
+ *   bun tools/generate-rules.mjs [--check] [--lsp-catalog <dir>] [--strict-severity]
  *
  * --lsp-catalog defaults to ../starlims-lsp/catalog. Without the flag a
- * missing catalog is skipped with a note; with it, a missing catalog fails.
+ * missing catalog is skipped with a note; with it (or with
+ * --strict-severity), a missing catalog fails.
  */
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
@@ -54,15 +58,19 @@ import {
 
 const CHECK_ONLY = process.argv.includes('--check');
 const catalogArg = process.argv.indexOf('--lsp-catalog');
-const CATALOG_REQUIRED = catalogArg !== -1;
+// D11: a record whose severity differs from the LSP diagnostic's default
+// severity is a warning unless --strict-severity is passed.
+const STRICT_SEVERITY = process.argv.includes('--strict-severity');
+const CATALOG_REQUIRED = catalogArg !== -1 || STRICT_SEVERITY;
 const CATALOG_DIR = resolve(
   REPO_ROOT,
-  CATALOG_REQUIRED ? process.argv[catalogArg + 1] : '../starlims-lsp/catalog'
+  catalogArg !== -1 ? process.argv[catalogArg + 1] : '../starlims-lsp/catalog'
 );
 
 const SCHEMA_PATH = resolve(REPO_ROOT, 'ssl-style-guide/ssl-style-guide.schema.yaml');
 const SCHEMA_BASE_PATH = resolve(RULES_DIR, 'schema-base.yaml');
 const INDEX_PATH = resolve(RULES_DIR, 'INDEX.md');
+const BUNDLE_PATH = resolve(RULES_DIR, 'rules.json');
 // Markdown files under these roots may carry generated regions.
 const REGION_ROOTS = ['agent-guides', 'ssl-style-guide'];
 const REGION_SKIP = new Set(['node_modules', 'machine']);
@@ -111,6 +119,48 @@ function renderIndex(records) {
     }
   }
   return `${lines.join('\n')}\n`;
+}
+
+// ---------------------------------------------------------------------------
+// rules/rules.json
+
+const BUNDLE_FORMAT = 1;
+
+/**
+ * The machine-readable rules bundle: every record's frontmatter fields that
+ * consumers use, plus its Rationale, Exceptions and Examples sections. Notes
+ * and verification details are maintainer material and stay out.
+ */
+function renderBundle(records) {
+  const fences = (list) => list.map((f) => ({ lang: f.info, code: f.code }));
+  const rules = records.map((r) => ({
+    id: r.id,
+    title: r.title,
+    domain: r.domain,
+    status: r.status,
+    level: r.level,
+    severity: r.severity,
+    applies_to: r.applies_to,
+    rule: r.rule,
+    rationale: r.sections.get('Rationale') ?? '',
+    exceptions: r.sections.get('Exceptions') || null,
+    examples: { good: fences(r.examples.good), bad: fences(r.examples.bad) },
+    enforced_by: r.enforced_by,
+    categories: r.categories,
+    related_elements: r.related_elements ?? [],
+    schema_paths: (r.schema ?? []).map((p) => p.path),
+    aliases: r.aliases ?? [],
+    issues: r.issues ?? [],
+    source: r.file,
+  }));
+  const bundle = {
+    format: BUNDLE_FORMAT,
+    generated_by: 'tools/generate-rules.mjs',
+    domains: DOMAINS,
+    count: rules.length,
+    rules,
+  };
+  return `${JSON.stringify(bundle, null, 2)}\n`;
 }
 
 // ---------------------------------------------------------------------------
@@ -439,7 +489,9 @@ function checkCatalog(records, schemaText) {
         problems.push(`${r.file}: enforced_by ${item} is '${entry.status}' in the starlims-lsp catalog`);
       }
       if (match[1] === 'diag' && entry.default_severity && entry.default_severity !== r.severity) {
-        warnings.push(`${r.id}: severity ${r.severity}, but ${item} defaults to ${entry.default_severity}`);
+        (STRICT_SEVERITY ? problems : warnings).push(
+          `${r.id}: severity ${r.severity}, but ${item} defaults to ${entry.default_severity}`
+        );
       }
     }
     const sameSlug = catalogEntry('diag', r.id);
@@ -479,7 +531,10 @@ function main() {
     throw error;
   }
 
-  const outputs = [{ path: INDEX_PATH, content: renderIndex(records) }];
+  const outputs = [
+    { path: INDEX_PATH, content: renderIndex(records) },
+    { path: BUNDLE_PATH, content: renderBundle(records) },
+  ];
 
   const schemaText = readFileSync(SCHEMA_PATH, 'utf8');
   const regions = renderSchemaRegions(records);

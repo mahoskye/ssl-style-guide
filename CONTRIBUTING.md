@@ -56,7 +56,7 @@ copies:
 
 | Canonical | Generated | Regenerate with |
 |-----------|-----------|-----------------|
-| `rules/` records (see [rules/README.md](rules/README.md)) | `rules/INDEX.md`, the schema's generated regions, `<!-- rules: -->` regions in guides and skills | `bun tools/generate-rules.mjs`, then the machine docs |
+| `rules/` records (see [rules/README.md](rules/README.md)) | `rules/INDEX.md`, `rules/rules.json`, the schema's generated regions, `<!-- rules: -->` regions in guides and skills | `bun tools/generate-rules.mjs`, then the machine docs |
 | `ssl-style-guide/`, `agent-guides/` docs and schema, `rules/` | `agent-guides/machine/` packs | `bun tools/generate-machine-docs.mjs` |
 | everything the MCP server serves | `ssl-mcp-server/data/` mirror | `cd ssl-mcp-server && bun run bundle-data` |
 | `agent-guides/agents/*.agent.md` and `agents/_shared/` | per-tool agent adapters (git-ignored) | `bun tools/generate-agents.mjs` |
@@ -74,11 +74,19 @@ cd ..
 bun tools/check-reference-drift.mjs   # inventory vs. reference repo (comparisons skip without ../ssl-docs)
 bun tools/check-agent-wiring.mjs      # delegation, read-only allowlists, editing protocols
 bun tools/check-skill-examples.mjs    # skill and rule examples: formatted, validate clean (needs the LSP binary)
+bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog  # enforced_by vs. LSP catalog
 ```
 
 The drift check reports content drift (vendored element data behind the
 reference repo) as a warning, so reference-repo merges don't block unrelated
 PRs. Pass `--strict` to make it an error, for example before a release.
+
+The rules check warns when a record's severity differs from the default
+severity of the LSP diagnostic that enforces it. Pass `--strict-severity` to
+make that an error. CI does not pass it yet, because some disagreements with
+starlims-lsp v0.24.0 are still being triaged; when you change a record's
+severity or `enforced_by`, run it locally so you add no new disagreement (see
+[rules/README.md](rules/README.md#severity-agreement-with-the-lsp)).
 
 The Tree-sitter grammar has its own commands (`npm run gen`, `npm test`) under
 `ssl-style-guide/tree-sitter-ssl/`; the test corpus is maintained outside the

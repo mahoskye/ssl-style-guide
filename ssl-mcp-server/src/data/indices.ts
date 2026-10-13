@@ -1,6 +1,7 @@
 import type { Element } from "../types.js";
 import type { MachineDocs } from "../types.js";
 import type { LoadedData } from "./loader.js";
+import { buildRuleIndex, type RuleIndex } from "./rules.js";
 
 export interface Indices {
   elementsByName: Map<string, Element>;
@@ -13,6 +14,7 @@ export interface Indices {
   refactoringGuide: string;
   ebnfGrammar: string;
   machineDocs: MachineDocs;
+  rules: RuleIndex;
 }
 
 export function buildIndices(data: LoadedData): Indices {
@@ -88,5 +90,6 @@ export function buildIndices(data: LoadedData): Indices {
     refactoringGuide: data.refactoringGuide,
     ebnfGrammar: data.ebnfGrammar,
     machineDocs: data.machineDocs,
+    rules: buildRuleIndex(data.rules),
   };
 }

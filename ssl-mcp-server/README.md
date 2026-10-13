@@ -4,10 +4,11 @@ MCP server that packages this repository's SSL rules, guides and element
 data for MCP-compatible clients.
 
 It serves the vendored element inventory and metadata, the rule schema, the
-EBNF grammar, the agent language reference, the refactoring guide, and the
-generated machine packs. It also validates and formats SSL through the pinned
-starlims-lsp binary. The data under `ssl-mcp-server/data/` is a checked-in
-mirror of the canonical files in `ssl-style-guide/` and `agent-guides/`.
+style rules, the EBNF grammar, the agent language reference, the refactoring
+guide, and the generated machine packs. It also validates and formats SSL
+through the pinned starlims-lsp binary. The data under `ssl-mcp-server/data/`
+is a checked-in mirror of the canonical files in `ssl-style-guide/`,
+`agent-guides/` and `rules/`.
 
 ## Quick Start
 
@@ -125,6 +126,9 @@ Bundled runtime files:
 - `data/ssl-ebnf-grammar.md`
 - `data/machine/` — compact foundation and searchable category packs for agent
   context retrieval
+- `data/rules.json` — every style rule record (id, level, severity, rule text,
+  rationale, exceptions, good and bad examples, enforcement, categories),
+  generated from `rules/` by `tools/generate-rules.mjs`
 
 `ssl_server_script_style.md` and `sql-canonical-compact-reference.md` are not
 bundled; agents read them from the repository.
@@ -141,6 +145,7 @@ Refresh the bundled data after any canonical file changes:
 
 ```bash
 # from repo root
+bun tools/generate-rules.mjs
 bun tools/generate-machine-docs.mjs
 
 # from ssl-mcp-server/
@@ -156,7 +161,8 @@ bun run check:consistency
 | `ssl_search` | Search by partial name or keyword, with optional type filter |
 | `ssl_signature` | Return documented syntax and related details for functions and classes |
 | `ssl_validate_naming` | Check Hungarian notation compliance for a variable name |
-| `ssl_style_rule` | Return style guide rules for a topic |
+| `ssl_style_rule` | Return one style rule by `id` (full record), or the style guide sections for a `topic` |
+| `ssl_rules` | Search and list style rules by domain, category, applies_to, level, severity, enforcement or text |
 | `ssl_category` | List functions by category, or list all categories |
 | `ssl_context_pack` | Retrieve compact machine documentation by category, alias, task, or element name |
 | `ssl_diagnose` | Validate SSL code for syntax errors, style violations, and common mistakes (strict agent profile) |
@@ -180,6 +186,43 @@ bun run check:consistency
 | `ssl://machine/foundation` | Compact baseline SSL rules for agents |
 | `ssl://machine/categories` | Searchable machine-doc category index |
 | `ssl://machine/categories/{category}` | Compact category pack |
+| `ssl://rules` | Index of style rules (summaries) |
+| `ssl://rules/{id}` | One style rule record as JSON |
+
+### Style rules
+
+Each rule in `rules/` has a stable snake_case id. `ssl_style_rule` with `id`
+returns the whole record:
+
+```json
+{ "id": "equals_vs_strict_equals" }
+```
+
+The lookup also accepts the other names a rule goes by, and says which one
+matched (`matched_by`):
+
+| Input | Example | `matched_by` |
+|-------|---------|--------------|
+| Rule id (case and `-`/`_` insensitive) | `prefer_exitcase` | `id` |
+| Earlier id in the record's `aliases` | | `alias` |
+| Schema lint slug | `loop_in_finally` | `schema_slug` |
+| Schema path | `lints.compile_errors.rules.loop_in_finally.message` | `schema_path` |
+| starlims-lsp diagnostic or formatter code | `lsp:diag.nested_iif`, `nested_iif`, `fmt.keyword_case` | `lsp_diagnostic` / `lsp_formatter` |
+
+When several rules share a name (one LSP diagnostic can enforce more than one
+rule), the response lists their summaries; call again with one id. The
+`topic` form (`{ "topic": "naming" }`) is unchanged.
+
+`ssl_rules` filters the same records and returns summaries:
+
+```json
+{ "domain": "server-scripts", "category": "error-handling", "severity": "error" }
+{ "applies_to": "sql_data_source" }
+{ "enforced_by": "reviewer", "query": "transaction" }
+```
+
+With no arguments it returns rule counts per domain, category, applies_to and
+level.
 
 ## Prompts
 
@@ -204,6 +247,7 @@ Current bundled coverage (sourced from `data/ssl-element-reference.json`):
 - 37 function categories
 - 8 Hungarian notation prefixes
 - 22 machine-doc categories
+- 276 style rules in 6 domains
 
 ## Testing
 

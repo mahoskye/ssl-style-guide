@@ -24,12 +24,14 @@ the SQL compact reference, and the `_shared/boundaries.md` partial.
 | `categories.yaml` | Machine-pack category ids, and for each generated category the order its rules appear in. |
 | `schema-base.yaml` | The non-rule content of the schema's generated regions, with a `!rule <id>` slot wherever a record supplies the value. |
 | `INDEX.md` | Generated. One table per domain. |
+| `rules.json` | Generated. The machine-readable rules bundle (see below). |
 
 ## What is generated from what
 
 | Output | From | Generator |
 |---|---|---|
 | `rules/INDEX.md` | all records | `tools/generate-rules.mjs` |
+| `rules/rules.json`, copied to `ssl-mcp-server/data/rules.json` | all records | `tools/generate-rules.mjs`, then `bun run bundle-data` in `ssl-mcp-server/` |
 | The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `comments.rules`; `lints.style_rules`, `lints.hungarian_notation`, `lints.not_preferred_operators`, `lints.compile_errors`, `lints.type_safety`, `lints.variable_behavior`, `lints.label_behavior`, `lints.parameter_skipping_style`, `lints.class_rules`, `lints.coding_standards` and `lints.deprecated_keywords`; `procedures.visibility_annotations`; `error_handling.guidance`; `documentation.file_banner`; `module_structure.data_source_modules`; `sql.formatting` and `sql.parameters` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
 | Regions between `<!-- rules: … -->` and `<!-- /rules -->` in `agent-guides/` and `ssl-style-guide/` Markdown | the selected records' `rule` text | `tools/generate-rules.mjs` |
 | `must_follow` / `avoid` in `agent-guides/machine/categories/<id>.json` for each category with `lists_from_rules: true` | records with `machine.list`, in that category's `order` | `tools/generate-machine-docs.mjs` |
@@ -101,6 +103,48 @@ warnings under the strict profile (and `ssl` fences must be formatter-clean).
 For each `lsp:diag.<slug>` in `enforced_by`, every Bad fence must produce that
 diagnostic and no Good fence may.
 
+## Rules bundle
+
+`rules/rules.json` holds every record in record order, for tools that need
+rules as data. The MCP server serves it through `ssl_style_rule` (by id),
+`ssl_rules` (search and listing) and `ssl://rules/{id}`.
+
+```json
+{
+  "format": 1,
+  "generated_by": "tools/generate-rules.mjs",
+  "domains": ["language", "server-scripts", "data-sources", "sql", "classes", "naming"],
+  "count": 209,
+  "rules": [
+    {
+      "id": "keyword_uppercase",
+      "title": "Keywords are uppercase and case-sensitive",
+      "domain": "language",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "error",
+      "applies_to": ["server_script", "class", "ssl_data_source"],
+      "rule": "Colon-prefixed SSL keywords are uppercase and case-sensitive, ...",
+      "rationale": "Markdown text of ## Rationale",
+      "exceptions": null,
+      "examples": { "good": [{ "lang": "ssl", "code": "..." }], "bad": [...] },
+      "enforced_by": ["lsp:diag.keyword_uppercase", "lsp:fmt.keyword_case"],
+      "categories": ["control-flow"],
+      "related_elements": ["IF", "BEGINCASE", "PROCEDURE"],
+      "schema_paths": ["keywords.case", "language_features.case_sensitivity.keywords"],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/keyword_uppercase.md"
+    }
+  ]
+}
+```
+
+`exceptions` is the `## Exceptions` text or `null`; `examples[].lang` is the
+fence kind (`ssl`, `ssl kind=ds` or `text`). `## Notes` and `verification`
+are maintainer material and are not in the bundle. `format` changes only when
+a field is renamed or removed; new fields may be added without a change.
+
 ## Including rules in a guide or skill
 
 Put an empty region where the list belongs and run the generator:
@@ -155,6 +199,23 @@ skipped when `../starlims-lsp` is absent. The checker warns, without failing,
 when a record's severity differs from the diagnostic's default severity, when
 a record is active but the catalog entry with its slug is removed, and when a
 catalog `schema_ref` into a generated region does not resolve.
+
+### Severity agreement with the LSP
+
+A record's `severity` should equal the `default_severity` of each
+`lsp:diag.<slug>` in its `enforced_by`. By default a disagreement is a
+warning. `--strict-severity` makes it a failure (and requires the catalog):
+
+```bash
+bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
+```
+
+CI does not pass `--strict-severity` yet: seven records still disagree with
+starlims-lsp v0.24.0, and they are being triaged upstream (see
+[mahoskye/starlims-lsp#269](https://github.com/mahoskye/starlims-lsp/issues/269)).
+Once they are settled, either by changing the record or the LSP default,
+CI turns the flag on. Until then, use it locally to confirm a change adds no
+new disagreement.
 
 A change to the generated schema is a schema change: add a CHANGELOG line, and
 bump `metadata.version` at release as usual.

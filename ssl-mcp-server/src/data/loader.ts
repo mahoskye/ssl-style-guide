@@ -11,6 +11,7 @@ import type {
   MachineDocs,
   ReferenceEntry,
   ReferenceFile,
+  RulesBundle,
 } from "../types.js";
 
 interface MetaFileEntry {
@@ -164,6 +165,7 @@ export interface LoadedData {
   refactoringGuide: string;
   ebnfGrammar: string;
   machineDocs: MachineDocs;
+  rules: RulesBundle;
 }
 
 function loadMachineDocs(): MachineDocs {
@@ -207,6 +209,7 @@ export function loadAllData(): LoadedData {
   const refactoringGuide = readFileSync(dataPath("ssl_refactoring_guide.md"), "utf-8");
   const ebnfGrammar = readFileSync(dataPath("ssl-ebnf-grammar.md"), "utf-8");
   const machineDocs = loadMachineDocs();
+  const rules = JSON.parse(readFileSync(dataPath("rules.json"), "utf-8")) as RulesBundle;
 
   const byType = elements.reduce<Record<string, number>>((acc, e) => {
     acc[e.type] = (acc[e.type] ?? 0) + 1;
@@ -220,6 +223,7 @@ export function loadAllData(): LoadedData {
         .join(", ") +
       "\n"
   );
+  process.stderr.write(`[ssl-mcp-server] Loaded ${rules.rules.length} style rules\n`);
 
   return {
     elements,
@@ -229,5 +233,6 @@ export function loadAllData(): LoadedData {
     refactoringGuide,
     ebnfGrammar,
     machineDocs,
+    rules,
   };
 }

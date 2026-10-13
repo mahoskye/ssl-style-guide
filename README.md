@@ -44,6 +44,7 @@ Rules, grammars, guides, agents and their formats stay here.
 | `ssl-element-reference.json`, `ssl-element-meta.json` | starlims-lsp; this repo's MCP server | LSP vendors copies and checks them against a sibling checkout; MCP bundles them |
 | `ssl-style-guide.schema.yaml` | MCP server; starlims-lsp and the VS Code extension (rule slugs) | MCP bundles it; the LSP and extension mirror its rule slugs by hand |
 | Agent guides, EBNF, machine packs | MCP server; agents | Bundled; read at run time |
+| `rules/rules.json` (generated from `rules/`) | MCP server (`ssl_style_rule`, `ssl_rules`, `ssl://rules/{id}`) | Bundled; read at run time |
 | Agent definitions and skills | Claude Code, opencode, Copilot, Codex | `tools/generate-agents.mjs`, `tools/deploy-agents.mjs`, `tools/deploy-skills.mjs` |
 | Tree-sitter grammar | Editors; other SSL tools (via a sibling checkout) | Grammar and queries |
 | TextMate grammar | The VS Code extension (planned) | Canonical here; the extension is to sync from it (mahoskye/vs-code-ssl-formatter#113) |
@@ -190,6 +191,7 @@ When canonical docs or the vendored element data change, refresh the mirror
 with:
 
 ```bash
+bun tools/generate-rules.mjs
 bun tools/generate-machine-docs.mjs
 
 cd ssl-mcp-server
