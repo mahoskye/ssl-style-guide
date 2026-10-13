@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 13
+version: 14
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -89,7 +89,7 @@ optional and not a formality.
 
 - Re-read the surrounding code. Does context legitimately explain the
   pattern — file type, an `:INCLUDE`-provided declaration,
-  call-stack-scoped `:PUBLIC`, intentional multi-match fallthrough,
+  a program-wide `:PUBLIC` declared elsewhere, intentional multi-match fallthrough,
   `.NET` member passthrough?
 - Confirm the rule you cite exists, at the severity you claim, in the
   schema, `ssl_style_rule`, or the guides.

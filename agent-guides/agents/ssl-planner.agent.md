@@ -5,7 +5,7 @@ description: >-
   ssl-developer executes — for new features and for behavior-preserving
   refactors alike. Surveys what already exists before designing anything.
   Does not write production SSL.
-version: 10
+version: 11
 mode: all
 argument-hint: "<feature, ticket, or refactor to plan> [target-spec-path]"
 model: inherit
@@ -143,7 +143,8 @@ construct a way it changes behavior:
 - `:BEGINCASE` fallthrough — adding or moving `:EXITCASE` changes which
   case bodies run.
 - The symbol surface beyond the file's own text: `:INCLUDE` splicing and
-  call-stack-scoped `:PUBLIC` variables.
+  `:PUBLIC` variables, which any procedure in the running program can read
+  or update.
 - Data-source preprocessing — inline `:=` defaults and builder
   directives are not ordinary SSL.
 - Unqualified class-field access — adding or removing `Me:` changes

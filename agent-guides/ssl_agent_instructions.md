@@ -9,7 +9,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 1. **Colon-prefixed keywords are case-sensitive** and must be UPPERCASE (e.g., `:IF`, `:FOR`). **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
 2. **Semicolons are mandatory** for almost every statement, including comments.
-3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
+3. **Declare variables before use** with `:DECLARE`. SSL does not enforce this (an undeclared name is looked up in caller scopes and publics, and a write to it can change a caller's variable), so declaring every name is the safe default rather than a language rule. **Do not** use `:DEFAULT` on a `:DECLARE` line.
 4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
 5. **Custom procedures cannot be called directly.** A bare `Name(...)` call always means a built-in function, in scripts and classes alike; any other name stops the script from compiling with `Invalid built-in function: Name`. Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
@@ -83,7 +83,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Loop Control:** `:EXITFOR;`, `:EXITWHILE;`, `:LOOP;` (continues to next iteration).
 
 * **Case Blocks (Strict Structure):**
-    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is rejected). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
+    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is rejected). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run. `:EXITCASE;` must be the last statement of its `:CASE`/`:OTHERWISE` branch, directly in the branch body; a statement after it, or an `:EXITCASE` nested inside an `:IF`, is a compile error.
     * **Style Guidance:** Include `:OTHERWISE` for default handling (advisory — not required by the language). End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
     * Syntax:
       ```ssl
@@ -117,7 +117,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Try/Catch/Finally:** Structured exception handling (preferred). `:CATCH` and `:FINALLY` are both optional individually, but at least one must be present. Valid forms: `TRY...CATCH...ENDTRY`, `TRY...FINALLY...ENDTRY`, `TRY...CATCH...FINALLY...ENDTRY`. When both are present, **`:CATCH` must precede `:FINALLY`**.
       **Body requirements:** The `:TRY` body requires **at least one statement**. The `:CATCH` body allows **zero or more statements** (an empty `:CATCH` block is valid). The `:FINALLY` body, if present, requires **at least one statement**.
       **Only one `:CATCH` block is allowed per `:TRY`** — there is no multi-catch.
-      **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Message`, `:Description`, `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx`, `:InnerException`, and `:NETException`.
+      **`:CATCH` does not name the exception.** Use `GetLastSSLError()` inside the `:CATCH` block to retrieve an `SSLError` object. Common `SSLError` members include `:Description` (the error message; `:Message` is an alias), `:Operation`, `:Code` / `:GenCode`, `:FullDescription` / `:FullDescriptionEx` (multi-line diagnostic text with stack details and nested causes), `:InnerException`, and `:NETException`.
       **`:FINALLY` restrictions:** `:RETURN`, `:EXITWHILE`, `:EXITFOR`, and `:LOOP` inside a `:FINALLY` block are **rejected**.
       ```ssl
       :TRY;
@@ -160,9 +160,9 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
     * **One-segment `ExecFunction("Name")`** looks for a script in the default categories, not a procedure in the current script. Use `DoProc` for same-file procedures.
     * **First segment is never ambiguous:** Applications and server-script categories share a single namespace — a category cannot be created with the name of an existing application. The first segment of a dotted path therefore always resolves to exactly one container; there is no collision or precedence rule to consider.
-    * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
-      `DoProc("MyProc", {param1,,param3,,param5});` is valid, but
-      `DoProc("MyProc", {param1, , param3, , param5});` is not.
+    * **Skip Parameters:** An empty position passes `NIL`. House style keeps skipped-argument commas adjacent: write
+      `DoProc("MyProc", {param1,,param3,,param5});` rather than
+      `DoProc("MyProc", {param1, , param3, , param5});`. Both forms are valid and behave the same.
     * **Omit trailing optional parameters** rather than passing empty values. For example, write `DoProc("MyProc")` not `DoProc("MyProc", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
     * **Built-in Functions:** Can be called directly with standard syntax (e.g., `Len(sString)`).
 
@@ -191,10 +191,10 @@ Authoritative rules describe documented language behavior; style recommendations
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value. When a class inherits, the parent's parameterless `Constructor` runs automatically first; a parent `Constructor` that takes parameters does not run unless the derived `Constructor` calls `Base:Constructor(args)`.
     * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. An unqualified `DoProc("ProcName", ...)` is rejected inside class methods; fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
-    * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
+    * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). A bare name follows normal variable lookup (local, then caller scopes, then publics): a read with nothing of that name in reach raises `Variable [name] is undefined!`, and a write may land on a caller's or a public variable. Neither touches the field.
     * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
-    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both keep the procedure callable from its own script (for example with `DoProc`) and block calls from external scripts. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
+    * **Access modifiers (scripts only):** Place `/*@private;` or `/*@protected;` on the line immediately before `:PROCEDURE` to restrict access. Both block calls from other scripts; procedures in the same script can still call it with `DoProc`. Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments: write them exactly as shown (lowercase, no space between `/*` and `@`), and do not put a blank line between the modifier and `:PROCEDURE`, which breaks the association. **These modifiers have no effect on class methods** (class methods are always Public|Virtual).
       ```ssl
       /*@private;
       :PROCEDURE InternalHelper;
@@ -228,7 +228,7 @@ Authoritative rules describe documented language behavior; style recommendations
       :ENDPROC;
       ```
 
-* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects, available only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is; in non-endpoint scripts the identifiers are not bound and references will fail at runtime.
+* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects that are meaningful only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is. They only describe an HTTP call inside endpoint scripts, but referencing them elsewhere does not raise an error (in a script run from Designer, `Request:UserAgent` returns the Designer client's user agent and `Response:Write` completes without an error), so neither a successful read nor a `:TRY` guard proves the script is running as an endpoint.
 
 ### Code Organization
 
@@ -275,6 +275,7 @@ Authoritative rules describe documented language behavior; style recommendations
   /* Set x := 0; then increment;
   ```
   SSL reads this as the complete comment `/* Set x := 0;` followed by `then increment;`, which it then tries to run as a statement (and rejects). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
+* **Access modifiers are not comments:** `/*@private;` and `/*@protected;` use comment syntax but are access modifiers (see Objects & User-Defined Types above). Tools and refactors must not respace, recase or move them, or insert a blank line between them and the following `:PROCEDURE`.
 
 ---
 
@@ -406,8 +407,8 @@ SSL's built-in scalar and array types are backed by underlying .NET values. Stri
 
 ### Operators Summary
 
-* **Assignment:** `:=`
-* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=`
+* **Assignment:** `:=` — the target can be a variable, an object property (`oTask:Status`) or an array element (`aItems[1]`). Assignment has the lowest precedence, is right-associative and evaluates to the assigned value, so `sStatus := sDefault := "PENDING";` is valid. Prefer one assignment per statement unless every target should receive the same value.
+* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=` — each evaluates to the updated left-side value, so it can appear inside a condition such as `(nIndex += 1) <= nCount`.
 * **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=` — prefer `!=` over `<>` or `#` for not-equals
 * **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`)
 * **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `**` (power), `%` (modulo)
@@ -528,12 +529,12 @@ When using **array expansion** (`IN (?arrayVar?)`) with `SQLExecute`, the array 
 
 ```ssl
 /* WRONG - runtime error: "The current array has more than 1 dimmension.";
-oFilter:StatusCodes := {"A", "P", "C"};
-aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:StatusCodes?)");
+oFilter:statusCodes := {"A", "P", "C"};
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:statusCodes?)");
 
 /* CORRECT - copy to a local variable first;
-oFilter:StatusCodes := {"A", "P", "C"};
-aStatusCodes := oFilter:StatusCodes;
+oFilter:statusCodes := {"A", "P", "C"};
+aStatusCodes := oFilter:statusCodes;
 aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 ```
 
@@ -711,7 +712,7 @@ Variables must be prefixed to indicate type:
 - Function/procedure names: maximum 30 characters
 
 **Exceptions to Hungarian Notation:**
-* Loop counters: `i`, `j`, `k`, `x`, `y`, `z` (single letters allowed)
+* Loop counters: `i`, `j`, `k`, `x`, `y`, `z` (single letters allowed) — only when declared, and prefer a script-specific name such as `nSampleIdx` in a script that calls other scripts, because an undeclared counter can collide with a caller's variable
 * Global constants: `ALL_CAPS_NAMING` (e.g., `MAX_COUNT`, `DEFAULT_PATH`)
 * Special SSL literals/constants: `NIL`, `.T.`, `.F.`
 * Preserve established acronym casing only when it already exists in the surrounding codebase or required external names
@@ -776,7 +777,7 @@ Variables must be prefixed to indicate type:
         :ENDIF;
     :CATCH;
         /* Handle errors;
-        oLogger:LogError := GetLastSSLError();
+        oLogger:lastError := GetLastSSLError();
     :ENDTRY;
 
     :RETURN nTotal;
@@ -874,7 +875,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 8.  **Error Handling:** Use `:TRY`/`:CATCH`/`:FINALLY` for structured error handling.
 9.  **Object Property Access:** Use colon-chained access (`oObj:Property`, `oObj:Method():Value`), not dot-chained access (`oObj.Property`).
 10. **Function Name Casing:** Represent functions in PascalCase where applicable (`CreateUdObject`, `SQLExecute`, `AEval`, `AScan`), while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`.
-11. **Object Property Assignment:** Object property assignments (e.g., `oLogger:LogError := value;`) are NOT variable declarations - don't flag as undeclared.
+11. **Object Property Assignment:** Object property assignments (e.g., `oLogger:lastError := value;`) are NOT variable declarations - don't flag as undeclared.
 12. **SQL Parameter Case Insensitivity:** SQL parameter names in `?varName?` placeholders are case-insensitive - `?sID?` and `?SID?` reference the same variable.
 13. **Multi-line Function Calls:** Function calls and array literals can span multiple lines - proper indentation should be preserved.
 14. **Procedure References:** Procedure names should only be matched in execution contexts (`DoProc`, `ExecFunction`), not in comments, strings, or unrelated identifiers.
@@ -1001,34 +1002,34 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 ## 10. Built-in Function Reference
 
-> Parameter prefixes: `s` = string, `n` = number, `b` = boolean, `d` = date, `a` = array, `o` = object, `v` = any/variant, `fn` = code block.
+> Parameter prefixes: `s` = string, `n` = number, `b` = boolean, `d` = date, `a` = array, `o` = object, `v` = any/variant, `fn` = code block. Square brackets mark an optional parameter (`[nCount]`); omit trailing optional arguments instead of passing `NIL` fillers.
 > Calling-form note: canonical SSL call forms are `DoProc("ProcName", {args})`, `ExecFunction("Category.Script", {args})` / `ExecFunction("Category.Script.Proc", {args})`, `CreateUdObject()`, `CreateUdObject("Category.ClassName", {args})`, and `CreateUdObject({{"Prop", value}, ...})`.
 
 ### Core Functions (Most Used)
 
 | Function | Signature |
 |---|---|
-| `SQLExecute` | `SQLExecute(vCommandString[, vFriendlyName[, vRollbackExistingTransaction[, vNullAsBlank[, vInvariantDateColumns[, vReturnType[, sTableName[, vIncludeSchema[, vIncludeHeader]]]]]]]])` |
+| `SQLExecute` | `SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])` |
 | `Empty` | `Empty(vValue)` |
-| `DoProc` | `DoProc(sProcedureName, aArguments)` |
+| `DoProc` | `DoProc(sProcedureName, [aArguments])` |
 | `Len` | `Len(vSource)` |
-| `LimsString` | `LimsString(vSource)` |
-| `ExecFunction` | `ExecFunction(sName[, aParameters])` |
-| `ExecUdf` | `ExecUdf(vCode[, aArgs[, bCacheCode]])` |
-| `ExecInternal` | `ExecInternal(vO, sMethodName, vArg01, vArg02, vArg03, vArg04, vArg05, vArg06, vArg07, vArg08, vArg09, vArg10, vArg11, vArg12, vArg13, vArg14, vArg15, vArg16, vArg17, vArg18, vArg19, vArg20, vArg21)` |
-| `Eval` | `Eval(vCode[, vArg1[, vArg2 ...]])` |
+| `LimsString` | `LimsString([vSource])` |
+| `ExecFunction` | `ExecFunction(sName, [aParameters])` |
+| `ExecUdf` | `ExecUdf(sCode, [aArgs], [bCacheCode])` |
+| `ExecInternal` | `ExecInternal(oTarget, sMethodName, [vArg01], [vArg02], [vArg03], [vArg04], [vArg05], [vArg06], [vArg07], [vArg08], [vArg09], [vArg10], [vArg11], [vArg12], [vArg13], [vArg14], [vArg15], [vArg16], [vArg17], [vArg18], [vArg19], [vArg20], [vArg21])` |
+| `Eval` | `Eval(fnCode, [vArg1], [vArg2], ...)` |
 | `Branch` | `Branch(vTarget)` |
-| `UsrMes` | `UsrMes(vArg1[, vArg2])` |
-| `ErrorMes` | `ErrorMes(vArg1[, vArg2])` |
-| `InfoMes` | `InfoMes(vArg1[, vArg2])` |
+| `UsrMes` | `UsrMes(vCaption, [vMessage])` |
+| `ErrorMes` | `ErrorMes(vCaption, [vMessage])` |
+| `InfoMes` | `InfoMes(vCaption, [vMessage])` |
 | `IIf` | `IIf(bCondition, vTrueValue, vFalseValue)` |
-| `CreateUdObject` | `CreateUdObject()` / `CreateUdObject(sClassName)` / `CreateUdObject(sClassName, aArgs)` / `CreateUdObject(aPropertyDefs)` |
-| `RaiseError` | `RaiseError(sMessage[, sLocation[, nErrorCode[, oInnerException]]])` |
+| `CreateUdObject` | `CreateUdObject()` / `CreateUdObject(aPropertyDefs)` / `CreateUdObject(sClassName, [aArgs])` |
+| `RaiseError` | `RaiseError(sMessage, [sLocation], [nErrorCode], [oInnerException])` |
 | `PrmCount` | `PrmCount()` |
 
 `PrmCount()` works only in a script's top-level code. Inside a `:PROCEDURE` (including one reached with `DoProc`) and in `ExecUdf` code it raises an error; there, give optional parameters `:DEFAULT` values instead.
 
-`UsrMes`, `ErrorMes`, and `InfoMes` all write to the server log with identical formatting: `user / date / time / version / location / process / caption\nmessage`. The only functional difference is that `ErrorMes` writes even when user-message logging is turned off. `UsrMes` and `InfoMes` are suppressed when disabled. `InfoMes` delegates directly to `UsrMes` (identical behavior). Use `ErrorMes` for messages that must always be recorded; use `UsrMes`/`InfoMes` for messages that administrators may suppress. They accept fluid stringified inputs — commonly called with just one argument, or with an array in the second argument so it is stringified into the log entry, for example `UsrMes(sMessage, {aVar, sVar, nVar})`.
+`UsrMes`, `ErrorMes`, and `InfoMes` all write to the server log with identical formatting: `user / date / time / version / location / process / caption\nmessage`. The only functional difference is that `ErrorMes` writes even when user-message logging is turned off. `UsrMes` and `InfoMes` are suppressed when disabled. `InfoMes` delegates directly to `UsrMes` (identical behavior). Use `ErrorMes` for messages that must always be recorded; use `UsrMes`/`InfoMes` for messages that administrators may suppress. The first argument is the caption and the optional second argument is the message, for example `UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows")`. Each argument is logged through its string form, so build the text you want recorded rather than passing arrays or objects, whose string form is rarely readable.
 
 ### String Functions
 
@@ -1042,27 +1043,27 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `LLower` | `LLower(sSource)` |
 | `Left` | `Left(sSource, nLength)` |
 | `Right` | `Right(sSource, nLength)` |
-| `SubStr` | `SubStr(sSource, nStart, nLength)` |
+| `SubStr` | `SubStr(sSource, [nStartPos], [nLength])` |
 | `At` | `At(sSubString, sSource)` |
-| `LimsAt` | `LimsAt(sSubString, sSource, nOffset)` |
-| `Rat` | `Rat(sSubStr, sSource)` |
-| `StrSrch` | `StrSrch(sSubStr, sSource, nIndexOrOccurence, bFlag)` |
-| `StrTran` | `StrTran(sSource, sSearchFor, sReplaceWith)` |
+| `LimsAt` | `LimsAt(sSubString, sSource, [nOffset])` |
+| `Rat` | `Rat(sSubString, sSource)` |
+| `StrSrch` | `StrSrch(sSubString, sSource, [nIndexOrOccurrence], [bFlag])` |
+| `StrTran` | `StrTran(sSource, sSearchFor, [sReplaceWith])` |
 | `Replace` | `Replace(sSource, sSearchFor, sReplaceWith)` |
 | `Replicate` | `Replicate(sSource, nCount)` |
-| `Chr` | `Chr(nAsciiCode)` |
+| `Chr` | `Chr([nAsciiCode])` |
 | `Asc` | `Asc(sSource)` |
-| `Str` | `Str(nNumber, nLength, nDecimals)` |
+| `Str` | `Str(nNumber, [nLength], [nDecimals])` |
 | `LStr` | `LStr(vNumber)` |
-| `StrZero` | `StrZero(nNumber, nLength, nDecimals)` |
-| `Val` | `Val(sSNumber)` |
+| `StrZero` | `StrZero(nNumber, [nLength], [nDecimals])` |
+| `Val` | `Val(sNumber)` |
 | `LFromHex` | `LFromHex(sSource)` |
-| `LToHex` | `LToHex(sSource)` |
+| `LToHex` | `LToHex(vSource)` |
 | `LHex2Dec` | `LHex2Dec(sSource)` |
 | `LTransform` | `LTransform(vExpression, sPicture)` |
-| `LCase` | `LCase(bCondition, sTrueValue, sFalseValue)` |
+| `LCase` | `LCase(bCondition, sTrueValue, [sFalseValue])` |
 | `AddColDelimiters` | `AddColDelimiters(sDSN, aCols, sTable)` |
-| `AddNameDelimiters` | `AddNameDelimiters([sDSN[, sName]])` |
+| `AddNameDelimiters` | `AddNameDelimiters(sDSN, sName)` |
 
 ### Array Functions
 
@@ -1070,24 +1071,24 @@ Note: These are legacy functional body-capture constructs. They store content fo
 |---|---|
 | `AAdd` | `AAdd(aTarget, vElement)` |
 | `ALen` | `ALen(aTarget)` |
-| `AEval` | `AEval(aTarget, fnBlock[, nStart[, nCount]])` |
-| `AEvalA` | `AEvalA(aTarget, fnBlock[, nStart[, nCount]])` |
-| `AFill` | `AFill(aTarget, vValue[, nStart[, nCount]])` |
-| `AScan` | `AScan(aTarget, vValueOrBlock[, nStart[, nCount]])` |
-| `AScanExact` | `AScanExact(aTarget, vValueOrBlock[, nStart[, nCount]])` |
-| `ArrayCalc` | `ArrayCalc(aTarget[, sOperation[, vValue[, nStart[, nCount]]]])` |
-| `ArrayNew` | `ArrayNew([nDim1[, nDim2[, nDim3]]])` |
-| `ArrayToTVP` | `ArrayToTVP(vValues, vDataType, sConnectionName)` |
-| `BuildArray` | `BuildArray(sText[, bCrlfOk[, sDelimiter[, bUnique[, bTrimSpaces]]]])` |
-| `BuildArray2` | `BuildArray2(sText[, sLineDelimiter[, sColDelimiter[, bCrlfOk[, bTrimSpaces]]]])` |
-| `BuildString` | `BuildString(aTarget[, nStart[, nCount[, sDelimiter]]])` |
-| `BuildString2` | `BuildString2(aTarget[, sLineDelimiter[, sColDelimiter]])` |
+| `AEval` | `AEval(aTarget, fnBlock, [nStart], [nCount])` |
+| `AEvalA` | `AEvalA(aTarget, fnBlock, [nStart], [nCount])` |
+| `AFill` | `AFill(aTarget, vValue, [nStart], [nCount])` |
+| `AScan` | `AScan(aTarget, vValueOrBlock, [nStart], [nCount])` |
+| `AScanExact` | `AScanExact(aTarget, vValueOrBlock, [nStart], [nCount])` |
+| `ArrayCalc` | `ArrayCalc(aTarget, [sOperation], [vValue], [nStart], [nCount])` |
+| `ArrayNew` | `ArrayNew([nDim1], [nDim2], [nDim3])` |
+| `ArrayToTVP` | `ArrayToTVP(aValues, [sDataType], [sConnectionName])` |
+| `BuildArray` | `BuildArray(sText, [bCrlfOk], [sDelimiter], [bUnique], [bTrimSpaces])` |
+| `BuildArray2` | `BuildArray2(sText, [sLineDelimiter], [sColDelimiter], [bCrlfOk], [bTrimSpaces])` |
+| `BuildString` | `BuildString(aTarget, [nStart], [nCount], [sDelimiter])` |
+| `BuildString2` | `BuildString2(aTarget, [sLineDelimiter], [sColDelimiter])` |
 | `BuildStringForIn` | `BuildStringForIn(aTarget)` |
-| `CompArray` | `CompArray(aA1, aA2)` |
+| `CompArray` | `CompArray(a1, a2)` |
 | `DelArray` | `DelArray(aTarget, nIndex)` |
 | `ExtractCol` | `ExtractCol(aTarget, nColumn)` |
-| `PrepareArrayForIn` | `PrepareArrayForIn(vArray, vItemType)` |
-| `SortArray` | `SortArray(aTarget, vNumeric)` |
+| `PrepareArrayForIn` | `PrepareArrayForIn(aTarget, sItemType)` |
+| `SortArray` | `SortArray(aTarget, [vNumeric])` |
 
 ### Date & Time Functions
 
@@ -1106,30 +1107,30 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `Seconds` | `Seconds()` |
 | `DOW` | `DOW(dDate)` |
 | `DOY` | `DOY(dDate)` |
-| `JDay` | `JDay(vDate)` |
+| `JDay` | `JDay([dDate])` |
 | `CMonth` | `CMonth(dDate)` |
 | `NoOfDays` | `NoOfDays(dDate)` |
-| `DateAdd` | `DateAdd(vDate, vNumber, vDatepart)` |
-| `DateDiff` | `DateDiff(vStartDate, vEndDate, vDatepart)` |
-| `DateDiffEx` | `DateDiffEx(vStartDate, vEndDate)` |
+| `DateAdd` | `DateAdd(dDate, nNumber, [sDatepart])` |
+| `DateDiff` | `DateDiff(dStartDate, dEndDate, [sDatepart])` |
+| `DateDiffEx` | `DateDiffEx(dStartDate, dEndDate)` |
 | `DateFormat` | `DateFormat(sNewFormat)` |
-| `DateFromNumbers` | `DateFromNumbers([vYear[, vMonth[, vDay[, vHour[, vMinute[, vSecond[, vMillisecond[, vMakeInvariant]]]]]]]])` |
-| `DateFromString` | `DateFromString(vDateAsString[, vFormat[, vUseLocalCulture[, vMakeInvariant]]])` |
-| `DateToString` | `DateToString(vDate, sFormat)` |
+| `DateFromNumbers` | `DateFromNumbers([nYear], [nMonth], [nDay], [nHour], [nMinute], [nSecond], [nMillisecond], [bMakeInvariant])` |
+| `DateFromString` | `DateFromString(sDateAsString, [vFormat], [bUseLocalCulture], [bMakeInvariant])` |
+| `DateToString` | `DateToString(dDate, [sFormat])` |
 | `StringToDate` | `StringToDate(sDateString, sDateFormat)` |
 | `CToD` | `CToD(sDateString)` |
 | `DToC` | `DToC(dDate)` |
 | `DToS` | `DToS(dDate)` |
-| `LIMSDate` | `LIMSDate(vDate, sFormat)` |
+| `LIMSDate` | `LIMSDate(vDate, [sFormat])` |
 | `LimsGetDateFormat` | `LimsGetDateFormat()` |
-| `ValidateDate` | `ValidateDate(sStringDate, vUseDateFormat)` |
-| `IsInvariantDate` | `IsInvariantDate(vDateValue)` |
-| `MakeDateInvariant` | `MakeDateInvariant(vDateValue, vColumnsIndex)` |
-| `MakeDateLocal` | `MakeDateLocal(vDateValue, vColumnsIndex)` |
-| `ClientEndOfDay` | `ClientEndOfDay(vDate)` |
-| `ClientStartOfDay` | `ClientStartOfDay(vDate)` |
-| `ServerEndOfDay` | `ServerEndOfDay(vDate)` |
-| `ServerStartOfDay` | `ServerStartOfDay(vDate)` |
+| `ValidateDate` | `ValidateDate(sDateString, [bUseDateFormat])` |
+| `IsInvariantDate` | `IsInvariantDate(dDate)` |
+| `MakeDateInvariant` | `MakeDateInvariant(vDate, [vColumnsIndex])` |
+| `MakeDateLocal` | `MakeDateLocal(vDate, [vColumnsIndex])` |
+| `ClientEndOfDay` | `ClientEndOfDay(dDate)` |
+| `ClientStartOfDay` | `ClientStartOfDay(dDate)` |
+| `ServerEndOfDay` | `ServerEndOfDay(dDate)` |
+| `ServerStartOfDay` | `ServerStartOfDay(dDate)` |
 | `ServerTimeZone` | `ServerTimeZone()` |
 | `UserTimeZone` | `UserTimeZone()` |
 
@@ -1141,22 +1142,22 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `_AND` | `_AND(nValue1, nValue2)` |
 | `_OR` | `_OR(nValue1, nValue2)` |
 | `_XOR` | `_XOR(nValue1, nValue2)` |
-| `_NOT` | `_NOT(nValue)` |
-| `Integer` | `Integer(nDecimalValue)` |
+| `_NOT` | `_NOT(nOperand)` |
+| `Integer` | `Integer(nValue)` |
 | `Max` | `Max(vValue1, vValue2)` |
 | `Min` | `Min(vValue1, vValue2)` |
-| `Round` | `Round(vValue, vDigits[, sMidPointRounding])` |
+| `Round` | `Round(nValue, nDigits, [sMidPointRounding])` |
 | `RoundPoint5` | `RoundPoint5(nNumber)` |
-| `StdRound` | `StdRound(sStandard, nNrDigits, nNumber)` |
-| `SigFig` | `SigFig(sStandard, nNrDigits, nNumber)` |
+| `StdRound` | `StdRound(sStandard, nDigits, nNumber)` |
+| `SigFig` | `SigFig(sStandard, nDigits, nValue)` |
 | `Sqrt` | `Sqrt(nNumber)` |
 | `Rand` | `Rand([nSeed])` |
 | `MatFunc` | `MatFunc(sFunctionName, nNumber)` |
-| `Scient` | `Scient(nDoubleValue)` |
-| `ToScientific` | `ToScientific(vNumber, vDecimalPlaces)` |
-| `ToNumeric` | `ToNumeric(vSNumber, vAllowHex)` |
-| `IsNumeric` | `IsNumeric(vSNumber, vAllowHex)` |
-| `ValidateNumeric` | `ValidateNumeric(sSNumber)` |
+| `Scient` | `Scient(nValue)` |
+| `ToScientific` | `ToScientific(nNumber, [nDecimalPlaces])` |
+| `ToNumeric` | `ToNumeric(sNumber, [bAllowHex])` |
+| `IsNumeric` | `IsNumeric(sNumber, [bAllowHex])` |
+| `ValidateNumeric` | `ValidateNumeric(sNumber)` |
 | `IsHex` | `IsHex(sSource)` |
 | `IsGuid` | `IsGuid(sGuid)` |
 | `LimsXOr` | `LimsXOr(nVal1, nVal2)` |
@@ -1165,9 +1166,9 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 | Function | Signature |
 |---|---|
-| `LimsType` | `LimsType(vParam)` |
-| `LimsTypeEx` | `LimsTypeEx(vValue)` |
-| `IsDefined` | `IsDefined(vVarName)` |
+| `LimsType` | `LimsType(sParam)` |
+| `LimsTypeEx` | `LimsTypeEx(vSource)` |
+| `IsDefined` | `IsDefined(sVarName)` |
 | `Empty` | `Empty(vValue)` |
 | `Nothing` | `Nothing(vValue)` |
 
@@ -1175,72 +1176,72 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 | Function | Signature |
 |---|---|
-| `SQLExecute` | `SQLExecute(vCommandString[, vFriendlyName[, vRollbackExistingTransaction[, vNullAsBlank[, vInvariantDateColumns[, vReturnType[, sTableName[, vIncludeSchema[, vIncludeHeader]]]]]]]])` |
-| `RunSQL` | `RunSQL(sCommandString[, sFriendlyName[, vValues]])` |
-| `RunDS` | `RunDS(vDataSourceName[, vParameters[, vReturnType]])` |
-| `LSearch` | `LSearch(sCommandString, vDefaultValue[, sFriendlyName[, aArrayOfValues]])` |
-| `LSelect` | `LSelect(sCommandString[, aFieldList[, sFriendlyName[, aArrayOfValues[, bNullAsBlank[, aInvariantDateColumns]]]]])` |
-| `LSelect1` | `LSelect1(sCommandString[, sFriendlyName[, aArrayOfValues[, bNullAsBlank[, aInvariantDateColumns]]]])` |
-| `LSelectC` | `LSelectC(sCommandString[, aFieldList[, sFriendlyName[, aArrayOfValues[, bNullAsBlank[, aInvariantDateColumns]]]]])` |
-| `GetDataSet` | `GetDataSet(sCommandString[, aArrayOfValues[, bIncludeSchema[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]])` |
-| `GetDataSetEx` | `GetDataSetEx(sCommandString[, sFriendlyName[, aArrayOfValues[, bIncludeSchema[, bIncludeHeader[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]]]])` |
-| `GetDataSetFromArray` | `GetDataSetFromArray(aArrayOfValues, aArrayFields)` |
-| `GetDataSetFromArrayEx` | `GetDataSetFromArrayEx(aArrayOfValues[, aArrayFields[, sTableName[, bIncludeHeader[, bIncludeSchema]]]])` |
-| `GetDataSetWithSchemaFromSelect` | `GetDataSetWithSchemaFromSelect(sCommandString, sFriendlyName, aArrayOfValues, aArrayOfPrimaryKeys, aArrayOfUniqueConstraints)` |
-| `GetDataSetXMLFromArray` | `GetDataSetXMLFromArray(aArrayOfValues, aArrayFields, sTableName, bIncludeHeader, bIncludeSchema)` |
-| `GetDataSetXMLFromSelect` | `GetDataSetXMLFromSelect(sCommandString[, sFriendlyName[, bIncludeHeader[, aArrayOfValues[, bIncludeSchema[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]]]])` |
-| `GetSSLDataset` | `GetSSLDataset(sSql[, sDSN[, aParamNames[, aParamValues[, sTableName[, bNullAsBlank[, aInvariantDateColumns]]]]]])` |
-| `GetNETDataSet` | `GetNETDataSet(vCommandString, vFriendlyName, vArrayOfValues, sTableName, vReturnXml, vR1Compatible)` |
+| `SQLExecute` | `SQLExecute(sCommandString, [sConnectionName], [bRollbackExistingTransaction], [bNullAsBlank], [aInvariantDateCols], [vReturnType], [sTableName], [bIncludeSchema], [bIncludeHeader])` |
+| `RunSQL` | `RunSQL(sCommandString, [sConnectionName], [aValues])` |
+| `RunDS` | `RunDS(sDataSourceName, [aParameters], [vReturnType])` |
+| `LSearch` | `LSearch(sCommandString, [vDefaultValue], [sConnectionName], [aArrayOfValues])` |
+| `LSelect` | `LSelect(sCommandString, [aFieldList], [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])` |
+| `LSelect1` | `LSelect1(sCommandString, [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])` |
+| `LSelectC` | `LSelectC(sCommandString, [aFieldList], [sConnectionName], [aArrayOfValues], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetDataSet` | `GetDataSet(sCommandString, [aValues], [bIncludeSchema], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetDataSetEx` | `GetDataSetEx(sCommandString, [sConnectionName], [aValues], [bIncludeSchema], [bIncludeHeader], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetDataSetFromArray` | `GetDataSetFromArray(aArrayOfValues, [aArrayFields])` |
+| `GetDataSetFromArrayEx` | `GetDataSetFromArrayEx(aArrayOfValues, [aArrayFields], [sTableName], [bIncludeHeader], [bIncludeSchema])` |
+| `GetDataSetWithSchemaFromSelect` | `GetDataSetWithSchemaFromSelect(sCommandString, [sConnectionName], [aValues], [aPrimaryKeys], [aUniqueConstraints])` |
+| `GetDataSetXMLFromArray` | `GetDataSetXMLFromArray(aArrayOfValues, [aArrayFields], [sTableName], [bIncludeHeader], [bIncludeSchema])` |
+| `GetDataSetXMLFromSelect` | `GetDataSetXMLFromSelect(sCommandString, [sConnectionName], [bIncludeHeader], [aValues], [bIncludeSchema], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetSSLDataset` | `GetSSLDataset(sSql, [sDsn], [aParamNames], [aParamValues], [sTableName], [bNullAsBlank], [aInvariantDateCols])` |
+| `GetNETDataSet` | `GetNETDataSet(sCommandString, [sConnectionName], [aValues], [sTableName], [bReturnXml], [bR1Compatible])` |
 | `GetDSParameters` | `GetDSParameters(sDsName)` |
-| `BeginLimsTransaction` | `BeginLimsTransaction(vFriendlyName, vIsoLevel)` |
-| `EndLimsTransaction` | `EndLimsTransaction(sFriendlyName, bCommit)` |
-| `IsInTransaction` | `IsInTransaction(vConnection)` |
-| `GetTransactionsCount` | `GetTransactionsCount(vConnection)` |
+| `BeginLimsTransaction` | `BeginLimsTransaction([sConnectionName], [sIsoLevel])` |
+| `EndLimsTransaction` | `EndLimsTransaction([sConnectionName], [bCommit])` |
+| `IsInTransaction` | `IsInTransaction([vConnection])` |
+| `GetTransactionsCount` | `GetTransactionsCount()` / `GetTransactionsCount(sConnection)` |
 | `LimsRecordsAffected` | `LimsRecordsAffected()` |
 | `GetLastSQLError` | `GetLastSQLError()` |
 | `ReturnLastSQLError` | `ReturnLastSQLError()` |
-| `ShowSqlErrors` | `ShowSqlErrors(bFlag)` |
-| `IgnoreSqlErrors` | `IgnoreSqlErrors(bFlag)` |
-| `DetectSqlInjections` | `DetectSqlInjections(vOnOff, sConnectionName)` |
-| `SQLRemoveComments` | `SQLRemoveComments(vStatement)` |
-| `SetSqlTimeout` | `SetSqlTimeout(nTimeout, vConnection)` |
-| `LimsSqlConnect` | `LimsSqlConnect(sFriendlyName)` |
-| `LimsSqlDisconnect` | `LimsSqlDisconnect(sFriendlyName)` |
-| `IsDBConnected` | `IsDBConnected(vFriendlyName)` |
-| `GetConnectionByName` | `GetConnectionByName(sFriendlyName)` |
+| `ShowSqlErrors` | `ShowSqlErrors(bEnable)` |
+| `IgnoreSqlErrors` | `IgnoreSqlErrors(bEnable)` |
+| `DetectSqlInjections` | `DetectSqlInjections(bEnable, [sConnectionName])` |
+| `SQLRemoveComments` | `SQLRemoveComments(sStatement)` |
+| `SetSqlTimeout` | `SetSqlTimeout([nTimeout], [sConnection])` |
+| `LimsSqlConnect` | `LimsSqlConnect(sConnectionName)` |
+| `LimsSqlDisconnect` | `LimsSqlDisconnect(sConnectionName)` |
+| `IsDBConnected` | `IsDBConnected([sConnectionName])` |
+| `GetConnectionByName` | `GetConnectionByName([sConnectionName])` |
 | `GetConnectionStrings` | `GetConnectionStrings()` |
 | `GetDefaultConnection` | `GetDefaultConnection()` |
-| `SetDefaultConnection` | `SetDefaultConnection(vDefaultConnection)` |
-| `GetDBMSName` | `GetDBMSName(sFriendlyName)` |
-| `GetDBMSProviderName` | `GetDBMSProviderName(sFriendlyName)` |
-| `GetNoLock` | `GetNoLock(sConnectionName)` |
-| `GetRdbmsDelimiter` | `GetRdbmsDelimiter(sDSN, bOpen)` |
-| `GetTables` | `GetTables(sSql)` |
-| `IsTable` | `IsTable(sFriendlyName, sTableName)` |
-| `IsTableFld` | `IsTableFld(sFriendlyName, sTableName, sFieldName)` |
-| `TableFldLst` | `TableFldLst(sFriendlyName, sTableName)` |
-| `LimsSetCounter` | `LimsSetCounter(sTableName, sFieldName, sPrefix, aArrayOfFields, aArrayOfValues, vNull)` |
-| `RetrieveLong` | `RetrieveLong(sFriendlyName, sTableName, sColumnName, sWhereCondition, sOutputFilePath, bIsCompressed)` |
-| `UpdLong` | `UpdLong(sFriendlyName, sTableName, sColumnName, sWhereCondition, sInputFilePath, bIsCompressed)` |
-| `LimsOleConnect` | `LimsOleConnect(vV)` |
-| `EndLimsOleConnect` | `EndLimsOleConnect(vV)` |
-| `LimsExec` | `LimsExec(sApplication, bShow, sArguments)` |
-| `XmlExportSql` | `XmlExportSql(sSql, sFile[, sDb[, aSqlParams[, sTable]]])` |
+| `SetDefaultConnection` | `SetDefaultConnection(sDefaultConnection)` |
+| `GetDBMSName` | `GetDBMSName([sConnectionName])` |
+| `GetDBMSProviderName` | `GetDBMSProviderName([sConnectionName])` |
+| `GetNoLock` | `GetNoLock([sConnectionName])` |
+| `GetRdbmsDelimiter` | `GetRdbmsDelimiter([sDSN], bOpen)` |
+| `GetTables` | `GetTables([sSql])` |
+| `IsTable` | `IsTable(sConnectionName, sTableName)` |
+| `IsTableFld` | `IsTableFld(sConnectionName, sTableName, sFieldName)` |
+| `TableFldLst` | `TableFldLst([sConnectionName], sTableName)` |
+| `LimsSetCounter` | `LimsSetCounter(sTableName, sFieldName, [sPrefix], [aFields], [aValues], [nIncrementWith])` |
+| `RetrieveLong` | `RetrieveLong([sConnectionName], sTableName, sColumnName, sWhereCondition, sOutputFilePath, [bIsCompressed])` |
+| `UpdLong` | `UpdLong([sConnectionName], sTableName, sColumnName, sWhereCondition, sInputFilePath, [bIsCompressed])` |
+| `LimsOleConnect` | `LimsOleConnect(vProgId)` |
+| `EndLimsOleConnect` | `EndLimsOleConnect([oConnection])` |
+| `LimsExec` | `LimsExec(sApplication, [bShow], [sArguments])` |
+| `XmlExportSql` | `XmlExportSql(sSql, sFile, [sDb], [aSqlParams], [sTable])` |
 
 ### Object Functions
 
 | Function | Signature |
 |---|---|
-| `AddProperty` | `AddProperty(oO, vPropName)` |
-| `HasProperty` | `HasProperty(vO, sPropName)` |
-| `GetInternal` | `GetInternal(vO, sPropName)` |
-| `SetInternal` | `SetInternal(vO, sPropName, vPropValue)` |
-| `GetInternalC` | `GetInternalC(vO, sCollectionName, vArg1, vArg2, vArg3, vArg4, vArg5, vArg6)` |
-| `SetInternalC` | `SetInternalC(vO, sCollectionName, vValue, vArg1, vArg2, vArg3, vArg4, vArg5, vArg6)` |
+| `AddProperty` | `AddProperty(oTarget, vPropName)` |
+| `HasProperty` | `HasProperty(oTarget, sPropName)` |
+| `GetInternal` | `GetInternal(oTarget, sPropName)` |
+| `SetInternal` | `SetInternal(oTarget, sPropName, vPropValue)` |
+| `GetInternalC` | `GetInternalC(oTarget, sCollectionName, vArg1, [vArg2], [vArg3], [vArg4], [vArg5], [vArg6])` |
+| `SetInternalC` | `SetInternalC(oTarget, sCollectionName, vValue, vArg1, [vArg2], [vArg3], [vArg4], [vArg5], [vArg6])` |
 | `GetByName` | `GetByName(sName)` |
 | `SetByName` | `SetByName(sName, vValue)` |
-| `CreateLocal` | `CreateLocal(vVarName, vVarValue)` |
-| `CreatePublic` | `CreatePublic(vVarName, vVarValue)` |
+| `CreateLocal` | `CreateLocal(sVarName, [vVarValue])` |
+| `CreatePublic` | `CreatePublic(sVarName, [vVarValue])` |
 | `CreateORMSession` | `CreateORMSession()` |
 | `LKill` | `LKill(sVarName)` |
 | `MakeNETObject` | `MakeNETObject(vValue)` |
@@ -1251,21 +1252,21 @@ Note: These are legacy functional body-capture constructs. They store content fo
 |---|---|
 | `GetLastSSLError` | `GetLastSSLError()` |
 | `ClearLastSSLError` | `ClearLastSSLError()` |
-| `FormatErrorMessage` | `FormatErrorMessage(vV)` |
-| `FormatSqlErrorMessage` | `FormatSqlErrorMessage(vV)` |
+| `FormatErrorMessage` | `FormatErrorMessage(vError)` |
+| `FormatSqlErrorMessage` | `FormatSqlErrorMessage(vError)` |
 
 ### File & Directory Functions
 
 | Function | Signature |
 |---|---|
-| `ReadText` | `ReadText(sFileName[, nCharsToRead[, sEncoding]])` |
-| `WriteText` | `WriteText(sFileName, sCharsToWrite, sConfirmRequired[, sAppend[, sEncoding]])` |
+| `ReadText` | `ReadText(sFileName, [nCharsToRead], [sEncoding])` |
+| `WriteText` | `WriteText(sFileName, sCharsToWrite, [vConfirmRequired], [sAppend], [sEncoding])` |
 | `ReadBytesBase64` | `ReadBytesBase64(sFileName)` |
 | `WriteBytesBase64` | `WriteBytesBase64(sFileName, sBase64Data)` |
-| `Directory` | `Directory(sFilePattern, oAttributes)` |
-| `LDir` | `LDir(sFilePattern, oAttributes)` |
-| `FileSupport` | `FileSupport(vFileIdentifier, vRequest, vArg1, vArg2, sEncoding)` |
-| `CombineFiles` | `CombineFiles(aArFileNames, sSOutFile)` |
+| `Directory` | `Directory(sFilePattern, [sAttributes])` |
+| `LDir` | `LDir(sFilePattern, [sAttributes])` |
+| `FileSupport` | `FileSupport(vFileIdentifier, sRequest, [vArg1], [sArg2], [sEncoding])` |
+| `CombineFiles` | `CombineFiles(aFileNames, sOutFile)` |
 | `GetFileVersion` | `GetFileVersion(sFileName)` |
 | `GetPrinters` | `GetPrinters()` |
 | `ConvertReport` | `ConvertReport(sFile)` |
@@ -1278,18 +1279,18 @@ Note: These are legacy functional body-capture constructs. They store content fo
 
 | Function | Signature |
 |---|---|
-| `CheckOnFtp` | `CheckOnFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `CopyToFtp` | `CopyToFtp(sServerNameOrIP, sRemoteDirectory, aRemoteFileNames, sFileContents, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `DeleteDirOnFtp` | `DeleteDirOnFtp(sServerNameOrIP, sRemoteDirectory, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `DeleteFromFtp` | `DeleteFromFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `GetDirFromFtp` | `GetDirFromFtp(sServerNameOrIP, sRemoteDirectory, sFilePattern, sUserName, sPassword, nPort, sProxy, bUsePassive, bIsSFTP, sPrivateKeyFilePath)` |
-| `GetFromFtp` | `GetFromFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sLocalFileName, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `MakeDirOnFtp` | `MakeDirOnFtp(sServerNameOrIP, sRemoteDirectory, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `MoveInFtp` | `MoveInFtp(sServerNameOrIP, sRemoteDirectoryFrom, sRemoteDirectoryTo, sRemoteFileFrom, sRemoteFileTo, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `ReadFromFtp` | `ReadFromFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, nMaxSize, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `RenameOnFtp` | `RenameOnFtp(sServerNameOrIP, sRemoteDirectory, sFileNameOld, sFileNameNew, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
-| `SendToFtp` | `SendToFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sLocalFileName, sUserName, sPassword, nPort, sProxy, bUsePassive, bIsSFTP, sPrivateKeyFilePath)` |
-| `WriteToFtp` | `WriteToFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sFileContents, sUserName, sPassword, nPort, sProxy, bIsSFTP, sPrivateKeyFilePath)` |
+| `CheckOnFtp` | `CheckOnFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `CopyToFtp` | `CopyToFtp(sServerNameOrIP, sRemoteDirectory, aRemoteFileNames, [sFileContents], sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `DeleteDirOnFtp` | `DeleteDirOnFtp(sServerNameOrIP, sRemoteDirectory, [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `DeleteFromFtp` | `DeleteFromFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `GetDirFromFtp` | `GetDirFromFtp(sServerNameOrIP, [sRemoteDirectory], [sFilePattern], [sUserName], [sPassword], [nPort], [sProxy], [bUsePassive], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `GetFromFtp` | `GetFromFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, [sLocalFileName], [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `MakeDirOnFtp` | `MakeDirOnFtp(sServerNameOrIP, sRemoteDirectory, [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `MoveInFtp` | `MoveInFtp(sServerNameOrIP, [sRemoteDirectoryFrom], [sRemoteDirectoryTo], sRemoteFileFrom, [sRemoteFileTo], [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `ReadFromFtp` | `ReadFromFtp(sServerNameOrIP, [sRemoteDirectory], sRemoteFileName, [nMaxSize], [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `RenameOnFtp` | `RenameOnFtp(sServerNameOrIP, [sRemoteDirectory], sFileNameOld, sFileNameNew, [sUserName], [sPassword], [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `SendToFtp` | `SendToFtp(sServerNameOrIP, sRemoteDirectory, [sRemoteFileName], sLocalFileName, sUserName, sPassword, [nPort], [sProxy], [bUsePassive], [bIsSFTP], [sPrivateKeyFilePath])` |
+| `WriteToFtp` | `WriteToFtp(sServerNameOrIP, sRemoteDirectory, sRemoteFileName, sFileContents, sUserName, sPassword, [nPort], [sProxy], [bIsSFTP], [sPrivateKeyFilePath])` |
 
 ### Session & Application Functions
 
@@ -1302,82 +1303,82 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `GetSetting` | `GetSetting(sName)` |
 | `GetSettings` | `GetSettings(aNames)` |
 | `GetUserData` | `GetUserData()` |
-| `SetUserData` | `SetUserData(vUserName)` |
-| `GetInlineCode` | `GetInlineCode(sValue, aVariables)` |
-| `DeleteInlineCode` | `DeleteInlineCode(sValue)` |
-| `GetRegion` | `GetRegion(sValue, vSrc, vDst)` |
-| `GetRegionEx` | `GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` |
+| `SetUserData` | `SetUserData(sUserName)` |
+| `GetInlineCode` | `GetInlineCode(sValue, [aVariables])` |
+| `DeleteInlineCode` | `DeleteInlineCode(sName)` |
+| `GetRegion` | `GetRegion(sRegionName, [aSourceValues], [aDestinationValues])` |
+| `GetRegionEx` | `GetRegionEx(sRegionName, [aSourceValues], [aDestinationValues], [oLocalRegions])` |
 | `IsProductionModeOn` | `IsProductionModeOn()` |
 
-`GetRegionEx(vValue, vSrc, vDst, vLocalRegions)` extracts text between two marker strings in an arbitrary string. It is a pure string utility — it does not require a compiled `:REGION` block. Use it in preference to `GetRegion` when working with string content rather than named code regions.
+`GetRegionEx` looks up a named region exactly like `GetRegion`, but first checks the caller-supplied local region map `oLocalRegions` when one is passed. Region names match case-insensitively. When both `aSourceValues` and `aDestinationValues` are supplied (parallel arrays of equal length), each replacement pair is applied in order to the retrieved text. A name found in neither the local map nor the current region scope raises an error, so guard the call with `:TRY` when the region may be missing. Prefer `GetRegion` unless you need local overrides.
 
 ### Security & Authentication Functions
 
 | Function | Signature |
 |---|---|
-| `EncryptData` | `EncryptData(sInputData, sPassword, sAlgorithm, sKey, sRetType)` |
+| `EncryptData` | `EncryptData(sInputData, sPassword, [sAlgorithm], [sKey], [sRetType])` |
 | `DecryptData` | `DecryptData(sInputData, sPassword)` |
-| `HashData` | `HashData(sInputData, sAlgorithm)` |
-| `VerifySignature` | `VerifySignature(sCertificateString, vData, sSignature)` |
-| `MimeEncode` | `MimeEncode(vV)` |
-| `MimeDecode` | `MimeDecode(vV)` |
-| `ChkPassword` | `ChkPassword(sUserName, sPassword)` |
+| `HashData` | `HashData(sInputData, [sAlgorithm])` |
+| `VerifySignature` | `VerifySignature(sCertificateString, sData, sSignature)` |
+| `MimeEncode` | `MimeEncode(sValue)` |
+| `MimeDecode` | `MimeDecode(sValue)` |
+| `ChkPassword` | `ChkPassword([sUserName], [sPassword])` |
 | `ChkNewPassword` | `ChkNewPassword(sPassword, vPrevPasswords)` |
 | `SetUserPassword` | `SetUserPassword(sUserName, sPassword)` |
-| `LDAPAuth` | `LDAPAuth(sLdapHost, nLdapPort, sLdapUserName, sLdapPassword, sLdapDistinctiveName, bSecure)` |
-| `LDAPAuthEX` | `LDAPAuthEX(sLdapHost, nLdapPort, sBindUserName, sBindUserPassword, sSearchUserName, sSearchUserPassword, sLdapDistinguishedName, sLdapDistinguishedNameStartSearch, sSearchFilter, sAuthAttribName, bSecure)` |
-| `SearchLDAPUser` | `SearchLDAPUser(sLdapHost, nLdapPort, sBindUserName, sBindUserPassword, sSearchUserName, sLdapDistinguishedNameStartSearch, sSearchFilter, bSecure)` |
+| `LDAPAuth` | `LDAPAuth(sLdapHost, [nLdapPort], sLdapUserName, sLdapPassword, [sLdapDistinctiveName], [bSecure])` |
+| `LDAPAuthEX` | `LDAPAuthEX(sLdapHost, [nLdapPort], sBindUserName, sBindUserPassword, [sSearchUserName], sSearchUserPassword, [sLdapDistinguishedName], sLdapDistinguishedNameStartSearch, [sSearchFilter], [sAuthAttribName], [bSecure])` |
+| `SearchLDAPUser` | `SearchLDAPUser(sLdapHost, [nLdapPort], sBindUserName, [sBindUserPassword], [sSearchUserName], sLdapDistinguishedNameStartSearch, [sSearchFilter], [bSecure])` |
 
 ### Web, XML & JSON Functions
 
 | Function | Signature |
 |---|---|
-| `ToXml` | `ToXml(vO, sTypeName)` |
+| `ToXml` | `ToXml(vValue)` / `ToXml(vValue, sTypeName)` |
 | `FromXml` | `FromXml(sXml)` |
 | `ToJson` | `ToJson(vValue)` |
 | `FromJson` | `FromJson(vValue)` |
-| `HtmlEncode` | `HtmlEncode(vData)` |
-| `HtmlDecode` | `HtmlDecode(vData)` |
-| `UrlEncode` | `UrlEncode(vData)` |
-| `UrlDecode` | `UrlDecode(vData)` |
-| `XmlDomToUdObject` | `XmlDomToUdObject(vXml, vPreserveWhitespace)` |
+| `HtmlEncode` | `HtmlEncode(sData)` |
+| `HtmlDecode` | `HtmlDecode(sData)` |
+| `UrlEncode` | `UrlEncode(sData)` |
+| `UrlDecode` | `UrlDecode(sData)` |
+| `XmlDomToUdObject` | `XmlDomToUdObject(sXml, [bPreserveWhitespace])` |
 
 ### Platform Integration Functions
 
 | Function | Signature |
 |---|---|
-| `LimsNETConnect` | `LimsNETConnect(sAssembly, sTypeName, aArgs, vAsStatic)` |
-| `LimsNETCast` | `LimsNETCast(vValue, sNewType)` |
-| `LimsNETTypeOf` | `LimsNETTypeOf(vTypeName)` |
+| `LimsNETConnect` | `LimsNETConnect([sAssembly], [sTypeName], [aArgs], [bAsStatic])` |
+| `LimsNETCast` | `LimsNETCast(vVal, sNewType)` |
+| `LimsNETTypeOf` | `LimsNETTypeOf(sTypeName)` |
 
 ### Email & Messaging Functions
 
 | Function | Signature |
 |---|---|
-| `SendLimsEmail` | `SendLimsEmail(sSMTP, aRecipients, sFromWho, sSubject, sMessageBody, aAttachList, aCClist, aBCClist, sReplyTo, nNPort, sUName, sUPass, bIgnoreErrors, bUseCDO, nTimeout, bUseSSL, bIsBodyHTML, sEncryptedData)` |
-| `SendToOutbox` | `SendToOutbox(sSMTP, aRecipients, sFromWho, sSubject, sMessageBody, aAttachList, aCClist, aBCClist, sReplyTo, nNPort, sUName, sUPass, bIgnoreErrors, bUseSSL, bIsBodyHTML, sEncryptedData)` |
-| `SendFromOutbox` | `SendFromOutbox(bIgnoreErrors, bUseCDO, nTimeout)` |
-| `SendOutlookReminder` | `SendOutlookReminder(sSMTP, nStart, dEnd, sSubject, sSummary, sLocation, sOrganizerName, sOrganizerEmail, sAttendeeName, sAttendeeEmail, nNPort, sUName, sUPass, bIgnoreErrors, bUseSSL)` |
+| `SendLimsEmail` | `SendLimsEmail(sSMTP, aRecipients, sFromWho, sSubject, [sMessageBody], [aAttachList], [aCCList], [aBCCList], [sReplyTo], [nPort], [sUName], [sUPass], [bIgnoreErrors], [bUseCDO], [nTimeout], [bUseSSL], [bIsBodyHTML], [sEncryptedData])` |
+| `SendToOutbox` | `SendToOutbox(sSMTP, aRecipients, sFromWho, [sSubject], [sMessageBody], [aAttachList], [aCCList], [aBCCList], [sReplyTo], [nPort], [sUName], [sUPass], [bIgnoreErrors], [bUseSSL], [bIsBodyHTML], [sEncryptedData])` |
+| `SendFromOutbox` | `SendFromOutbox([bIgnoreErrors], [bUseCDO], [nTimeout])` |
+| `SendOutlookReminder` | `SendOutlookReminder(sSMTP, dStart, dEnd, sSubject, sSummary, sLocation, sOrganizerName, sOrganizerEmail, sAttendeeName, sAttendeeEmail, [nPort], [sUName], [sUPass], bIgnoreErrors, [bUseSSL])` |
 
 ### Compression & Zip Functions
 
 | Function | Signature |
 |---|---|
-| `Compress` | `Compress(sSource, vToFile)` |
-| `Decompress` | `Decompress(sSource, vFromFile)` |
-| `CreateZip` | `CreateZip(sZipFileName, sSourceDirectory, bRecurse, sFileFilter, sPassword)` |
-| `ExtractZip` | `ExtractZip(sZipFileName, sTargetDirectory, sFileFilter, sPassword)` |
+| `Compress` | `Compress(sSource, [bToFile])` |
+| `Decompress` | `Decompress(sSource, [bFromFile])` |
+| `CreateZip` | `CreateZip(sZipFileName, sSourceDirectory, [bRecurse], [sFileFilter], [sPassword])` |
+| `ExtractZip` | `ExtractZip(sZipFileName, sTargetDirectory, [sFileFilter], [sPassword])` |
 
 ### Batch & System Functions
 
 | Function | Signature |
 |---|---|
-| `SubmitToBatch` | `SubmitToBatch(sCode, vParameters, sMode, sUserName, sPassword)` |
+| `SubmitToBatch` | `SubmitToBatch(sCode, [vParameters], [sMode], [sUserName], [sPassword])` |
 | `SubmitToBatchEx` | `SubmitToBatchEx(sCode)` |
 | `InBatchProcess` | `InBatchProcess()` |
-| `DosSupport` | `DosSupport(sCmd, sPrm, vDbg)` |
-| `RunApp` | `RunApp(sApplication, sArguments)` |
-| `LWait` | `LWait(nSeconds)` |
+| `DosSupport` | `DosSupport(sCmd, [sPrm], [vDbg])` |
+| `RunApp` | `RunApp(sApplication, [sArguments])` |
+| `LWait` | `LWait([nSeconds])` |
 | `CreateGUID` | `CreateGUID()` |
 | `SetDecimalSeparator` | `SetDecimalSeparator(sDecimalSep)` |
 | `GetDecimalSep` | `GetDecimalSep()` |
@@ -1394,34 +1395,34 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `DocLoginToDocumentum` | `DocLoginToDocumentum(sDocBase, sUser, sPassword)` |
 | `DocCommandFailed` | `DocCommandFailed()` |
 | `DocGetErrorMessage` | `DocGetErrorMessage()` |
-| `DocCreateCabinet` | `DocCreateCabinet(sName, sCabinetType, sAcl)` |
-| `DocDeleteCabinet` | `DocDeleteCabinet(sCabinetId, bDeepDelete)` |
+| `DocCreateCabinet` | `DocCreateCabinet(sCabinetName, [sCabinetType], [sAcl])` |
+| `DocDeleteCabinet` | `DocDeleteCabinet(sCabinetId, [bDeepDelete])` |
 | `DocGetCabinets` | `DocGetCabinets()` |
-| `DocCreateFolder` | `DocCreateFolder(sPath, sName, sAcl)` |
-| `DocDeleteFolder` | `DocDeleteFolder(sFolderId, bDeepDelete)` |
+| `DocCreateFolder` | `DocCreateFolder(sParentPath, sFolderName, [sAcl])` |
+| `DocDeleteFolder` | `DocDeleteFolder(sFolderId, [bDeepDelete])` |
 | `DocGetFolders` | `DocGetFolders(sParentPath)` |
-| `DocImportDocument` | `DocImportDocument(sDocFile, sDestinationPath, sDocName, sDocType, sAppCode, sAclName)` |
-| `DocExportDocument` | `DocExportDocument(sDocumentId, sFormat)` |
-| `DocGetDocuments` | `DocGetDocuments(sFolderPath, sDocTypes)` |
+| `DocImportDocument` | `DocImportDocument(sDocFile, sDestinationPath, [sDocName], [sDocType], [sAppCode], [sAclName])` |
+| `DocExportDocument` | `DocExportDocument(sDocumentId, [sFormat])` |
+| `DocGetDocuments` | `DocGetDocuments(sFolderPath, [sDocTypes])` |
 | `DocExists` | `DocExists(sObjId)` |
-| `DocDelete` | `DocDelete(sObjId, bAllVersions)` |
-| `DocCheckinDocument` | `DocCheckinDocument(sFilePath, sDocumentId, sVersion, bReplaceContent, bMajorVersion)` |
+| `DocDelete` | `DocDelete(sObjId, [bAllVersions])` |
+| `DocCheckinDocument` | `DocCheckinDocument(sFilePath, sDocumentId, [sVersion], [bReplaceContent], [bMajorVersion])` |
 | `DocCheckoutDocument` | `DocCheckoutDocument(sDocumentId)` |
 | `DocCancelCheckout` | `DocCancelCheckout(sDocumentId)` |
-| `DocGetMetadata` | `DocGetMetadata(sObjId, oAttributes)` |
-| `DocSetMetadata` | `DocSetMetadata(sObjId, oAttributes)` |
+| `DocGetMetadata` | `DocGetMetadata(sObjId, [sAttributes])` |
+| `DocSetMetadata` | `DocSetMetadata(sObjId, aAttributes)` |
 | `DocGetTypeAttributes` | `DocGetTypeAttributes(sTypeName)` |
 | `DocGetTypeAttributesAsDataset` | `DocGetTypeAttributesAsDataset(sTypeName)` |
-| `DocCreateACL` | `DocCreateACL(sName, sDescription, aGroups)` |
-| `DocCreateUser` | `DocCreateUser(sLoginName, sPassword, sUserName, sEMail, sDefaultFolder, sGroupName, sPermissionSet, nUserPrivileges)` |
-| `DocUpdateUser` | `DocUpdateUser(sLoginName, sPassword, sUserName, sEMail, sDefaultFolder, sGroupName, sPermissionSet, nUserPrivileges)` |
-| `DocDeleteUser` | `DocDeleteUser(sName)` |
+| `DocCreateACL` | `DocCreateACL(sAclName, [sDescription], [aGroups])` |
+| `DocCreateUser` | `DocCreateUser(sLoginName, sPassword, [sUserName], [sEmail], [sDefaultFolder], [sGroupName], [sPermissionSet], [nUserPrivileges])` |
+| `DocUpdateUser` | `DocUpdateUser(sLoginName, sPassword, [sUserName], [sEMail], [sDefaultFolder], [sGroupName], [sPermissionSet], [nUserPrivileges])` |
+| `DocDeleteUser` | `DocDeleteUser(sLoginName)` |
 | `DocExistsUser` | `DocExistsUser(sLoginName, sUserName)` |
-| `DocCreateGroup` | `DocCreateGroup(sName, sDescription)` |
+| `DocCreateGroup` | `DocCreateGroup(sGroupName, [sDescription])` |
 | `DocAddUsersToGroup` | `DocAddUsersToGroup(sGroupName, aUsers)` |
 | `DocRemoveUsersFromGroup` | `DocRemoveUsersFromGroup(sGroupName, aUsers)` |
 | `DocRemoveAllUsersFromGroup` | `DocRemoveAllUsersFromGroup(sGroupName)` |
-| `DocStartWorkflow` | `DocStartWorkflow(sWorkflowId, aDocumentIds, sPackageName)` |
+| `DocStartWorkflow` | `DocStartWorkflow(sWorkflowId, [aDocumentIds], [sPackageName])` |
 | `DocStopWorkflow` | `DocStopWorkflow(sWorkflowId)` |
 | `DocPauseWorkflow` | `DocPauseWorkflow(sWorkflowId)` |
 | `DocResumeWorkflow` | `DocResumeWorkflow(sWorkflowId)` |
@@ -1429,13 +1430,13 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `DocGetTasks` | `DocGetTasks(sWorkflowId)` |
 | `DocGetTasksCount` | `DocGetTasksCount()` |
 | `DocAcquireWorkitem` | `DocAcquireWorkitem(sWorkitemId)` |
-| `DocCompleteWorkitem` | `DocCompleteWorkitem(sWorkitemId, sSignOffUser, sSignOffPass, sSignOffReason)` |
-| `DocDelegateWorkitem` | `DocDelegateWorkitem(sWorkitemId, sUser)` |
-| `DocRepeatWorkitem` | `DocRepeatWorkitem(sWorkitemId, aUsers, sSignOffUser, sSignOffPass, sSignOffReason)` |
+| `DocCompleteWorkitem` | `DocCompleteWorkitem(sWorkitemId, [sSignOffUser], [sSignOffPass], [sSignOffReason])` |
+| `DocDelegateWorkitem` | `DocDelegateWorkitem(sWorkitemId, sTargetUser)` |
+| `DocRepeatWorkitem` | `DocRepeatWorkitem(sWorkitemId, aUsers, [sSignOffUser], [sSignOffPass], [sSignOffReason])` |
 | `DocGetWorkitemProperties` | `DocGetWorkitemProperties(sWorkitemId)` |
-| `DocSearchFullText` | `DocSearchFullText(sTextToSearch, sStartLocation, nResultSetSize)` |
-| `DocSearchAsDataset` | `DocSearchAsDataset(sContains, sStartLocation, sObjectType, sWhere, bAllVersions, nResultSetSize)` |
-| `DocSearchUsingDql` | `DocSearchUsingDql(sDql, nResultSetSize)` |
+| `DocSearchFullText` | `DocSearchFullText(sTextToSearch, [sStartLocation], [nResultSetSize])` |
+| `DocSearchAsDataset` | `DocSearchAsDataset([sContains], [sStartLocation], [sObjectType], [sWhere], [bAllVersions], [nResultSetSize])` |
+| `DocSearchUsingDql` | `DocSearchUsingDql(sDql, [nResultSetSize])` |
 
 ---
 
@@ -1477,7 +1478,7 @@ developer-accessible classes that are only reached indirectly as return values
 | `SSLExpando` | `CreateUdObject()` (`SSLExpando{}` does not compile) | Dynamic object |
 | `SSLIntDictionary` | `SSLIntDictionary{}` / `SSLIntDictionary{nLength}` | Numeric-keyed dictionary |
 | `SSLRegex` | `SSLRegex{sPattern}` / `SSLRegex{sPattern, bCaseSensitive}` | Regular expressions |
-| `SSLStringDictionary` | `SSLStringDictionary{}` / `SSLStringDictionary{vCaseSensitive, nLength}` | String-keyed dictionary |
+| `SSLStringDictionary` | `SSLStringDictionary{}` / `SSLStringDictionary{bCaseSensitive, nLength}` | String-keyed dictionary |
 | `TablesImport` | `TablesImport{sFolder}` | Table import utility |
 | `WebServices` | `WebServices{}` | HTTP/SOAP client factory |
 
@@ -1552,7 +1553,7 @@ oRegex := SSLRegex{sPattern, bCaseSensitive};
 oRegex:CaseSensitive → Boolean
 
 /* Methods;
-bMatch := oRegex:IsMatch(sInput, nStartAt);  → Boolean
+bMatch := oRegex:IsMatch(sInput, [nStartAt]);  → Boolean   /* nStartAt is 1-based;
 ```
 
 ### SSLStringDictionary
@@ -1562,13 +1563,19 @@ String-keyed dictionary with optional case sensitivity.
 ```ssl
 /* Constructors;
 oDict := SSLStringDictionary{};
-oDict := SSLStringDictionary{vCaseSensitive, nLength};
+oDict := SSLStringDictionary{bCaseSensitive, nLength};
+
+/* Properties (read-only);
+oDict:Count  → Number
+oDict:Keys   → Array
+oDict:Values → Array
 
 /* Methods;
-oDict:AddValue(sKey, vValue)        → Any
-oDict:GetValue(sKey, vDefault)    → Any
+oDict:Clear()                       → Boolean
+oDict:AddValue(sKey, vValue)        → Boolean
+oDict:GetValue(sKey, [vDefault])  → Any
 oDict:Contains(sKey)              → Boolean
-oDict:Remove(sKey)                → Any
+oDict:Remove(sKey)                → Boolean
 oDict:TryGetValue(sKey)           → Object   /* {Exists, Value};
 ```
 
@@ -1579,13 +1586,19 @@ Numeric-keyed dictionary.
 ```ssl
 /* Constructors;
 oDict := SSLIntDictionary{};
-oDict := SSLIntDictionary{nInitialLength};
+oDict := SSLIntDictionary{nLength};
+
+/* Properties (read-only);
+oDict:Count  → Number
+oDict:Keys   → Array
+oDict:Values → Array
 
 /* Methods;
-oDict:AddValue(nKey, vValue)        → Any
-oDict:GetValue(nKey, vDefault)    → Any
+oDict:Clear()                       → Boolean
+oDict:AddValue(nKey, vValue)        → Boolean
+oDict:GetValue(nKey, [vDefault])  → Any
 oDict:Contains(nKey)              → Boolean
-oDict:Remove(nKey)                → Any
+oDict:Remove(nKey)                → Boolean
 oDict:TryGetValue(nKey)           → Object   /* {Exists, Value};
 ```
 
@@ -1603,12 +1616,12 @@ oDict:Values → Array
 oDict:Count  → Number (read-only)
 
 /* Methods;
-oDict:AddValue(vKey, vValue)
-oDict:Clear()
+oDict:AddValue(vKey, vValue)      → Boolean
+oDict:Clear()                     → Boolean
 oDict:Contains(vKey)              → Boolean
-oDict:GetValue(vKey, vDefault)    → Any
-oDict:InvokeMethod(sMethodName, aArgs) → Any   /* call a member by name;
-oDict:Remove(vKey)                → Any
+oDict:GetValue(vKey, [vDefault])  → Any
+oDict:InvokeMethod(sMethodName, aArgs) → Any   /* Invoke() raises, so call by name with InvokeMethod;
+oDict:Remove(vKey)                → Boolean
 oDict:TryGetValue(vKey)           → Object
 ```
 
@@ -1661,26 +1674,27 @@ oDataset:ToDataSet()  → Object
 
 ### SSLCodeProvider
 
-Code compilation utility.
+Compiles published server scripts and data sources and returns the compilation errors found. Every compile method returns an errors object; inspect it before treating a compile as clean. Single-item methods take a GUID or a full `category.name`; the category methods take category **GUIDs**, not category names.
 
 ```ssl
 /* Constructor;
 oProvider := SSLCodeProvider{};
 
-/* Methods;
-oProvider:CompileScript(sScript)
+/* Methods (each returns an errors object);
 oProvider:CompileAll()
-oProvider:CompileServerScript(sScript)
 oProvider:CompileAllServerScripts()
-oProvider:CompileDataSource(sDataSource)
 oProvider:CompileAllDataSources()
-oProvider:CompileServerScripts(aScripts)
-oProvider:CompileDataSources(aDataSources)
-oProvider:CompileServerScriptCategory(sCategory)
-oProvider:CompileServerScriptCategories(aCategories)
-oProvider:CompileDataSourceCategory(sCategory)
-oProvider:CompileDataSourceCategories(aCategories)
+oProvider:CompileServerScript(sScriptId)
+oProvider:CompileServerScripts(aScriptsIds)
+oProvider:CompileDataSource(sScriptId)
+oProvider:CompileDataSources(aScriptsIds)
+oProvider:CompileServerScriptCategory(sCategoryId)
+oProvider:CompileServerScriptCategories(aCategoriesIds)
+oProvider:CompileDataSourceCategory(sCategoryId)
+oProvider:CompileDataSourceCategories(aCategoriesIds)
 ```
+
+`CompileScript(sCode)` exists but raises `The method or operation is not implemented.` for any non-null input, so it cannot validate ad hoc code text.
 
 ### PdfSupport
 
@@ -1864,10 +1878,10 @@ bOk := oUploader:UploadNewRevisionForWorkflowDocument(sMessage) → Boolean
 
 These classes are available but less commonly used:
 
-- **`BatchSupport`** — Properties (read-only): `ActiveBatchesNumber`, `PhysicalMemory`, `VirtualMemory`. Methods: `Dispose()`, `IsRunning()`
-- **`EnterpriseExporter`** — Properties: `AbortOnError`, `LogFile`, `IsEnterpriseOnly`, `FromSQL`, `NullAsBlank`, `InvariantDateColumns`. Method: `DoExport()`
-- **`HtmlConverter`** — Properties: `OptionsXml` (write-only), `SimplifiedLog` (read-only), `Log` (read-only). Methods: `ClearLog()`, `Convert()`
-- **`PatcherSupport`** — Properties: `LogFilePath`, `ResultTable` (read-only), `InternalErrors` (read-only), `DiffDataTable` (read-only). Methods: `Compare()`, `ConnectToExternalSystem()`, `GetDataFromWholeDictionary()`, `GetAllFormsFromDictionary_Test()`
-- **`RegSetup`** — Methods: `RegCloseKey()`, `RegOpenKey()`, `RegQueryValue()`
-- **`TablesImport`** — Properties: `NullAsBlank`, `IncludeORIGREC`, `ErrMsg` (read-only). Method: `GetTable()`
+- **`BatchSupport`** — Properties (read-only): `ActiveBatchesNumber`, `PhysicalMemory`, `VirtualMemory`. Methods: `Dispose()`, `IsRunning(vBatchId)` → Boolean
+- **`EnterpriseExporter`** — Properties: `AbortOnError`, `LogFile`, `ErrorMsg`, `IsEnterpriseOnly` (write-only), `FromSQL` (write-only), `NullAsBlank` (write-only), `InvariantDateColumns` (write-only). Method: `DoExport()` → Boolean
+- **`HtmlConverter`** — Properties: `OptionsXml` (write-only), `SimplifiedLog` (read-only), `Log` (read-only). Methods: `ClearLog()`, `Convert(sXml, sXfdGuid, sHtmlGuid)` → String
+- **`PatcherSupport`** — Properties: `LogFilePath`, `ResultTable` (read-only), `InternalErrors` (read-only), `DiffDataTable` (read-only). Methods: `Compare(oDestinationDataTable)`, `ConnectToExternalSystem(sUrl, sUser, sPassword)`, `GetDataFromWholeDictionary()`, `GetAllFormsFromDictionary_Test()`
+- **`RegSetup`** — Methods: `RegOpenKey(sKey, nAccess)` → Boolean, `RegQueryValue(sSubKey, nType)`, `RegCloseKey()` → Boolean
+- **`TablesImport`** — Properties: `NullAsBlank`, `IncludeORIGREC`, `ErrMsg` (read-only). Method: `GetTable(sName)` → `CDataTable` (or `NIL` on failure)
 - **`WebServices`** — Methods: `CreateHttpClient()`, `CreateSoapClient()`
