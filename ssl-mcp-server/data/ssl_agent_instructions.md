@@ -11,7 +11,7 @@ Authoritative rules describe documented language behavior; style recommendations
 2. **Semicolons are mandatory** for almost every statement, including comments.
 3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
 4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
-5. **Custom procedures cannot be called directly.** Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
+5. **Custom procedures cannot be called directly.** A bare `Name(...)` call always means a built-in function, in scripts and classes alike; any other name stops the script from compiling with `Invalid built-in function: Name`. Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
 8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
@@ -48,14 +48,17 @@ Authoritative rules describe documented language behavior; style recommendations
     * Syntax: `:DECLARE varName1, varName2;`
     * **Default Value:** All declared variables start as empty string `""`.
     * **Dynamic Typing:** Variables are dynamically typed—their type changes when assigned a new value.
+    * **No argument type checks before run time:** Whether a built-in function rejects a wrong-typed argument depends on the installation's `CompilerCheckParamType` setting. Where it is off, a string passed for a number reads as `0` and a number passed for a string reads as `""`, so the call quietly returns a wrong answer, and a non-array passed where an array is expected can crash the server process. Pass the documented types and do not rely on the setting.
     * **Re-declaration:** Re-declaring an existing variable with `:DECLARE` is silently ignored — no error is thrown and the existing value is preserved.
     * *Constraint:* `:DEFAULT` cannot be used with `:DECLARE`.
 
 * **Variable Lookup Order:** When a variable is referenced, lookup proceeds as **local scope** (current procedure) → **caller scopes** (up the call stack) → **public variables** (`:PUBLIC`). Accessing a caller's variable works but generates a warning — always declare variables locally with `:DECLARE`.
 
+* **Predefined globals are installation variables, not language constants.** Names such as `CRLF`, `MYUSERNAME`, `UserLang` and `STARLIMSDEPT` are `:PUBLIC` variables that a base installation declares at startup. `CR`, `LF`, `TAB`, `sTab`, `sSQ`, `sDQ`, `MYUSERID`, `MYLANGID`, `MYDEPT` and `MYSITE` are **not** declared on a base installation, and reading one raises `Variable [<name>] is undefined!`. Use `Chr(13)`, `Chr(10)` and `Chr(9)` (or `CRLF` for a line break), `Chr(34)` for a double quote, `MYUSERNAME` for the user, `UserLang` for the language and `STARLIMSDEPT` for the department. Test with `IsDefined` before reading a global your installation may not declare.
+
 * **Parameters & Defaults:**
     * **Placement:** `:PARAMETERS` must appear before any other statements in a script or procedure body. Inside a procedure, `:PARAMETERS` must immediately follow the `:PROCEDURE` line.
-    * **Defaults:** `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`).
+    * **Defaults:** `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). A `:DEFAULT` applies when the argument is omitted, passed as `NIL`, or left as an empty position (`{a,,c}`), so no extra `NIL` check is needed after it.
     * **`:INCLUDE`** is resolved as a textual paste before the rest of the file is read; it should appear early. **`:DECLARE`** and **`:PUBLIC`** are regular statements and can appear anywhere.
     * **Recommended conventional order:** `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
     * Syntax:
@@ -96,7 +99,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 * **Labels & Branching (Legacy — prefer `:IF`/`:WHILE`/`:FOR` in new code):**
     * `:LABEL` and `Branch()` are legacy flow control. Prefer structured constructs in new and refactored code.
-    * The `Branch` target string must include the word `LABEL`: `:LABEL SKIP;` is targeted as `Branch("LABEL SKIP")` and `:LABELSKIP;` as `Branch("LABELSKIP")`. Omitting `LABEL` from the Branch target string causes a runtime error.
+    * The `Branch` target string must include the word `LABEL`: `:LABEL SKIP;` is targeted as `Branch("LABEL SKIP")` and `:LABELSKIP;` as `Branch("LABELSKIP")`. The match is exact: a target without the word `LABEL`, or with different spacing, matches no label. Labels are visible only within their own procedure or script body. A lowercase `:label` is not a label.
     * Example:
       ```ssl
       :IF ! Empty(bSomeVar);
@@ -140,12 +143,13 @@ Authoritative rules describe documented language behavior; style recommendations
 ### Functions & Procedures
 
 * **Definition:** Starts with `:PROCEDURE Name;` and ends with `:ENDPROC;`. More than 20 parameters on a procedure or method triggers a performance warning; prefer grouping related state into arrays/objects.
-* **Return Values:** Use `:RETURN value;` to return a value from a procedure. Without `:RETURN`, procedures return no value / an empty result.
+* **Return Values:** Use `:RETURN value;` to return a value from a procedure. A procedure, method or script that ends without `:RETURN value;` (no `:RETURN`, or a bare `:RETURN;`) returns the empty string `""`, not `NIL`: `Empty(result)` is `.T.` but `result == NIL` is `.F.`. A `Constructor` returns nothing.
 * **Calling Convention (CRITICAL):**
     * **Custom Procedures:** You **cannot** call custom procedures directly (e.g., `MyProc()`).
     * **Same File:** Use `DoProc("ProcedureName", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Entry Point:** Use `ExecFunction("Category.Script", {arg1, arg2});` - second parameter is an array of arguments.
     * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
+    * **One-segment `ExecFunction("Name")`** looks for a script in the default categories, not a procedure in the current script. Use `DoProc` for same-file procedures.
     * **First segment is never ambiguous:** Applications and server-script categories share a single namespace — a category cannot be created with the name of an existing application. The first segment of a dotted path therefore always resolves to exactly one container; there is no collision or precedence rule to consider.
     * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
       `DoProc("MyProc", {param1,,param3,,param5});` is valid, but
@@ -175,7 +179,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * `:CLASS [ClassName];` defines a class and continues until end of file (no end keyword). The class name is syntactically optional, but new and refactored code should always provide an explicit class name.
     * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
-    * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value.
+    * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value. When a class inherits, the parent's parameterless `Constructor` runs automatically first; a parent `Constructor` that takes parameters does not run unless the derived `Constructor` calls `Base:Constructor(args)`.
     * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. An unqualified `DoProc("ProcName", ...)` is rejected inside class methods; fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
     * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
     * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
@@ -287,7 +291,7 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 ### Primitive Types & Literals
 
 * **Boolean:** `.T.` (True) and `.F.` (False).
-* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` function to check if a value is null, empty string, zero, or `.F.`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. Do not call instance methods on a `NIL` value (raises an error).
+* **Null/Empty:** `NIL` represents null/empty values. Use `Empty(value)` to check for an empty value: it returns `.T.` for `NIL`, an empty or whitespace-only string (spaces, tabs, line breaks), `0`, `.F.`, an empty date and an empty array. `Nothing(value)` is broader: it is also `.T.` for any value whose string form is `"0"`, such as the string `"0"`. `Empty()` is NIL-safe — it returns `.T.` for `NIL` values. Do not call instance methods on a `NIL` value (raises an error).
 * **Strings:**
     * Double quotes: `"Text"`
     * Single quotes: `'Text'`
@@ -319,6 +323,9 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 **Key Behaviors:**
 - **Equality (`=`)**: Returns `.T.` if the right operand is empty string OR if the left operand starts with the right operand
 - **Exact Equality (`==`)**: Returns `.T.` only if strings are exactly equal
+- **Not-equals (`!=`, `<>`, `#`)**: Exact comparison, not the prefix match of `=`
+- **Ordering (`<`, `>`, `<=`, `>=`)**: Strings order alphabetically; case only breaks ties, lowercase first (`"a" < "B"` and `"a" < "A"` are both `.T.`). `Max` and `Min` compare strings the same way.
+- **Case sensitivity of replacement:** `Replace` matches case-insensitively; `StrTran` matches case-sensitively.
 
 ### Number Details
 
@@ -355,6 +362,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 
 **Key Behaviors:**
 - `.AND.` and `.OR.` use **short-circuit evaluation**: if the first operand determines the result, the second operand is not evaluated (e.g., `.F. .AND. SomeFunction()` will not call `SomeFunction()`)
+- **No truthy/falsy coercion.** Conditions in `:WHILE` and `:CASE`, and the left operand of `.AND.`/`.OR.`, must be logical values; other types raise an error. The right operand is not converted: `.F. .OR. "x"` returns `"x"`, so keep both operands boolean.
 - `Empty()` returns `.T.` if value is `.F.` (false equals empty)
 - `ToString()` returns `.T.` or `.F.`
 - `ToJson()` returns `"true"` or `"false"`
@@ -367,7 +375,7 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 | Subtraction | `-` | Subtracts days from date, OR calculates difference between two dates (returns Number days) |
 
 **Key Behaviors:**
-- `Empty()` returns `.T.` if date equals `DateTime.MinValue`
+- `Empty()` returns `.T.` for an empty date
 - `ToString()` returns date in `MM/dd/yyyy` format, or `"  /  /    "` if empty
 - `ToJson()` returns ISO 8601 formatted date string based on DateTimeKind
 
@@ -390,7 +398,7 @@ SSL's built-in scalar and array types are backed by underlying .NET values, and 
 * **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=` — prefer `!=` over `<>` or `#` for not-equals
 * **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`)
 * **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `**` (power), `%` (modulo)
-* **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value.
+* **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value. The target can be a variable, an array element (`aCounts[1]++`) or an object property (`oStats:nHits++`) holding a number or a date (a date steps by one day).
 * **String:** `+` (concatenation), `-` (trim+concat), `$` (contains)
 * **Bitwise (function call syntax):** `_AND(a, b)`, `_OR(a, b)`, `_XOR(a, b)`, `_NOT(a)`, `<<`, `>>`
 
@@ -807,7 +815,7 @@ sFormatted := Upper(sClean);        /* Convert to uppercase;
 nLength := Len(sInput);             /* Get string length;
 sSubstring := Left(sInput, 5);      /* Get leftmost characters;
 nPosition := At("STAR", sInput);    /* Find substring position;
-sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace text;
+sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 ```
 
 ---
@@ -933,8 +941,8 @@ Note: These are legacy functional body-capture constructs. They store content fo
 - `%` - Modulo
 
 **Unary Operators (2):**
-- `++` - Increment (numeric only)
-- `--` - Decrement (numeric only)
+- `++` - Increment: adds 1 to a number or one day to a date; works on a variable, an array element or an object property
+- `--` - Decrement: subtracts 1 from a number or one day from a date; works on a variable, an array element or an object property
 
 **String Operators (1):**
 - `$` - Contains (returns `.T.` if left string is found in right string)
@@ -963,7 +971,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 - `Constructor` - Reserved constructor declaration name inside `:CLASS` (`:PROCEDURE Constructor; ... :ENDPROC`); not a normal method identifier or standalone value
 
 **Other special forms:**
-- Code Block - Lambda literal with syntax `{` `|param1, param2|` `expression` `}` — creates an SSLFunction object; at least one bound variable is required and the body is a single expression, not multiple statements
+- Code Block - Lambda literal with syntax `{` `|param1, param2|` `expression` `}` — creates a code block value; at least one bound variable is required and the body is a single expression, not multiple statements
 
 ---
 
@@ -994,7 +1002,9 @@ Note: These are legacy functional body-capture constructs. They store content fo
 | `RaiseError` | `RaiseError(sMessage[, sLocation[, nErrorCode[, oInnerException]]])` |
 | `PrmCount` | `PrmCount()` |
 
-`UsrMes`, `ErrorMes`, and `InfoMes` all write to the server log via `UserLog.WriteInfo` with identical formatting: `user / date / time / version / location / process / caption\nmessage`. The only functional difference is the `forceWrite` flag: `ErrorMes` passes `forceWrite=true`, so it writes even when `UsrMes` logging is globally disabled (`GlobalSettings.UsrmesDisabled`). `UsrMes` and `InfoMes` are suppressed when disabled. `InfoMes` delegates directly to `UsrMes` (identical behavior). Use `ErrorMes` for messages that must always be recorded; use `UsrMes`/`InfoMes` for messages that administrators may suppress. They accept fluid stringified inputs — commonly called with just one argument, or with an array in the second argument so it is stringified into the log entry, for example `UsrMes(sMessage, {aVar, sVar, nVar})`.
+`PrmCount()` works only in a script's top-level code. Inside a `:PROCEDURE` (including one reached with `DoProc`) and in `ExecUdf` code it raises an error; there, give optional parameters `:DEFAULT` values instead.
+
+`UsrMes`, `ErrorMes`, and `InfoMes` all write to the server log with identical formatting: `user / date / time / version / location / process / caption\nmessage`. The only functional difference is that `ErrorMes` writes even when user-message logging is turned off. `UsrMes` and `InfoMes` are suppressed when disabled. `InfoMes` delegates directly to `UsrMes` (identical behavior). Use `ErrorMes` for messages that must always be recorded; use `UsrMes`/`InfoMes` for messages that administrators may suppress. They accept fluid stringified inputs — commonly called with just one argument, or with an array in the second argument so it is stringified into the log entry, for example `UsrMes(sMessage, {aVar, sVar, nVar})`.
 
 ### String Functions
 

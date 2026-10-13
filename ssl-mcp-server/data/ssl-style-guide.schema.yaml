@@ -312,8 +312,8 @@ ssl_style_guide:
       - '<>'   # not equals (equivalent to !=)
       - '#'    # not equals (equivalent to !=)
       relational:                  # precedence: above equality/containment
-      - '<'    # less than
-      - '>'    # greater than
+      - '<'    # less than (strings: alphabetical, ties lowercase-first)
+      - '>'    # greater than (strings: alphabetical, ties lowercase-first)
       - '<='   # less than or equal
       - '>='   # greater than or equal
       containment:                 # precedence: same level as equality (below relational)
@@ -1114,7 +1114,7 @@ ssl_style_guide:
       constructor: ":PROCEDURE Constructor; ... :ENDPROC"
       constructor_note: reserved constructor declaration name inside :CLASS; treat it specially only in that declaration position, not as a standalone constructor literal
     date_functions:
-      - CToD("2026-03-05")
+      - CToD("3/5/2026")   # parsed with the session date format (M/d/yyyy by default)
       - DateFromNumbers(2026, 3, 5)
       - Today()
       - Now()
@@ -1151,7 +1151,7 @@ ssl_style_guide:
         notes:
           - Two literal values .T. and .F.
           - Strict equality only — comparing to non-boolean types raises a runtime error
-          - .AND. and .OR. short-circuit
+          - .AND. and .OR. short-circuit; the left operand must be boolean; .OR. with a .F. left operand returns the right operand unchanged, so keep both operands boolean
           - Empty() on a boolean acts as logical negation, not an "uninitialized" check
       codeblock:
         summary: First-class callable expression value.
@@ -1604,6 +1604,7 @@ ssl_style_guide:
     label_behavior:
       level: authoritative
       token_text: "The token text includes the word LABEL — :LABEL SKIP; produces \"LABEL SKIP\". Branch() targets must include \"LABEL\" in the string."
+      scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
     parameter_skipping_style:
       level: style_only
       rule: "Skipped-argument commas must be adjacent with no intervening spaces: {param1,,param3} not {param1, , param3}."
