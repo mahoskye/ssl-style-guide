@@ -83,7 +83,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Loop Control:** `:EXITFOR;`, `:EXITWHILE;`, `:LOOP;` (continues to next iteration).
 
 * **Case Blocks (Strict Structure):**
-    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is rejected). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run.
+    * **Authoritative Behavior:** `:BEGINCASE` is not a value-matching switch and requires at least one `:CASE` block (empty `:BEGINCASE;` `:ENDCASE;` is rejected). Each `:CASE` evaluates its own boolean expression. Without `:EXITCASE;`, later `:CASE` expressions are still evaluated and additional matching bodies may execute. `:OTHERWISE` is still skipped once any earlier `:CASE` body has run. `:EXITCASE;` must be the last statement of its `:CASE`/`:OTHERWISE` branch, directly in the branch body; a statement after it, or an `:EXITCASE` nested inside an `:IF`, is a compile error.
     * **Style Guidance:** Include `:OTHERWISE` for default handling (advisory — not required by the language). End each `:CASE` and `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
     * Syntax:
       ```ssl
@@ -184,7 +184,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
     * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
-    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
+    * **Access modifiers (scripts only):** Place `/*@private;` or `/*@protected;` on the line immediately before `:PROCEDURE` to restrict access. Both block calls from other scripts; procedures in the same script can still call it with `DoProc`. Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments: write them exactly as shown (lowercase, no space between `/*` and `@`), and do not put a blank line between the modifier and `:PROCEDURE`, which breaks the association. **These modifiers have no effect on class methods** (class methods are always Public|Virtual).
       ```ssl
       /*@private;
       :PROCEDURE InternalHelper;
@@ -265,6 +265,7 @@ Authoritative rules describe documented language behavior; style recommendations
   /* Set x := 0; then increment;
   ```
   SSL reads this as the complete comment `/* Set x := 0;` followed by `then increment;`, which it then tries to run as a statement (and rejects). Avoid semicolons in comment text, or restructure the comment to work around this limitation.
+* **Access modifiers are not comments:** `/*@private;` and `/*@protected;` use comment syntax but are access modifiers (see Objects & User-Defined Types above). Tools and refactors must not respace, recase or move them, or insert a blank line between them and the following `:PROCEDURE`.
 
 ---
 
@@ -393,8 +394,8 @@ SSL's built-in scalar and array types are backed by underlying .NET values, and 
 
 ### Operators Summary
 
-* **Assignment:** `:=`
-* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=`
+* **Assignment:** `:=` — the target can be a variable, an object property (`oTask:Status`) or an array element (`aItems[1]`). Assignment has the lowest precedence, is right-associative and evaluates to the assigned value, so `sStatus := sDefault := "PENDING";` is valid. Prefer one assignment per statement unless every target should receive the same value.
+* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=` — each evaluates to the updated left-side value, so it can appear inside a condition such as `(nIndex += 1) <= nCount`.
 * **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=` — prefer `!=` over `<>` or `#` for not-equals
 * **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`)
 * **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `**` (power), `%` (modulo)

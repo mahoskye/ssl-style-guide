@@ -229,7 +229,7 @@ These formatting rules are style conventions and match the starlims-lsp formatte
 `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH`, `:FINALLY`
 
 **Regular statement (no indent change):**
-`:EXITCASE` - stays at content level, like a `break` statement
+`:EXITCASE` - stays at content level, like a `break` statement. It must be the last statement of its `:CASE` or `:OTHERWISE` branch, directly in the branch body: a statement after it, or an `:EXITCASE` nested inside an `:IF`, is a compile error. To leave the block from part of a branch, split the branch into separate `:CASE` conditions instead.
 
 `:CLASS` establishes class context, but because it has no closing keyword and a file
 contains only one class, class members stay at the file's top indentation level.
@@ -701,6 +701,8 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
     :EXITCASE;
 :ENDCASE;
 ```
+
+`:EXITCASE;` must be the last statement of its branch, directly in the branch body. It cannot be made conditional: an `:EXITCASE` inside an `:IF`, or any statement after it in the same branch, stops the script from compiling. When only part of a branch should end the block, split the branch into separate `:CASE` conditions.
 
 ### 7.5 Incomplete Refactoring
 

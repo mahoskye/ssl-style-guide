@@ -166,6 +166,7 @@ ssl_style_guide:
       exit: :EXITCASE  # Without :EXITCASE, later :CASE expressions are still evaluated and additional matching bodies may execute, but :OTHERWISE stays skipped once any case body has run
       end: :ENDCASE
       constraint: at_least_one_case  # :BEGINCASE requires at least one :CASE block
+      exitcase_placement: last statement of its :CASE/:OTHERWISE branch, directly in the branch body — a statement after it, or :EXITCASE nested inside :IF, is a compile error
     try:
       begin: :TRY
       catch: :CATCH
@@ -300,7 +301,14 @@ ssl_style_guide:
     - '/='
     - '^='
     - '%='
-    # Full precedence (low → high): .OR., .AND., equality/containment, relational,
+    assignment_semantics:
+      level: authoritative
+      targets: variable, object property (oTask:Status), or array element (aItems[1])
+      value: "An assignment evaluates to the assigned value; a compound assignment evaluates to the updated left-side value"
+      associativity: "right — chained assignment such as sStatus := sDefault := \"PENDING\"; is valid"
+      precedence: lowest of all operators
+      style: "Prefer one assignment per line; use a chained assignment only when every target should receive the same value"
+    # Full precedence (low → high): assignment, .OR., .AND., equality/containment, relational,
     # shift, additive, multiplicative, power (right-assoc), unary.
     # See ssl-ebnf-grammar.md for the canonical production chain.
     comparison_operators:
@@ -450,8 +458,10 @@ ssl_style_guide:
       syntax:
         - "/*@private;"
         - "/*@protected;"
-      placement: own line immediately before :PROCEDURE
-      effect: "Both make the procedure inaccessible via DoProc/ExecFunction"
+      placement: own line immediately before :PROCEDURE, with no blank line between them (a blank line breaks the association)
+      exact_form: "Lowercase, with no space between /* and @ — /*@Private; or /* @private; is not recognized"
+      not_a_comment: "Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments; formatters must not respace, recase or separate them from :PROCEDURE"
+      effect: "Both block calls from other scripts; procedures in the same script can still call the procedure"
       class_restriction: "These annotations have no effect on class methods — class methods are always Public|Virtual"
     return:
       keyword: :RETURN

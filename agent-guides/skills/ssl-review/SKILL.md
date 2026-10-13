@@ -39,6 +39,8 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
    - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement; `:CATCH` body allows zero or more statements
    - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
    - `:BEGINCASE` requires at least one `:CASE`
+   - `:EXITCASE` must be the last statement of its branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error
+   - Access modifiers `/*@private;` / `/*@protected;` are not comments: they must be lowercase, have no space after `/*`, and sit on the line immediately before `:PROCEDURE` (a blank line between them breaks the modifier)
    - Use one statement per line
    - Use `DoProc("ProcName", {args})` for same-file procedures; `ExecFunction` for external
    - Inside SQL strings, uppercase SQL keywords; preserve the author's identifier casing (force-folding identifiers is dialect-conditional — do not flag mixed-case or uppercase identifiers)
