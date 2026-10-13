@@ -563,7 +563,7 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - `AND`/`OR` indented 2 spaces under their parent clause (`WHERE`, `ON`, `HAVING`)
 - `ON` indented 2 spaces under `JOIN` (but column 0 in `MERGE`)
 - `HAVING` indented 2 spaces under `GROUP BY`
-- `WHEN`/`ELSE` indented 2 spaces under `CASE`
+- `WHEN`/`ELSE` indented 4 spaces under `CASE`; `END` aligned with `CASE`
 - `SELECT` continuations aligned to first column (col 7)
 - Trailing commas, ~90 char line target
 
