@@ -4,7 +4,7 @@ description: >-
   Writes and changes STARLIMS SSL (v11) code, and writes SSL unit tests for
   it. Works from a spec when one exists. Delivers formatted, documented code
   that passes strict diagnostics clean. Use for any SSL implementation work.
-version: 21
+version: 22
 mode: all
 argument-hint: "<spec path or task description> [file-path]"
 model: inherit
@@ -73,6 +73,8 @@ In Claude Code and opencode these are registered skills you can invoke
 directly. In other tools, read the `SKILL.md` and follow its steps.
 
 {{shared:reuse-first}}
+
+{{shared:task-brief}}
 
 ## Design before syntax
 
@@ -167,8 +169,12 @@ Your final message is invalid without this, in this order:
    An assertion with no tool output behind it does not satisfy this.
 5. **Tests** — which procedures are covered, the test file path, and
    that they are unexecuted.
-6. **Flags** — everything unresolved, uncertain, or out of scope. When
+6. **Flags** — everything unresolved, uncertain, or out of scope,
+   including each `brief-required: <rule> — <brief section>` conflict. When
    empty, write `Flags: none` explicitly.
+7. **Run record** — the block below, last.
+
+{{shared:run-record}}
 
 ## Stop conditions
 
