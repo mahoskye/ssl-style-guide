@@ -29,7 +29,7 @@
     {
       "name": "INHERIT",
       "type": "keyword",
-      "syntax": ":INHERIT ClassName;",
+      "syntax": ":INHERIT Category.ClassName;",
       "summary": "Specifies the parent class for an SSL class."
     },
     {
@@ -42,7 +42,7 @@
       "name": "PUBLIC",
       "type": "keyword",
       "syntax": ":PUBLIC variable1[, variable2, ...];",
-      "summary": "Declares public variables shared down the call stack — visible to the declaring scope and every scope it calls."
+      "summary": "Declares public variables shared across the running program — reachable from any procedure until the program context clears them."
     },
     {
       "name": "CreateUdObject",

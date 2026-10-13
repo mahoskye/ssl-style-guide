@@ -51,7 +51,7 @@
       "name": "RunSQL",
       "type": "function",
       "syntax": "RunSQL(sCommandString, [sConnectionName], [aValues])",
-      "summary": "Executes a SQL statement and returns whether execution completed without an uncaught SQL error."
+      "summary": "Executes a non-query SQL statement and returns .T. on success. Under default settings, a failed statement raises an error."
     },
     {
       "name": "GetLastSSLError",

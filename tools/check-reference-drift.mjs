@@ -12,16 +12,23 @@
  *      JSON, and vice versa.
  *   3. Internal totals — meta.totals.elements / by_type match the actual
  *      elements array; reference.totals.all equals the sum of category totals.
+ *   4. Content parity — the vendored meta equals
+ *      ../ssl-docs/content/data/ssl-element-meta.json, and the vendored
+ *      reference equals a fresh run of tools/generate_element_reference.py.
+ *      A warning by default (ssl-docs moves independently, so this should not
+ *      block unrelated PRs); an error with --strict.
  *
  * Skips gracefully (exit 0) when ../ssl-docs is not present, so consumers who
  * only clone ssl-style-guide are not blocked.
  *
  * Usage:
- *   bun tools/check-reference-drift.mjs [--ssl-docs <path>]
+ *   bun tools/check-reference-drift.mjs [--ssl-docs <path>] [--strict]
  */
 
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, readdirSync, existsSync, mkdtempSync, rmSync } from 'fs';
 import { resolve, dirname, join } from 'path';
+import { tmpdir } from 'os';
+import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -33,6 +40,12 @@ const SSL_DOCS = resolve(
   docsArgIndex !== -1 ? process.argv[docsArgIndex + 1] : '../ssl-docs'
 );
 const DOCS_REF = join(SSL_DOCS, 'content', 'reference');
+const DOCS_META = join(SSL_DOCS, 'content', 'data', 'ssl-element-meta.json');
+const STRICT = process.argv.includes('--strict');
+const REFRESH_HINT =
+  'Refresh order: copy ssl-docs/content/data/ssl-element-meta.json, ' +
+  "run 'python3 tools/generate_element_reference.py', " +
+  "'bun tools/generate-machine-docs.mjs', then 'cd ssl-mcp-server && bun run bundle-data'.";
 
 // JSON key -> ssl-docs directory name.
 const CATEGORIES = {
@@ -130,10 +143,75 @@ function checkDocsParity(ref, errors) {
   }
 }
 
+function changedNames(vendored, current) {
+  const names = new Set([...Object.keys(vendored), ...Object.keys(current)]);
+  return [...names]
+    .filter((n) => JSON.stringify(vendored[n]) !== JSON.stringify(current[n]))
+    .sort();
+}
+
+function summarize(names) {
+  const shown = names.slice(0, 8).join(', ');
+  return names.length > 8 ? `${shown}, … (${names.length} total)` : shown;
+}
+
+function checkMetaContent(drift) {
+  if (!existsSync(DOCS_META)) return;
+  const vendoredRaw = readFileSync(STYLE_META, 'utf8');
+  const currentRaw = readFileSync(DOCS_META, 'utf8');
+  if (vendoredRaw === currentRaw) return;
+  const byId = (m) => Object.fromEntries(m.elements.map((e) => [e.id, e]));
+  const changed = changedNames(byId(JSON.parse(vendoredRaw)), byId(JSON.parse(currentRaw)));
+  drift.push(
+    `ssl-element-meta.json differs from ssl-docs (${changed.length} elements): ${summarize(changed)}`
+  );
+}
+
+function checkReferenceContent(ref, drift, notes) {
+  const tmp = mkdtempSync(join(tmpdir(), 'ssl-ref-'));
+  const out = join(tmp, 'ssl-element-reference.json');
+  try {
+    const run = spawnSync(
+      'python3',
+      [resolve(REPO_ROOT, 'tools/generate_element_reference.py'), '--ssl-docs', SSL_DOCS, '--out', out],
+      { encoding: 'utf8' }
+    );
+    if (run.error || run.status !== 0) {
+      notes.push('python3 generator unavailable or failed — skipping reference content check.');
+      return;
+    }
+    const current = readJson(out);
+    const changed = [];
+    for (const key of Object.keys(CATEGORIES)) {
+      for (const name of changedNames(ref[key] ?? {}, current[key] ?? {})) {
+        changed.push(`${key}/${name}`);
+      }
+    }
+    if (changed.length) {
+      drift.push(
+        `ssl-element-reference.json differs from a fresh generation (${changed.length} elements): ${summarize(changed)}`
+      );
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+function reportDrift(drift) {
+  const label = STRICT ? 'error' : 'warning';
+  for (const d of drift) {
+    if (process.env.GITHUB_ACTIONS) console.log(`::${label} title=Reference content drift::${d}`);
+    console.error(`Content drift (${label}): ${d}`);
+  }
+  console.error(`  ${REFRESH_HINT}`);
+}
+
 function main() {
   const ref = readJson(STYLE_REF);
   const meta = readJson(STYLE_META);
   const errors = [];
+  const drift = [];
+  const notes = [];
 
   checkBundleParity(errors);
   checkInternalTotals(ref, meta, errors);
@@ -152,16 +230,22 @@ function main() {
   }
 
   checkDocsParity(ref, errors);
+  checkMetaContent(drift);
+  checkReferenceContent(ref, drift, notes);
+
+  for (const n of notes) console.log(n);
+  if (drift.length) reportDrift(drift);
+  if (STRICT) errors.push(...drift);
 
   if (errors.length) {
     console.error('Reference drift detected:');
     for (const e of errors) console.error(`  - ${e}`);
     process.exit(1);
   }
-  console.log(
-    `Reference data in sync with ssl-docs (${ref.totals.all} elements; ` +
-    `bundle parity OK).`
-  );
+  const what = drift.length
+    ? 'Reference names and totals in sync with ssl-docs, content behind (see warnings)'
+    : 'Reference data in sync with ssl-docs';
+  console.log(`${what} (${ref.totals.all} elements; bundle parity OK).`);
 }
 
 main();
