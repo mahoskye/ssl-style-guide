@@ -5,4 +5,9 @@ ssl-mcp-server/bin/lsp/
 AGENTS.md
 .github/agents/
 .opencode/
+.calibration-cache/
+__pycache__/
+# Local leftovers from the snapshot survey, which now lives with the private corpus.
+.style-review-venv/
+.style-review-cache/
 .githooks/

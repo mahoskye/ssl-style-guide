@@ -1,0 +1,464 @@
+/* =============================================================================;
+/* Script....... ReconcileResults;
+/* Purpose...... Reconcile expected tests with latest valid reported attempts;
+/* Parameters... aExpected - Sample, test, unit, minimum, maximum rows;
+/*               aReported - Sample, test, value, unit, attempt, status rows;
+/* Returns...... Success: {.T., report with items, issues, samples, summary};
+/*               Failure: {.F., stable request-level configuration code};
+/* =============================================================================;
+:PARAMETERS aExpected, aReported;
+:DEFAULT aExpected, {};
+:DEFAULT aReported, {};
+:DECLARE aItem, aResult, aSelection, nExpected, oCandidate, oRequest, i;
+
+:IF LimsTypeEx(aExpected) != "ARRAY";
+	:RETURN {.F., "INVALID_EXPECTATIONS"};
+:ENDIF;
+
+:IF LimsTypeEx(aReported) != "ARRAY";
+	:RETURN {.F., "INVALID_REPORTS"};
+:ENDIF;
+
+aResult := DoProc("BuildRequest", {aExpected, Len(aReported)});
+:IF .NOT. aResult[1];
+	:RETURN aResult;
+:ENDIF;
+oRequest := aResult[2];
+
+:FOR i := 1 :TO Len(aReported);
+	aResult := DoProc("PrepareReport", {aReported[i], i});
+	:IF aResult[1];
+		oCandidate := aResult[2];
+		nExpected := DoProc("FindExpectation", {oRequest:expected,
+			oCandidate:sampleKey, oCandidate:testKey});
+		:IF nExpected == 0;
+			AAdd(oRequest:issues, {i, "UNKNOWN_PAIR"});
+		:ELSE;
+			AAdd(oRequest:candidates[nExpected], oCandidate);
+			oRequest:participatingCount += 1;
+		:ENDIF;
+	:ELSE;
+		AAdd(oRequest:issues, {i, aResult[2]});
+	:ENDIF;
+:NEXT;
+
+:FOR i := 1 :TO Len(oRequest:expected);
+	aSelection := DoProc("SelectLatest", {oRequest:candidates[i]});
+	aItem := DoProc("ClassifySelection", {oRequest:expected[i], aSelection});
+	AAdd(oRequest:items, aItem);
+	DoProc("RecordClassification", {oRequest, aItem});
+:NEXT;
+
+:RETURN {.T., DoProc("BuildReport", {oRequest})};
+
+/* region Expectation configuration;
+
+/*
+ * Procedure: BuildRequest
+ * Description: Establish normalized expectations and their independent candidate lists.
+ * Parameters:
+ *   aExpected - Caller expectation rows
+ *   nReported - Original report count including malformed rows
+ * Returns: aResult - {true, request} or {false, configuration code}
+;
+:PROCEDURE BuildRequest;
+	:PARAMETERS aExpected, nReported;
+	:DECLARE oRequest, sIssue;
+
+	oRequest := CreateUdObject();
+	oRequest:expected := {};
+	oRequest:candidates := {};
+	oRequest:items := {};
+	oRequest:issues := {};
+	oRequest:samples := {};
+	oRequest:counts := DoProc("NewCounts");
+	oRequest:reportedCount := nReported;
+	oRequest:participatingCount := 0;
+
+	sIssue := DoProc("LoadExpectations", {oRequest, aExpected});
+	:IF sIssue != "";
+		:RETURN {.F., sIssue};
+	:ENDIF;
+	:RETURN {.T., oRequest};
+:ENDPROC;
+
+/*
+ * Procedure: LoadExpectations
+ * Description: Validate all expectation contracts before any report is considered.
+ * Parameters:
+ *   oRequest - Request being constructed
+ *   aExpected - Untrusted five-column expectation rows
+ * Returns: sIssue - Empty on success, stable configuration code otherwise
+;
+:PROCEDURE LoadExpectations;
+	:PARAMETERS oRequest, aExpected;
+	:DECLARE aRow, sSample, sTest, sUnit, i;
+
+	:FOR i := 1 :TO Len(aExpected);
+		aRow := aExpected[i];
+		:IF LimsTypeEx(aRow) != "ARRAY";
+			:RETURN "INVALID_EXPECTATION_ROW";
+		:ENDIF;
+
+		:IF Len(aRow) != 5;
+			:RETURN "INVALID_EXPECTATION_ROW";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRow[1]) != "STRING";
+			:RETURN "INVALID_EXPECTATION_KEY";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRow[2]) != "STRING";
+			:RETURN "INVALID_EXPECTATION_KEY";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRow[3]) != "STRING";
+			:RETURN "INVALID_EXPECTATION_UNIT";
+		:ENDIF;
+		sSample := Upper(AllTrim(aRow[1]));
+		sTest := Upper(AllTrim(aRow[2]));
+		sUnit := Upper(AllTrim(aRow[3]));
+		:IF sSample == "" .OR. sTest == "";
+			:RETURN "INVALID_EXPECTATION_KEY";
+		:ENDIF;
+
+		:IF sUnit == "";
+			:RETURN "INVALID_EXPECTATION_UNIT";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRow[4]) != "NUMERIC";
+			:RETURN "INVALID_EXPECTATION_BOUNDS";
+		:ENDIF;
+
+		:IF LimsTypeEx(aRow[5]) != "NUMERIC";
+			:RETURN "INVALID_EXPECTATION_BOUNDS";
+		:ENDIF;
+
+		:IF aRow[4] > aRow[5];
+			:RETURN "INVALID_EXPECTATION_BOUNDS";
+		:ENDIF;
+
+		:IF DoProc("FindExpectation", {oRequest:expected, sSample, sTest}) > 0;
+			:RETURN "DUPLICATE_EXPECTATION";
+		:ENDIF;
+		AAdd(oRequest:expected, {sSample, sTest, sUnit, aRow[4], aRow[5]});
+		/* Each pair gets a new array so its candidate list cannot alias another pair;
+		AAdd(oRequest:candidates, {});
+	:NEXT;
+	:RETURN "";
+:ENDPROC;
+
+/*
+ * Procedure: FindExpectation
+ * Description: Find a normalized pair without ambiguous composite-key encoding.
+ * Parameters:
+ *   aExpected - Internal normalized expectation rows
+ *   sSample - Normalized sample key
+ *   sTest - Normalized test key
+ * Returns: nIndex - Matching position, or zero when absent
+;
+:PROCEDURE FindExpectation;
+	:PARAMETERS aExpected, sSample, sTest;
+	:DECLARE aRow, i;
+	:FOR i := 1 :TO Len(aExpected);
+		aRow := aExpected[i];
+		:IF aRow[1] == sSample .AND. aRow[2] == sTest;
+			:RETURN i;
+		:ENDIF;
+	:NEXT;
+	:RETURN 0;
+:ENDPROC;
+
+/* endregion;
+/* region Report preparation and selection;
+
+/*
+ * Procedure: PrepareReport
+ * Description: Establish a report's shape before selection or measurement use.
+ * Parameters:
+ *   vRow - Caller-owned six-column reported row
+ *   nRow - Original input position
+ * Returns: aResult - {true, candidate} or {false, row issue code}
+;
+:PROCEDURE PrepareReport;
+	:PARAMETERS vRow, nRow;
+	:DECLARE oCandidate, sSample, sStatus, sTest, sUnit;
+
+	:IF LimsTypeEx(vRow) != "ARRAY";
+		:RETURN {.F., "INVALID_REPORT_ROW"};
+	:ENDIF;
+
+	:IF Len(vRow) != 6;
+		:RETURN {.F., "INVALID_REPORT_ROW"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[1]) != "STRING";
+		:RETURN {.F., "INVALID_REPORT_KEY"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[2]) != "STRING";
+		:RETURN {.F., "INVALID_REPORT_KEY"};
+	:ENDIF;
+	sSample := Upper(AllTrim(vRow[1]));
+	sTest := Upper(AllTrim(vRow[2]));
+	:IF sSample == "" .OR. sTest == "";
+		:RETURN {.F., "INVALID_REPORT_KEY"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[4]) != "STRING";
+		:RETURN {.F., "INVALID_REPORT_UNIT"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[5]) != "NUMERIC";
+		:RETURN {.F., "INVALID_ATTEMPT"};
+	:ENDIF;
+
+	:IF vRow[5] < 1;
+		:RETURN {.F., "INVALID_ATTEMPT"};
+	:ENDIF;
+
+	:IF Round(vRow[5], 0) != vRow[5];
+		:RETURN {.F., "INVALID_ATTEMPT"};
+	:ENDIF;
+
+	:IF LimsTypeEx(vRow[6]) != "STRING";
+		:RETURN {.F., "INVALID_REPORT_STATUS"};
+	:ENDIF;
+	sStatus := Upper(AllTrim(vRow[6]));
+	:IF sStatus != "COMPLETE" .AND. sStatus != "VOID";
+		:RETURN {.F., "INVALID_REPORT_STATUS"};
+	:ENDIF;
+	sUnit := Upper(AllTrim(vRow[4]));
+	:IF sStatus == "COMPLETE";
+		:IF LimsTypeEx(vRow[3]) != "NUMERIC";
+			:RETURN {.F., "INVALID_MEASUREMENT"};
+		:ENDIF;
+
+		:IF sUnit == "";
+			:RETURN {.F., "INVALID_REPORT_UNIT"};
+		:ENDIF;
+	:ENDIF;
+
+	oCandidate := CreateUdObject();
+	oCandidate:sampleKey := sSample;
+	oCandidate:testKey := sTest;
+	oCandidate:value := vRow[3];
+	oCandidate:unit := sUnit;
+	oCandidate:attempt := vRow[5];
+	oCandidate:status := sStatus;
+	oCandidate:sourceRow := nRow;
+	:RETURN {.T., oCandidate};
+:ENDPROC;
+
+/*
+ * Procedure: SelectLatest
+ * Description: Select the highest attempt and detect ties independently of input order.
+ * Parameters:
+ *   aCandidates - Valid reports for exactly one expectation
+ * Returns: aSelection - {highestAttempt, conflict, candidate or NIL}
+;
+:PROCEDURE SelectLatest;
+	:PARAMETERS aCandidates;
+	:DECLARE bConflict, nAttempt, oCandidate, oSelected, i;
+
+	nAttempt := 0;
+	bConflict := .F.;
+	oSelected := NIL;
+	:FOR i := 1 :TO Len(aCandidates);
+		oCandidate := aCandidates[i];
+		:IF oCandidate:attempt > nAttempt;
+			nAttempt := oCandidate:attempt;
+			oSelected := oCandidate;
+			bConflict := .F.;
+		:ELSE;
+			:IF oCandidate:attempt == nAttempt;
+				bConflict := .T.;
+			:ENDIF;
+		:ENDIF;
+	:NEXT;
+	:RETURN {nAttempt, bConflict, oSelected};
+:ENDPROC;
+
+/* endregion;
+/* region Classification;
+
+/*
+ * Procedure: ClassifySelection
+ * Description: Apply withdrawal, unit, and inclusive-limit rules in contract order.
+ * Parameters:
+ *   aExpected - One normalized expectation
+ *   aSelection - Internal result from SelectLatest
+ * Returns: aItem - Sample, test, classification, value, unit, attempt, source row
+;
+:PROCEDURE ClassifySelection;
+	:PARAMETERS aExpected, aSelection;
+	:DECLARE oSelected, sClassification;
+
+	:IF aSelection[1] == 0;
+		:RETURN {aExpected[1], aExpected[2], "MISSING", NIL, aExpected[3], 0, 0};
+	:ENDIF;
+
+	:IF aSelection[2];
+		:RETURN {aExpected[1], aExpected[2], "CONFLICT", NIL,
+			aExpected[3], aSelection[1], 0};
+	:ENDIF;
+	oSelected := aSelection[3];
+	:IF oSelected:status == "VOID";
+		:RETURN {aExpected[1], aExpected[2], "WITHDRAWN", NIL,
+			oSelected:unit, oSelected:attempt, oSelected:sourceRow};
+	:ENDIF;
+
+	:IF oSelected:unit != aExpected[3];
+		:RETURN {aExpected[1], aExpected[2], "UNIT_MISMATCH", oSelected:value,
+			oSelected:unit, oSelected:attempt, oSelected:sourceRow};
+	:ENDIF;
+
+	sClassification := "PASS";
+	:IF oSelected:value < aExpected[4];
+		sClassification := "LOW";
+	:ELSE;
+		:IF oSelected:value > aExpected[5];
+			sClassification := "HIGH";
+		:ENDIF;
+	:ENDIF;
+	:RETURN {aExpected[1], aExpected[2], sClassification, oSelected:value,
+		oSelected:unit, oSelected:attempt, oSelected:sourceRow};
+:ENDPROC;
+
+/* endregion;
+/* region Counts and report assembly;
+
+/*
+ * Procedure: NewCounts
+ * Description: Initialize all classification counts for an empty result set.
+ * Parameters: None
+ * Returns: oCounts - New request-owned object with all counters zeroed
+;
+:PROCEDURE NewCounts;
+	:DECLARE oCounts;
+	oCounts := CreateUdObject();
+	oCounts:passCount := 0;
+	oCounts:lowCount := 0;
+	oCounts:highCount := 0;
+	oCounts:missingCount := 0;
+	oCounts:withdrawnCount := 0;
+	oCounts:conflictCount := 0;
+	oCounts:unitMismatchCount := 0;
+	oCounts:totalCount := 0;
+	:RETURN oCounts;
+:ENDPROC;
+
+/*
+ * Procedure: RecordClassification
+ * Description: Update the report and sample totals once per expectation.
+ * Parameters:
+ *   oRequest - Mutable internal report state
+ *   aItem - Item produced by ClassifySelection
+ * Returns: Nothing - Updates summary counts and per-sample counts
+;
+:PROCEDURE RecordClassification;
+	:PARAMETERS oRequest, aItem;
+	:DECLARE nSample, oSample;
+
+	DoProc("IncrementCounts", {oRequest:counts, aItem[3]});
+	nSample := DoProc("FindSample", {oRequest:samples, aItem[1]});
+	:IF nSample == 0;
+		oSample := CreateUdObject();
+		oSample:sampleKey := aItem[1];
+		oSample:counts := DoProc("NewCounts");
+		AAdd(oRequest:samples, oSample);
+	:ELSE;
+		oSample := oRequest:samples[nSample];
+	:ENDIF;
+	DoProc("IncrementCounts", {oSample:counts, aItem[3]});
+:ENDPROC;
+
+/*
+ * Procedure: IncrementCounts
+ * Description: Count one internally produced classification in one owned counter set.
+ * Parameters:
+ *   oCounts - Initialized count object
+ *   sClassification - Classification from ClassifySelection
+ * Returns: Nothing - Increments total and the corresponding category
+;
+:PROCEDURE IncrementCounts;
+	:PARAMETERS oCounts, sClassification;
+
+	oCounts:totalCount += 1;
+	:BEGINCASE;
+	:CASE sClassification == "PASS";
+		oCounts:passCount += 1;
+		:EXITCASE;
+	:CASE sClassification == "LOW";
+		oCounts:lowCount += 1;
+		:EXITCASE;
+	:CASE sClassification == "HIGH";
+		oCounts:highCount += 1;
+		:EXITCASE;
+	:CASE sClassification == "MISSING";
+		oCounts:missingCount += 1;
+		:EXITCASE;
+	:CASE sClassification == "WITHDRAWN";
+		oCounts:withdrawnCount += 1;
+		:EXITCASE;
+	:CASE sClassification == "CONFLICT";
+		oCounts:conflictCount += 1;
+		:EXITCASE;
+	:CASE sClassification == "UNIT_MISMATCH";
+		oCounts:unitMismatchCount += 1;
+		:EXITCASE;
+	:ENDCASE;
+:ENDPROC;
+
+/*
+ * Procedure: FindSample
+ * Description: Locate a normalized sample in first-occurrence order.
+ * Parameters:
+ *   aSamples - Internal sample count objects
+ *   sSample - Normalized sample key
+ * Returns: nIndex - Matching position, or zero when absent
+;
+:PROCEDURE FindSample;
+	:PARAMETERS aSamples, sSample;
+	:DECLARE oSample, i;
+	:FOR i := 1 :TO Len(aSamples);
+		oSample := aSamples[i];
+		:IF oSample:sampleKey == sSample;
+			:RETURN i;
+		:ENDIF;
+	:NEXT;
+	:RETURN 0;
+:ENDPROC;
+
+/*
+ * Procedure: BuildReport
+ * Description: Project internal counters into the caller's documented array shapes.
+ * Parameters:
+ *   oRequest - Completed request state
+ * Returns: oReport - Items, issues, sample counts, and complete summary
+;
+:PROCEDURE BuildReport;
+	:PARAMETERS oRequest;
+	:DECLARE aSamples, oCounts, oReport, oSample, i;
+
+	aSamples := {};
+	:FOR i := 1 :TO Len(oRequest:samples);
+		oSample := oRequest:samples[i];
+		oCounts := oSample:counts;
+		AAdd(aSamples, {oSample:sampleKey, oCounts:passCount, oCounts:lowCount,
+			oCounts:highCount, oCounts:missingCount, oCounts:withdrawnCount,
+			oCounts:conflictCount, oCounts:unitMismatchCount, oCounts:totalCount});
+	:NEXT;
+	oCounts := oRequest:counts;
+	oReport := CreateUdObject();
+	oReport:items := oRequest:items;
+	oReport:issues := oRequest:issues;
+	oReport:samples := aSamples;
+	oReport:summary := {Len(oRequest:expected), oRequest:reportedCount,
+		oRequest:participatingCount, oCounts:passCount, oCounts:lowCount,
+		oCounts:highCount, oCounts:missingCount, oCounts:withdrawnCount,
+		oCounts:conflictCount, oCounts:unitMismatchCount, Len(oRequest:issues)};
+	:RETURN oReport;
+:ENDPROC;
+
+/* endregion;

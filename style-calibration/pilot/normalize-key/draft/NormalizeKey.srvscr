@@ -1,0 +1,18 @@
+/* =============================================================================;
+/* Script....... NormalizeKey;
+/* Purpose...... Normalize an optional key without changing internal spaces;
+/* Parameters... vKey - String key or NIL when no key was supplied;
+/* Returns...... Uppercase trimmed string, empty string for NIL, NIL for bad type;
+/* =============================================================================;
+:PARAMETERS vKey;
+:DEFAULT vKey, NIL;
+
+:IF vKey == NIL;
+	:RETURN "";
+:ENDIF;
+
+:IF LimsTypeEx(vKey) != "STRING";
+	:RETURN NIL;
+:ENDIF;
+
+:RETURN Upper(AllTrim(vKey));
