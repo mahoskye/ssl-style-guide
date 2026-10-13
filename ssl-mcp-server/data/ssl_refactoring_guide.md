@@ -172,7 +172,7 @@ Data source files have a different structure from scripts and classes. Do not ap
 
 **Key differences when refactoring data source files:**
 - Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
-- Inline `:=` defaults are optional per parameter — `:PARAMETERS sName, nCount := 10;` is valid (some with defaults, some without)
+- Every parameter must have an inline `:=` default — `:PARAMETERS sName := "", nCount := 10;`. A parameter without one makes the data source fail when it runs (`No default value for one or more parameters.`)
 - Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
 - The preprocessor rewrites everything into standard SSL before the script runs
 
@@ -245,7 +245,7 @@ contains only one class, class members stay at the file's top indentation level.
 | Commas | Space after, not before | `a, b, c` | `a,b,c` or `a ,b ,c` |
 | Parentheses | No space inside | `DoProc("Name", {args})` | `DoProc( "Name" , { args } )` |
 | Function calls | No space before `(` | `Len(sValue)` | `Len (sValue)` |
-| Skipped params | Adjacent commas, no space | `RunSQL(sSQL,, {aVals})` | `RunSQL(sSQL, , {aVals})` |
+| Skipped params | Adjacent commas, no space | `RunSQL(sSQL,, aVals)` | `RunSQL(sSQL, , aVals)` |
 
 > **Member access:** SSL accepts both `oObj:Prop` and `oObj : Prop`, but refactoring should normalize to the preferred no-space form unless preserving surrounding style is important.
 
@@ -364,7 +364,7 @@ MAX_ATTEMPTS := 3;
 DEFAULT_TIMEOUT := 30;
 ```
 
-> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `""`, `0`, `NIL`, and `.F.`.
+> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array.
 
 ---
 
@@ -726,19 +726,26 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 
 ### 7.6 Legacy Error Handling (:ERROR/:RESUME)
 
-The `:ERROR`/`:RESUME` keywords are legacy scope-based error handling. They remain valid, and `:TRY`/`:CATCH`/`:FINALLY` is often easier to target around specific operations in refactoring work.
+The `:ERROR`/`:RESUME` keywords are legacy procedure-level error handling. They remain valid, and `:TRY`/`:CATCH`/`:FINALLY` is often easier to target around specific operations in refactoring work.
 
 **How `:ERROR`/`:RESUME` works:**
-- `:ERROR` defines a handler block that applies to all subsequent code in the current scope (no `:ENDERROR` — it runs until scope ends). The `:ERROR` body must contain at least one statement
-- `:RESUME` inside the handler switches to resume mode — each subsequent statement is individually wrapped in a try/catch so execution continues after failures
-- This has significant performance cost since every statement becomes its own try/catch
+- `:ERROR;` starts the last section of a procedure (no `:ENDERROR` — the handler runs to `:ENDPROC`). It protects the statements **before** it; the statements after it are the handler body, which must contain at least one statement and runs only when a protected statement fails. A handler placed first protects nothing.
+- Without `:RESUME`, the first failure skips the rest of the protected region, runs the handler, and ends the procedure
+- With `:RESUME;` as the last handler statement, every failing protected statement runs the handler and execution continues at the statement after the one that failed
+- Resume mode has significant performance cost since every protected statement is handled individually
 
 ```ssl
-/* Scope-based handler example;
+/* Legacy handler example;
+:PROCEDURE ProcessBatch;
+    :DECLARE oErr;
+
+    DoProc("StepOne");
+    DoProc("StepTwo");
 :ERROR;
     oErr := GetLastSSLError();
     UsrMes("Error: " + oErr:Description);
 :RESUME;
+:ENDPROC;
 
 /* Structured handler example;
 :TRY;
@@ -773,14 +780,14 @@ The `:ERROR`/`:RESUME` keywords are legacy scope-based error handling. They rema
 
 ### 7.8 Membership Tests
 
-Use `AScan` to test whether a value exists in a list. Build the candidate list as an array literal or variable.
+Use `AScanExact` to test whether a value exists in a list. Build the candidate list as an array literal or variable. Do not use `AScan` for this: it matches strings by **prefix**, so `AScan({"APPROVED"}, "APP")` finds a match, and an empty search string matches the first string element.
 
 ```ssl
 /* CORRECT - test whether a value is one of several candidates;
 :DECLARE aCandidates, nPos, bFound;
 
 aCandidates := {"SWAP", "ADEL", "COPY"};
-nPos := AScan(aCandidates, Upper(sAction));
+nPos := AScanExact(aCandidates, Upper(sAction));
 bFound := nPos > 0;
 
 :IF bFound;
@@ -794,12 +801,12 @@ For case-insensitive membership tests, normalize before scanning:
 /* Case-insensitive membership test;
 :DECLARE aValid;
 aValid := {"ACTIVE", "PENDING", "COMPLETE"};
-:IF AScan(aValid, Upper(sStatus)) > 0;
+:IF AScanExact(aValid, Upper(sStatus)) > 0;
     DoProc("ProcessValidStatus", {sStatus});
 :ENDIF;
 ```
 
-`AScan` also accepts a code block for custom comparison logic:
+`AScan` and `AScanExact` also accept a code block for custom comparison logic:
 
 ```ssl
 /* Code block scan — find first element matching condition;
@@ -917,7 +924,7 @@ When refactoring, maintain a progress block in your notes:
 :BEGININLINECODE / :ENDINLINECODE    (legacy named code storage)
 :EXITFOR / :EXITWHILE / :LOOP
 :CLASS / :INHERIT
-:ERROR / :RESUME                     (legacy scope-based error handling)
+:ERROR / :RESUME                     (legacy trailing error handler)
 ```
 
 ### Class Rules
@@ -938,11 +945,11 @@ ExecFunction("Category.Script.Proc", {arg1}); /* Other file specific procedure;
 
 ### Common Functions
 ```ssl
-Empty(value)                /* True if NIL, "", 0, or .F.;
+Empty(value)                /* True if NIL, blank string, 0, .F., empty date or array;
 Len(array or string)        /* Length;
 LimsString(value)           /* Convert to string;
 CreateUdObject()            /* Create empty dynamic object;
-CreateUdObject("MyClass")  /* Create user-defined object;
+CreateUdObject("Cat.MyClass")  /* Create user-defined object;
 SQLExecute(sql)             /* Run SQL with ?var? syntax;
 DoProc(name, {args})        /* Call procedure in same file;
 ExecFunction(name, {args})  /* Call procedure in other file;

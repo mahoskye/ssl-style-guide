@@ -119,7 +119,7 @@ Do not force regions, state objects, or helper procedures into a script that rem
 
 - Return early for invalid requests and failed contracts.
 - Use `:BEGINCASE` when choosing among several routes, result shapes, artifact kinds, actions, or outcomes.
-- Use `AScan({...}, value)` when testing membership in a fixed set of exact values.
+- Use `AScanExact({...}, value)` when testing membership in a fixed set of exact values. `AScan` matches strings by prefix (`"APP"` matches `"APPROVED"`, and an empty string matches the first string element).
 - End each `:CASE` and `:OTHERWISE` branch with `:EXITCASE;` unless later matching branches should also run; without it, later `:CASE` expressions are still evaluated and their bodies can run.
 - Do not add `:EXITCASE;` after a branch-level `:RETURN`; the return already terminates the procedure.
 - Keep `:EXITCASE;` as the last statement of the branch, never inside an `:IF`. A nested or non-final `:EXITCASE` is a compile error, so split the branch into separate `:CASE` conditions instead.
@@ -173,9 +173,9 @@ Use a pipeline-specific failure-capture helper when several sequential steps ret
 
 Decide explicitly whether an external call reports failures by throwing, by returning an envelope, or by both. When the current boundary promises a stable failure envelope, wrap `ExecFunction` in `:TRY/:CATCH` unless the deployed function has a documented no-throw contract. Validate returned envelopes even when the call is wrapped.
 
-`RaiseError` does not return normally. Inside `:TRY`, it skips the remaining protected statements and transfers control to `:CATCH`. When the catch completes without re-raising, execution continues after `:ENDTRY`; the current script invocation is not terminated. Outside a matching `:TRY/:CATCH`, or when re-raised from the catch, the error propagates to the caller and fails the invocation only if no caller handles it. Do not describe `RaiseError` as terminating the STARLIMS service or host worker process without separate runtime evidence.
+`RaiseError` does not return normally. Inside `:TRY`, it skips the remaining protected statements and transfers control to `:CATCH`. When the catch completes, execution continues after `:ENDTRY`; the current script invocation is not terminated. Outside a matching `:TRY/:CATCH`, the error propagates to the caller and fails the invocation only if no caller handles it. Place `RaiseError` directly inside the `:TRY` whose `:CATCH` handles it, and never call `RaiseError` inside `:CATCH`. Do not describe `RaiseError` as terminating the STARLIMS service or host worker process without separate runtime evidence.
 
-Do not combine legacy `:ERROR/:RESUME` handling with `:TRY/:CATCH` in the same procedure unless that interaction is intentional and runtime-tested. An `:ERROR` handler governs the statements that follow it, so a handler established before a `:TRY` can intercept a raised error before the `:CATCH` sees it, bypassing the expected structured-error flow.
+Do not combine legacy `:ERROR/:RESUME` handling with `:TRY/:CATCH` in the same procedure. An `:ERROR` handler is the last section of a procedure and protects the statements before it, including any `:TRY` block there. When the handler ends with `:RESUME`, it takes an error raised inside the `:TRY` body before the `:CATCH` sees it, `:CATCH` never runs, and execution continues inside the `:TRY` body, bypassing the expected structured-error flow.
 
 When a catch retains or logs runtime diagnostics:
 
