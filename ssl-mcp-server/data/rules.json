@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 275,
+  "count": 276,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -9887,25 +9887,25 @@
         "embedded_sql",
         "sql_data_source"
       ],
-      "rule": "Indent `WHEN`/`ELSE` 2 spaces under `CASE`.",
-      "rationale": "`WHEN` and `ELSE` belong to their `CASE`, so they indent under it like any\nother sub-clause, and `END` returns to the column of `CASE`.",
+      "rule": "Indent `WHEN`/`ELSE` 4 spaces under `CASE`.",
+      "rationale": "`WHEN` and `ELSE` belong to their `CASE`, so they indent one 4-space step\nunder it, and the branches line up as a table of conditions and results.",
       "exceptions": null,
       "examples": {
         "good": [
           {
-            "lang": "text",
-            "code": "CASE\n  WHEN o.status = 'L' THEN 'Logged'\n  WHEN o.status = 'C' THEN 'Complete'\n  ELSE 'Unknown'\nEND AS status_desc\n"
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN 'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": "CASE\nWHEN o.status = 'L' THEN 'Logged'\nWHEN o.status = 'C' THEN 'Complete'\nELSE 'Unknown'\nEND AS status_desc\n"
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n             WHEN o.status = 'L' THEN 'Logged'\n             WHEN o.status = 'C' THEN 'Complete'\n             ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:fmt.sql_in_strings"
       ],
       "categories": [
         "sql"
@@ -9924,6 +9924,52 @@
       "source": "rules/sql/sql_case_when_else_indent.md"
     },
     {
+      "id": "sql_case_end_align",
+      "title": "END aligns with its CASE",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "embedded_sql",
+        "sql_data_source"
+      ],
+      "rule": "Align `END` with its `CASE`.",
+      "rationale": "`END` closes the block that `CASE` opens. Putting it back at the `CASE`\ncolumn shows where the expression ends, and any alias after `END` reads as\nbelonging to the whole expression.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               ELSE 'Unknown'\n               END AS status_desc\n    FROM orders o\n\");\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.sql_in_strings"
+      ],
+      "categories": [
+        "sql"
+      ],
+      "related_elements": [
+        "SQLExecute"
+      ],
+      "schema_paths": [
+        "sql.formatting.statement_patterns.case.end"
+      ],
+      "aliases": [],
+      "issues": [
+        "#106"
+      ],
+      "source": "rules/sql/sql_case_end_align.md"
+    },
+    {
       "id": "sql_case_branch_consistency",
       "title": "A CASE block keeps all branches inline or all broken",
       "domain": "sql",
@@ -9940,14 +9986,14 @@
       "examples": {
         "good": [
           {
-            "lang": "text",
-            "code": "CASE\n  WHEN o.status = 'L' THEN 'Logged'\n  WHEN o.status = 'C' THEN 'Complete'\n  ELSE 'Unknown'\nEND AS status_desc\n"
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN 'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": "CASE\n  WHEN o.status = 'L' THEN 'Logged'\n  WHEN o.status = 'C'\n    THEN 'Complete'\n  ELSE 'Unknown'\nEND AS status_desc\n"
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN\n                   'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ]
       },
@@ -9981,20 +10027,20 @@
         "embedded_sql",
         "sql_data_source"
       ],
-      "rule": "When a `THEN` value breaks to a new line, indent it one level under its `WHEN`.",
+      "rule": "When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`.",
       "rationale": "A long result reads as part of its `WHEN` when it sits one step under it, and\nthe next `WHEN` still starts at the branch column.",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "text",
-            "code": "CASE\n  WHEN o.status = 'L'\n    THEN 'Logged, waiting for the first test to start'\n  WHEN o.status = 'C'\n    THEN 'Complete, all tests reviewed and released'\n  ELSE 'Unknown'\nEND AS status_desc\n"
+            "code": "CASE\n    WHEN status = 'Complete' AND result_value IS NOT NULL THEN\n        ROUND(result_value / baseline_value * 100, 2)\n    WHEN status = 'Complete' AND result_value IS NULL THEN\n        0\n    ELSE -1\nEND AS pct_of_baseline\n"
           }
         ],
         "bad": [
           {
             "lang": "text",
-            "code": "CASE\n  WHEN o.status = 'L'\n  THEN 'Logged, waiting for the first test to start'\n  WHEN o.status = 'C'\n  THEN 'Complete, all tests reviewed and released'\n  ELSE 'Unknown'\nEND AS status_desc\n"
+            "code": "CASE\n    WHEN status = 'Complete' AND result_value IS NOT NULL THEN\n    ROUND(result_value / baseline_value * 100, 2)\n    WHEN status = 'Complete' AND result_value IS NULL THEN\n    0\n    ELSE -1\nEND AS pct_of_baseline\n"
           }
         ]
       },

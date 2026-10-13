@@ -400,7 +400,7 @@ MAX_ATTEMPTS := 3;
 DEFAULT_TIMEOUT := 30;
 ```
 
-> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array. It is not a NIL test. <!-- rule: nil_in_operations -->Check for `NIL` before using a value in arithmetic or string operations; test `v == NIL` when `0`, `.F.` or an empty string is a valid value, because `Empty()` is also `.T.` for those.<!-- /rule -->
+> **Note:** All declared variables initialize to empty string `""` (not `NIL`), so a declared-but-unassigned variable is never `NIL` and `var == NIL` stays `.F.` until something assigns `NIL`. Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array. `Empty()` is not a NIL test, though: when `0` or `.F.` is a valid value, use `var == NIL` to detect an omitted or explicitly `NIL` argument, or a `NIL` value returned by an API, and compare an unassigned declared variable with `== ""`. <!-- rule: nil_in_operations -->Check for `NIL` before using a value in arithmetic or string operations; test `v == NIL` when `0`, `.F.` or an empty string is a valid value, because `Empty()` is also `.T.` for those.<!-- /rule -->
 
 ---
 
