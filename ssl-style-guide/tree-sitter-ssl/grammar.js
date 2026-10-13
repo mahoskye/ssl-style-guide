@@ -151,9 +151,11 @@ module.exports = grammar({
   //   5. bracket_string supports one level of nested brackets (e.g., [[a]b] →
   //      [a]b). Tooling does not attempt to model arbitrarily deep nesting.
   //
-  //   6. Assignment (:=, +=, etc.) is modeled as an expression for chaining,
-  //      but practical editor support still treats assignment most often as a
-  //      standalone statement.
+  //   6. Assignment (:=, +=, etc.) is an expression with the lowest
+  //      precedence. It is right-associative and evaluates to the stored
+  //      value, so chains such as a := b := 1 and tests such as
+  //      (i += 1) <= n are valid. Targets are variables, properties, and
+  //      indexed elements.
   //
   //   7. Empty argument slots in arrays/call argument lists (e.g. {a,,b}) are
   //      accepted by SSL. Tree-sitter cannot represent truly empty non-start
@@ -202,7 +204,7 @@ module.exports = grammar({
     // ───── Comments ─────
     // SSL comments start with "/*" and terminate at the first semicolon `;`
     // Example:  /* This is a comment;
-    comment: _ => token(seq('/*', /[\s\S]*?/, ';')),
+    comment: _ => token(seq('/*', /[^;]*/, ';')),
 
     // ───── Lexical atoms ─────
     identifier: _ => /[A-Za-z_][A-Za-z0-9_]*/,
@@ -472,15 +474,27 @@ module.exports = grammar({
     return_statement: $ => seq($.kw_return, optional($.expression), ';'),
     constructor_return_statement: $ => seq($.kw_return, ';'),
 
-    // Legacy label — spaced form only (:LABEL Name;  :LABEL Name Alias;).
-    // The compiler also accepts a mashed form (:LABELName;), but this grammar
-    // does not implement it because the lexer would need to split the token.
+    // Legacy label. SSL stores the label text exactly as written, including
+    // the word LABEL, and Branch() must use that exact text:
+    //   spaced:  :LABEL Name;       -> Branch("LABEL Name")
+    //            :LABEL Name Alias; -> Branch("LABEL Name Alias")
+    //   joined:  :LABELName;        -> Branch("LABELName")
+    // The two forms are different targets, so they get different fields:
+    // `name` for the spaced form and `joined_name` (a label_suffix written
+    // directly after :LABEL with no whitespace) for the joined form. Extra
+    // words after either form are exposed as `name_extra`.
     label_statement: $ => seq(
       $.kw_label,
-      field('name', $.identifier),
+      choice(
+        field('joined_name', $.label_suffix),
+        field('name', $.identifier)
+      ),
       repeat(field('name_extra', $.identifier)),
       ';'
     ),
+
+    // Label text written directly after :LABEL with no whitespace between.
+    label_suffix: _ => token.immediate(/[A-Za-z_][A-Za-z0-9_]*/),
 
     // :REGION is a legacy functional body-capture construct.
     // :REGION stores a named raw-text body for later retrieval via GetRegion().
@@ -508,16 +522,23 @@ module.exports = grammar({
       $.kw_endinlinecode, ';'
     ),
 
-    // :ERROR; ... (legacy error handler — applies to all subsequent code in scope)
+    // :ERROR; handler... (legacy error handler). :ERROR is written as the last
+    // section of a procedure: the statements BEFORE it are the protected
+    // region, and the statements after it, up to :ENDPROC, are the handler
+    // body, which runs only when a protected statement fails. A handler placed
+    // first protects nothing. The handler body needs at least one statement.
+    // This grammar accepts :ERROR in any statement position for editor
+    // tolerance, but its body always consumes the statements that follow it.
     error_block: $ => makeErrorBlock($, $._statement),
     error_block_loop: $ => makeErrorBlock($, $._loop_statement),
     error_block_finally: $ => makeErrorBlock($, $._finally_statement),
     error_block_constructor: $ => makeErrorBlock($, $._constructor_statement),
     error_block_constructor_loop: $ => makeErrorBlock($, $._constructor_loop_statement),
 
-    // :RESUME; (legacy — only valid inside an :ERROR block; switches to resume
-    // mode, wrapping each subsequent statement in its own individual try/catch
-    // for fault-tolerant execution)
+    // :RESUME; (legacy — the last statement of an :ERROR handler). With it,
+    // every failing statement in the protected region runs the handler, and
+    // execution then continues with the statement after the one that failed.
+    // A procedure that uses :RESUME without an :ERROR handler does not compile.
     resume_statement: $ => seq($.kw_resume, ';'),
 
     // :DECLARE a, b, c;
