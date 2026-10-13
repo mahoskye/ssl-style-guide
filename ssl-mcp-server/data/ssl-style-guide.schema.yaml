@@ -1327,7 +1327,7 @@ ssl_style_guide:
           on: 2 # Indent ON 2 spaces under its JOIN (in MERGE, ON stays at column 0).
           and_or: 2 # Start each AND/OR condition on its own line, indented 2 spaces under WHERE; in a join condition it aligns with ON, and in a HAVING condition with HAVING.
           having: 2 # Indent HAVING 2 spaces under GROUP BY.
-          case_when_else: 2 # Indent WHEN/ELSE 2 spaces under CASE.
+          case_when_else: 4 # Indent WHEN/ELSE 4 spaces under CASE.
         select_continuation_align: first_column # Align SELECT continuation lines to the first column (column 7).
         select_continuation_column: 7 # Align SELECT continuation lines to the first column (column 7).
       statement_patterns:
@@ -1343,8 +1343,9 @@ ssl_style_guide:
         group_by:
           having: indented 2 under GROUP BY # Indent HAVING 2 spaces under GROUP BY.
         case:
-          when_else: indented 2 under CASE # Indent WHEN/ELSE 2 spaces under CASE.
-          then_value: inline when short; next line (indented 2 under WHEN) when long # When a THEN value breaks to a new line, indent it one level under its WHEN.
+          when_else: indented 4 under CASE # Indent WHEN/ELSE 4 spaces under CASE.
+          end: aligned with CASE # Align END with its CASE.
+          then_value: inline when short; next line (indented 4 under WHEN) when long # When a THEN value breaks to a new line, indent it 4 spaces under its WHEN.
           consistency: all branches inline or all broken within one CASE block # Within one CASE block, keep all WHEN/THEN branches inline or break them all; do not mix. ELSE may stay inline when its value is short.
           else_exception: ELSE value may stay inline when short # Within one CASE block, keep all WHEN/THEN branches inline or break them all; do not mix. ELSE may stay inline when its value is short.
         insert:

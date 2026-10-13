@@ -202,6 +202,7 @@ sql:
         having: !rule sql_having_indent
       case:
         when_else: !rule sql_case_when_else_indent
+        end: !rule sql_case_end_align
         then_value: !rule sql_case_then_break
         consistency: !rule sql_case_branch_consistency
         else_exception: !rule sql_case_branch_consistency

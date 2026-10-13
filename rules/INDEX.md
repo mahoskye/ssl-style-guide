@@ -96,7 +96,7 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`runds_return_type_needs_ssldataset`](data-sources/runds_return_type_needs_ssldataset.md) | authoritative | warning | `reviewer` | The `RunDS` return-type argument (`"ssldataset"`, `"xml"`, and so on) converts only an `SSLDataset` result; an SSL data source that callers request in another return type returns an `SSLDataset`, for example from `GetSSLDataset`. |
 | [`one_class_or_script_per_file`](data-sources/one_class_or_script_per_file.md) | authoritative | error | `lsp:diag.class_or_script` | One file should represent either a class definition, a script, or a data source. |
 
-## sql (32)
+## sql (33)
 
 | Id | Level | Severity | Enforced by | Rule |
 |---|---|---|---|---|
@@ -119,9 +119,10 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`sql_on_indent`](sql/sql_on_indent.md) | style_only | info | `lsp:fmt.sql_in_strings` | Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0). |
 | [`sql_having_indent`](sql/sql_having_indent.md) | style_only | info | `lsp:fmt.sql_in_strings` | Indent `HAVING` 2 spaces under `GROUP BY`. |
 | [`sql_between_and_align`](sql/sql_between_and_align.md) | style_only | info | `reviewer` | When a `BETWEEN ... AND` range breaks across lines, align its `AND` under `BETWEEN`. |
-| [`sql_case_when_else_indent`](sql/sql_case_when_else_indent.md) | style_only | info | `reviewer` | Indent `WHEN`/`ELSE` 2 spaces under `CASE`. |
+| [`sql_case_when_else_indent`](sql/sql_case_when_else_indent.md) | style_only | info | `lsp:fmt.sql_in_strings` | Indent `WHEN`/`ELSE` 4 spaces under `CASE`. |
+| [`sql_case_end_align`](sql/sql_case_end_align.md) | style_only | info | `lsp:fmt.sql_in_strings` | Align `END` with its `CASE`. |
 | [`sql_case_branch_consistency`](sql/sql_case_branch_consistency.md) | style_only | info | `reviewer` | Within one `CASE` block, keep all `WHEN`/`THEN` branches inline or break them all; do not mix. `ELSE` may stay inline when its value is short. |
-| [`sql_case_then_break`](sql/sql_case_then_break.md) | style_only | info | `reviewer` | When a `THEN` value breaks to a new line, indent it one level under its `WHEN`. |
+| [`sql_case_then_break`](sql/sql_case_then_break.md) | style_only | info | `reviewer` | When a `THEN` value breaks to a new line, indent it 4 spaces under its `WHEN`. |
 | [`sql_select_packing`](sql/sql_select_packing.md) | style_only | info | `lsp:fmt.sql_in_strings` | Pack `SELECT` columns onto lines up to about 90 characters: short aliases (`col AS alias`) and simple functions (`COUNT(*)`, `UPPER(col)`) can share a line, and complex expressions (`CASE`, nested functions, subqueries) break to their own line. |
 | [`sql_select_continuation`](sql/sql_select_continuation.md) | style_only | info | `lsp:fmt.sql_in_strings` | Align `SELECT` continuation lines to the first column (column 7). |
 | [`sql_insert_layout`](sql/sql_insert_layout.md) | style_only | info | `lsp:fmt.sql_in_strings` | In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way. |
