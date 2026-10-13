@@ -22,11 +22,10 @@ Review the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 
 5. **Identify the file type** before applying rules. If the file is a data source (SSL or SQL),
    parameter syntax and structure rules differ — see `ssl_agent_instructions.md` §4A.
-   SQL data sources may contain the builder directives `:DSN`, `:TABLENAME`,
-   `:NULLASBLANK` and `:INVARIANTDATECOLUMNS`; do not flag them. For data sources:
+   For data sources:
    <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_not_script_layout -->
    - Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
-   - SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
    - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source files.
    <!-- /rules -->
 

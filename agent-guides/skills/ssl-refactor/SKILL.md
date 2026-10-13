@@ -15,11 +15,10 @@ Refactor the SSL file at `$ARGUMENTS` (first token is the file path, optional re
 
 2. **Identify the file type** before refactoring. If the file is a data source (SSL or SQL),
    it uses different parameter syntax and structure — see `ssl_agent_instructions.md` §4A
-   and `ssl_refactoring_guide.md` §2.4. SQL data sources may contain builder
-   directives (`:DSN`, `:TABLENAME`, etc.). For data sources:
+   and `ssl_refactoring_guide.md` §2.4. For data sources:
    <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_not_script_layout -->
    - Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
-   - SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
    - Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source files.
    <!-- /rules -->
 

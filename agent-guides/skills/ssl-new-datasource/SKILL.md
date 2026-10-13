@@ -49,8 +49,9 @@ you are unsure about any rule below.
      text placed before it is discarded.
    - Lay out the query body of a SQL data source in the canonical compact SQL
      style, the same as SQL embedded in SSL strings.
-   - SQL data-source builder directives are preprocessed before compilation and
-     are not normal SSL keywords.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`,
+     `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not
+     normal SSL keywords; do not flag them as unknown keywords.
    - In an SSL data source, comments are SSL comments: they end at the first
      `;`, and `*/` does not close them.
    - In an SSL data source, use parameters as ordinary variables by their bare

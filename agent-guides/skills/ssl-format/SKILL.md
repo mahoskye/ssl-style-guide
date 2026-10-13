@@ -20,13 +20,11 @@ Format the SSL file at `$ARGUMENTS` (first token is the file path, optional seco
 4. **Identify the file type.** If the file is a data source (SSL or SQL), these rules apply:
    <!-- rules: id=no_default_statements_in_datasource,no_flag_builder_directives,datasource_sql_body_compact_layout -->
    - Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
-   - SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.
+   - SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
    - Lay out the query body of a SQL data source in the canonical compact SQL style, the same as SQL embedded in SSL strings.
    <!-- /rules -->
 
-   SQL data sources may contain the builder directives `:DSN`, `:TABLENAME`,
-   `:NULLASBLANK` and `:INVARIANTDATECOLUMNS`. Format them consistently, but do
-   not flag or remove them.
+   Format builder directives consistently, but never remove them.
 
 5. **Format only** — do NOT rename variables, restructure logic, extract procedures, or change behavior. This is a formatting pass, not a refactor.
 
