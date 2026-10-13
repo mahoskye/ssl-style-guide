@@ -31,7 +31,13 @@ One test file per unit under test, named `<UnitName>Tests.ssl`, holding:
 1. A file banner naming what is under test and how to run it.
 2. `RunTests` — the entry point. Calls each test procedure, collects
    results, reports the tally.
-3. One procedure per test case, named `Test<Behavior>`.
+3. One procedure per test case, named `Test<Behavior>`. Test names
+   follow the same 30-character procedure-name limit as any other
+   procedure (schema `naming.length_limits.procedure_name_max`). The
+   file name already says which unit is under test, so a name needs only
+   the procedure and a short behavior — `TestFormatIdRejectsEmptyInput`
+   is 29 characters. Put the detail in the test's first comment and its
+   assertion label, not in the name.
 4. Assertion helpers at the bottom.
 
 Same-file procedures are called with `DoProc("Name", {args})`. Never
