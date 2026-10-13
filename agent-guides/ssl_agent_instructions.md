@@ -9,7 +9,7 @@ Authoritative rules describe documented language behavior; style recommendations
 
 1. **Colon-prefixed keywords are case-sensitive** and must be UPPERCASE (e.g., `:IF`, `:FOR`). **SSL literals/constants** (`NIL`, `.T.`, `.F.`) are case-insensitive. **Class-context forms** (`Me`, `Base`, `Constructor`) are also case-insensitive; `Base` is used in colon-chained member access and `Constructor` is only meaningful as the fixed constructor declaration name inside `:CLASS`. **Identifiers and function names are case-insensitive.**
 2. **Semicolons are mandatory** for almost every statement, including comments.
-3. **Declare variables before use** with `:DECLARE`. **Do not** use `:DEFAULT` on a `:DECLARE` line.
+3. **Declare variables before use** with `:DECLARE`. SSL does not enforce this (an undeclared name is looked up in caller scopes and publics, and a write to it can change a caller's variable), so declaring every name is the safe default rather than a language rule. **Do not** use `:DEFAULT` on a `:DECLARE` line.
 4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
 5. **Custom procedures cannot be called directly.** A bare `Name(...)` call always means a built-in function, in scripts and classes alike; any other name stops the script from compiling with `Invalid built-in function: Name`. Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
@@ -151,9 +151,9 @@ Authoritative rules describe documented language behavior; style recommendations
     * **Different File / Specific Procedure:** Use `ExecFunction("Category.Script.ProcedureName", {arg1, arg2});`.
     * **One-segment `ExecFunction("Name")`** looks for a script in the default categories, not a procedure in the current script. Use `DoProc` for same-file procedures.
     * **First segment is never ambiguous:** Applications and server-script categories share a single namespace — a category cannot be created with the name of an existing application. The first segment of a dotted path therefore always resolves to exactly one container; there is no collision or precedence rule to consider.
-    * **Skip Parameters:** Keep skipped-argument commas adjacent. For example,
-      `DoProc("MyProc", {param1,,param3,,param5});` is valid, but
-      `DoProc("MyProc", {param1, , param3, , param5});` is not.
+    * **Skip Parameters:** An empty position passes `NIL`. House style keeps skipped-argument commas adjacent: write
+      `DoProc("MyProc", {param1,,param3,,param5});` rather than
+      `DoProc("MyProc", {param1, , param3, , param5});`. Both forms are valid and behave the same.
     * **Omit trailing optional parameters** rather than passing empty values. For example, write `DoProc("MyProc")` not `DoProc("MyProc", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
     * **Built-in Functions:** Can be called directly with standard syntax (e.g., `Len(sString)`).
 
@@ -181,7 +181,7 @@ Authoritative rules describe documented language behavior; style recommendations
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value. When a class inherits, the parent's parameterless `Constructor` runs automatically first; a parent `Constructor` that takes parameters does not run unless the derived `Constructor` calls `Base:Constructor(args)`.
     * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. An unqualified `DoProc("ProcName", ...)` is rejected inside class methods; fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
-    * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
+    * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). A bare name follows normal variable lookup (local, then caller scopes, then publics): a read with nothing of that name in reach raises `Variable [name] is undefined!`, and a write may land on a caller's or a public variable. Neither touches the field.
     * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
     * **Access modifiers (scripts only):** Place `/*@private;` or `/*@protected;` on the line immediately before `:PROCEDURE` to restrict access. Both block calls from other scripts; procedures in the same script can still call it with `DoProc`. Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments: write them exactly as shown (lowercase, no space between `/*` and `@`), and do not put a blank line between the modifier and `:PROCEDURE`, which breaks the association. **These modifiers have no effect on class methods** (class methods are always Public|Virtual).
@@ -218,7 +218,7 @@ Authoritative rules describe documented language behavior; style recommendations
       :ENDPROC;
       ```
 
-* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects, available only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is; in non-endpoint scripts the identifiers are not bound and references will fail at runtime.
+* **Endpoint ambients (`Request` / `Response`):** Endpoint scripts run with two pre-injected identifiers in scope: `Request` (the incoming HTTP request) and `Response` (the outgoing reply being built). They are not declared with `:DECLARE`, do not need `Me:` qualification, and cannot be reassigned by name — treat them as ambient runtime objects that are meaningful only in scripts wired up as endpoints. Read request data via `Request:` members (URL, headers, body, query/form values) and shape the reply via `Response:` members (status, headers, body). Use them as-is. They only describe an HTTP call inside endpoint scripts, but referencing them elsewhere does not raise an error (in a script run from Designer, `Request:UserAgent` returns the Designer client's user agent and `Response:Write` completes without an error), so neither a successful read nor a `:TRY` guard proves the script is running as an endpoint.
 
 ### Code Organization
 
@@ -507,12 +507,12 @@ When using **array expansion** (`IN (?arrayVar?)`) with `SQLExecute`, the array 
 
 ```ssl
 /* WRONG - runtime error: "The current array has more than 1 dimmension.";
-oFilter:StatusCodes := {"A", "P", "C"};
-aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:StatusCodes?)");
+oFilter:statusCodes := {"A", "P", "C"};
+aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?oFilter:statusCodes?)");
 
 /* CORRECT - copy to a local variable first;
-oFilter:StatusCodes := {"A", "P", "C"};
-aStatusCodes := oFilter:StatusCodes;
+oFilter:statusCodes := {"A", "P", "C"};
+aStatusCodes := oFilter:statusCodes;
 aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 ```
 
@@ -686,7 +686,7 @@ Variables must be prefixed to indicate type:
 - Function/procedure names: maximum 30 characters
 
 **Exceptions to Hungarian Notation:**
-* Loop counters: `i`, `j`, `k`, `x`, `y`, `z` (single letters allowed)
+* Loop counters: `i`, `j`, `k`, `x`, `y`, `z` (single letters allowed) — only when declared, and prefer a script-specific name such as `nSampleIdx` in a script that calls other scripts, because an undeclared counter can collide with a caller's variable
 * Global constants: `ALL_CAPS_NAMING` (e.g., `MAX_COUNT`, `DEFAULT_PATH`)
 * Special SSL literals/constants: `NIL`, `.T.`, `.F.`
 * Preserve established acronym casing only when it already exists in the surrounding codebase or required external names
@@ -751,7 +751,7 @@ Variables must be prefixed to indicate type:
         :ENDIF;
     :CATCH;
         /* Handle errors;
-        oLogger:LogError := GetLastSSLError();
+        oLogger:lastError := GetLastSSLError();
     :ENDTRY;
 
     :RETURN nTotal;
@@ -851,7 +851,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 8.  **Error Handling:** Use `:TRY`/`:CATCH`/`:FINALLY` for structured error handling.
 9.  **Object Property Access:** Use colon-chained access (`oObj:Property`, `oObj:Method():Value`), not dot-chained access (`oObj.Property`).
 10. **Function Name Casing:** Represent functions in PascalCase where applicable (`CreateUdObject`, `SQLExecute`, `AEval`, `AScan`), while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`.
-11. **Object Property Assignment:** Object property assignments (e.g., `oLogger:LogError := value;`) are NOT variable declarations - don't flag as undeclared.
+11. **Object Property Assignment:** Object property assignments (e.g., `oLogger:lastError := value;`) are NOT variable declarations - don't flag as undeclared.
 12. **SQL Parameter Case Insensitivity:** SQL parameter names in `?varName?` placeholders are case-insensitive - `?sID?` and `?SID?` reference the same variable.
 13. **Multi-line Function Calls:** Function calls and array literals can span multiple lines - proper indentation should be preserved.
 14. **Procedure References:** Procedure names should only be matched in execution contexts (`DoProc`, `ExecFunction`), not in comments, strings, or unrelated identifiers.

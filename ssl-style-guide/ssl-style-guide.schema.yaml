@@ -1234,7 +1234,7 @@ ssl_style_guide:
     variable_naming:
       hungarian_notation_required: true
       meaningful_names: true
-      max_length: 20  # variables, 30 for functions
+      max_length: 20  # variable characters after the type prefix; 30 for procedure and function names
   security_best_practices:
     sql_injection_prevention:
       always_use_parameters: true
@@ -1526,7 +1526,7 @@ ssl_style_guide:
         fn: code_block
         v: variant  # any/variant — for variables whose type is unknown or changes
       exceptions:
-        loop_counters: [i, j, k, x, y, z]
+        loop_counters: [i, j, k, x, y, z]  # only when declared; prefer a script-specific name in a script that calls other scripts
         ssl_constants: [NIL, .T., .F.]
         preserve_existing_acronym_casing: true
     security:
@@ -1617,7 +1617,7 @@ ssl_style_guide:
       scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
     parameter_skipping_style:
       level: style_only
-      rule: "Skipped-argument commas must be adjacent with no intervening spaces: {param1,,param3} not {param1, , param3}."
+      rule: "House style: write skipped-argument commas adjacent with no intervening spaces — {param1,,param3}, not {param1, , param3}. Both forms are valid and behave the same."
       trailing_params: "Omit trailing optional parameters rather than passing empty values."
     class_rules:
       - rule: class_member_order
@@ -1636,7 +1636,7 @@ ssl_style_guide:
     coding_standards:
       - rule: limit_public_vars
         severity: warning
-        message: ":PUBLIC variables are call-stack scoped — visible to the declaring scope and every scope it calls, for the lifetime of the declaring frame — and risk namespace pollution. Prefer :DECLARE with parameter passing."
+        message: ":PUBLIC variables are shared across the running program — any procedure can read or update them, including procedures called after the declaring procedure has returned — and anything on the call stack can overwrite them. Prefer :DECLARE with parameter passing."
       - rule: prefer_exitcase
         severity: warning
         message: ":EXITCASE is syntactically optional, but without it later :CASE expressions are still evaluated and additional matching bodies may execute. :OTHERWISE still stays skipped once any earlier case body has run. Always include :EXITCASE unless multi-match behavior is intentional."
