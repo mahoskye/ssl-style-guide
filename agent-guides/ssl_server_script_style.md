@@ -119,7 +119,7 @@ Do not force regions, state objects, or helper procedures into a script that rem
 
 - Return early for invalid requests and failed contracts.
 - Use `:BEGINCASE` when choosing among several routes, result shapes, artifact kinds, actions, or outcomes.
-- Use `AScan({...}, value)` when testing membership in a fixed set of exact values.
+- Use `AScanExact({...}, value)` when testing membership in a fixed set of exact values. `AScan` matches strings by prefix (`"APP"` matches `"APPROVED"`, and an empty string matches the first string element).
 - Use `:EXITCASE;` when a case assigns a value and execution continues after `:ENDCASE`.
 - Do not add `:EXITCASE;` after a branch-level `:RETURN`; the return already terminates the procedure.
 - Do not duplicate identical outcome branches; keep separate branches only when their behavior differs.

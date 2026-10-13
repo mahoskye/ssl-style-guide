@@ -306,7 +306,7 @@ ssl_style_guide:
     # See ssl-ebnf-grammar.md for the canonical production chain.
     comparison_operators:
       equality:                    # precedence: same level as containment (below relational)
-      - '='    # loose equality (for strings: .T. if right is empty or left starts with right; for other types: exact match)
+      - '='    # loose equality (strings: .T. if right is empty or left starts with right; numbers, booleans, dates: exact match; arrays and objects: same instance)
       - '=='   # strict equality (exact match)
       inequality:                  # precedence: same level as equality
       - '!='   # not equals (negates ==, not =)
@@ -392,7 +392,7 @@ ssl_style_guide:
     logical_evaluation:
       short_circuit: true
       truth_values: .T. (true), .F. (false)
-      nil_evaluates: false
+      nil_evaluates: error  # a non-boolean condition or .NOT. operand (including NIL) raises; it is not coerced to .F.
     string_concatenation:
       operator: + (plus)
       implicit_concatenation: false
@@ -1129,11 +1129,13 @@ ssl_style_guide:
       level: authoritative
       rule: >-
         Built-in value types (string, number, date, array, boolean,
-        netobject) are backed by .NET values; ':' member access forwards to
-        the underlying .NET object when no SSL-side member matches (e.g.
-        sName:Length, sName:ToUpper(), dDate:Year, dDate:AddDays(3),
-        aList:Count, nVal:ToString()). This is legitimate dispatch, not an
-        error. MakeNETObject(value) wraps a value explicitly as netobject.
+        netobject) are backed by .NET values and have no SSL-defined ':'
+        members, so every ':' call on them reaches a native .NET member or
+        raises (e.g. sName:Length, sName:ToUpper(), dDate:Year,
+        dDate:AddDays(3), aList:Length, nVal:ToString()). Native member names
+        are case-sensitive (aList:Clone() works, aList:clone() raises). This
+        is legitimate dispatch, not an error. MakeNETObject(value) wraps a
+        value explicitly as netobject.
       tooling_note: >-
         Tools must never flag an unmatched ':' member on these types as an
         unknown-member error — a typo cannot be distinguished from a valid
@@ -1146,13 +1148,16 @@ ssl_style_guide:
           - 1-based indexing — first element is aValues[1]
           - May contain mixed value types including NIL and other arrays
           - Empty() returns .T. only when the array has no top-level elements
+          - No SSL-defined ':' members — aList:Count raises Invalid property and aList:clone() raises Invalid method; use ALen()/Len() or the native aList:Length
+          - The native aList:Clone() (capital C) copies the top level only — nested arrays are shared
           - Literal syntax {expr1, expr2, ...}; nested {{...}, {...}}
       boolean:
         summary: Logical true/false values.
         runtime_type: LOGIC
         notes:
           - Two literal values .T. and .F.
-          - Strict equality only — comparing to non-boolean types raises a runtime error
+          - Strict equality only — comparing to a non-boolean, non-NIL value raises a runtime error; NIL on the right does not raise
+          - The native bVal:ToString() returns "True"/"False" — use LimsString() for .T./.F. text
           - .AND. and .OR. short-circuit; the left operand must be boolean; .OR. with a .F. left operand returns the right operand unchanged, so keep both operands boolean
           - Empty() on a boolean acts as logical negation, not an "uninitialized" check
       codeblock:
@@ -1168,6 +1173,8 @@ ssl_style_guide:
           - No date literal syntax — create via Today(), Now(), CToD(), DateFromNumbers(), StringToDate()
           - Supports adding/subtracting numeric day offsets and date-difference subtraction
           - Not indexable
+          - The native dVal:ToString() gives date and time in the server's format — pass a format (dVal:ToString("yyyy-MM-dd")) or use DToC()
+          - Any ':' member access on an empty date raises — guard with Empty() first
       netobject:
         summary: Dynamic wrapper for external .NET objects.
         runtime_type: OBJECT
@@ -1180,7 +1187,7 @@ ssl_style_guide:
         summary: Single numeric type covering integers and fractional values.
         runtime_type: NUMERIC
         notes:
-          - All numbers are 64-bit floating-point — no separate integer type
+          - One numeric type for whole and fractional values; the native .NET type varies with the value (System.Int32 for whole numbers, System.Double for fractions), so the available native members differ
           - Supports arithmetic, comparison, exponentiation (^ or **), and shift (<<, >>) operators
           - Bitwise operations through _AND() / _OR() / _XOR() / _NOT() function calls
           - Scalar — does not support [] indexing
@@ -1612,7 +1619,7 @@ ssl_style_guide:
       - rule: variable_lookup_order
         message: "Variable lookup: local scope → caller scopes (up call stack) → public variables (:PUBLIC)."
       - rule: numeric_type
-        message: "All numbers are stored as 64-bit floating-point (double). There is no separate integer type."
+        message: "SSL has one numeric type for whole and fractional values. The underlying native type varies with the value (whole numbers report System.Int32, fractions System.Double)."
     label_behavior:
       level: authoritative
       token_text: "The token text includes the word LABEL — :LABEL SKIP; produces \"LABEL SKIP\". Branch() targets must include \"LABEL\" in the string."
@@ -1836,7 +1843,7 @@ ssl_style_guide:
     data_types:
       implicit: true  # SSL is loosely typed
       style_hint_reference: hungarian_notation
-      type_conversion: automatic
+      type_conversion: explicit  # no implicit conversion; only date ± number and date - date coerce. Use Val()/LimsString()
     generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("  # regex for recognizing function-name tokens
   editor_support:
     level: advisory

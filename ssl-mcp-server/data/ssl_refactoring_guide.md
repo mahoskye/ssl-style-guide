@@ -364,7 +364,7 @@ MAX_ATTEMPTS := 3;
 DEFAULT_TIMEOUT := 30;
 ```
 
-> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `""`, `0`, `NIL`, and `.F.`.
+> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array.
 
 ---
 
@@ -781,14 +781,14 @@ The `:ERROR`/`:RESUME` keywords are legacy procedure-level error handling. They 
 
 ### 7.8 Membership Tests
 
-Use `AScan` to test whether a value exists in a list. Build the candidate list as an array literal or variable.
+Use `AScanExact` to test whether a value exists in a list. Build the candidate list as an array literal or variable. Do not use `AScan` for this: it matches strings by **prefix**, so `AScan({"APPROVED"}, "APP")` finds a match, and an empty search string matches the first string element.
 
 ```ssl
 /* CORRECT - test whether a value is one of several candidates;
 :DECLARE aCandidates, nPos, bFound;
 
 aCandidates := {"SWAP", "ADEL", "COPY"};
-nPos := AScan(aCandidates, Upper(sAction));
+nPos := AScanExact(aCandidates, Upper(sAction));
 bFound := nPos > 0;
 
 :IF bFound;
@@ -802,12 +802,12 @@ For case-insensitive membership tests, normalize before scanning:
 /* Case-insensitive membership test;
 :DECLARE aValid;
 aValid := {"ACTIVE", "PENDING", "COMPLETE"};
-:IF AScan(aValid, Upper(sStatus)) > 0;
+:IF AScanExact(aValid, Upper(sStatus)) > 0;
     DoProc("ProcessValidStatus", {sStatus});
 :ENDIF;
 ```
 
-`AScan` also accepts a code block for custom comparison logic:
+`AScan` and `AScanExact` also accept a code block for custom comparison logic:
 
 ```ssl
 /* Code block scan — find first element matching condition;
@@ -946,7 +946,7 @@ ExecFunction("Category.Script.Proc", {arg1}); /* Other file specific procedure;
 
 ### Common Functions
 ```ssl
-Empty(value)                /* True if NIL, "", 0, or .F.;
+Empty(value)                /* True if NIL, blank string, 0, .F., empty date or array;
 Len(array or string)        /* Length;
 LimsString(value)           /* Convert to string;
 CreateUdObject()            /* Create empty dynamic object;

@@ -339,7 +339,7 @@ Use `LimsTypeEx(value)` to identify the public type at execution time. These are
 
 ### Number Details
 
-SSL has a single numeric type — all numbers are stored as 64-bit floating-point (`double`). There is no separate integer type. Division always produces a floating-point result (`5 / 2` yields `2.5`, not `2`). The `Integer()` function provides explicit truncation to whole numbers. Bitwise built-ins (`_AND`, `_OR`, `_XOR`, `_NOT`) and shift operators (`<<`, `>>`) require integer-valued operands (whole numbers) and raise errors on fractional values.
+SSL has a single numeric type for whole and fractional values. The underlying native type varies with the value — whole numbers report `System.Int32` and fractions `System.Double` — so the native `:` members available differ between them. Division always produces a floating-point result (`5 / 2` yields `2.5`, not `2`). The `Integer()` function provides explicit truncation to whole numbers. Bitwise built-ins (`_AND`, `_OR`, `_XOR`, `_NOT`) and shift operators (`<<`, `>>`) require integer-valued operands (whole numbers) and raise errors on fractional values.
 
 | Operator | SSL Syntax | Description |
 |----------|------------|-------------|
@@ -374,8 +374,8 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 - `.AND.` and `.OR.` use **short-circuit evaluation**: if the first operand determines the result, the second operand is not evaluated (e.g., `.F. .AND. SomeFunction()` will not call `SomeFunction()`)
 - **No truthy/falsy coercion.** Conditions in `:WHILE` and `:CASE`, and the left operand of `.AND.`/`.OR.`, must be logical values; other types raise an error. The right operand is not converted: `.F. .OR. "x"` returns `"x"`, so keep both operands boolean.
 - `Empty()` returns `.T.` if value is `.F.` (false equals empty)
-- `ToString()` returns `.T.` or `.F.`
-- `ToJson()` returns `"true"` or `"false"`
+- The native `bFlag:ToString()` returns `"True"` or `"False"`, not `.T.`/`.F.`; use `LimsString(bFlag)` for `.T.`/`.F.` text
+- `ToJson(bFlag)` returns `"true"` or `"false"`
 
 ### Date Details
 
@@ -386,20 +386,23 @@ SSL has a single numeric type — all numbers are stored as 64-bit floating-poin
 
 **Key Behaviors:**
 - `Empty()` returns `.T.` for an empty date
-- `ToString()` returns date in `MM/dd/yyyy` format, or `"  /  /    "` if empty
-- `ToJson()` returns ISO 8601 formatted date string based on DateTimeKind
+- The native `dDate:ToString()` returns date **and time** in the server's format (such as `9/30/2026 12:00:00 AM`), not a fixed `MM/dd/yyyy`. Pass a format (`dDate:ToString("yyyy-MM-dd")`) or use `DToC(dDate)` when the format matters
+- **Any `:` member access on an empty date raises** — guard with `Empty(dDate)` first
+- `ToJson(dDate)` returns a quoted timestamp string whose zone suffix depends on the date kind, or `null` for an empty date
 
 ### Array Details
 
 | Property | Description |
 |----------|-------------|
 | **1-based indexing** | First element is at index 1, not 0 |
-| `Count` | Returns the number of elements |
-| Deep clone | The `clone()` method recursively clones all elements |
+| Length | Use `ALen(aList)` or `Len(aList)`, or the native `aList:Length`. `aList:Count` raises `Invalid property: Count` |
+| Copy | The native `aList:Clone()` (capital C) copies the **top level only** — nested arrays are shared. `aList:clone()` raises `Invalid method: clone` |
+
+Arrays have no SSL-defined `:` members: calls such as `aList:Append(x)`, `aList:IsEmpty()` or `aList:ToJson()` raise. Use the array functions (`AAdd`, `ALen`, `AScan`, ...) instead.
 
 ### .NET Method Dispatch on Built-in Types
 
-SSL's built-in scalar and array types are backed by underlying .NET values, and member access with `:` forwards to that .NET object when no SSL-side member matches. This means a string value supports `:Length`, `:ToUpper()`, `:Substring(...)`, `:IndexOf(...)`, etc., a date value supports `:Year`, `:AddDays(...)`, a number value supports `:ToString(...)`, an array value exposes its underlying `:Count` and list members, and a boolean value supports `:ToString()`. Prefer SSL built-in functions (`Len`, `Upper`, `SubStr`, ...) for ordinary work — the implicit `:` dispatch is useful when the SSL surface does not cover what you need (formatted conversions, culture-aware comparisons, .NET-specific helpers), and it returns whatever the underlying .NET method returns, which may not be an SSL-friendly type. The same mechanism lets `MakeNETObject(value)` produce a wrapped value (`netobject`) that you then call .NET members on with `:`.
+SSL's built-in scalar and array types are backed by underlying .NET values. Strings, numbers, booleans, dates and arrays have **no SSL-defined members**, so every `:` call on one of them reaches a native .NET member or raises. Native member names are **case-sensitive** (`sText:ToUpper()` works, `sText:toupper()` raises). A string value supports `:Length`, `:ToUpper()`, `:Substring(...)`, `:IndexOf(...)`, etc., a date value supports `:Year`, `:AddDays(...)`, a number value supports `:ToString(...)`, an array value exposes `:Length` and `:Clone()` (no `:Count`), and a boolean value supports `:ToString()` (returning `"True"`/`"False"`). Prefer SSL built-in functions (`Len`, `Upper`, `SubStr`, ...) for ordinary work — the implicit `:` dispatch is useful when the SSL surface does not cover what you need (formatted conversions, culture-aware comparisons, .NET-specific helpers), and it returns whatever the underlying .NET method returns, which may not be an SSL-friendly type. The same mechanism lets `MakeNETObject(value)` produce a wrapped value (`netobject`) that you then call .NET members on with `:`.
 
 ### Operators Summary
 

@@ -480,7 +480,8 @@ const CATEGORY_DEFS = [
     mustFollow: [
       'Use NIL for the nil literal and .T./.F. for booleans.',
       'Look up function parameter types before relying on coercion.',
-      'Remember that member access can dispatch to underlying runtime members when no SSL-side member matches.',
+      'Strings, numbers, booleans, dates and arrays have no SSL-defined members; a : call reaches a case-sensitive native .NET member or raises (arrays have :Length, not :Count).',
+      'Convert types explicitly with Val() and LimsString(); only date ± number and date - date coerce.',
     ],
     avoid: [
       'Do not assume every built-in coerces strings, numbers, dates, and NIL interchangeably.',
