@@ -84,14 +84,20 @@ Refactored SSL scripts should follow this target structure in order:
 └────────────────────────────────────────┘
 ```
 
-> **Ordering rules:** `:PARAMETERS` must appear before any other statements.
-> `:DEFAULT` must immediately follow `:PARAMETERS`. `:DECLARE` and `:PUBLIC`
-> are regular statements and can appear anywhere. `:INCLUDE` is resolved as
-> a textual paste before the rest of the file is read, so its position is
-> technically flexible, but it should appear early. Recommended conventional
-> order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
+**Ordering rules:**
 
-> **Data source files do not follow this layout.** SSL and SQL data source files are preprocessed before they run and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain preprocessor directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the standard SSL language. See `ssl_agent_instructions.md` §4A for details.
+<!-- rules: id=parameters_first,default_after_parameters,include_early,script_declaration_order -->
+- `:PARAMETERS` must appear before any other statements in a script or procedure body.
+- `:DEFAULT` must immediately follow `:PARAMETERS`.
+- Place `:INCLUDE` early — it textually includes the referenced source before the script runs.
+- Recommended script order is `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`.
+<!-- /rules -->
+
+`:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere.
+`:INCLUDE` is resolved as a textual paste before the rest of the file is
+read, so its position is technically flexible.
+
+> **Data source files do not follow this layout.** <!-- rule: datasource_not_script_layout -->Do not apply normal script `:PARAMETERS`/`:DEFAULT` layout to data-source files.<!-- /rule --> SSL and SQL data source files are preprocessed before they run and use different parameter syntax (`:PARAMETERS p1 := val;` with inline defaults instead of separate `:DEFAULT` statements). They may also contain preprocessor directives (`:DSN`, `:TABLENAME`, etc.) that are not part of the standard SSL language. See `ssl_agent_instructions.md` §4A for details.
 
 ### 2.2 Header Template
 
@@ -132,7 +138,7 @@ _______________________________________________________________________________
 :ENDPROC;
 ```
 
-More than 20 parameters on a procedure or method triggers a performance warning; prefer grouping related state into arrays/objects or using wrapper-core patterns.
+<!-- rule: max_params_warning -->Keep procedures to at most 8 parameters; more than 20 parameters on a procedure or method draws a warning, so group related state into arrays or objects.<!-- /rule --> The wrapper-core pattern (§6.4) is another way to keep a parameter list short.
 
 ### 2.4 Data Source File Structure
 
@@ -171,16 +177,24 @@ Data source files have a different structure from scripts and classes. Do not ap
 ```
 
 **Key differences when refactoring data source files:**
-- Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
-- Every parameter must have an inline `:=` default — `:PARAMETERS sName := "", nCount := 10;`. A parameter without one makes the data source fail when it runs (`No default value for one or more parameters.`)
-- Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
-- The preprocessor rewrites everything into standard SSL before the script runs
+<!-- rules: id=no_default_statements_in_datasource,datasource_default_required,no_flag_builder_directives -->
+- Data source files use inline `:PARAMETERS` defaults with `:=` instead of separate `:DEFAULT` statements.
+- Give every data-source parameter an inline `:=` default; a parameter without one makes the data source fail when it runs.
+- SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.
+<!-- /rules -->
+
+For example, `:PARAMETERS sName := "", nCount := 10;`. A parameter without a
+default fails with `No default value for one or more parameters.` The
+preprocessor rewrites everything into standard SSL before the script runs.
 
 ### 2.5 Regions for Organization
 
-Group related procedures with `/* region` / `/* endregion` comment conventions:
+<!-- rules: id=regions_group_related_procedures,comment_regions_for_grouping -->
+- Use regions for meaningful groups of related procedures; do not create one region per procedure.
+- Use `/* region` / `/* endregion` comments for editor grouping instead of `:REGION` / `:ENDREGION`.
+<!-- /rules -->
 
-> **Important:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. Prefer comment-based regions for code organization.
+> **Important:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`.
 
 ```ssl
 /* region Data Processing;
@@ -212,49 +226,54 @@ These formatting rules are style conventions and match the starlims-lsp formatte
 
 ### 3.1 Indentation
 
-| Rule | Standard |
-|------|----------|
-| Indent unit | 1 tab (or 4 spaces if using spaces) |
-| Block content | Indent one level inside blocks |
-| Nested blocks | Each level adds one indent |
-| Class files | Do not indent the class body solely because of `:CLASS` |
+<!-- rules: id=indent_tabs_preferred,consistent_indentation,indent_block_bodies,dedent_closing_keywords,same_level_block_keywords,exitcase_statement_level,class_members_top_level -->
+- Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
+- Keep indentation consistent within a file; do not mix tabs and spaces.
+- Indent the body of a block one level: `:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, `:PROCEDURE`, `:REGION` and `:BEGININLINECODE` open an indented body, and each nested block adds one more level.
+- Dedent a closing keyword to the level of the keyword that opened its block: `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` and `:ENDINLINECODE`.
+- Put `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH` and `:FINALLY` at the level of the keyword that opened their block, then indent the body that follows them one level.
+- Indent `:EXITCASE` at the level of the other statements in its branch; it does not change the indentation.
+- Do not indent the class body because of `:CLASS`; class members stay at the file's top indentation level.
+<!-- /rules -->
 
-**Block keywords that open an indented body:**
-`:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, `:PROCEDURE`, `:REGION` (functional), `:BEGININLINECODE`
-
-**Block keywords that close an indented body (dedent before the keyword):**
-`:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` (functional), `:ENDINLINECODE`
-
-**Same-level keywords (dedent to parent level, then open a new indented body):**
-`:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH`, `:FINALLY`
-
-**Regular statement (no indent change):**
-`:EXITCASE` - stays at content level, like a `break` statement. It must be the last statement of its `:CASE` or `:OTHERWISE` branch, directly in the branch body: a statement after it, or an `:EXITCASE` nested inside an `:IF`, is a compile error. To leave the block from part of a branch, split the branch into separate `:CASE` conditions instead.
+<!-- rule: exitcase_last_in_branch -->`:EXITCASE` must be the last statement of its `:CASE`/`:OTHERWISE` branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error.<!-- /rule --> To leave the block from part of a branch, split the branch into separate `:CASE` conditions instead.
 
 `:CLASS` establishes class context, but because it has no closing keyword and a file
 contains only one class, class members stay at the file's top indentation level.
 
 ### 3.2 Spacing
 
-| Context | Rule | Correct | Incorrect |
-|---------|------|---------|-----------|
-| Assignment | Space around `:=` | `x := 1;` | `x:=1;` |
-| Comparison | Space around operators | `a > b` | `a>b` |
-| Logical | Space around `.AND.` etc. | `a .AND. b` | `a.AND.b` |
-| Arithmetic | Space around operators | `x + y * z` | `x+y*z` |
-| Commas | Space after, not before | `a, b, c` | `a,b,c` or `a ,b ,c` |
-| Parentheses | No space inside | `DoProc("Name", {args})` | `DoProc( "Name" , { args } )` |
-| Function calls | No space before `(` | `Len(sValue)` | `Len (sValue)` |
-| Skipped params | Adjacent commas, no space | `RunSQL(sSQL,, aVals)` | `RunSQL(sSQL, , aVals)` |
+<!-- rules: id=operator_spacing,comma_spacing,no_space_inside_parens,no_space_before_call_paren,skip_commas_adjacent,member_access_no_spaces,empty_optional_param_array -->
+- Use spaces around assignment, arithmetic, comparison, and logical operators.
+- Put a space after each comma and none before it.
+- Do not put spaces just inside parentheses: `DoProc("Name", {args})`, not `DoProc( "Name", {args} )`.
+- Do not put a space between a function name and its `(`: `Len(sValue)`, not `Len (sValue)`.
+- Use adjacent commas with no spaces for skipped optional parameters.
+- Prefer no spaces around `:` in member access even though SSL accepts spaced forms.
+- Do not pass empty trailing optional parameters when they can be omitted.
+<!-- /rules -->
 
-> **Member access:** SSL accepts both `oObj:Prop` and `oObj : Prop`, but refactoring should normalize to the preferred no-space form unless preserving surrounding style is important.
+| Context | Correct | Incorrect |
+|---------|---------|-----------|
+| Assignment | `x := 1;` | `x:=1;` |
+| Comparison | `a > b` | `a>b` |
+| Logical | `a .AND. b` | `a.AND.b` |
+| Arithmetic | `x + y * z` | `x+y*z` |
+| Commas | `a, b, c` | `a,b,c` or `a ,b ,c` |
+| Parentheses | `DoProc("Name", {args})` | `DoProc( "Name" , { args } )` |
+| Function calls | `Len(sValue)` | `Len (sValue)` |
+| Skipped params | `RunSQL(sSQL,, aVals)` | `RunSQL(sSQL, , aVals)` |
+| Trailing optional arguments | `DoProc("Name")`, `GetDataSet(sQuery)` | `DoProc("Name", {})`, `GetDataSet(sQuery, {})` |
 
-> **Omit unnecessary arguments:** Do not pass empty arrays or empty strings for trailing optional parameters. Write `DoProc("Name")` not `DoProc("Name", {})`, and `GetDataSet(sQuery)` not `GetDataSet(sQuery, {})`. The runtime pads missing arguments with NIL.
+SSL accepts both `oObj:Prop` and `oObj : Prop`; keep the surrounding style
+when preserving it matters. The runtime pads missing arguments with NIL.
 
 ### 3.3 Line Length
 
-- **Maximum:** ~90 characters
-- **Multi-line breaks:** At logical points (after commas, before operators)
+<!-- rules: id=ssl_max_line_length,continuation_line_breaks -->
+- Keep SSL lines to about 90 characters, breaking longer ones at logical points.
+- Break a multi-line function call after a comma and a multi-line condition before `.AND.` or `.OR.`, and indent each continuation line one level.
+<!-- /rules -->
 
 Multi-line function calls:
 ```ssl
@@ -274,30 +293,35 @@ Multi-line conditions:
 
 ### 3.4 Statement Termination
 
-- **Almost every statement, including comments, must end with `;`**
-- **Continuation lines within multi-line expressions are not standalone statements** and do not need their own semicolon until the full statement terminates
+<!-- rules: id=statement_semicolon,no_semicolon_on_continuation_lines -->
+- Almost every SSL statement, including comments, must end with a semicolon.
+- Do not end a continuation line of a multi-line statement with a semicolon; only the line that completes the statement takes one.
+<!-- /rules -->
 
 ### 3.5 Blank Lines
 
-| Context | Blank Lines |
-|---------|-------------|
-| Between procedures | 1 blank line |
-| Between logical sections | 1 blank line |
-| Between regions | 1 blank line |
-| Inside procedures | As needed for readability |
+<!-- rules: id=blank_line_between_procedures,blank_line_between_sections -->
+- Put one blank line between procedures.
+- Put one blank line between logical sections and between regions.
+<!-- /rules -->
+
+Inside procedures, use blank lines as readability needs.
 
 ### 3.6 SQL String Formatting (Canonical Compact Style)
 
 SQL strings use **canonical compact** formatting. Core rules:
-- SQL keywords and functions in UPPERCASE
-- All other SQL identifiers keep the author's casing (force-folding is
-  dialect-conditional — lowercase is an Oracle-only opt-in)
-- Major clauses (SELECT, FROM, WHERE, JOIN, etc.) at column 0 relative to the
-  4-space SQL indent
-- SELECT continuation columns aligned to first column (col 7 from clause start)
-- AND/OR indented 2 spaces under their parent clause
-- ON indented 2 spaces under JOIN
-- Trailing commas, ~90 char line limit
+
+<!-- rules: id=sql_keyword_case,sql_identifier_case,sql_ssl_embedding_indent,sql_major_clause_column,sql_select_continuation,sql_and_or_indent,sql_on_indent,sql_trailing_commas,sql_max_line_length -->
+- Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+- Indent the whole SQL block 4 spaces inside the SSL string literal.
+- Start each major clause at column 0 relative to the 4-space indent: `SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `LEFT OUTER JOIN`, `RIGHT OUTER JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `GROUP BY`, `ORDER BY`, `UNION`, `UNION ALL`, `INTERSECT`, `MINUS`, `INSERT INTO`, `VALUES`, `UPDATE`, `DELETE FROM`, `MERGE INTO`, `USING`, `WHEN MATCHED THEN`, `WHEN NOT MATCHED THEN`, `START WITH`, `CONNECT BY`, `PIVOT`, `UNPIVOT`, `FOR UPDATE`, `RETURNING`.
+- Align `SELECT` continuation lines to the first column (column 7).
+- Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
+- Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
+- Put commas at the end of the line (trailing comma style), not at the start of the next line.
+- Keep SQL lines to about 90 characters, breaking at logical points.
+<!-- /rules -->
 
 ```ssl
 aResults := SQLExecute("
@@ -330,24 +354,36 @@ aResults := SQLExecute("
 | Code Block | `fn` | `fnFilter`, `fnCallback` |
 | Any/Variant | `v` | `vResult`, `vParam` |
 
-**Length limits:**
-- Variable names: maximum 20 characters (excluding prefix)
-- Function/procedure names: maximum 30 characters
+<!-- rules: id=hungarian_variable_names,prefix_matches_type,identifier_length_limits -->
+- Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (`sMyVar`, not `s_my_var` or `SMYVAR`).
+- Make a variable's prefix match the type of the value it holds: `s` string, `n` numeric, `b` boolean, `d` date, `a` array, `o` object, `fn` code block, `v` variant/any.
+- Keep variable names to 20 characters after the type prefix, and procedure and function names to 30 characters.
+<!-- /rules -->
 
 **Exceptions:**
-- Loop counters: `i`, `j`, `k`, `x`, `y`, `z` — only when declared, and prefer a script-specific name (`nSampleIdx`) in a script that calls other scripts, because an undeclared counter can collide with a caller's variable of the same name
-- Constants: `ALL_CAPS_WITH_UNDERSCORES`
+
+<!-- rules: id=loop_counter_names,constants_upper_snake_case -->
+- Loop counters may be `i`, `j`, `k`, `x`, `y` or `z` without a prefix only when declared; in a script that calls other scripts, prefer a script-specific name such as `nSampleIdx`.
+- Constants use UPPER_SNAKE_CASE.
+<!-- /rules -->
+
+An undeclared loop counter can collide with a caller's variable of the same
+name.
 
 ### 4.2 Procedure Names
 
-- **Format:** PascalCase
-- **Pattern:** Verb + Noun
-- **Examples:** `ValidateOrder`, `ProcessQCSample`, `CalculateTotal`, `InitializeState`
+<!-- rules: id=procedure_class_pascal_case,procedure_verb_noun_names -->
+- Procedures and classes use PascalCase.
+- Name procedures as a verb followed by a noun, for example `ValidateOrder`, `ProcessQCSample` or `CalculateTotal`.
+<!-- /rules -->
 
 ### 4.3 UDO Properties (User-Defined Objects)
 
-- **Format:** lowerCamelCase (no type prefix)
-- **Examples:** `oOrder:orderNo`, `oState:isValid`, `oData:errorMessage`
+<!-- rules: id=udo_property_lower_camel_case -->
+- Name user-defined object properties in lowerCamelCase with no type prefix, for example `oOrder:orderNo`.
+<!-- /rules -->
+
+More examples: `oState:isValid`, `oData:errorMessage`.
 
 ### 4.4 Built-in/System Object Properties
 
@@ -364,13 +400,13 @@ MAX_ATTEMPTS := 3;
 DEFAULT_TIMEOUT := 30;
 ```
 
-> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array. It is not a NIL test: when `0` or `.F.` is a valid value, use `var == NIL`.
+> **Note:** All declared variables initialize to empty string `""` (not `NIL`). Use `Empty(var)` to test for uninitialized/default state — it returns `.T.` for `NIL`, an empty or whitespace-only string, `0`, `.F.`, an empty date and an empty array. It is not a NIL test. <!-- rule: nil_in_operations -->Check for `NIL` before using a value in arithmetic or string operations; test `v == NIL` when `0`, `.F.` or an empty string is a valid value, because `Empty()` is also `.T.` for those.<!-- /rule -->
 
 ---
 
 ## Part 5: Global Variables
 
-Predefined globals are not part of the language. They are `:PUBLIC` variables that a base installation declares at startup, and installations can add, drop or change them. `MYUSERNAME` (equal to `GetUserData()`) is a common example. `CR`, `LF`, `TAB`, `sTab`, `MYUSERID` and `MYDEPT` are **not** declared on a base installation: use `Chr(13)`, `Chr(10)`, `Chr(9)` (or `CRLF`), `MYUSERNAME` and `STARLIMSDEPT` instead.
+Predefined globals are not part of the language. They are `:PUBLIC` variables that a base installation declares at startup, and installations can add, drop or change them. `MYUSERNAME` (equal to `GetUserData()`) is a common example. <!-- rule: guard_optional_globals -->Do not read a name the base installation does not declare (`CR`, `LF`, `TAB`, `sDQ`, `MYUSERID`, ...); use `Chr(...)` or the documented global instead, and guard a name that only some installations declare with `IsDefined("<name>")`.<!-- /rule --> For example, use `Chr(13)`, `Chr(10)`, `Chr(9)` (or `CRLF`), `MYUSERNAME` and `STARLIMSDEPT` in place of `CR`, `LF`, `TAB`, `sTab`, `MYUSERID` and `MYDEPT`.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -702,7 +738,7 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 :ENDCASE;
 ```
 
-`:EXITCASE;` must be the last statement of its branch, directly in the branch body. It cannot be made conditional: an `:EXITCASE` inside an `:IF`, or any statement after it in the same branch, stops the script from compiling. When only part of a branch should end the block, split the branch into separate `:CASE` conditions.
+<!-- rule: exitcase_last_in_branch -->`:EXITCASE` must be the last statement of its `:CASE`/`:OTHERWISE` branch, directly in the branch body; one nested inside `:IF`, or followed by another statement, is a compile error.<!-- /rule --> It cannot be made conditional. When only part of a branch should end the block, split the branch into separate `:CASE` conditions.
 
 ### 7.5 Incomplete Refactoring
 
@@ -774,13 +810,13 @@ The `:ERROR`/`:RESUME` keywords are legacy procedure-level error handling. They 
 :ENDIF;
 ```
 
-> **Key difference:** For strings, `=` returns `.T.` if the right operand is empty string OR if the left operand *starts with* the right operand (prefix match). `==` returns `.T.` only if both strings are exactly equal. For most other value types, `==` generally parallels `=`. **Always use `==` for string comparisons where exact match is needed.**
+> **Key difference:** For strings, `=` returns `.T.` if the right operand is empty string OR if the left operand *starts with* the right operand (prefix match). `==` returns `.T.` only if both strings are exactly equal. For most other value types, `==` generally parallels `=`. <!-- rule: equals_vs_strict_equals -->Use `==` for exact string equality; `=` is prefix-style for strings.<!-- /rule -->
 
-> **`!=` asymmetry warning:** The `!=` operator negates `==` (exact match), NOT `=` (prefix match). This means `=` and `!=` are **not logical opposites** for strings. For example, `"Logged" = "Log"` is `.T.` (prefix match) AND `"Logged" != "Log"` is also `.T.` (not an exact match) — both true for the same operands. The `<>` and `#` operators behave identically to `!=` but `!=` is preferred.
+> **`!=` asymmetry warning:** The `!=` operator negates `==` (exact match), NOT `=` (prefix match). This means `=` and `!=` are **not logical opposites** for strings. For example, `"Logged" = "Log"` is `.T.` (prefix match) AND `"Logged" != "Log"` is also `.T.` (not an exact match) — both true for the same operands. The `<>` and `#` operators behave identically to `!=`. <!-- rule: not_preferred_operator -->Prefer `!=` over `<>` or `#` for not-equals.<!-- /rule -->
 
 ### 7.8 Membership Tests
 
-Use `AScanExact` to test whether a value exists in a list. Build the candidate list as an array literal or variable. Do not use `AScan` for this: it matches strings by **prefix**, so `AScan({"APPROVED"}, "APP")` finds a match, and an empty search string matches the first string element.
+<!-- rule: ascanexact_for_fixed_sets -->Use `AScanExact({...}, value)` when testing membership in a fixed set of exact values; `AScan` matches strings by prefix.<!-- /rule --> Build the candidate list as an array literal or variable. Because of the prefix match, `AScan({"APPROVED"}, "APP")` finds a match, and an empty search string matches the first string element.
 
 ```ssl
 /* CORRECT - test whether a value is one of several candidates;
@@ -820,44 +856,62 @@ nIdx := AScan(aResults, {|row| row[3] > nThreshold});
 Run through this checklist after refactoring:
 
 ### Structure
-- [ ] Header comment present and complete
-- [ ] Parameters declared at top with defaults
-- [ ] All variables declared before use
-- [ ] Procedures defined after main logic
-- [ ] Related procedures grouped in regions
-- [ ] Script-level visibility annotations (`/*@private;` / `/*@protected;`) placed on own line before `:PROCEDURE` if used — note these have **no effect on class methods** (class methods are always Public|Virtual)
+<!-- rules: id=file_banner_required,parameters_first,default_after_parameters,declare_before_use,server_script_file_shape,regions_group_related_procedures,visibility_annotation_form,visibility_annotations_script_only format=checklist -->
+- [ ] Open every server script and class file with the standard file banner, using the dot-leader fields `Description`, `Parameters`, `Returns`, `Author` and `Date`.
+- [ ] `:PARAMETERS` must appear before any other statements in a script or procedure body.
+- [ ] `:DEFAULT` must immediately follow `:PARAMETERS`.
+- [ ] Declare variables before use with `:DECLARE`.
+- [ ] Order a nontrivial server script as: file banner; top-level `:PARAMETERS`, contiguous `:DEFAULT` statements and `:DECLARE`; default state initialization; main orchestration; then local procedures grouped into responsibility-based regions.
+- [ ] Use regions for meaningful groups of related procedures; do not create one region per procedure.
+- [ ] Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.
+- [ ] Do not put `/*@private;` or `/*@protected;` on class methods; they affect script procedures only, and class methods are always public.
+<!-- /rules -->
 
 ### Formatting
-- [ ] Consistent indentation (tabs or 4 spaces)
-- [ ] Spaces around operators
-- [ ] Spaces after commas
-- [ ] Line length ≤ 90 characters
-- [ ] Almost every statement, including comments, ends with semicolon
-- [ ] Continuation lines only omit semicolons when they are part of a still-open statement
+<!-- rules: id=consistent_indentation,operator_spacing,comma_spacing,ssl_max_line_length,statement_semicolon,no_semicolon_on_continuation_lines format=checklist -->
+- [ ] Keep indentation consistent within a file; do not mix tabs and spaces.
+- [ ] Use spaces around assignment, arithmetic, comparison, and logical operators.
+- [ ] Put a space after each comma and none before it.
+- [ ] Keep SSL lines to about 90 characters, breaking longer ones at logical points.
+- [ ] Almost every SSL statement, including comments, must end with a semicolon.
+- [ ] Do not end a continuation line of a multi-line statement with a semicolon; only the line that completes the statement takes one.
+<!-- /rules -->
 
 ### Naming
-- [ ] Variables use Hungarian notation
-- [ ] Procedures use PascalCase verb+noun
-- [ ] UDO properties use lowerCamelCase
-- [ ] Constants use ALL_CAPS
+<!-- rules: id=hungarian_variable_names,procedure_class_pascal_case,procedure_verb_noun_names,udo_property_lower_camel_case,constants_upper_snake_case format=checklist -->
+- [ ] Variables use Hungarian-style camelCase: a type prefix, then a camelCase body (`sMyVar`, not `s_my_var` or `SMYVAR`).
+- [ ] Procedures and classes use PascalCase.
+- [ ] Name procedures as a verb followed by a noun, for example `ValidateOrder`, `ProcessQCSample` or `CalculateTotal`.
+- [ ] Name user-defined object properties in lowerCamelCase with no type prefix, for example `oOrder:orderNo`.
+- [ ] Constants use UPPER_SNAKE_CASE.
+<!-- /rules -->
 
 ### Logic
-- [ ] All script procedure calls use DoProc or ExecFunction; inside classes, sibling/inherited methods use `Me:` / `Base:`
-- [ ] Inside class methods, `:DECLARE` class fields are accessed via `Me:fieldName` / `Base:fieldName` (bare identifiers resolve to locals, not fields)
-- [ ] :CASE blocks use :EXITCASE unless multiple matching cases are intentional
-- [ ] :BEGINCASE includes :OTHERWISE for default handling (advisory — the language only requires at least one :CASE)
+<!-- rules: id=no_direct_procedure_calls,me_base_for_method_calls,field_access_via_me,prefer_exitcase,otherwise_for_default_handling format=checklist -->
+- [ ] Do not call custom script procedures directly as `MyProc()`.
+- [ ] Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
+- [ ] Inside class methods, access fields through `Me:fieldName` or `Base:fieldName`.
+- [ ] End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+- [ ] Include `:OTHERWISE` for default handling; the language does not require it.
+<!-- /rules -->
 - [ ] All blocks properly closed (:IF/:ENDIF, etc.)
 - [ ] No stubs or placeholders remain
 - [ ] Error handling present where appropriate
 
 ### SQL (canonical compact style)
-- [ ] SQL keywords and functions in UPPERCASE
-- [ ] Other SQL identifiers keep the author's casing (no force-folding)
-- [ ] Multi-line SQL follows canonical compact layout (AND/OR +2, ON +2, HAVING +2)
-- [ ] INSERT uses block-style parens (opening on statement line, closing on own line)
-- [ ] UPDATE SET on same line as UPDATE
-- [ ] Set operations (UNION, etc.) surrounded by blank lines
-- [ ] Correct parameter syntax for function used
+<!-- rules: id=sql_keyword_case,sql_identifier_case,sql_and_or_indent,sql_on_indent,sql_having_indent,sql_insert_layout,sql_update_layout,sql_set_operation_spacing,named_sql_param_unsupported,sql_positional_placeholders,getssldataset_at_name_markers format=checklist -->
+- [ ] Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+- [ ] Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
+- [ ] Start each `AND`/`OR` condition on its own line, indented 2 spaces under `WHERE`; in a join condition it aligns with `ON`, and in a `HAVING` condition with `HAVING`.
+- [ ] Indent `ON` 2 spaces under its `JOIN` (in `MERGE`, `ON` stays at column 0).
+- [ ] Indent `HAVING` 2 spaces under `GROUP BY`.
+- [ ] In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
+- [ ] In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
+- [ ] Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
+- [ ] `SQLExecute` is the only database API that supports named `?param?` substitution; do not use `?param?` markers with other database functions. Its markers reference in-scope SSL variables by name. Canonical shape: `SQLExecute("UPDATE T SET COL = ?sValue? WHERE ID = ?nId?");`
+- [ ] `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` markers with a value array in a later argument slot: fourth for `LSearch`, `LSelect` and `LSelectC`, second for `GetDataSet`, and third for `RunSQL` and `LSelect1`. Check `ssl_signature` for the slot and skip unused optionals with adjacent commas. Canonical shape: `aRows := LSelect("SELECT ID FROM T WHERE STATUS = ?",,, {sStatus});`
+- [ ] `GetSSLDataset` uses `@name` markers with parallel name and value arrays.
+<!-- /rules -->
 
 ---
 
@@ -928,13 +982,18 @@ When refactoring, maintain a progress block in your notes:
 ```
 
 ### Class Rules
-- `:CLASS` has **no closing keyword** — the class definition extends to the end of the file.
-- **One class per file** — only one `:CLASS` is allowed per file.
-- A file is either a class definition or a script, never both.
-- `:CLASS` may omit the class name, but new and refactored code should always provide one explicitly.
-- **Member order:** Successful class code requires `:INHERIT` first, then `:DECLARE` fields, then regular methods, then `Constructor` last.
-- Inside class methods, use `Me:MethodName()` / `Base:MethodName()` instead of simple `DoProc("ProcName", ...)` calls.
-- `Constructor` cannot return a value (`:RETURN` without an expression is allowed).
+<!-- rules: id=class_ends_at_eof,one_class_per_file,one_class_or_script_per_file,explicit_class_name,class_member_order,me_base_for_method_calls,doproc_in_class,constructor_return_value -->
+- `:CLASS` continues to end of file; there is no `:ENDCLASS`.
+- Define only one `:CLASS` per file.
+- One file should represent either a class definition, a script, or a data source.
+- Give every class an explicit name in `:CLASS`; the name is syntactically optional.
+- Keep class member order as `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`.
+- Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
+- Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.
+- `:RETURN` inside a `Constructor` cannot return a value.
+<!-- /rules -->
+
+A `:RETURN` without an expression is allowed in a `Constructor`.
 
 ### Procedure Calls
 ```ssl
@@ -955,7 +1014,7 @@ DoProc(name, {args})        /* Call procedure in same file;
 ExecFunction(name, {args})  /* Call procedure in other file;
 ```
 
-> **Function naming convention:** Represent built-ins in PascalCase where applicable, while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`.
+> **Function naming convention:** <!-- rule: builtin_function_canonical_casing -->Represent functions in PascalCase where applicable, while preserving canonical exceptions such as `_AND`, `_OR`, `_XOR`, `_NOT`, `DOW`, `DOY`, and `LIMSDate`.<!-- /rule -->
 
 ### Boolean Literals
 ```ssl
@@ -969,6 +1028,8 @@ NIL  /* Null (not the same as empty string);
 .AND.   .OR.   .NOT.   !
 ```
 
+<!-- rule: bare_logical_operator -->Write the logical operators with their periods: `.AND.`, `.OR.` and `.NOT.`, never bare `AND`, `OR` or `NOT`.<!-- /rule -->
+
 ### Comment Syntax
 ```ssl
 /* Single line comment;
@@ -979,4 +1040,4 @@ that spans several lines.
 ;
 ```
 
-> **Warning:** Comments are delimited by `/*` and `;`. A semicolon inside a comment will prematurely end it, potentially causing the remaining text to be interpreted as code. Avoid semicolons within comment text.
+> **Warning:** Comments are delimited by `/*` and `;`. <!-- rule: no_semicolon_in_comment_text -->Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.<!-- /rule -->

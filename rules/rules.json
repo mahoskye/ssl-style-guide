@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 209,
+  "count": 275,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -1625,6 +1625,48 @@
       "source": "rules/language/member_access_no_spaces.md"
     },
     {
+      "id": "dot_property_access",
+      "title": "Member access uses a colon, not a dot",
+      "domain": "language",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "error",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Use colon-chained member access (`oObj:Property`, `oObj:Method():Value`), not dot-chained access (`oObj.Property`).",
+      "rationale": "The colon is SSL's member-access operator. A dot after an object is not member\naccess, so `oObj.Property` does not reach the property.",
+      "exceptions": "Dots inside an `:INCLUDE` path and inside SQL text (`table.column`) are not\nmember access.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE OrderName;\n\t:PARAMETERS oOrder;\n\t:RETURN oOrder:Name;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE OrderName;\n\t:PARAMETERS oOrder;\n\t:RETURN oOrder.Name;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.dot_property_access"
+      ],
+      "categories": [
+        "objects",
+        "operators"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/dot_property_access.md"
+    },
+    {
       "id": "declare_before_use",
       "title": "Declare variables before use",
       "domain": "language",
@@ -1983,6 +2025,48 @@
       "source": "rules/language/max_params_warning.md"
     },
     {
+      "id": "default_value_by_type",
+      "title": "Parameter defaults by type",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source",
+        "sql_data_source"
+      ],
+      "rule": "Default a parameter to the empty value of its prefix type: `\"\"` for strings, `0` for numbers, `.F.` for booleans, `{}` for arrays, and `NIL` for dates, objects, code blocks and variants.",
+      "rationale": "A default of the parameter's own type keeps the prefix true for the value the\nprocedure actually receives, so code that tests or uses the value does not\nmeet an unexpected type.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS nQty, nPrice;\n\t:DEFAULT nQty, 0;\n\t:DEFAULT nPrice, 0;\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS nQty, nPrice;\n\t:DEFAULT nQty, \"\";\n\t:DEFAULT nPrice, NIL;\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/default_value_by_type.md"
+    },
+    {
       "id": "no_c_style_comment_closer",
       "title": "An SSL comment has no */ closer",
       "domain": "language",
@@ -2329,6 +2413,671 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/multi_line_comment_layout.md"
+    },
+    {
+      "id": "indent_block_bodies",
+      "title": "Indent block bodies one level",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Indent the body of a block one level: `:IF`, `:WHILE`, `:FOR`, `:BEGINCASE`, `:TRY`, `:PROCEDURE`, `:REGION` and `:BEGININLINECODE` open an indented body, and each nested block adds one more level.",
+      "rationale": "Indentation shows which statements a block controls. One level per block, in\ntabs or in the file's existing 4 spaces, is the layout the formatter produces.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\t:IF nCount > 0;\n\t\tnCount := nCount - 1;\n\t:ENDIF;\n\t:RETURN nCount;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountDown;\n:PARAMETERS nCount;\n:IF nCount > 0;\nnCount := nCount - 1;\n:ENDIF;\n:RETURN nCount;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.indent_style"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [
+        "formatting.indent_width"
+      ],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/indent_block_bodies.md"
+    },
+    {
+      "id": "dedent_closing_keywords",
+      "title": "Closing keywords dedent to their block",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Dedent a closing keyword to the level of the keyword that opened its block: `:ENDIF`, `:ENDWHILE`, `:NEXT`, `:ENDCASE`, `:ENDTRY`, `:ENDPROC`, `:ENDREGION` and `:ENDINLINECODE`.",
+      "rationale": "A closing keyword at the level of its opening keyword marks where the block\nends, so a reader can match the pair by eye.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\t:WHILE nCount > 0;\n\t\tnCount := nCount - 1;\n\t:ENDWHILE;\n\t:RETURN nCount;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\t:WHILE nCount > 0;\n\t\tnCount := nCount - 1;\n\t\t:ENDWHILE;\n\t:RETURN nCount;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.indent_style"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/dedent_closing_keywords.md"
+    },
+    {
+      "id": "same_level_block_keywords",
+      "title": "Branch keywords sit at the block level",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Put `:ELSE`, `:CASE`, `:OTHERWISE`, `:CATCH` and `:FINALLY` at the level of the keyword that opened their block, then indent the body that follows them one level.",
+      "rationale": "These keywords end one branch of a block and start the next, so they line up\nwith the keyword that opened the block and their bodies are indented like any\nother block body.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\t:IF nCount > 0;\n\t\tsText := \"some\";\n\t:ELSE;\n\t\tsText := \"none\";\n\t:ENDIF;\n\t:RETURN sText;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\t:IF nCount > 0;\n\t\tsText := \"some\";\n\t\t:ELSE;\n\t\tsText := \"none\";\n\t:ENDIF;\n\t:RETURN sText;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.indent_style"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/same_level_block_keywords.md"
+    },
+    {
+      "id": "exitcase_statement_level",
+      "title": ":EXITCASE indents like a statement",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Indent `:EXITCASE` at the level of the other statements in its branch; it does not change the indentation.",
+      "rationale": "`:EXITCASE` is a regular statement of the branch, like a `break`, not a\nclosing keyword, so it does not dedent.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\t:BEGINCASE;\n\t:CASE nCount == 0;\n\t\tsText := \"none\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsText := \"some\";\n\t\t:EXITCASE;\n\t:ENDCASE;\n\t:RETURN sText;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\t:BEGINCASE;\n\t:CASE nCount == 0;\n\t\tsText := \"none\";\n\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsText := \"some\";\n\t:EXITCASE;\n\t:ENDCASE;\n\t:RETURN sText;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.indent_style"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/exitcase_statement_level.md"
+    },
+    {
+      "id": "consistent_indentation",
+      "title": "Consistent indentation in a file",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Keep indentation consistent within a file; do not mix tabs and spaces.",
+      "rationale": "Tabs and spaces render at different widths in different editors, so a file\nthat mixes them shows a block structure that is not the real one.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Show;\n\t:DECLARE nCount;\n\tnCount := 0;\n\t:RETURN nCount;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PROCEDURE Show;\n\t:DECLARE nCount;\n    nCount := 0;\n\t:RETURN nCount;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/consistent_indentation.md"
+    },
+    {
+      "id": "comma_spacing",
+      "title": "A space after each comma",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Put a space after each comma and none before it.",
+      "rationale": "A space after each comma separates arguments and list items at a glance, and\nit is what the formatter produces.",
+      "exceptions": "Skipped optional arguments keep their commas adjacent, with no space between\nthem (`RunSQL(sSql,, aValues)`).",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aItems;\naItems := {1, 2, 3};\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aItems;\naItems := {1 ,2,3};\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.comma_spacing"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [
+        "formatting.spaces.after_comma"
+      ],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/comma_spacing.md"
+    },
+    {
+      "id": "no_space_inside_parens",
+      "title": "No spaces inside parentheses",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Do not put spaces just inside parentheses: `DoProc(\"Name\", {args})`, not `DoProc( \"Name\", {args} )`.",
+      "rationale": "Parentheses already delimit the argument list; spaces inside them only widen\nthe line.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nLength;\nnLength := Len(\"abc\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nLength;\nnLength := Len( \"abc\" );\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [
+        "formatting.spaces.inside_parens"
+      ],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/no_space_inside_parens.md"
+    },
+    {
+      "id": "no_space_before_call_paren",
+      "title": "No space before a call parenthesis",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Do not put a space between a function name and its `(`: `Len(sValue)`, not `Len (sValue)`.",
+      "rationale": "Keeping the parenthesis against the name marks the line as a call and matches\nhow the reference documents every function.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nLength;\nnLength := Len(\"abc\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nLength;\nnLength := Len (\"abc\");\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/no_space_before_call_paren.md"
+    },
+    {
+      "id": "ssl_max_line_length",
+      "title": "SSL lines of about 90 characters",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Keep SSL lines to about 90 characters, breaking longer ones at logical points.",
+      "rationale": "Lines that fit in one view can be read and compared without horizontal\nscrolling. SQL inside strings has its own limit in `sql_max_line_length`.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName, sStatus;\n\t:DECLARE sOut;\n\tsOut := sName + \" is a fairly long string literal that \" + sStatus\n\t\t+ \" keeps going past the limit\";\n\t:RETURN sOut;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName, sStatus;\n\t:DECLARE sOut;\n\tsOut := sName + \" is a fairly long string literal that \" + sStatus + \" keeps going past the limit\";\n\t:RETURN sOut;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.max_line_length"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/ssl_max_line_length.md"
+    },
+    {
+      "id": "continuation_line_breaks",
+      "title": "Where to break a long statement",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Break a multi-line function call after a comma and a multi-line condition before `.AND.` or `.OR.`, and indent each continuation line one level.",
+      "rationale": "A line that ends after a comma, or starts with `.AND.`, tells the reader the\nstatement continues, and one level of continuation indent keeps it apart from\nthe next statement.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\tbOk := .F.;\n\t:IF nVal > 1\n\t\t.AND. nVal < 5\n\t\t.AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\t:RETURN bOk;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\tbOk := .F.;\n\t:IF nVal > 1 .AND.\nnVal < 5 .AND.\nsName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\t:RETURN bOk;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [
+        "formatting.continuation_indent"
+      ],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/continuation_line_breaks.md"
+    },
+    {
+      "id": "no_semicolon_on_continuation_lines",
+      "title": "Continuation lines take no semicolon",
+      "domain": "language",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "error",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Do not end a continuation line of a multi-line statement with a semicolon; only the line that completes the statement takes one.",
+      "rationale": "A semicolon ends the statement wherever it appears, so a semicolon at the end\nof a continuation line cuts the statement in two and leaves the rest as an\ninvalid statement of its own.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nTotal;\nnTotal := 1\n\t+ 2;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":DECLARE nTotal;\nnTotal := 1;\n\t+ 2;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/no_semicolon_on_continuation_lines.md"
+    },
+    {
+      "id": "blank_line_between_procedures",
+      "title": "One blank line between procedures",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Put one blank line between procedures.",
+      "rationale": "One blank line separates procedures without spreading a file out.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE First;\n\t:RETURN 1;\n:ENDPROC;\n\n:PROCEDURE Second;\n\t:RETURN 2;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE First;\n\t:RETURN 1;\n:ENDPROC;\n:PROCEDURE Second;\n\t:RETURN 2;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.blank_lines_between_procs"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [
+        "formatting.blank_lines.before_procedure"
+      ],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/blank_line_between_procedures.md"
+    },
+    {
+      "id": "blank_line_between_sections",
+      "title": "One blank line between sections and regions",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Put one blank line between logical sections and between regions.",
+      "rationale": "A blank line marks where one step of the logic ends and the next begins.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS aItems;\n\t:DECLARE nTotal, i;\n\n\tnTotal := 0;\n\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal := nTotal + aItems[i];\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS aItems;\n\t:DECLARE nTotal, i;\n\tnTotal := 0;\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal := nTotal + aItems[i];\n\t:NEXT;\n\t:RETURN nTotal;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [
+        "formatting.blank_lines.before_region"
+      ],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/blank_line_between_sections.md"
+    },
+    {
+      "id": "no_excess_blank_lines",
+      "title": "No runs of blank lines",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Do not leave three or more consecutive blank lines; reduce such a run to one.",
+      "rationale": "A run of blank lines suggests a missing piece of code and pushes the rest of\nthe logic off the screen.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nCount;\nnCount := 0;\n\nnCount := nCount + 1;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":DECLARE nCount;\nnCount := 0;\n\n\n\nnCount := nCount + 1;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/no_excess_blank_lines.md"
+    },
+    {
+      "id": "endregion_takes_no_name",
+      "title": "endregion takes no name",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Close a comment region with `/* endregion;` alone; `endregion` takes no name, so never append one.",
+      "rationale": "Regions pair last-opened-first-closed, so a name on the closer matches nothing\nand only suggests a pairing that does not exist.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": "/* region Validation;\n:PROCEDURE IsValid;\n\t:PARAMETERS sValue;\n\t:RETURN !Empty(sValue);\n:ENDPROC;\n/* endregion;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": "/* region Validation;\n:PROCEDURE IsValid;\n\t:PARAMETERS sValue;\n\t:RETURN !Empty(sValue);\n:ENDPROC;\n/* endregion Validation;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/endregion_takes_no_name.md"
+    },
+    {
+      "id": "align_related_elements",
+      "title": "Align related elements",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Align related elements, such as parameters and SQL statements, for readability.",
+      "rationale": "Elements that line up can be compared at a glance, such as the parameter names\nof a doc block or the clauses of a SQL statement.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "/*\n * Parameters:\n *   sSampleId - Sample to update\n *   sStatus   - New status value\n;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "/*\n * Parameters:\n *   sSampleId - Sample to update\n *   sStatus - New status value\n;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/align_related_elements.md"
     },
     {
       "id": "null_literal_is_nil",
@@ -2837,6 +3586,247 @@
       "source": "rules/language/no_ternary_operator.md"
     },
     {
+      "id": "bare_logical_operator",
+      "title": "Logical operators keep their periods",
+      "domain": "language",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "error",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Write the logical operators with their periods: `.AND.`, `.OR.` and `.NOT.`, never bare `AND`, `OR` or `NOT`.",
+      "rationale": "SSL has no bare `AND`, `OR` or `NOT` operator. A bare word between two\noperands is read as an identifier, so the condition does not mean what it\nsays.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE InRange;\n\t:PARAMETERS nVal;\n\t:RETURN nVal > 5 .AND. nVal < 10;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE InRange;\n\t:PARAMETERS nVal;\n\t:RETURN nVal > 5 AND nVal < 10;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.bare_logical_operator"
+      ],
+      "categories": [
+        "operators"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/bare_logical_operator.md"
+    },
+    {
+      "id": "return_early_on_invalid",
+      "title": "Return early on invalid requests",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Return early for invalid requests and failed contracts.",
+      "rationale": "An early return keeps the success path at one indentation level and makes each\nrejection visible where it happens.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\t:IF Empty(sOrdNo);\n\t\t:RETURN {.F., {\"MISSING_ORDER\", \"An order number is required.\"}};\n\t:ENDIF;\n\n\tSQLExecute(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?sOrdNo?\");\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE aResult;\n\t:IF !Empty(sOrdNo);\n\t\tSQLExecute(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?sOrdNo?\");\n\t\taResult := {.T., NIL};\n\t:ELSE;\n\t\taResult := {.F., {\"MISSING_ORDER\", \"An order number is required.\"}};\n\t:ENDIF;\n\t:RETURN aResult;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "control-flow"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/return_early_on_invalid.md"
+    },
+    {
+      "id": "begincase_for_multiway_choice",
+      "title": ":BEGINCASE for a choice among several",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `:BEGINCASE` when choosing among several routes, result shapes, artifact kinds, actions or outcomes.",
+      "rationale": "A `:BEGINCASE` lists the choices side by side at one level, where a chain of\n`:IF`/`:ELSE` nests a little deeper for each one.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:DECLARE sLabel;\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\tsLabel := \"Approved\";\n\t\t:EXITCASE;\n\t:CASE sRoute == \"REJECT\";\n\t\tsLabel := \"Rejected\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsLabel := \"Pending\";\n\t\t:EXITCASE;\n\t:ENDCASE;\n\t:RETURN sLabel;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:DECLARE sLabel;\n\t:IF sRoute == \"APPROVE\";\n\t\tsLabel := \"Approved\";\n\t:ELSE;\n\t\t:IF sRoute == \"REJECT\";\n\t\t\tsLabel := \"Rejected\";\n\t\t:ELSE;\n\t\t\tsLabel := \"Pending\";\n\t\t:ENDIF;\n\t:ENDIF;\n\t:RETURN sLabel;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "control-flow"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/begincase_for_multiway_choice.md"
+    },
+    {
+      "id": "exitcase_after_return",
+      "title": "No :EXITCASE after a branch :RETURN",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "hint",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not add `:EXITCASE;` after a branch-level `:RETURN`; the return already terminates the procedure.",
+      "rationale": "The `:EXITCASE` can never run, and it suggests that the branch might continue.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\t:RETURN \"Approved\";\n\t:OTHERWISE;\n\t\t:RETURN \"Pending\";\n\t:ENDCASE;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\t:RETURN \"Approved\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\t:RETURN \"Pending\";\n\t:ENDCASE;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.exitcase_after_return"
+      ],
+      "categories": [
+        "control-flow"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/exitcase_after_return.md"
+    },
+    {
+      "id": "no_duplicate_case_branches",
+      "title": "No duplicate outcome branches",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not duplicate identical outcome branches; keep separate branches only when their behavior differs.",
+      "rationale": "Two branches with the same body make a reader look for a difference that is\nnot there, and the copies drift apart over time.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE IsFinal;\n\t:PARAMETERS sStatus;\n\t:RETURN AScanExact({\"Done\", \"Cancelled\"}, sStatus) > 0;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE IsFinal;\n\t:PARAMETERS sStatus;\n\t:DECLARE bFinal;\n\t:BEGINCASE;\n\t:CASE sStatus == \"Done\";\n\t\tbFinal := .T.;\n\t\t:EXITCASE;\n\t:CASE sStatus == \"Cancelled\";\n\t\tbFinal := .T.;\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tbFinal := .F.;\n\t\t:EXITCASE;\n\t:ENDCASE;\n\t:RETURN bFinal;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "control-flow"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_duplicate_case_branches.md"
+    },
+    {
+      "id": "prefer_linear_success_path",
+      "title": "A linear success path",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Prefer a linear success path over nested `:IF` chains.",
+      "rationale": "When each check returns on failure, the success path reads top to bottom at\none level, instead of at the bottom of a nest.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Validate;\n\t:PARAMETERS sOrdNo, sStatus;\n\t:IF Empty(sOrdNo);\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:IF Empty(sStatus);\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:RETURN .T.;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Validate;\n\t:PARAMETERS sOrdNo, sStatus;\n\t:DECLARE bOk;\n\tbOk := .F.;\n\t:IF !Empty(sOrdNo);\n\t\t:IF !Empty(sStatus);\n\t\t\tbOk := .T.;\n\t\t:ENDIF;\n\t:ENDIF;\n\t:RETURN bOk;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "control-flow"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/prefer_linear_success_path.md"
+    },
+    {
       "id": "no_control_exit_in_finally",
       "title": "No control-flow exits inside :FINALLY",
       "domain": "server-scripts",
@@ -3328,6 +4318,298 @@
       "source": "rules/server-scripts/guard_transaction_finalization.md"
     },
     {
+      "id": "isintransaction_for_ownership",
+      "title": "IsInTransaction decides ownership",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `IsInTransaction` to establish transaction ownership or to require an existing transaction when that is part of the procedure contract; do not reject an ambient transaction merely because nesting is possible.",
+      "rationale": "A command that runs inside a caller's transaction takes part in it; refusing\nto run there breaks callers that compose commands.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE WriteStatus;\n\t:PARAMETERS sSampleId, sStatus;\n\t:DECLARE bOwner, bCommit;\n\n\tbOwner := !IsInTransaction();\n\tbCommit := .F.;\n\n\t:TRY;\n\t\t:IF bOwner;\n\t\t\tBeginLimsTransaction();\n\t\t:ENDIF;\n\n\t\tSQLExecute(\"UPDATE sample SET status = ?sStatus? WHERE sample_id = ?sSampleId?\");\n\t\tbCommit := .T.;\n\t:FINALLY;\n\t\t:IF bOwner;\n\t\t\tEndLimsTransaction(, bCommit);\n\t\t:ENDIF;\n\t:ENDTRY;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE WriteStatus;\n\t:PARAMETERS sSampleId, sStatus;\n\t:IF IsInTransaction();\n\t\tRaiseError(\"WriteStatus cannot run inside a transaction\");\n\t:ENDIF;\n\n\tSQLExecute(\"UPDATE sample SET status = ?sStatus? WHERE sample_id = ?sSampleId?\");\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "transactions"
+      ],
+      "related_elements": [
+        "IsInTransaction",
+        "BeginLimsTransaction"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/isintransaction_for_ownership.md"
+    },
+    {
+      "id": "replay_aware_mutations",
+      "title": "Replay-aware mutations",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "In a replay-aware mutation, lock the candidate row, distinguish fresh work from an exact replay, validate a versioned receipt fingerprint, reject changed requests as conflicts, and preserve the canonical receipt serialization byte for byte.",
+      "rationale": "A replayed request must return the original outcome without doing the work\ntwice, and a changed request with the same key must not be mistaken for a\nreplay.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "1. SELECT ... FOR UPDATE the row for the request key.\n2. No row: do the work and store the receipt with its fingerprint version.\n3. A row whose fingerprint matches: return the stored receipt unchanged.\n4. A row whose fingerprint differs: return a conflict.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "1. Read the row for the request key without a lock.\n2. A row exists: do the work again and overwrite the receipt.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "transactions"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/replay_aware_mutations.md"
+    },
+    {
+      "id": "parse_delimited_input_locally",
+      "title": "Parse simple delimited input in SSL",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Parse simple delimited input locally with helpers such as `BuildArray` when the rules depend only on element count, emptiness, length or exact text; normalize entries before validating and keeping the canonical list, and treat empty input or a normalization failure as no preference when the list is only an optional selection hint. Do not add a database dependency solely to split or validate text.",
+      "rationale": "Splitting and checking text needs nothing from the database. A query used only\nfor that adds a dependency, a round trip and a failure mode.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ParseCodes;\n\t:PARAMETERS sCodes;\n\t:DECLARE aCodes;\n\taCodes := BuildArray(AllTrim(sCodes));\n\t:RETURN aCodes;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PROCEDURE ParseCodes;\n\t:PARAMETERS sCodes;\n\t:RETURN SQLExecute(\"SELECT value FROM STRING_SPLIT(?sCodes?, ',')\");\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "strings"
+      ],
+      "related_elements": [
+        "BuildArray"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/parse_delimited_input_locally.md"
+    },
+    {
+      "id": "alltrim_for_input_normalization",
+      "title": "AllTrim to normalize input text",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `AllTrim` when normalizing caller input, route values, settings text or external response text; `Trim` strips trailing whitespace only.",
+      "rationale": "Text from outside the script can carry leading as well as trailing whitespace,\nand `Trim` leaves the leading part in place.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RouteCode;\n\t:PARAMETERS sRoute;\n\t:RETURN AllTrim(sRoute);\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RouteCode;\n\t:PARAMETERS sRoute;\n\t:RETURN Trim(sRoute);\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "strings"
+      ],
+      "related_elements": [
+        "AllTrim",
+        "Trim"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/alltrim_for_input_normalization.md"
+    },
+    {
+      "id": "format_for_composed_text",
+      "title": "Compose text with sFmt:Format",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Declare `sFmt` with the other string locals and use `sFmt:Format(template, {value1, value2, ...})` for messages, paths, setting keys and other composed text.",
+      "rationale": "A template shows the finished text in one piece, where a chain of\nconcatenations hides it between the quotes.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo, nCount;\n\t:DECLARE sFmt, sMessage;\n\tsFmt := \"\";\n\tsMessage := sFmt:Format(\"Order {0} has {1} tests\", {sOrdNo, nCount});\n\t:RETURN sMessage;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo, nCount;\n\t:DECLARE sMessage;\n\tsMessage := \"Order \" + sOrdNo + \" has \" + LimsString(nCount) + \" tests\";\n\t:RETURN sMessage;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "strings"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/format_for_composed_text.md"
+    },
+    {
+      "id": "format_arg_not_array",
+      "title": "Format takes one array of values",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Pass `sFmt:Format` one array holding every replacement value, including for a single placeholder.",
+      "rationale": "The replacement values travel as one array; a scalar in that position is not\nspread into the placeholders.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sFmt;\n\tsFmt := \"\";\n\t:RETURN sFmt:Format(\"Order {0}\", {sOrdNo});\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sFmt;\n\tsFmt := \"\";\n\t:RETURN sFmt:Format(\"Order {0}\", sOrdNo);\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.format_arg_not_array"
+      ],
+      "categories": [
+        "strings"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/format_arg_not_array.md"
+    },
+    {
+      "id": "ascanexact_for_fixed_sets",
+      "title": "AScanExact for fixed sets of values",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `AScanExact({...}, value)` when testing membership in a fixed set of exact values; `AScan` matches strings by prefix.",
+      "rationale": "`AScan` matches strings by prefix: `\"APP\"` matches `\"APPROVED\"`, and an empty\nstring matches the first string element.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE IsKnownRoute;\n\t:PARAMETERS sRoute;\n\t:RETURN AScanExact({\"APPROVE\", \"REJECT\"}, sRoute) > 0;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE IsKnownRoute;\n\t:PARAMETERS sRoute;\n\t:RETURN AScan({\"APPROVE\", \"REJECT\"}, sRoute) > 0;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "arrays",
+        "strings"
+      ],
+      "related_elements": [
+        "AScanExact",
+        "AScan"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/ascanexact_for_fixed_sets.md"
+    },
+    {
       "id": "doproc_in_class",
       "title": "No bare DoProc targets in class methods",
       "domain": "server-scripts",
@@ -3462,6 +4744,48 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/visibility_annotations_script_only.md"
+    },
+    {
+      "id": "state_object_for_multistep",
+      "title": "One state object for a multi-step operation",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "For a multi-step operation, create one descriptive UDObject, initialize every property during request construction, and pass that object through cohesive steps rather than growing long positional parameter lists.",
+      "rationale": "Every step sees the same named state, and a new piece of state is a new\nproperty, not a new parameter on every procedure.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE BuildRequest;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE oState;\n\toState := CreateUdObject();\n\toState:ordNo := sOrdNo;\n\toState:isValid := .F.;\n\toState:failureCode := \"\";\n\toState:failureMessage := \"\";\n\t:RETURN oState;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "DoProc(\"ApplyStep\", {sOrdNo, bValid, nCount, sCode, sMessage, bStarted, bCommit});\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "objects"
+      ],
+      "related_elements": [
+        "CreateUdObject"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/state_object_for_multistep.md"
     },
     {
       "id": "parameters_first",
@@ -4020,6 +5344,338 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/visibility_annotation_exact_form.md"
+    },
+    {
+      "id": "omit_parameters_when_none",
+      "title": "No :PARAMETERS without parameters",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Leave out `:PARAMETERS` and `:DEFAULT` when a procedure or method takes no parameters.",
+      "rationale": "A procedure with no `:PARAMETERS` line takes no arguments; an empty\ndeclaration adds nothing a reader needs.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Today;\n\t:RETURN Today();\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PROCEDURE Today;\n\t:PARAMETERS;\n\t:RETURN Today();\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [
+        "PARAMETERS",
+        "DEFAULT"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/omit_parameters_when_none.md"
+    },
+    {
+      "id": "doc_block_parameter_alignment",
+      "title": "Align doc-block parameters only when it helps",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Align parameter descriptions in a procedure doc block when it improves scanning, but do not force large spacing or fragile visual columns.",
+      "rationale": "Aligned short names scan well. Columns padded to fit a long name push\ndescriptions far right and break on the next rename.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "/*\n * Procedure: BuildRequest\n * Parameters:\n *   sRequestId - Operation request identifier\n *   sStatus    - Requested status\n;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "/*\n * Procedure: BuildRequest\n * Parameters:\n *   sRequestId                              - Operation request identifier\n *   sStatus                                 - Requested status\n;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/doc_block_parameter_alignment.md"
+    },
+    {
+      "id": "declare_groups_by_purpose",
+      "title": "Group declarations by purpose",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Separate local variables with distinct responsibilities or lifecycles into purpose-based `:DECLARE` groups, such as request construction, configuration, retry state, response processing, transaction state and diagnostics.",
+      "rationale": "A group per concern shows what state a procedure keeps and where each piece\nbelongs.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit;\n\t:DECLARE oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, oErr, sDiag, nRetryLimit;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [
+        "DECLARE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/declare_groups_by_purpose.md"
+    },
+    {
+      "id": "preserve_declaration_groups",
+      "title": "Keep existing declaration groups",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Preserve intentional declaration groups when editing existing code; do not flatten semantic groups into one declaration or reorganize all variables solely by type or prefix.",
+      "rationale": "The groups record which state belongs together. Flattening them throws that\naway and turns a small edit into a large diff.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit;\n\t:DECLARE oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit, oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [
+        "DECLARE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/preserve_declaration_groups.md"
+    },
+    {
+      "id": "declare_group_order",
+      "title": "Order within a declaration group",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Within each purpose-based `:DECLARE` group, order variables by prefix, then name; keep a single group only when the locals genuinely share one cohesive purpose.",
+      "rationale": "A fixed order inside a group makes a missing or duplicate name easy to spot.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName;\n\t:DECLARE nCount, sLabel, sText;\n\n\tnCount := Len(sName);\n\tsLabel := \"Name\";\n\tsText := sLabel + \": \" + sName;\n\t:RETURN {nCount, sText};\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName;\n\t:DECLARE sText, nCount, sLabel;\n\n\tnCount := Len(sName);\n\tsLabel := \"Name\";\n\tsText := sLabel + \": \" + sName;\n\t:RETURN {nCount, sText};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [
+        "DECLARE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/declare_group_order.md"
+    },
+    {
+      "id": "read_globals_undeclared",
+      "title": "Read a global without declaring it",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Read a predefined global by its name, without declaring it; a `:DECLARE`, `:PARAMETERS` entry or caller variable with the same name hides the global.",
+      "rationale": "Globals are `:PUBLIC` variables, and publics are found last in variable\nlookup. Declaring the name creates a local that hides the global, so the code\nreads an empty string instead.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE sUser;\n\tsUser := MYUSERNAME;\n\t:RETURN sUser;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE MYUSERNAME;\n\t:RETURN MYUSERNAME;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/read_globals_undeclared.md"
+    },
+    {
+      "id": "global_assignment",
+      "title": "Never assign to a global",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "error",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Never assign to a global; nothing makes it read-only, and every routine that reads it afterwards sees your value.",
+      "rationale": "A global is shared by everything that runs after the assignment, so changing\nit changes their behavior too.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE sUser;\n\tsUser := MYUSERNAME;\n\t:RETURN sUser;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ImpersonateUser;\n\t:PARAMETERS sUser;\n\tMYUSERNAME := sUser;\n\t:RETURN sUser;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.global_assignment"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/global_assignment.md"
+    },
+    {
+      "id": "guard_optional_globals",
+      "title": "Do not read globals a base installation lacks",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not read a name the base installation does not declare (`CR`, `LF`, `TAB`, `sDQ`, `MYUSERID`, ...); use `Chr(...)` or the documented global instead, and guard a name that only some installations declare with `IsDefined(\"<name>\")`.",
+      "rationale": "Reading an undeclared name raises `Variable [<name>] is undefined!` where it\nis missing, so code that works on one installation fails on another.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE TwoLines;\n\t:PARAMETERS sFirst, sSecond;\n\t:RETURN sFirst + Chr(13) + Chr(10) + sSecond;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PROCEDURE TwoLines;\n\t:PARAMETERS sFirst, sSecond;\n\t:RETURN sFirst + CR + LF + sSecond;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "procedures"
+      ],
+      "related_elements": [
+        "Chr",
+        "IsDefined"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/guard_optional_globals.md"
     },
     {
       "id": "prefer_try_over_error_resume",
@@ -4992,6 +6648,46 @@
       "source": "rules/server-scripts/one_boundary_per_invariant.md"
     },
     {
+      "id": "pipeline_failure_capture",
+      "title": "One failure contract per pipeline",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use a pipeline-specific failure-capture helper when several sequential steps return standard envelopes, and keep one contract within the pipeline: either return a boolean or return `{success, state}` consistently.",
+      "rationale": "One helper and one contract mean each step is checked the same way, and the\nfirst failure is captured once.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": ":IF !DoProc(\"CaptureFailure\", {oState, DoProc(\"ReserveStock\", {oState})});\n\t:RETURN DoProc(\"FailureEnvelope\", {oState});\n:ENDIF;\n:IF !DoProc(\"CaptureFailure\", {oState, DoProc(\"WriteOrder\", {oState})});\n\t:RETURN DoProc(\"FailureEnvelope\", {oState});\n:ENDIF;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "aStep := DoProc(\"ReserveStock\", {oState});\n:IF !aStep[1];\n\t:RETURN aStep;\n:ENDIF;\n:IF !DoProc(\"WriteOrder\", {oState});\n\t:RETURN {.F., {\"WRITE_FAILED\", \"The order was not written.\"}};\n:ENDIF;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "error-handling"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/pipeline_failure_capture.md"
+    },
+    {
       "id": "comments_explain_why",
       "title": "Comments explain why, not what",
       "domain": "server-scripts",
@@ -5035,6 +6731,166 @@
       "source": "rules/server-scripts/comments_explain_why.md"
     },
     {
+      "id": "expressions_on_one_line",
+      "title": "Keep an expression on one line when it fits",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Keep calls, assignments, conditions and other expressions on one physical line when they fit and remain readable; wrap only when the established line-length limit requires it or the split exposes meaningful structure.",
+      "rationale": "An expression that fits on one line reads as one thing; breaking it without a\nreason makes the reader rebuild it.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sMessage;\nsMessage := \"Loaded \" + LimsString(3) + \" rows\";\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sMessage;\nsMessage := \"Loaded \"\n\t+ LimsString(3)\n\t+ \" rows\";\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/expressions_on_one_line.md"
+    },
+    {
+      "id": "wrapped_list_alignment",
+      "title": "Align the hanging lines of a wrapped list",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "When a declaration or similar comma-separated statement wraps, indent each hanging line so its first item aligns with the first item after the keyword.",
+      "rationale": "Aligned items read as one list, and the hanging lines do not look like\nstatements of their own.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": ":DECLARE sRequestId, sRouteCode, sSettingKey, nRetryCount, nRetryLimit,\n         bStarted, bCommit;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":DECLARE sRequestId, sRouteCode, sSettingKey, nRetryCount, nRetryLimit,\nbStarted, bCommit;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/wrapped_list_alignment.md"
+    },
+    {
+      "id": "continuation_indent_shows_structure",
+      "title": "Continuation indent shows the structure",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Indent continuations to reveal expression or argument structure; do not copy incidental alignment columns from another file.",
+      "rationale": "The indent of a continuation line tells the reader which part of the\nexpression it belongs to; a column copied from elsewhere tells them nothing.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\tbOk := .F.;\n\t:IF nVal > 1\n\t\t.AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\t:RETURN bOk;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":IF nVal > 1\n                                        .AND. sName == \"x\";\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/continuation_indent_shows_structure.md"
+    },
+    {
+      "id": "envelope_one_line",
+      "title": "A short envelope stays on one line",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Keep a variable-only envelope such as `{.F., {sCode, sMessage}}` on one physical line when it fits.",
+      "rationale": "A short envelope is easier to read as one value than spread over several\nlines.",
+      "exceptions": "Split an envelope when inline literal text, more payload fields or the\nline-length limit benefit from clearer grouping.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Fail;\n\t:PARAMETERS sCode, sMessage;\n\t:RETURN {.F., {sCode, sMessage}};\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Fail;\n\t:PARAMETERS sCode, sMessage;\n\t:RETURN {\n\t\t.F.,\n\t\t{sCode, sMessage}\n\t};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/envelope_one_line.md"
+    },
+    {
       "id": "limstypeex_numeric_not_number",
       "title": "LimsTypeEx returns \"NUMERIC\", never \"NUMBER\"",
       "domain": "server-scripts",
@@ -5075,6 +6931,48 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/limstypeex_numeric_not_number.md"
+    },
+    {
+      "id": "type_check_before_value_check",
+      "title": "Check the type before the value",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Separate runtime-type validation from value validation when `Len`, `Round`, array indexing or property access requires a specific type, and reject an invalid shape before evaluating the corresponding content predicate.",
+      "rationale": "A content check such as `Len(v) > 0` raises when `v` has the wrong type, so\nthe type check has to come first.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE HasName;\n\t:PARAMETERS vName;\n\t:IF LimsTypeEx(vName) != \"STRING\";\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:RETURN Len(vName) > 0;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE HasName;\n\t:PARAMETERS vName;\n\t:RETURN Len(vName) > 0;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "types"
+      ],
+      "related_elements": [
+        "LimsTypeEx"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/type_check_before_value_check.md"
     },
     {
       "id": "errormes_for_always_logged_messages",
@@ -5716,6 +7614,290 @@
       "source": "rules/server-scripts/banner_has_no_semicolon.md"
     },
     {
+      "id": "banner_description_one_sentence",
+      "title": "Banner description is one sentence",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Describe the script's single responsibility in one concise sentence on the banner's `Description` line.",
+      "rationale": "One sentence is enough to say what a script with one responsibility does;\nneeding more suggests it does more than one thing.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Description.. : Records a status change for one sample.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Description.. : Updates samples. Also writes audit rows, sends the\n                notification email and refreshes the dashboard cache.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_description_one_sentence.md"
+    },
+    {
+      "id": "banner_parameters_business_meaning",
+      "title": "Banner parameters state their business meaning",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Define every banner parameter by its exact business meaning.",
+      "rationale": "The banner is the caller's contract. A type alone says what to pass, not which\nvalue.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Parameters... : sSampleId - Sample to update\n                sStatus   - New status value\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Parameters... : sSampleId - string\n                sStatus   - string\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_parameters_business_meaning.md"
+    },
+    {
+      "id": "banner_success_failure_labels",
+      "title": "Success and Failure labels when a Returns line wraps",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `Success:` and `Failure:` labels on the banner's `Returns` line when either description must wrap, and align continuations under the first character after the label.",
+      "rationale": "Labels keep the two shapes apart once a description runs onto a second line.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Returns...... : Success: {.T., NIL} after the status and its audit row\n                         are both written\n                Failure: {.F., {sCode, sMessage}}\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Returns...... : {.T., NIL} after the status and its audit row\n                are both written\n                {.F., {sCode, sMessage}}\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_success_failure_labels.md"
+    },
+    {
+      "id": "banner_special_result_first",
+      "title": "A special result comes first on the Returns line",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Keep a special non-envelope result on its own `Returns` continuation line before the handled success and failure shapes.",
+      "rationale": "A result that is not an envelope needs different handling, so it is listed\nfirst, where a caller looks.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Returns...... : NIL when the request is a replay of a completed one\n                {.T., NIL} on success\n                {.F., {sCode, sMessage}} on failure\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Returns...... : {.T., NIL} on success, or NIL for a replay\n                {.F., {sCode, sMessage}} on failure\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_special_result_first.md"
+    },
+    {
+      "id": "banner_descriptions_operational",
+      "title": "Banner descriptions stay operational",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Keep banner descriptions operational; do not restate obvious properties of SSL or SQL.",
+      "rationale": "The banner says what this script does for its callers; how SSL or SQL behave\nin general is in the reference.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Description.. : Records a status change for one sample.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Description.. : Uses SQLExecute, which binds ?name? markers, to run an\n                UPDATE statement.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_descriptions_operational.md"
+    },
+    {
+      "id": "no_hardcoded_credentials",
+      "title": "No credentials in code",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "advisory",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not hard-code credentials, passwords or connection strings in SSL code.",
+      "rationale": "A credential in source is copied with every copy of the script and cannot be\nchanged without changing the code.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ReadRows;\n\t:DECLARE aRows;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PROCEDURE ReadRows;\n\t:DECLARE sPassword, aRows;\n\tsPassword := \"Secret123\";\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask\", \"Server=db;User=lims;Password=\" + sPassword);\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "security"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_hardcoded_credentials.md"
+    },
+    {
+      "id": "validate_dynamic_call_targets",
+      "title": "Validate untrusted code and procedure names",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "advisory",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not execute code or procedure names derived from untrusted input without validation.",
+      "rationale": "`ExecFunction`, `DoProc` and `ExecUdf` run whatever name or code they are\ngiven, so an unchecked value from a caller decides what runs.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RunReport;\n\t:PARAMETERS sReport;\n\t:DECLARE vResult;\n\tvResult := NIL;\n\t:IF AScanExact({\"Daily\", \"Weekly\"}, sReport) > 0;\n\t\tvResult := ExecFunction(\"Reports.\" + sReport);\n\t:ENDIF;\n\t:RETURN vResult;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE RunReport;\n\t:PARAMETERS sReport;\n\t:RETURN ExecFunction(\"Reports.\" + sReport);\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "security"
+      ],
+      "related_elements": [
+        "ExecFunction",
+        "DoProc",
+        "ExecUdf"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/validate_dynamic_call_targets.md"
+    },
+    {
       "id": "runds_binds_by_position",
       "title": "RunDS binds parameter values by position",
       "domain": "data-sources",
@@ -6220,7 +8402,7 @@
       "applies_to": [
         "sql_data_source"
       ],
-      "rule": "SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.",
+      "rule": "SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not normal SSL keywords; do not flag them as unknown keywords.",
       "rationale": "`:DSN`, `:TABLENAME`, `:NULLASBLANK` and `:INVARIANTDATECOLUMNS` configure how\na SQL data source runs. The builder handles them before the data source runs,\nso they are not part of the SSL keyword set. A reviewer or formatter must not\nreport them as unknown keywords, and must not remove them.",
       "exceptions": null,
       "examples": {
@@ -6768,6 +8950,299 @@
       "aliases": [],
       "issues": [],
       "source": "rules/sql/sqlexecute_no_values_array.md"
+    },
+    {
+      "id": "udobject_array_in_clause",
+      "title": "Expand only a local array in IN",
+      "domain": "sql",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Expand only a local array in `IN (?aValues?)`: a UDObject array property expanded directly raises a runtime error, so copy it to a local first.",
+      "rationale": "`SQLExecute` expands a local array into one bound value per element. An array\nreached through a UDObject property fails with \"The current array has more\nthan 1 dimmension.\" when it runs.",
+      "exceptions": "A scalar property such as `?oUser:ID?` binds normally.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ReadSamples;\n\t:PARAMETERS oFilter;\n\t:DECLARE aStatusCodes, aRows;\n\taStatusCodes := oFilter:statusCodes;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatusCodes?)\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ReadSamples;\n\t:PARAMETERS oFilter;\n\t:DECLARE aRows;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?oFilter:statusCodes?)\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.udobject_array_in_clause"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [
+        "SQLExecute"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/udobject_array_in_clause.md"
+    },
+    {
+      "id": "runsql_non_dml",
+      "title": "RunSQL is for statements that return no rows",
+      "domain": "sql",
+      "status": "active",
+      "level": "advisory",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `RunSQL` for statements that return no rows (`INSERT`, `UPDATE`, `DELETE`, DDL), inside `:TRY`/`:CATCH`.",
+      "rationale": "`RunSQL` reports whether the statement ran and discards any rows, so a query\nneeds a result-returning function such as `LSearch`, `LSelect` or\n`SQLExecute`.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE bDone, oErr;\n\tbDone := .F.;\n\t:TRY;\n\t\tbDone := RunSQL(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?\",, {sOrdNo});\n\t:CATCH;\n\t\toErr := GetLastSSLError();\n\t\tErrorMes(\"[ERROR] CloseOrder \" + sOrdNo, Left(oErr:Description, 2000));\n\t\tClearLastSSLError();\n\t:ENDTRY;\n\t:RETURN bDone;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ReadOrders;\n\t:DECLARE bDone;\n\tbDone := RunSQL(\"SELECT ordno FROM ordtask\");\n\t:RETURN bDone;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.runsql_non_dml"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [
+        "RunSQL"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/runsql_non_dml.md"
+    },
+    {
+      "id": "lsearch_for_single_values",
+      "title": "LSearch for single-value lookups",
+      "domain": "sql",
+      "status": "active",
+      "level": "advisory",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Use `LSearch` for single-value lookups, with explicit parameters.",
+      "rationale": "`LSearch` returns the first column of the first row directly, so a lookup\nneeds no result array to unpack.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE OrderStatus;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sStatus;\n\tsStatus := LSearch(\"SELECT status FROM ordtask WHERE ordno = ?\",,, {sOrdNo});\n\t:RETURN sStatus;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE OrderStatus;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE aRows;\n\taRows := SQLExecute(\"SELECT status FROM ordtask WHERE ordno = ?sOrdNo?\");\n\t:RETURN aRows[1][1];\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [
+        "LSearch"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/lsearch_for_single_values.md"
+    },
+    {
+      "id": "sql_properties_to_typed_locals",
+      "title": "Copy object properties into locals for SQL",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Copy object properties into typed locals before embedding them in SQL.",
+      "rationale": "A typed local names the value the query binds, and its prefix says what type\nthe placeholder receives.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE OrderRows;\n\t:PARAMETERS oRequest;\n\t:DECLARE sOrdNo, aRows;\n\tsOrdNo := oRequest:ordNo;\n\taRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE OrderRows;\n\t:PARAMETERS oRequest;\n\t:DECLARE aRows;\n\taRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?oRequest:ordNo?\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [
+        "SQLExecute"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/sql_properties_to_typed_locals.md"
+    },
+    {
+      "id": "empty_in_array_fallback",
+      "title": "Decide what an empty IN array means",
+      "domain": "sql",
+      "status": "active",
+      "level": "advisory",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "When the array for an `IN (?aValues?)` predicate is empty, skip that query or choose the appropriate fallback.",
+      "rationale": "An empty selection can mean \"no rows\" or \"no filter\". The query cannot tell\nwhich, so the code decides before it runs.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ReadByStatus;\n\t:PARAMETERS aStatuses;\n\t:DECLARE aRows;\n\taRows := {};\n\t:IF ALen(aStatuses) > 0;\n\t\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)\");\n\t:ENDIF;\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ReadByStatus;\n\t:PARAMETERS aStatuses;\n\t:DECLARE aRows;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [
+        "SQLExecute"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/empty_in_array_fallback.md"
+    },
+    {
+      "id": "omit_default_connection_argument",
+      "title": "No connection argument for the default database",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Omit the connection argument for calls to the default database.",
+      "rationale": "The default database is what a call without a connection argument uses, so\nnaming it adds an argument that can only go stale.",
+      "exceptions": "A call to a named connection passes that connection.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask\", \"DEFAULT\");\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/omit_default_connection_argument.md"
+    },
+    {
+      "id": "guarded_write_verification",
+      "title": "Check the rows a guarded write changed",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "For guarded writes, require `LimsRecordsAffected() == 1`, and perform a verification read when later logic depends on the resulting state or state version.",
+      "rationale": "A guarded `UPDATE` that matches no row succeeds without changing anything.\nOnly the affected-row count tells the command that its guard did not hold.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\t:IF LimsRecordsAffected() != 1;\n\t\t:RETURN {.F., {\"NOT_UPDATED\", \"The order was not updated.\"}};\n\t:ENDIF;\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "database"
+      ],
+      "related_elements": [
+        "LimsRecordsAffected"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/guarded_write_verification.md"
     },
     {
       "id": "sql_multiline_strings",
@@ -7988,6 +10463,166 @@
       "source": "rules/sql/sql_basic_sql_only.md"
     },
     {
+      "id": "unicode_literal_prefix",
+      "title": "No N prefix unless Unicode is required",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "embedded_sql",
+        "sql_data_source"
+      ],
+      "rule": "Use ordinary SQL string literals; add the `N` prefix only when the target explicitly requires Unicode literal semantics.",
+      "rationale": "An `N'...'` literal changes the literal's type, which can change how a\ncomparison is evaluated against a non-Unicode column.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = 'Logged'\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = N'Logged'\");\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.unicode_literal_prefix"
+      ],
+      "categories": [
+        "sql"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/unicode_literal_prefix.md"
+    },
+    {
+      "id": "unjustified_collate",
+      "title": "COLLATE only for a documented contract",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "embedded_sql",
+        "sql_data_source"
+      ],
+      "rule": "Let ordinary text comparisons use the schema or database collation; force `COLLATE` only for a documented comparison contract, and explain why the schema collation is insufficient immediately before the query.",
+      "rationale": "A forced collation overrides what the schema promises for that column. Without\nthe reason next to it, a reader cannot tell whether it is a contract or an\naccident.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\n/* Codes differ only by case, so this match must be case-sensitive;\naRows := SQLExecute(\"\n    SELECT ordno\n    FROM ordtask\n    WHERE code = 'Ab' COLLATE Latin1_General_CS_AS\n\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT ordno\n    FROM ordtask\n    WHERE code = 'Ab' COLLATE Latin1_General_CS_AS\n\");\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:diag.unjustified_collate"
+      ],
+      "categories": [
+        "sql"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/unjustified_collate.md"
+    },
+    {
+      "id": "sql_structure_exposes_guards",
+      "title": "SQL layout shows lock and guard conditions",
+      "domain": "sql",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "embedded_sql",
+        "sql_data_source"
+      ],
+      "rule": "Use structured SQL with clause-per-line formatting and indentation that exposes lock and guard conditions.",
+      "rationale": "The guard and lock conditions decide whether a write is safe, so they belong\nwhere a reviewer sees them, each on its own line.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\t:RETURN LimsRecordsAffected() == 1;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\tSQLExecute(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?sOrdNo? AND status = 'Logged'\");\n\t:RETURN LimsRecordsAffected() == 1;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "sql"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/sql_structure_exposes_guards.md"
+    },
+    {
+      "id": "sql_lock_hints_deliberate",
+      "title": "Lock hints follow the concurrency contract",
+      "domain": "sql",
+      "status": "active",
+      "level": "advisory",
+      "severity": "info",
+      "applies_to": [
+        "embedded_sql",
+        "sql_data_source"
+      ],
+      "rule": "Apply lock hints deliberately for the operation's concurrency contract.",
+      "rationale": "A lock hint changes what concurrent commands can see and do. One added by\nhabit blocks other work; one left out lets two commands act on the same row.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE ClaimOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE aRows;\n\t/* Lock the row so a second claim waits for this one;\n\taRows := SQLExecute(\"\n\t    SELECT ordno, status\n\t    FROM ordtask\n\t    WHERE ordno = ?sOrdNo?\n\t    FOR UPDATE\n\t\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "/* Every read takes a lock, whether or not anything is written;\naRows := SQLExecute(\"\n    SELECT ordno, status\n    FROM ordtask\n    FOR UPDATE\n\");\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "sql"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/sql/sql_lock_hints_deliberate.md"
+    },
+    {
       "id": "class_member_order",
       "title": "Class member order",
       "domain": "classes",
@@ -8728,6 +11363,48 @@
       "source": "rules/classes/class_name_not_builtin.md"
     },
     {
+      "id": "class_fields_declared_at_class_level",
+      "title": "Class fields are declared at class level",
+      "domain": "classes",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "class"
+      ],
+      "rule": "Declare class fields with `:DECLARE` at class level, not inside methods.",
+      "rationale": "Only a `:DECLARE` at class level creates a field. The same statement inside a\nmethod declares a local variable that disappears when the method returns, so\n`Me:` never sees it.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":CLASS Counter;\n:DECLARE nCount;\n\n:PROCEDURE Reset;\n\tMe:nCount := 0;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":CLASS Counter;\n\n:PROCEDURE Reset;\n\t:DECLARE nCount;\n\tnCount := 0;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "classes"
+      ],
+      "related_elements": [
+        "DECLARE",
+        "CLASS"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/classes/class_fields_declared_at_class_level.md"
+    },
+    {
       "id": "field_vs_property_terminology",
       "title": "Fields and properties are different things",
       "domain": "classes",
@@ -9358,6 +12035,46 @@
       "aliases": [],
       "issues": [],
       "source": "rules/naming/underscores_discouraged.md"
+    },
+    {
+      "id": "procedure_verb_noun_names",
+      "title": "Procedure names are verb plus noun",
+      "domain": "naming",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Name procedures as a verb followed by a noun, for example `ValidateOrder`, `ProcessQCSample` or `CalculateTotal`.",
+      "rationale": "A verb and a noun say what the procedure does and to what, so a call reads as\nan action.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CalculateTotal;\n\t:PARAMETERS nQty, nPrice;\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS nQty, nPrice;\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "naming"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/naming/procedure_verb_noun_names.md"
     }
   ]
 }

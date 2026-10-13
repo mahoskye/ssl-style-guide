@@ -415,6 +415,9 @@ export function liveRecords(records) {
   return records.filter((r) => r.status === 'active' || r.status === 'deprecated');
 }
 
+/** Region layouts: `- rule`, a rule/level/severity table, or `- [ ] rule`. */
+export const REGION_FORMATS = ['bullets', 'table', 'checklist'];
+
 /**
  * Select records with a region selector string, e.g.
  * "domain=data-sources applies_to=ssl_data_source,sql_data_source".
@@ -442,8 +445,8 @@ export function parseSelector(text) {
     }
     selector[key] = value.split(',');
   }
-  if (!['bullets', 'table'].includes(format)) {
-    throw new Error(`unknown format '${format}' (bullets, table)`);
+  if (!REGION_FORMATS.includes(format)) {
+    throw new Error(`unknown format '${format}' (${REGION_FORMATS.join(', ')})`);
   }
   if (Object.keys(selector).length === 0) throw new Error('a region needs at least one selector');
   return { selector, format, wrap };
@@ -531,6 +534,7 @@ export function renderRegion(records, format, indent, wrap = 0) {
     ];
     return rows.map((row) => indent + row).join('\n');
   }
-  if (wrap > 0) return records.map((r) => wrapBullet(r.rule, wrap, `${indent}- `, `${indent}  `)).join('\n');
-  return records.map((r) => `${indent}- ${r.rule}`).join('\n');
+  const marker = format === 'checklist' ? '- [ ] ' : '- ';
+  if (wrap > 0) return records.map((r) => wrapBullet(r.rule, wrap, `${indent}${marker}`, `${indent}  `)).join('\n');
+  return records.map((r) => `${indent}${marker}${r.rule}`).join('\n');
 }

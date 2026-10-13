@@ -7,8 +7,9 @@ level: authoritative
 severity: info
 applies_to: [sql_data_source]
 rule: >-
-  SQL data-source builder directives are preprocessed before compilation and
-  are not normal SSL keywords.
+  SQL data-source builder directives (`:DSN`, `:TABLENAME`, `:NULLASBLANK`,
+  `:INVARIANTDATECOLUMNS`) are preprocessed before compilation and are not
+  normal SSL keywords; do not flag them as unknown keywords.
 categories: [data-sources]
 machine: { list: must_follow }
 enforced_by: [reviewer]
@@ -22,6 +23,10 @@ verification:
   basis: reference
   note: >-
     Kept from the data-sources pack; the schema lint message is kept verbatim.
+    Merged (#101 phases 3 and 4): the directive list and the "do not flag
+    them" instruction that the review, refactor, refactor-plan and format
+    skills, the refactoring guide's data-source section and the agent guide's
+    gotcha 24 each stated by hand.
     starlims-lsp has no catalog entry for this slug: it accepts the directives
     in data source files without reporting them.
 ---

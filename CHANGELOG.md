@@ -71,6 +71,29 @@ Entries before this file existed are reconstructed from the release commits.
 - `generate-rules.mjs --strict-severity` fails when a record's severity
   differs from the default severity of the LSP diagnostic that enforces it
   (D11). It is off by default, and CI does not pass it yet.
+- Rules source, skills (#101 phase 3): the rule statements in every skill
+  are now generated regions: the `ssl-review` check lists and additional
+  checks, the `ssl-refactor` workflow steps, `ssl-new-procedure` step 6, the
+  `ssl-format` SSL scope, the data-source notes of the review, refactor,
+  refactor-plan and format skills, and the `ssl-unit-test` rule items.
+  21 new records hold the statements that had none, among them the SSL
+  indentation, spacing, line-length and blank-line rules, parameter defaults
+  by type, `udobject_array_in_clause`, `no_hardcoded_credentials` and
+  `validate_dynamic_call_targets`. No pack list changes.
+- Rules source, guides (#101 phase 4): the rule lists, checklists and
+  rule-like gotchas of the agent guide (quick start, §2, SQL guidance, §5,
+  §7, §8), the refactoring guide (layout and data-source rules, Part 3
+  formatting, Part 4 naming, Part 7 notes, the Part 8 checklists, the
+  quick-reference class rules), the server-script baseline (every rule list)
+  and the `_shared` quality bar are generated from records. Mixed items keep
+  their facts hand-written beside inline rules. 45 new records, among them
+  `bare_logical_operator`, `dot_property_access`, `global_assignment`,
+  `exitcase_after_return`, `format_arg_not_array`, `runsql_non_dml`,
+  `unicode_literal_prefix` and `unjustified_collate` (all starlims-lsp
+  slugs), and the server-script baseline's banner, declaration-group,
+  control-flow, SQL and transaction rules. `no_flag_builder_directives` now
+  names the directives and says not to flag them. Region `format=checklist`
+  is new. `ssl-developer` is v24 (quality bar).
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.
