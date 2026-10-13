@@ -274,12 +274,14 @@ const CATEGORY_DEFS = [
       'Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.',
       'Access class fields through Me:fieldName or Base:fieldName inside methods.',
       'Call sibling or inherited methods with Me:Method() and Base:Method().',
-      'Use CreateUdObject("ClassName") for user-defined classes.',
+      'Use CreateUdObject("Category.ClassName") for user-defined classes; a bare class name is looked up only among the default categories.',
+      'Write :INHERIT with the full Category.ClassName of the parent class.',
     ],
     avoid: [
       'Do not assign to class fields with bare identifiers inside methods.',
-      'Do not call DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.',
+      'Do not call DoProc with a bare procedure name inside class methods; it is a compile-time error. Use Me:Method() or Base:Method().',
       'Do not instantiate built-in classes with CreateUdObject.',
+      'Do not write :INHERIT with a plain class name; it is a compile-time error.',
     ],
     related: ['objects', 'procedures', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
@@ -318,7 +320,7 @@ const CATEGORY_DEFS = [
     avoid: [
       'Do not call custom script procedures directly as MyProc().',
       'Do not put :DEFAULT on a :DECLARE line.',
-      'Do not use DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.',
+      'Do not use DoProc with a bare procedure name inside class methods; it is a compile-time error.',
     ],
     related: ['classes', 'module-structure', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
@@ -680,7 +682,7 @@ detail.
   \`ExecFunction("Category.Script.Proc", {args})\` for external script entry
   points.
 - Built-in classes instantiate with curly braces, for example \`Email{}\`.
-- User-defined classes instantiate with \`CreateUdObject("ClassName")\`.
+- User-defined classes instantiate with \`CreateUdObject("Category.ClassName")\`.
 - Inside class methods, access fields through \`Me:fieldName\` or
   \`Base:fieldName\`.
 - Prefer \`:TRY\`/\`:CATCH\`/\`:FINALLY\`; bare \`:TRY ... :ENDTRY\` is invalid.

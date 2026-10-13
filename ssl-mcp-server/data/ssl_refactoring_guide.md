@@ -950,7 +950,7 @@ Empty(value)                /* True if NIL, "", 0, or .F.;
 Len(array or string)        /* Length;
 LimsString(value)           /* Convert to string;
 CreateUdObject()            /* Create empty dynamic object;
-CreateUdObject("MyClass")  /* Create user-defined object;
+CreateUdObject("Cat.MyClass")  /* Create user-defined object;
 SQLExecute(sql)             /* Run SQL with ?var? syntax;
 DoProc(name, {args})        /* Call procedure in same file;
 ExecFunction(name, {args})  /* Call procedure in other file;

@@ -13,7 +13,7 @@ Authoritative rules describe documented language behavior; style recommendations
 4. **Declaration ordering.** `:PARAMETERS` must appear before any other statements in a script or procedure body. `:DEFAULT` must immediately follow `:PARAMETERS` (zero or more `:DEFAULT` lines, but only after `:PARAMETERS`). `:DECLARE` and `:PUBLIC` are regular statements and can appear anywhere in the statement flow. `:INCLUDE` is resolved as a textual paste before the rest of the file is read, so its position is technically flexible, but it should appear early to ensure expanded content is available. Recommended conventional order: `:PARAMETERS`, `:DEFAULT`, `:INCLUDE`, `:PUBLIC`, `:DECLARE`. **Data source files use different syntax** — see §4A.
 5. **Custom procedures cannot be called directly.** A bare `Name(...)` call always means a built-in function, in scripts and classes alike; any other name stops the script from compiling with `Invalid built-in function: Name`. Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
-7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("ClassName")` or `CreateUdObject("ClassName", {args})` instantiates a user-defined `:CLASS`; `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
+7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("Category.ClassName")` or `CreateUdObject("Category.ClassName", {args})` instantiates a user-defined `:CLASS` (a bare class name is looked up only among the default categories, so it fails for a class in your own category); `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
 8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
 9. **String comparison:** `=` is loose (prefix match for strings); `==` gives exact string equality and generally parallels `=` for other value types. `$` tests containment.
 10. **Comments use `/* ...;`** and must end with a semicolon. **A semicolon inside comment text will prematurely end the comment** — never include `;` within comment text as it becomes executable code after the unintended comment boundary.
@@ -169,9 +169,10 @@ Authoritative rules describe documented language behavior; style recommendations
 ### Objects & User-Defined Types
 
 * **Object Creation:**
-    * **Built-in Class:** `oObject := ClassName{};` — built-in classes cannot be instantiated via `CreateUdObject`. Known built-in classes: `AzureStorage`, `BatchSupport`, `CDataTable`, `Email`, `EnterpriseExporter`, `FtpsClient`, `HtmlConverter`, `PatcherSupport`, `PdfSupport`, `RegSetup`, `SDMS`, `SDMSDocUploader`, `SSLBaseDictionary`, `SSLCodeProvider`, `SSLDataset`, `SSLExpando`, `SSLIntDictionary`, `SSLRegex`, `SSLStringDictionary`, `Sequence`, `TablesImport`, `WebServices`.
+    * **Built-in Class:** `oObject := ClassName{};` — built-in classes cannot be instantiated via `CreateUdObject`. Known built-in classes: `AzureStorage`, `BatchSupport`, `CDataTable`, `Email`, `EnterpriseExporter`, `FtpsClient`, `HtmlConverter`, `PatcherSupport`, `PdfSupport`, `RegSetup`, `SDMS`, `SDMSDocUploader`, `SSLCodeProvider`, `SSLDataset`, `SSLIntDictionary`, `SSLRegex`, `SSLStringDictionary`, `Sequence`, `TablesImport`, `WebServices`.
+    * **No direct constructor:** `SSLExpando{}` raises the compile-time error `Invalid built-in class: SSLExpando` — create dynamic objects with `CreateUdObject()`. `SSLBaseDictionary` has no direct constructor — use `SSLStringDictionary{}` or `SSLIntDictionary{}`.
     * **Dynamic Object:** `oExp := CreateUdObject();` (creates an empty `SSLExpando`)
-    * **User-Defined Class:** `oCustom := CreateUdObject("MyClass");` or `oCustom := CreateUdObject("MyClass", {arg1, arg2});` — for user-defined `:CLASS` files only
+    * **User-Defined Class:** `oCustom := CreateUdObject("Samples.SampleTicket");` or `oCustom := CreateUdObject("Samples.SampleTicket", {arg1, arg2});` — for user-defined `:CLASS` files only. Name the class as `Category.ClassName`: a bare class name is looked up only among the default categories and raises `There is no script with name: <name> among default categories.` for a class in your own category.
     * **Anonymous Object:** `oAnon := CreateUdObject({{"PropName", value}, ...});` (creates `SSLExpando` with properties)
 
 * **Property Access:** Use colon notation: `oObject:PropertyName := value;`
@@ -186,14 +187,14 @@ Authoritative rules describe documented language behavior; style recommendations
 
 * **Class Definition:**
     * `:CLASS [ClassName];` defines a class and continues until end of file (no end keyword). The class name is syntactically optional, but new and refactored code should always provide an explicit class name.
-    * `:INHERIT BaseName;` or `:INHERIT Category.ScriptName;` specifies inheritance (optional, follows `:CLASS`). Without `:INHERIT`, classes inherit from `SSLObject` by default.
+    * `:INHERIT Category.ClassName;` specifies inheritance (optional, follows `:CLASS`). The parent must be written with its category; a plain name such as `:INHERIT BaseName;` is a compile-time error. Without `:INHERIT`, classes inherit from `SSLObject` by default.
     * Class contains `:DECLARE` statements and `:PROCEDURE` definitions
     * **Constructor:** Define with `:PROCEDURE Constructor;`. This is the fixed reserved name for a class constructor, not a normal method identifier. If omitted, an empty zero-argument constructor is auto-generated. Successful compilation requires class members in this order: `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`. `:RETURN` inside a constructor cannot return a value. When a class inherits, the parent's parameterless `Constructor` runs automatically first; a parent `Constructor` that takes parameters does not run unless the derived `Constructor` calls `Base:Constructor(args)`.
     * **Class method calls:** Inside class methods, use `Me:MethodName()` / `Base:MethodName()` for sibling and inherited method calls. An unqualified `DoProc("ProcName", ...)` is rejected inside class methods; fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed, and `ExecFunction` has no class-method restriction.
     * **Class fields must be qualified with `Me:` / `Base:`.** Inside a class method, a bare identifier resolves to a local variable or `:PARAMETERS` entry — **not** to a `:DECLARE` field on the class. To read or write a class field, write `Me:fieldName` (or `Base:fieldName` for an inherited parent field). An unqualified assignment silently creates or overwrites a local of the same name and leaves the field untouched.
     * **No script entry point:** A class file contains only the class definition and cannot be run as a script. `ExecFunction("Category.ClassFile")` fails at runtime, and `ExecFunction("Category.ClassFile.MethodName")` does **not** invoke the method. Instantiate with `CreateUdObject("Category.ClassName")` and call methods on the instance.
     * **Underscore-prefixed members:** Methods and fields prefixed with `_` (e.g., `_myHelper`) are excluded from reflection-based access, making them effectively private by convention.
-    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both make the procedure inaccessible via `DoProc`/`ExecFunction`. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
+    * **Visibility annotations (scripts only):** Place `/*@private;` or `/*@protected;` on its own line immediately before `:PROCEDURE` to restrict access. Both keep the procedure callable from its own script (for example with `DoProc`) and block calls from external scripts. **These annotations have no effect on class methods** (class methods are always Public|Virtual).
       ```ssl
       /*@private;
       :PROCEDURE InternalHelper;
@@ -733,7 +734,7 @@ Variables must be prefixed to indicate type:
     nTotal := 0;
 
     /* Create logger object;
-    oLogger := CreateUdObject("OrderLogger");
+    oLogger := CreateUdObject("Sales.OrderLogger");
 
     :TRY;
         /* Use ?param? syntax for SQLExecute - variable must be in scope;
@@ -840,7 +841,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 | **SQL Parameters** | `RunSQL("INSERT VALUES(?sVal?)")` | `RunSQL("INSERT INTO T VALUES(?)",, {sVal})` |
 | **Logical Operators** | `IF x > 5 AND y < 10;` | `:IF x > 5 .AND. y < 10;` |
 | **Array Indexing** | `aItems[0]` (0-based) | `aItems[1]` (1-based, first element) |
-| **Object Creation** | `oObj := new MyClass();` | `oObj := BuiltInClass{};` or `oObj := CreateUdObject("UserClass", {args});` |
+| **Object Creation** | `oObj := new MyClass();` | `oObj := BuiltInClass{};` or `oObj := CreateUdObject("Category.UserClass", {args});` |
 | **Object Property** | `oObj.Property` | `oObj:Property` |
 | **DS Parameters** | `:PARAMETERS p1; :DEFAULT p1, "val";` (in data source) | `:PARAMETERS p1 := "val";` (in data source) |
 | **DS Parameters** | `:PARAMETERS;` (empty, in data source) | `:PARAMETERS p1 := "default";` (at least one required) |
@@ -987,7 +988,7 @@ Note: These are legacy functional body-capture constructs. They store content fo
 ## 10. Built-in Function Reference
 
 > Parameter prefixes: `s` = string, `n` = number, `b` = boolean, `d` = date, `a` = array, `o` = object, `v` = any/variant, `fn` = code block.
-> Calling-form note: canonical SSL call forms are `DoProc("ProcName", {args})`, `ExecFunction("Category.Script", {args})` / `ExecFunction("Category.Script.Proc", {args})`, `CreateUdObject()`, `CreateUdObject("ClassName", {args})`, and `CreateUdObject({{"Prop", value}, ...})`.
+> Calling-form note: canonical SSL call forms are `DoProc("ProcName", {args})`, `ExecFunction("Category.Script", {args})` / `ExecFunction("Category.Script.Proc", {args})`, `CreateUdObject()`, `CreateUdObject("Category.ClassName", {args})`, and `CreateUdObject({{"Prop", value}, ...})`.
 
 ### Core Functions (Most Used)
 
@@ -1455,11 +1456,11 @@ developer-accessible classes that are only reached indirectly as return values
 | `SDMS` | `SDMS{}` / `SDMS{oCredentials}` | SDMS client |
 | `SDMSDocUploader` | `SDMSDocUploader{}` / `SDMSDocUploader{oCredentials}` | SDMS document uploader |
 | `Sequence` | `Sequence{sPlatforma, sTableName, sFieldName, sPrefix}` | Database sequence helper |
-| `SSLBaseDictionary` | `SSLBaseDictionary{}` | Base dictionary class |
+| `SSLBaseDictionary` | No direct constructor — use `SSLStringDictionary{}` or `SSLIntDictionary{}` | Base dictionary class |
 | `SSLCodeProvider` | `SSLCodeProvider{}` | Code compilation utility |
 | `SSLDataset` | `SSLDataset{}` / `SSLDataset{vData, vNullAsBlank}` | Dataset wrapper |
 | `SSLError` | Returned by `GetLastSSLError()` | Exception object (`:Message`, `:Description`, `:Code`, `:GenCode`, `:Operation`, `:FullDescription`, `:FullDescriptionEx`, `:InnerException`, `:NETException`) |
-| `SSLExpando` | `SSLExpando{}` | Dynamic object |
+| `SSLExpando` | `CreateUdObject()` (`SSLExpando{}` does not compile) | Dynamic object |
 | `SSLIntDictionary` | `SSLIntDictionary{}` / `SSLIntDictionary{nLength}` | Numeric-keyed dictionary |
 | `SSLRegex` | `SSLRegex{sPattern}` / `SSLRegex{sPattern, bCaseSensitive}` | Regular expressions |
 | `SSLStringDictionary` | `SSLStringDictionary{}` / `SSLStringDictionary{vCaseSensitive, nLength}` | String-keyed dictionary |
@@ -1576,11 +1577,11 @@ oDict:TryGetValue(nKey)           → Object   /* {Exists, Value};
 
 ### SSLBaseDictionary
 
-Base dictionary class (parent of SSLStringDictionary and SSLIntDictionary).
+Base dictionary class (parent of SSLStringDictionary and SSLIntDictionary). It has no direct constructor: create an `SSLStringDictionary{}` or `SSLIntDictionary{}` and use these shared members on it.
 
 ```ssl
-/* Constructor;
-oDict := SSLBaseDictionary{};
+/* No direct constructor - create a concrete dictionary;
+oDict := SSLStringDictionary{};
 
 /* Properties;
 oDict:Keys   → Array
@@ -1592,10 +1593,12 @@ oDict:AddValue(vKey, vValue)
 oDict:Clear()
 oDict:Contains(vKey)              → Boolean
 oDict:GetValue(vKey, vDefault)    → Any
-oDict:Invoke(vKey, aArgs)         → Any
+oDict:InvokeMethod(sMethodName, aArgs) → Any   /* call a member by name;
 oDict:Remove(vKey)                → Any
 oDict:TryGetValue(vKey)           → Object
 ```
+
+`Invoke` raises in every form; call the method directly, or use `InvokeMethod(sMethodName, aArgs)` when the method name is only known at run time.
 
 ### SSLExpando
 

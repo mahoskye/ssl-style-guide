@@ -428,7 +428,8 @@ ssl_style_guide:
     include_target_forms:
       - ":INCLUDE ScriptName;"
       - ":INCLUDE Category.ScriptName;"
-      - ':INCLUDE "ScriptName";' # quoted targets also occur and are accepted
+    include_invalid_forms:
+      - ':INCLUDE "ScriptName";' # a quoted-string target is not accepted (raises unexpected char: '"')
   procedures:
     signature:
       level: authoritative
@@ -452,7 +453,7 @@ ssl_style_guide:
         - "/*@private;"
         - "/*@protected;"
       placement: own line immediately before :PROCEDURE
-      effect: "Both make the procedure inaccessible via DoProc/ExecFunction"
+      effect: "Both keep the procedure callable from the same script (for example with DoProc) and block calls from external scripts (ExecFunction from another script)"
       class_restriction: "These annotations have no effect on class methods — class methods are always Public|Virtual"
     return:
       keyword: :RETURN
@@ -951,7 +952,7 @@ ssl_style_guide:
     level: authoritative
     signature:
       begin: :CLASS [Name];
-      inherit: :INHERIT BaseName; or :INHERIT Category.ScriptName;
+      inherit: :INHERIT Category.ClassName;  # a plain name is a compile-time error
       members:
       - :DECLARE ...;
       - :PROCEDURE ...;
@@ -1172,8 +1173,8 @@ ssl_style_guide:
         runtime_type: OBJECT
         notes:
           - Created via MakeNETObject(), LimsNETConnect(), LimsNETTypeOf()
-          - Member access through GetProperty(), SetProperty(), IsProperty(), Invoke()
-          - IsEmpty() returns .T. only when the wrapped reference is null
+          - Only the wrapped type's native .NET members work, and their names are case-sensitive
+          - GetProperty(), SetProperty(), IsProperty(), Invoke(), IsEmpty() and ToJson() raise Invalid method on a netobject
           - AddProperty() is not supported on netobject
       number:
         summary: Single numeric type covering integers and fractional values.
@@ -1189,7 +1190,8 @@ ssl_style_guide:
         runtime_type: OBJECT
         notes:
           - Member access via colon syntax (oVal:propName) or GetProperty/SetProperty
-          - Created via CreateLocal(), CreateUdObject(), built-in class instantiation Class{}, or user-class CreateUdObject("ClassName")
+          - Created via CreateUdObject(), CreateUdObject({{"Prop", value}}), built-in class instantiation Class{}, or user-class CreateUdObject("Category.ClassName")
+          - CreateLocal() does not create objects — it creates a local variable by name and raises with no arguments
           - XmlType property controls the root element name used by Serialize()
           - IsEmpty() always returns .F. for objects
           - Direct [] indexing of object members is not supported
@@ -1399,7 +1401,10 @@ ssl_style_guide:
     object_creation:
       builtin_classes:
         syntax: ClassName{parameters}
-        note: Built-in SSL classes use curly braces for instantiation
+        note: Built-in SSL classes use curly braces for instantiation. all_classes is the full built-in class inventory; the classes in no_direct_constructor cannot be created with ClassName{}.
+        no_direct_constructor:
+          SSLExpando: "SSLExpando{} raises the compile-time error Invalid built-in class: SSLExpando — create dynamic objects with CreateUdObject()"
+          SSLBaseDictionary: "No direct constructor — use SSLStringDictionary{} or SSLIntDictionary{}"
         all_classes:
           - AzureStorage
           - BatchSupport
@@ -1442,13 +1447,13 @@ ssl_style_guide:
       user_defined_objects:
         syntax:
           - CreateUdObject()
-          - CreateUdObject("ClassName")
-          - CreateUdObject("ClassName", {params})
-        note: CreateUdObject() returns an empty dynamic object; string forms dispatch to objects defined with :CLASS
+          - CreateUdObject("Category.ClassName")
+          - CreateUdObject("Category.ClassName", {params})
+        note: "CreateUdObject() returns an empty dynamic object; string forms instantiate a :CLASS script named as Category.ClassName. A bare class name is looked up only among the default categories, so for a class in your own category it raises: There is no script with name: <name> among default categories."
         examples:
           - oDynamic := CreateUdObject();
-          - oCustom := CreateUdObject("MyClass");
-          - oCustom := CreateUdObject("MyClass", {param1, param2});
+          - oCustom := CreateUdObject("Samples.SampleTicket");
+          - oCustom := CreateUdObject("Samples.SampleTicket", {param1, param2});
       anonymous_objects:
         syntax: CreateUdObject({{"Prop", value}, {"Other", value2}})
         note: Anonymous UDO with property/value pairs
@@ -1618,8 +1623,8 @@ ssl_style_guide:
         severity: info
         message: "Underscore-prefixed members (_name) are excluded from reflection — this is the SSL private convention."
       - rule: inherit_qualified_name
-        severity: warning
-        message: "Qualified :INHERIT names are common, but bare or qualified base names are accepted."
+        severity: error
+        message: ":INHERIT requires the full Category.ClassName of the parent class. A plain name is a compile-time error: Specify the full name of the class in :INHERIT : categoryname.scriptname!"
       - rule: max_params_warning
         threshold: 20
         severity: warning
@@ -1704,7 +1709,7 @@ ssl_style_guide:
       Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.
     class_modules:
       - :CLASS [ClassName];
-      - :INHERIT BaseName; or :INHERIT Category.ScriptName; (optional — must precede :DECLARE)
+      - :INHERIT Category.ClassName; (optional — must precede :DECLARE; a plain name does not compile)
       - :DECLARE class_fields; (must follow :INHERIT, must precede methods)
       - :PROCEDURE regular_methods; (must precede Constructor)
       - :PROCEDURE Constructor; (must be last procedure in class)
