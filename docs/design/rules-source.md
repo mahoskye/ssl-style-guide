@@ -1,6 +1,6 @@
 # Design: one rules source
 
-**Status:** Proposal — not adopted
+**Status:** Adopted 2026-10-13. Implemented in #111–#117 (phases 1–5); see `rules/README.md` for how to work with it.
 **Issue:** #101 (follows the #91 decision that rule text moves into one source; epic #93)
 **Scope:** phase 1 of #101 — record format, layout, generator and checks, piloted on data sources.
 
