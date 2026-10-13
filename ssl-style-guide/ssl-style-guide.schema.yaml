@@ -1274,26 +1274,27 @@ ssl_style_guide:
       note: "Current, supported construct with a runtime purpose: GetRegion() retrieves the raw body with $placeholder$ substitution. Not legacy; actively used in production code bases."
   sql:
     api: SQLExecute
+    # BEGIN GENERATED sql.formatting: edit rules/ and run bun tools/generate-rules.mjs
     formatting:
       level: style_only
       style: canonicalCompact
       reference: ssl-style-guide/sql-canonical-compact-reference.md
-      keyword_case: upper
-      function_case: upper
-      identifier_case: preserve   # force-folding is dialect-conditional: safe on Oracle, breaks case-sensitive SQL Server collations; lower is the Oracle-only opt-in
+      keyword_case: upper # Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+      function_case: upper # Inside SQL strings, write SQL keywords and built-in functions in uppercase.
+      identifier_case: preserve # Preserve the author's casing for table names, column names and aliases; force-folding is dialect-conditional (safe on Oracle, but breaks case-sensitive SQL Server collations), so lowercase only Oracle-only code.
       identifier_case_options:
         - preserve
         - lower
         - upper
-      preserve_external_casing: true
+      preserve_external_casing: true # Preserve external schema or object casing when the schema or object requires it.
       align_clauses: false
-      comma_style: trailing   # SQL SELECT-list commas at end of line; unrelated to arrays.allow_trailing_comma
-      max_line_length: 90
+      comma_style: trailing # Put commas at the end of the line (trailing comma style), not at the start of the next line.
+      max_line_length: 90 # Keep SQL lines to about 90 characters, breaking at logical points.
       ssl_embedding:
-        indent: 4
+        indent: 4 # Indent the whole SQL block 4 spaces inside the SSL string literal.
         note: entire SQL block indented 4 spaces inside the SSL string literal
       indentation:
-        major_clauses: 0
+        major_clauses: 0 # Start each major clause at column 0 relative to the 4-space indent: SELECT, FROM, WHERE, INNER JOIN, LEFT OUTER JOIN, RIGHT OUTER JOIN, FULL OUTER JOIN, CROSS JOIN, GROUP BY, ORDER BY, UNION, UNION ALL, INTERSECT, MINUS, INSERT INTO, VALUES, UPDATE, DELETE FROM, MERGE INTO, USING, WHEN MATCHED THEN, WHEN NOT MATCHED THEN, START WITH, CONNECT BY, PIVOT, UNPIVOT, FOR UPDATE, RETURNING.
         major_clause_list:
           - SELECT
           - FROM
@@ -1325,47 +1326,49 @@ ssl_style_guide:
           - RETURNING
         sub_clause_indent: 2
         sub_clauses:
-          on: 2
-          and_or: 2
-          having: 2
-          case_when_else: 2
-        select_continuation_align: first_column
-        select_continuation_column: 7
+          on: 2 # Indent ON 2 spaces under its JOIN (in MERGE, ON stays at column 0).
+          and_or: 2 # Start each AND/OR condition on its own line, indented 2 spaces under WHERE; in a join condition it aligns with ON, and in a HAVING condition with HAVING.
+          having: 2 # Indent HAVING 2 spaces under GROUP BY.
+          case_when_else: 2 # Indent WHEN/ELSE 2 spaces under CASE.
+        select_continuation_align: first_column # Align SELECT continuation lines to the first column (column 7).
+        select_continuation_column: 7 # Align SELECT continuation lines to the first column (column 7).
       statement_patterns:
         select:
-          columns: pack to ~90 chars; break complex expressions to own line
-          continuation: align to first column (col 7)
+          columns: pack to ~90 chars; break complex expressions to own line # Pack SELECT columns onto lines up to about 90 characters: short aliases (col AS alias) and simple functions (COUNT(*), UPPER(col)) can share a line, and complex expressions (CASE, nested functions, subqueries) break to their own line.
+          continuation: align to first column (col 7) # Align SELECT continuation lines to the first column (column 7).
         join:
-          on: indented 2 under JOIN
-          on_and: same indent as ON (2 under JOIN)
+          on: indented 2 under JOIN # Indent ON 2 spaces under its JOIN (in MERGE, ON stays at column 0).
+          on_and: same indent as ON (2 under JOIN) # Start each AND/OR condition on its own line, indented 2 spaces under WHERE; in a join condition it aligns with ON, and in a HAVING condition with HAVING.
         where:
-          and_or: indented 2 under WHERE
-          between_and: aligned under BETWEEN keyword
+          and_or: indented 2 under WHERE # Start each AND/OR condition on its own line, indented 2 spaces under WHERE; in a join condition it aligns with ON, and in a HAVING condition with HAVING.
+          between_and: aligned under BETWEEN keyword # When a BETWEEN ... AND range breaks across lines, align its AND under BETWEEN.
         group_by:
-          having: indented 2 under GROUP BY
+          having: indented 2 under GROUP BY # Indent HAVING 2 spaces under GROUP BY.
         case:
-          when_else: indented 2 under CASE
-          then_value: inline when short; next line (indented 2 under WHEN) when long
-          consistency: all branches inline or all broken within one CASE block
-          else_exception: ELSE value may stay inline when short
+          when_else: indented 2 under CASE # Indent WHEN/ELSE 2 spaces under CASE.
+          then_value: inline when short; next line (indented 2 under WHEN) when long # When a THEN value breaks to a new line, indent it one level under its WHEN.
+          consistency: all branches inline or all broken within one CASE block # Within one CASE block, keep all WHEN/THEN branches inline or break them all; do not mix. ELSE may stay inline when its value is short.
+          else_exception: ELSE value may stay inline when short # Within one CASE block, keep all WHEN/THEN branches inline or break them all; do not mix. ELSE may stay inline when its value is short.
         insert:
-          parens: opening ( on INSERT INTO line; closing ) on own line
-          columns: indented 4 inside parens
-          values: same block-style parens as column list
+          parens: opening ( on INSERT INTO line; closing ) on own line # In INSERT, put the opening ( on the INSERT INTO line, indent the columns 4 spaces, and put the closing ) on its own line; lay out VALUES the same way.
+          columns: indented 4 inside parens # In INSERT, put the opening ( on the INSERT INTO line, indent the columns 4 spaces, and put the closing ) on its own line; lay out VALUES the same way.
+          values: same block-style parens as column list # In INSERT, put the opening ( on the INSERT INTO line, indent the columns 4 spaces, and put the closing ) on its own line; lay out VALUES the same way.
         update:
-          set: on same line as UPDATE
-          assignments: indented 4 under UPDATE SET
+          set: on same line as UPDATE # In UPDATE, keep SET on the UPDATE line and indent the assignments 4 spaces below it.
+          assignments: indented 4 under UPDATE SET # In UPDATE, keep SET on the UPDATE line and indent the assignments 4 spaces below it.
         merge:
-          on: column 0 (not indented under USING)
-          on_and: indented 4 (aligned under first condition inside parens)
-          update_set: indented 4 under WHEN MATCHED
-          insert: indented 4 under WHEN NOT MATCHED; block-style parens
+          on: column 0 (not indented under USING) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
+          on_and: indented 4 (aligned under first condition inside parens) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
+          update_set: indented 4 under WHEN MATCHED # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
+          insert: indented 4 under WHEN NOT MATCHED; block-style parens # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
         set_operations:
-          vertical_spacing: blank line before and after operator
+          vertical_spacing: blank line before and after operator # Put a blank line before and after UNION, UNION ALL, INTERSECT and MINUS.
         optimizer_hints:
-          position: immediately after action keyword
+          position: immediately after action keyword # Keep an optimizer hint (/*+ HINT */) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
           syntax: "/*+ HINT */"
-          note: never strip without understanding purpose
+          note: never strip without understanding purpose # Keep an optimizer hint (/*+ HINT */) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
+    # END GENERATED sql.formatting
+    # BEGIN GENERATED sql.parameters: edit rules/ and run bun tools/generate-rules.mjs
     parameters:
       support_level: authoritative
       named_supported_by:
@@ -1378,19 +1381,25 @@ ssl_style_guide:
         - LSelectC
         - GetDataSet
       at_name_supported_by:
-        - GetSSLDataset  # @name in the SQL text and in the names array, with a parallel values array
+        - GetSSLDataset
       values_array_position:
-        third: [RunSQL, LSelect1]
-        fourth: [LSearch, LSelect, LSelectC]  # LSearch(sql,,, {v}), LSelect(sql,,, {v})
-        second: [GetDataSet]                  # GetDataSet(sql, {v})
+        third:
+          - RunSQL
+          - LSelect1
+        fourth:
+          - LSearch
+          - LSelect
+          - LSelectC
+        second:
+          - GetDataSet
       note: "Three placeholder shapes: ?name? for SQLExecute only (input substitution, never an output bind); positional ? with a values array for the other DB functions; @name with name and value arrays for GetSSLDataset. LSelect and LSelectC take an aFieldList second that is not implemented: skip it, because any value raises fieldList != NULL - Not implemented yet."
       array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
       placeholder_patterns:
-      - ?name?
-      - ?obj:Prop?
-      - ?arr[i]?
-      - ?Func()?
-      - '?'
+        - ?name?
+        - ?obj:Prop?
+        - ?arr[i]?
+        - ?Func()?
+        - '?'
       scope_note: >
         These patterns apply to SQL embedded in SSL strings (SQLExecute and
         related functions). SQL data-source files are a different mechanism and
@@ -1418,6 +1427,7 @@ ssl_style_guide:
         - GetNETDataSet
         - XmlExportSql
         - GetTables
+    # END GENERATED sql.parameters
   object_oriented:
     level: authoritative
     note: "Class definition, inheritance, property/method access rules are defined in the 'classes' and 'property_method_access' sections. This section covers object creation patterns."

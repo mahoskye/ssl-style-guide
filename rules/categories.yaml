@@ -8,13 +8,50 @@
 # `order` lists every record in the category, in the order packs, regions and
 # rules/INDEX.md show them.
 #
-# Pilot (#101): only data-sources is generated. Labels, aliases, summaries and
-# element lists still live in CATEGORY_DEFS and move here in phase 2.
+# Pilot (#101): only data-sources, database and sql are generated. Labels,
+# aliases, summaries and element lists still live in CATEGORY_DEFS and move
+# here in phase 2.
 categories:
   - id: control-flow
   - id: loops
   - id: database
+    lists_from_rules: true
+    order:
+      - prevent_sql_injection
+      - named_sql_param_unsupported
+      - sql_positional_placeholders
+      - getssldataset_at_name_markers
+      - empty_optional_param_array
   - id: sql
+    lists_from_rules: true
+    order:
+      - sql_multiline_strings
+      - sql_ssl_embedding_indent
+      - sql_major_clause_column
+      - sql_max_line_length
+      - sql_trailing_commas
+      - complex_sql_placeholder
+      - sql_in_clause_array_expansion
+      - sql_keyword_case
+      - sql_identifier_case
+      - sql_preserve_external_casing
+      - sql_and_or_indent
+      - sql_on_indent
+      - sql_having_indent
+      - sql_between_and_align
+      - sql_case_when_else_indent
+      - sql_case_branch_consistency
+      - sql_case_then_break
+      - sql_select_packing
+      - sql_select_continuation
+      - sql_insert_layout
+      - sql_update_layout
+      - sql_merge_layout
+      - sql_set_operation_spacing
+      - sql_optimizer_hints
+      - sql_no_mixed_placeholder_styles
+      - sql_no_trailing_semicolon
+      - sql_basic_sql_only
   - id: transactions
   - id: strings
   - id: arrays
