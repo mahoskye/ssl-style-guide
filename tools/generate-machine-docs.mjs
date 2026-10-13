@@ -154,15 +154,7 @@ const CATEGORY_DEFS = [
       'RunSQL',
       'GetLastSSLError',
     ],
-    mustFollow: [
-      'Use :TRY/:CATCH around multi-step transactional database work.',
-      'Call GetLastSSLError() inside :CATCH when error details are needed.',
-      'Make rollback behavior explicit for write operations that can partially fail.',
-    ],
-    avoid: [
-      'Do not leave transaction boundaries implicit in specs or refactors.',
-      'Do not put control-flow exits inside :FINALLY.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['database', 'sql', 'error-handling'],
     sourcePaths: [SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.transactions],
   },
@@ -313,17 +305,7 @@ const CATEGORY_DEFS = [
     aliases: ['script procedures', 'procedure calls', 'entry points'],
     summary: 'Procedure declarations, parameter/default ordering, and procedure-call mechanisms.',
     elements: ['PROCEDURE', 'ENDPROC', 'PARAMETERS', 'DEFAULT', 'DoProc', 'ExecFunction', 'RETURN'],
-    mustFollow: [
-      ':PARAMETERS must appear before any other statements in a script or procedure body.',
-      ':DEFAULT must immediately follow :PARAMETERS.',
-      'Use DoProc("ProcName", {args}) for same-file script procedures.',
-      'Use ExecFunction("Category.Script", {args}) or ExecFunction("Category.Script.Proc", {args}) for external script entry points.',
-    ],
-    avoid: [
-      'Do not call custom script procedures directly as MyProc().',
-      'Do not put :DEFAULT on a :DECLARE line.',
-      'Do not use DoProc with a bare procedure name inside class methods; it is a compile-time error.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['classes', 'module-structure', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -344,16 +326,7 @@ const CATEGORY_DEFS = [
     aliases: ['try catch', 'exceptions', 'finally', 'ssl errors'],
     summary: 'Modern SSL error handling with TRY/CATCH/FINALLY and error retrieval.',
     elements: ['TRY', 'CATCH', 'FINALLY', 'ENDTRY', 'GetLastSSLError', 'ClearLastSSLError', 'ErrorMes'],
-    mustFollow: [
-      'Prefer :TRY/:CATCH/:FINALLY over legacy :ERROR/:RESUME.',
-      ':TRY requires at least one of :CATCH or :FINALLY.',
-      'Use GetLastSSLError() inside :CATCH to retrieve error details.',
-      'Do not place :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY.',
-    ],
-    avoid: [
-      'Do not write bare :TRY ... :ENDTRY blocks.',
-      'Do not assume UsrMes, ErrorMes, or InfoMes displays messages to users; they are server log functions.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['control-flow', 'transactions', 'logging'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions, SSL_DOC_GUIDES.errorHandling],
   },
@@ -515,15 +488,7 @@ const CATEGORY_DEFS = [
     aliases: ['messages', 'UsrMes', 'ErrorMes', 'InfoMes'],
     summary: 'Server logging helpers and message-output caveats.',
     elements: ['UsrMes', 'ErrorMes', 'InfoMes'],
-    mustFollow: [
-      'Use ErrorMes for messages that must be written even when normal user-message logging is disabled.',
-      'Treat UsrMes, ErrorMes, and InfoMes as server log functions, not UI display functions.',
-      'Avoid logging secrets or sensitive runtime values.',
-    ],
-    avoid: [
-      'Do not claim UsrMes displays a message to the end user.',
-      'Do not use logging as error handling when caller-visible behavior depends on the result.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['error-handling', 'security'],
     sourcePaths: [SOURCE_PATHS.agentInstructions, SOURCE_PATHS.elementReference],
   },
@@ -533,15 +498,7 @@ const CATEGORY_DEFS = [
     aliases: ['file structure', 'script layout', 'includes'],
     summary: 'File-level organization for scripts, classes, and data sources.',
     elements: ['INCLUDE', 'PUBLIC', 'PARAMETERS', 'DEFAULT', 'DECLARE', 'CLASS', 'PROCEDURE'],
-    mustFollow: [
-      'One file should represent either a class definition, a script, or a data source.',
-      'Place :INCLUDE early — it textually includes the referenced source before the script runs.',
-      'Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.',
-    ],
-    avoid: [
-      'Do not mix class definitions, script procedures, and data-source bodies in one file.',
-      'Do not move :PARAMETERS after other statements.',
-    ],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['procedures', 'classes', 'data-sources'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
   },
@@ -656,18 +613,42 @@ function categoryPack(category, elements, rules) {
   };
 }
 
-function foundationBullets(rules, list) {
-  return foundationRecords(rules.records, list)
-    .map((record) => wrapBullet(record.rule, 74))
-    .join('\n');
+// Foundation bullets sit among hand-written ones, so each call selects the
+// records for its spot: { domain: [...] } in record order, or { id: [...] }
+// in the order given. renderFoundation checks that every flagged record is
+// placed exactly once.
+function foundationBullets(rules, list, selector, placed) {
+  let records = foundationRecords(rules.records, list);
+  if (selector.id) {
+    records = selector.id.map(
+      (id) => records.find((record) => record.id === id) ?? fail(`foundation: ${id} is not a ${list} record`)
+    );
+  } else {
+    records = records.filter((record) => selector.domain.includes(record.domain));
+  }
+  for (const record of records) {
+    if (placed.has(record.id)) fail(`foundation: ${record.id} is placed twice`);
+    placed.add(record.id);
+  }
+  return records.map((record) => wrapBullet(record.rule, 74)).join('\n');
+}
+
+function checkFoundationPlaced(rules, list, placed) {
+  for (const record of foundationRecords(rules.records, list)) {
+    if (!placed.has(record.id)) {
+      fail(`foundation: ${record.id} (${record.file}) has machine.foundation ${list} but no place in renderFoundation`);
+    }
+  }
 }
 
 function renderFoundation(schemaFacts, rules) {
   const prefixes = Object.entries(schemaFacts.prefixes)
     .map(([prefix, type]) => `- \`${prefix}\`: ${type}`)
     .join('\n');
+  const placed = new Set();
+  const bullets = (selector) => foundationBullets(rules, 'non_negotiable', selector, placed);
 
-  return `# SSL Machine Foundation
+  const text = `# SSL Machine Foundation
 
 Generated compact baseline for SSL agents (source:
 ssl-style-guide.schema.yaml v${schemaFacts.schemaVersion}, last_updated
@@ -700,24 +681,17 @@ detail.
   \`:IF condition;\`, \`:WHILE condition;\`, \`:FOR i := 1 :TO n;\`. Omitting
   it makes the parser absorb the next line into the condition.
 - Declare variables before use with \`:DECLARE\`.
-- Do not put \`:DEFAULT\` on a \`:DECLARE\` line.
-- In scripts and procedures, \`:PARAMETERS\` appears before any other statement
-  and \`:DEFAULT\` immediately follows \`:PARAMETERS\`.
-${foundationBullets(rules, 'non_negotiable')}
+${bullets({ id: ['no_default_on_declare_line', 'parameters_first', 'default_after_parameters'] })}
+${bullets({ domain: ['data-sources'] })}
 - SSL arrays are 1-based; collections on .NET objects reached via colon member
   access (for example \`dataSet:Tables[0]\`) are 0-based.
 - Use \`==\` for exact string equality; \`=\` is prefix-style for strings.
-- Use \`DoProc("ProcName", {args})\` for same-file script procedures.
-- Use \`ExecFunction("Category.Script", {args})\` or
-  \`ExecFunction("Category.Script.Proc", {args})\` for external script entry
-  points.
+${bullets({ id: ['doproc_for_same_file_procedures', 'execfunction_for_external_scripts'] })}
 - Built-in classes instantiate with curly braces, for example \`Email{}\`.
 - User-defined classes instantiate with \`CreateUdObject("Category.ClassName")\`.
 - Inside class methods, access fields through \`Me:fieldName\` or
   \`Base:fieldName\`.
-- Prefer \`:TRY\`/\`:CATCH\`/\`:FINALLY\`; bare \`:TRY ... :ENDTRY\` is invalid.
-- Do not put \`:RETURN\`, \`:EXITFOR\`, \`:EXITWHILE\`, or \`:LOOP\` inside
-  \`:FINALLY\`.
+${bullets({ id: ['prefer_try_over_error_resume', 'try_requires_handler', 'no_control_exit_in_finally'] })}
 - \`SQLExecute\` is the only database API that supports named \`?param?\`
   substitution. Its markers reference in-scope SSL variables by name and
   it has **no values-array parameter** (the second parameter is a
@@ -769,6 +743,8 @@ ${prefixes}
 
 ${CATEGORY_DEFS.map((category) => `- \`${category.id}\`: ${category.summary}`).join('\n')}
 `;
+  checkFoundationPlaced(rules, 'non_negotiable', placed);
+  return text;
 }
 
 function indexFile(categoryPacks) {

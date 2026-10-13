@@ -8,20 +8,53 @@
 # `order` lists every record in the category, in the order packs, regions and
 # rules/INDEX.md show them.
 #
-# Pilot (#101): only data-sources is generated. Labels, aliases, summaries and
-# element lists still live in CATEGORY_DEFS and move here in phase 2.
+# Generated so far (#101): data-sources, then the server-script categories
+# transactions, procedures, error-handling, logging and module-structure.
+# Labels, aliases, summaries and element lists still live in CATEGORY_DEFS and
+# move here in phase 2.
 categories:
   - id: control-flow
   - id: loops
   - id: database
   - id: sql
   - id: transactions
+    lists_from_rules: true
+    order:
+      - try_around_transactional_work
+      - get_last_ssl_error_in_catch
+      - explicit_rollback_for_partial_writes
+      - no_control_exit_in_finally
+      - explicit_transaction_boundaries
+      - transaction_owned_by_write_service
+      - atomic_writes_one_transaction
+      - match_begin_with_end_transaction
+      - commit_flag_starts_false
+      - end_transaction_in_finally_when_started
+      - guard_transaction_finalization
   - id: strings
   - id: arrays
   - id: dates
   - id: classes
   - id: objects
   - id: procedures
+    lists_from_rules: true
+    order:
+      - parameters_first
+      - default_after_parameters
+      - doproc_for_same_file_procedures
+      - execfunction_for_external_scripts
+      - no_direct_procedure_calls
+      - no_default_on_declare_line
+      - doproc_in_class
+      - declare_locals_at_start
+      - procedure_doc_block_required
+      - returns_entry_one_line
+      - execfunction_not_class_file
+      - prefer_unannotated_procedures
+      - private_raise_only_helpers
+      - visibility_annotation_form
+      - visibility_annotation_exact_form
+      - visibility_annotations_script_only
   - id: data-sources
     lists_from_rules: true
     order:
@@ -43,6 +76,33 @@ categories:
       - runds_return_type_needs_ssldataset
       - one_class_or_script_per_file
   - id: error-handling
+    lists_from_rules: true
+    order:
+      - prefer_try_over_error_resume
+      - try_requires_handler
+      - get_last_ssl_error_in_catch
+      - no_control_exit_in_finally
+      - message_functions_write_server_log
+      - single_catch_per_try
+      - catch_before_finally
+      - try_and_finally_bodies_not_empty
+      - no_mixed_error_handling_families
+      - error_handler_last_section
+      - raise_error_inside_handling_try
+      - no_raise_error_in_catch
+      - every_raise_has_handler_boundary
+      - private_raise_only_helpers
+      - clear_last_ssl_error_after_handling
+      - read_last_ssl_error_first
+      - bound_retained_diagnostics
+      - log_at_owning_boundary
+      - no_silent_error_swallowing
+      - wrap_execfunction_for_envelope
+      - validate_results_before_access
+      - propagate_or_replace_downstream_failure
+      - no_raw_diagnostics_in_caller_failures
+      - success_envelope_without_data
+      - one_boundary_per_invariant
   - id: files
   - id: email
   - id: security
@@ -51,4 +111,29 @@ categories:
   - id: types
   - id: operators
   - id: logging
+    lists_from_rules: true
+    order:
+      - errormes_for_always_logged_messages
+      - no_secrets_in_logs
+      - message_functions_write_server_log
+      - logging_is_not_error_handling
+      - log_caption_tags
+      - no_error_logs_for_expected_rejections
+      - log_at_owning_boundary
+      - bound_retained_diagnostics
+      - no_silent_error_swallowing
   - id: module-structure
+    lists_from_rules: true
+    order:
+      - one_class_or_script_per_file
+      - include_early
+      - script_declaration_order
+      - parameters_first
+      - server_script_file_shape
+      - regions_group_related_procedures
+      - file_banner_required
+      - banner_returns_exact_shape
+      - file_banner_continuation_alignment
+      - file_banner_modified_entries
+      - generated_banner_omits_author
+      - banner_has_no_semicolon

@@ -26,18 +26,25 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - Colon-prefixed keywords must be UPPERCASE
    - Almost every statement, including comments, must end with `;`
    - Never place `;` inside comment body text
-   - `:PARAMETERS` must come immediately after `:PROCEDURE`
-   - `:DEFAULT` must come immediately after `:PARAMETERS`
-   - `:DECLARE` before body statements is a style preference — the language
-     allows `:DECLARE` anywhere in statement flow
    - Prefer tabs for indentation; if adapting to an existing space-indented file,
      preserve 4-space indentation
    - Use one statement per line
    - Use `==` for exact string equality
-   - Use `DoProc("ProcName", {args})` for same-file script procedure calls
-   - `:TRY` requires at least one `:CATCH` or `:FINALLY`; only one `:CATCH` per `:TRY`
-   - `:TRY` body requires at least one statement; `:FINALLY` body (if present) requires at least one statement
-   - `:RETURN`, `:EXITFOR`, `:EXITWHILE`, and `:LOOP` inside a `:FINALLY` block are rejected
+   <!-- rules: id=parameters_first,default_after_parameters,declare_locals_at_start,doproc_for_same_file_procedures,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally wrap=80 -->
+   - `:PARAMETERS` must appear before any other statements in a script or
+     procedure body.
+   - `:DEFAULT` must immediately follow `:PARAMETERS`.
+   - Declare locals at the start of the script or procedure; this is a style
+     preference, because `:DECLARE` is valid anywhere a statement is.
+   - Use `DoProc("ProcName", {args})` for same-file script procedures.
+   - `:TRY` requires at least one of `:CATCH` or `:FINALLY`; a bare
+     `:TRY ... :ENDTRY` is invalid.
+   - Only one `:CATCH` block is allowed per `:TRY`; there is no multi-catch.
+   - The `:TRY` body requires at least one statement, and so does a `:FINALLY`
+     body; a `:CATCH` body may be empty.
+   - Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside
+     `:FINALLY`.
+   <!-- /rules -->
 
 4. **Infer parameter types from Hungarian notation prefixes:**
    - If a parameter already has a prefix (`sName`, `nQty`, `bFlag`, `dDate`,
@@ -88,11 +95,18 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    - `:DECLARE` line: declare local variables, including an appropriately typed
      result variable when the procedure returns a value
    - Include `:TRY` / `:CATCH` / `:ENDTRY` skeleton around the body
-   - Inside `:CATCH`, use `GetLastSSLError()` if you need error details, and call
-     `ClearLastSSLError()` once the error is handled
-   - If the body raises, call `RaiseError` directly inside the `:TRY` block whose
-     `:CATCH` handles it — never inside `:CATCH`, and never where nothing catches
-     it (an uncaught error surfaces to the end user as a server error)
+   <!-- rules: id=get_last_ssl_error_in_catch,clear_last_ssl_error_after_handling,raise_error_inside_handling_try,no_raise_error_in_catch,every_raise_has_handler_boundary wrap=80 -->
+   - Use `GetLastSSLError()` inside `:CATCH` to retrieve error details.
+   - Call `ClearLastSSLError()` after handling an error in `:CATCH`, so stale
+     error state does not leak into later handling.
+   - Place `RaiseError` directly inside the `:TRY` block whose `:CATCH` handles
+     it, so the raise can never escape.
+   - Never call `RaiseError` inside `:CATCH` — the error handler must not become
+     the thing that crashes.
+   - Every raise needs a `:TRY`/`:CATCH` (or legacy `:ERROR`/`:RESUME`) boundary
+     somewhere up the call stack; an uncaught error fails the invocation and
+     surfaces to the end user as a server error.
+   <!-- /rules -->
    - Include `:RETURN` at end of try body
    - All statements must end with `;`
    - Indentation: use tabs by default

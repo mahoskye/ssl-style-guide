@@ -4,13 +4,52 @@
 # tools/generate-rules.mjs copies each subtree below into the schema, between
 # its "BEGIN GENERATED" and "END GENERATED" comments, after replacing every
 # `!rule <id>` node with that record's `schema` placement for the same path:
-# a value, or a {rule, severity, message} lint entry. Edit the rule text in
-# rules/<domain>/<id>.md; edit everything else here. Never edit the generated
-# region of the schema by hand.
+# a value, a string, or a {rule, severity, message} lint entry. Edit the rule
+# text in rules/<domain>/<id>.md; edit everything else here. Never edit the
+# generated region of the schema by hand.
 #
-# Pilot (#101): only module_structure.data_source_modules is generated. The
-# rest of the schema is still hand-maintained, and records' placements outside
-# this subtree are checked against it instead of written.
+# Only the subtrees below are generated (#101: data sources, then server
+# scripts). The rest of the schema is still hand-maintained, and records'
+# placements outside these subtrees are checked against it instead of written.
+procedures:
+  visibility_annotations:
+    level: authoritative
+    syntax:
+      - "/*@private;"
+      - "/*@protected;"
+    placement: !rule visibility_annotation_form
+    exact_form: !rule visibility_annotation_exact_form
+    not_a_comment: "Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments; formatters must not respace, recase or separate them from :PROCEDURE"
+    effect: "Both block calls from other scripts; procedures in the same script can still call the procedure"
+    class_restriction: !rule visibility_annotations_script_only
+error_handling:
+  guidance:
+    level: advisory
+    logging_guidance: !rule no_silent_error_swallowing
+    prefer_structured: !rule prefer_try_over_error_resume
+    traditional_error_blocks: supported  # :ERROR/:RESUME remain valid but :TRY/:CATCH/:FINALLY is preferred in new code
+    raise_error_doctrine:
+      - !rule raise_error_inside_handling_try
+      - !rule no_raise_error_in_catch
+      - !rule every_raise_has_handler_boundary
+      - !rule private_raise_only_helpers
+      - !rule clear_last_ssl_error_after_handling
+documentation:
+  file_banner:
+    required: !rule file_banner_required
+    template: |  # same dot-leader fields as procedure_headers, describing the whole script
+      /* ********************************************************************************
+      Description.. : [The script's single responsibility, one sentence]
+      Parameters... : [Each top-level parameter and its business meaning]
+      Returns...... : [Exact result shape - success and failure on separate lines]
+      Author....... : [Author initials]
+      Date......... : YYYY-MM-DD
+      ********************************************************************************;
+    rules:
+      - !rule file_banner_continuation_alignment
+      - !rule file_banner_modified_entries
+      - !rule generated_banner_omits_author
+      - !rule banner_has_no_semicolon
 module_structure:
   data_source_modules:
     level: authoritative

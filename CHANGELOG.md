@@ -19,6 +19,15 @@ Entries before this file existed are reconstructed from the release commits.
   `ssl-new-datasource` skill and the agent guide's §4A, and `rules/INDEX.md`;
   the data-sources pack lists and the foundation's data-source bullets come
   from the same records. The parsed schema is unchanged.
+- Rules source, server scripts (#101): 66 records in `rules/server-scripts/`
+  cover file shape, banners and doc blocks, `:PARAMETERS`/`:DEFAULT` order,
+  calling convention, error handling, boundary contracts, transactions,
+  logging and access modifiers. They generate the schema's
+  `procedures.visibility_annotations`, `error_handling.guidance` and
+  `documentation.file_banner`, the transactions, procedures, error-handling,
+  logging and module-structure pack lists, the foundation's server-script
+  bullets, and rule regions in the `ssl-new-procedure` skill and the
+  server-script baseline. The parsed schema is unchanged.
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.

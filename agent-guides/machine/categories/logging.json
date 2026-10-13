@@ -10,11 +10,10 @@
   "summary": "Server logging helpers and message-output caveats.",
   "must_follow": [
     "Use ErrorMes for messages that must be written even when normal user-message logging is disabled.",
-    "Treat UsrMes, ErrorMes, and InfoMes as server log functions, not UI display functions.",
-    "Avoid logging secrets or sensitive runtime values."
+    "Avoid logging secrets, connection strings, passwords, or tokens."
   ],
   "avoid": [
-    "Do not claim UsrMes displays a message to the end user.",
+    "Do not assume UsrMes, ErrorMes, or InfoMes displays messages to users; they are server log functions.",
     "Do not use logging as error handling when caller-visible behavior depends on the result."
   ],
   "elements": [

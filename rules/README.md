@@ -5,8 +5,8 @@ the machine packs, and the rule lists in skills and guides are generated from
 the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
-**Pilot status:** only the `data-sources` domain is migrated. Every other rule
-is still hand-written where it always was.
+**Migration status:** the `data-sources` and `server-scripts` domains are
+migrated. Every other rule is still hand-written where it always was.
 
 ## Layout
 
@@ -22,14 +22,17 @@ is still hand-written where it always was.
 | Output | From | Generator |
 |---|---|---|
 | `rules/INDEX.md` | all records | `tools/generate-rules.mjs` |
-| `module_structure.data_source_modules` in `ssl-style-guide/ssl-style-guide.schema.yaml` (between the `BEGIN GENERATED` / `END GENERATED` comments) | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
+| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `module_structure.data_source_modules`, `procedures.visibility_annotations`, `error_handling.guidance` and `documentation.file_banner` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
 | Regions between `<!-- rules: … -->` and `<!-- /rules -->` in `agent-guides/` and `ssl-style-guide/` Markdown | the selected records' `rule` text | `tools/generate-rules.mjs` |
-| `must_follow` / `avoid` in `agent-guides/machine/categories/data-sources.json` | records with `machine.list`, in `categories.yaml` order | `tools/generate-machine-docs.mjs` |
-| Data-source bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable` | `tools/generate-machine-docs.mjs` |
+| `must_follow` / `avoid` in `agent-guides/machine/categories/<id>.json` for each category with `lists_from_rules: true` | records with `machine.list`, in that category's `order` | `tools/generate-machine-docs.mjs` |
+| Data-source and server-script bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable`, each placed by `renderFoundation` | `tools/generate-machine-docs.mjs` |
 
 Placements outside a generated region (for example
 `module_structure.class_file_constraint.rule`) are not written; the check
-fails if the hand-maintained schema disagrees with them. Likewise, a record in
+fails if the hand-maintained schema disagrees with them. A `text` placement is
+a plain string, either a value or one entry of a list of strings; a `lint` or
+`rule_text` placement matches a list entry on the keys it supplies, so the
+entry may carry more (such as a lint's `scope` note). Likewise, a record in
 a category that is not generated yet must appear word for word in that
 category's hard-coded list.
 
@@ -52,7 +55,7 @@ related_elements: [PARAMETERS, RunDS]  # optional; names from ssl-element-refere
 enforced_by: [reviewer]                # lsp:diag.<slug> | lsp:fmt.<slug> | reviewer | none
 schema:                                # optional placements in the schema
   - path: module_structure.data_source_modules.lint_rules
-    form: lint                         # lint | rule_text | value
+    form: lint                         # lint | rule_text | text | value
     message: >-                        # optional; defaults to the rule text
       ...
   - path: module_structure.data_source_modules.file_types.sql_data_source.parameters.default_required
@@ -90,7 +93,8 @@ Put an empty region where the list belongs and run the generator:
 
 Selectors are `id=`, `category=`, `domain=`, `level=` and `applies_to=`.
 Selectors combine with AND; comma-separated values within one selector
-combine with OR. `format=bullets` (the default) or `format=table` chooses the
+combine with OR. A region selected only by `id=` lists its rules in the order
+it names them; any other region uses record order. `format=bullets` (the default) or `format=table` chooses the
 layout, and `wrap=<column>` wraps bullets. For a single rule inside a
 sentence, use `<!-- rule: <id> --><!-- /rule -->`. Never edit the text inside
 a region by hand.

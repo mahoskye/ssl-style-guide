@@ -29,7 +29,7 @@ export const SEVERITIES = ['error', 'warning', 'info', 'hint'];
 export const APPLIES_TO = ['server_script', 'class', 'ssl_data_source', 'sql_data_source', 'embedded_sql'];
 export const MACHINE_LISTS = ['must_follow', 'avoid'];
 export const FOUNDATION_LISTS = ['non_negotiable', 'does_not_have'];
-export const SCHEMA_FORMS = ['lint', 'rule_text', 'value'];
+export const SCHEMA_FORMS = ['lint', 'rule_text', 'text', 'value'];
 export const VERIFICATION_BASES = ['reference', 'observed', 'convention'];
 export const FENCE_KINDS = ['ssl', 'ssl kind=ds', 'text'];
 
@@ -383,10 +383,12 @@ export function loadRules() {
 }
 
 export function sortRecords(records, categories) {
+  // Rank by the first generated category that lists the record (in
+  // categories.yaml order), then by its position in that category's order.
   const rank = new Map();
-  for (const category of categories.filter((c) => c.owned)) {
+  for (const [position, category] of categories.filter((c) => c.owned).entries()) {
     for (const [index, id] of category.order.entries()) {
-      if (!rank.has(id)) rank.set(id, index);
+      if (!rank.has(id)) rank.set(id, position * 100000 + index);
     }
   }
   return [...records].sort((a, b) => {
@@ -460,7 +462,13 @@ export function plainRule(record) {
 
 /** must_follow / avoid lists for a category, in that category's order. */
 export function packLists(records, categoryId) {
-  const members = liveRecords(records).filter((r) => r.machine && r.categories.includes(categoryId));
+  // A record can belong to several categories; each pack follows its own
+  // category's order, not the global record order.
+  const order = loadCategories().find((c) => c.id === categoryId)?.order ?? [];
+  const position = (r) => (order.includes(r.id) ? order.indexOf(r.id) : Infinity);
+  const members = liveRecords(records)
+    .filter((r) => r.machine && r.categories.includes(categoryId))
+    .sort((a, b) => position(a) - position(b));
   return {
     must_follow: members.filter((r) => r.machine.list === 'must_follow').map(plainRule),
     avoid: members.filter((r) => r.machine.list === 'avoid').map(plainRule),
