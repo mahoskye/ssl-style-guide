@@ -11,7 +11,8 @@
   "must_follow": [
     "Prefer parameterized database calls.",
     "SQLExecute is the only database API that supports named ?param? substitution.",
-    "RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays.",
+    "RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays; LSearch, LSelect and LSelectC take the array fourth and GetDataSet second.",
+    "GetSSLDataset uses @name markers with parallel name and value arrays.",
     "Inside SQL strings, use uppercase SQL keywords and functions; preserve the author's casing for other SQL identifiers (force-folding is dialect-conditional and breaks case-sensitive SQL Server collations)."
   ],
   "avoid": [

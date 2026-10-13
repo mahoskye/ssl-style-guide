@@ -35,7 +35,7 @@ detail.
 - In scripts and procedures, `:PARAMETERS` appears before any other statement
   and `:DEFAULT` immediately follows `:PARAMETERS`.
 - Data source files are different: `:PARAMETERS` uses inline `:=` defaults,
-  optional per parameter.
+  required on every parameter.
 - SSL arrays are 1-based; collections on .NET objects reached via colon member
   access (for example `dataSet:Tables[0]`) are 0-based.
 - Use `==` for exact string equality; `=` is prefix-style for strings.

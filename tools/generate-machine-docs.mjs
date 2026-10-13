@@ -103,7 +103,8 @@ const CATEGORY_DEFS = [
     mustFollow: [
       'Prefer parameterized database calls.',
       'SQLExecute is the only database API that supports named ?param? substitution.',
-      'RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays.',
+      'RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays; LSearch, LSelect and LSelectC take the array fourth and GetDataSet second.',
+      'GetSSLDataset uses @name markers with parallel name and value arrays.',
       'Inside SQL strings, use uppercase SQL keywords and functions; preserve the author\'s casing for other SQL identifiers (force-folding is dialect-conditional and breaks case-sensitive SQL Server collations).',
     ],
     avoid: [
@@ -332,9 +333,9 @@ const CATEGORY_DEFS = [
     summary: 'SSL and SQL data-source syntax, inline defaults, and builder directives.',
     elements: ['PARAMETERS', 'RunDS', 'GetDSParameters', 'DSN', 'TABLENAME', 'NULLASBLANK', 'INVARIANTDATECOLUMNS'],
     mustFollow: [
-      'Invoke data sources with RunDS("Category.DataSourceName", {params}); GetDSParameters returns a data source parameter definition list.',
+      'Invoke data sources with RunDS("Category.DataSourceName", {values}); values bind by position in :PARAMETERS order, not by name. GetDSParameters returns the parameter names in that order.',
       'Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.',
-      'Data-source parameter defaults are optional; when wanted, express them inline with :=.',
+      'Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.',
       'Reference SQL data-source parameters in the SQL body as @name placeholders.',
       'Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.',
       'SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.',
@@ -342,6 +343,8 @@ const CATEGORY_DEFS = [
     ],
     avoid: [
       'Do not apply normal script :PARAMETERS/:DEFAULT layout to data-source files.',
+      'Do not pass {name, value} pairs to RunDS; each pair is bound whole to one parameter.',
+      'Do not write ?name? markers in a SQL data-source body; use @name.',
       'Do not treat builder directives as reusable SSL keywords outside data-source contexts.',
     ],
     related: ['database', 'sql', 'procedures'],
@@ -673,7 +676,7 @@ detail.
 - In scripts and procedures, \`:PARAMETERS\` appears before any other statement
   and \`:DEFAULT\` immediately follows \`:PARAMETERS\`.
 - Data source files are different: \`:PARAMETERS\` uses inline \`:=\` defaults,
-  optional per parameter.
+  required on every parameter.
 - SSL arrays are 1-based; collections on .NET objects reached via colon member
   access (for example \`dataSet:Tables[0]\`) are 0-based.
 - Use \`==\` for exact string equality; \`=\` is prefix-style for strings.

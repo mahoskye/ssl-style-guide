@@ -172,7 +172,7 @@ Data source files have a different structure from scripts and classes. Do not ap
 
 **Key differences when refactoring data source files:**
 - Use `:PARAMETERS p1 := defaultVal;` — not `:PARAMETERS` + `:DEFAULT`
-- Inline `:=` defaults are optional per parameter — `:PARAMETERS sName, nCount := 10;` is valid (some with defaults, some without)
+- Every parameter must have an inline `:=` default — `:PARAMETERS sName := "", nCount := 10;`. A parameter without one makes the data source fail when it runs (`No default value for one or more parameters.`)
 - Do not flag `:DSN`, `:TABLENAME`, `:NULLASBLANK`, `:INVARIANTDATECOLUMNS` as unknown keywords
 - The preprocessor rewrites everything into standard SSL before the script runs
 
@@ -245,7 +245,7 @@ contains only one class, class members stay at the file's top indentation level.
 | Commas | Space after, not before | `a, b, c` | `a,b,c` or `a ,b ,c` |
 | Parentheses | No space inside | `DoProc("Name", {args})` | `DoProc( "Name" , { args } )` |
 | Function calls | No space before `(` | `Len(sValue)` | `Len (sValue)` |
-| Skipped params | Adjacent commas, no space | `RunSQL(sSQL,, {aVals})` | `RunSQL(sSQL, , {aVals})` |
+| Skipped params | Adjacent commas, no space | `RunSQL(sSQL,, aVals)` | `RunSQL(sSQL, , aVals)` |
 
 > **Member access:** SSL accepts both `oObj:Prop` and `oObj : Prop`, but refactoring should normalize to the preferred no-space form unless preserving surrounding style is important.
 

@@ -14,7 +14,7 @@ Authoritative rules describe documented language behavior; style recommendations
 5. **Custom procedures cannot be called directly.** A bare `Name(...)` call always means a built-in function, in scripts and classes alike; any other name stops the script from compiling with `Invalid built-in function: Name`. Use `DoProc("ProcName", {args})` for same-file script procedures and `ExecFunction("Category.Script", {args})` or `ExecFunction("Category.Script.Proc", {args})` for external scripts/procedures. Inside `:CLASS` methods, call sibling/inherited methods with `Me:Method()` / `Base:Method()` — an unqualified `DoProc("ProcName", ...)` is rejected inside class methods, though fully qualified `DoProc("Category.Script.Proc", ...)` calls to deployed script procedures are allowed.
 6. **Arrays are 1-based.** The first element is `aArray[1]`.
 7. **Object creation rules:** Built-in classes use curly braces only (`Email{}`, `SSLDataset{}`) — they cannot be instantiated via `CreateUdObject`. `CreateUdObject()` creates an empty dynamic object; `CreateUdObject("Category.ClassName")` or `CreateUdObject("Category.ClassName", {args})` instantiates a user-defined `:CLASS` (a bare class name is looked up only among the default categories, so it fails for a class in your own category); `CreateUdObject({{"Prop", value}, ...})` creates an anonymous object with named properties.
-8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays.
+8. **SQL parameterization:** `SQLExecute` is the only function that supports `?varName?` substitution. Other DB functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` use positional `?` with explicit parameter arrays. `GetSSLDataset` is the exception: it uses `@name` markers with parallel name and value arrays.
 9. **String comparison:** `=` is loose (prefix match for strings); `==` gives exact string equality and generally parallels `=` for other value types. `$` tests containment.
 10. **Comments use `/* ...;`** and must end with a semicolon. **A semicolon inside comment text will prematurely end the comment** — never include `;` within comment text as it becomes executable code after the unintended comment boundary.
 
@@ -418,7 +418,11 @@ SSL's built-in scalar and array types are backed by underlying .NET values, and 
 
 ### SQLExecute Parameter Substitution
 
-`SQLExecute` is the **only** SSL database function that supports `?VarName?` dynamic variable substitution. All other database functions (`RunSQL`, `LSearch`, `LSelect`, `GetDataSet`) use positional `?` parameters with explicit value arrays.
+`SQLExecute` is the **only** SSL database function that supports `?VarName?` dynamic variable substitution. There are three placeholder shapes:
+
+- `?name?` — `SQLExecute` only; substitutes the value of an in-scope variable or expression (input only — it never receives an output value).
+- Positional `?` with a values array — `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, `GetDataSet` and the other database functions. The values array is not always the third argument: `LSearch`, `LSelect` and `LSelectC` take it fourth, and `GetDataSet` second.
+- `@name` with a names array and a values array — `GetSSLDataset(sSql,, {"@sStatus"}, {sStatus})`.
 
 #### Expression Types Supported
 
@@ -469,13 +473,18 @@ sSQL := "SELECT * FROM Sample WHERE Status = ?'A'?";
 These functions use positional `?` placeholders with explicit value arrays:
 
 ```ssl
-:DECLARE aResults, bSuccess, sSQL, sStatus, sSampleID, sSampleName;
+:DECLARE aResults, oErr, sSQL, sStatus, sSampleID, sSampleName, sXml;
 sStatus := "A";
 sSampleID := "12345";
 
-/* RunSQL - DML only (INSERT/UPDATE/DELETE), returns Boolean;
+/* RunSQL - INSERT/UPDATE/DELETE or DDL, a failure raises by default;
 sSQL := "UPDATE Sample SET Status = ? WHERE SampleID = ?";
-bSuccess := RunSQL(sSQL,, {sStatus, sSampleID});
+:TRY;
+    RunSQL(sSQL,, {sStatus, sSampleID});
+:CATCH;
+    oErr := GetLastSSLError();
+    ErrorMes("Status update failed: " + oErr:Description);
+:ENDTRY;
 
 /* LSearch - Single value lookup with default;
 sSampleName := LSearch("SELECT SampleName FROM Sample WHERE SampleID = ?", "DefaultName",, {sSampleID});
@@ -503,11 +512,11 @@ sXml := GetDataSet("SELECT * FROM Sample WHERE Status = ?", {sStatus});
 | Function | Purpose | Returns |
 |----------|---------|---------|
 | `SQLExecute` | Universal - routes automatically | Array, XML String, Object (dataset wrapper), or Bool |
-| `RunSQL` | **DML only** (INSERT/UPDATE/DELETE) | `Boolean` — `.T.` on success; a SQL failure raises by default. It returns `.F.` only when SQL error ignoring is enabled (then check `GetLastSQLError`) |
+| `RunSQL` | INSERT/UPDATE/DELETE and DDL statements (no rows returned) | `Boolean` — `.T.` on success; under the default settings a SQL failure raises, so wrap the call in `:TRY`/`:CATCH`. It returns `.F.` only after `ShowSqlErrors(.F.)` (with SQL error ignoring still on, its default); then check `GetLastSQLError`. `IgnoreSqlErrors(.T.)` alone does not stop the raise |
 | `LSearch` | Single value lookups | Single value with default |
-| `LSelect` | Multi-row SELECT queries (behaves like `LSelect1` when `aFieldList` is omitted) | 2D Array |
+| `LSelect` | Multi-row SELECT queries; skip `aFieldList` (any value raises `fieldList != NULL - Not implemented yet.`) and pass values fourth: `LSelect(sSQL,,, {v})` | 2D Array |
 | `LSelect1` | Multi-row SELECT queries | 2D Array |
-| `LSelectC` | Multi-row SELECT queries (delegates to `LSelect`) | 2D Array |
+| `LSelectC` | Multi-row SELECT queries; same argument layout as `LSelect` — skip `aFieldList` | 2D Array |
 | `GetDataSet` | XML dataset output | XML String |
 
 ### UDObject Array Property Caveat
@@ -531,7 +540,7 @@ aData := SQLExecute("SELECT * FROM Sample WHERE Status IN (?aStatusCodes?)");
 2. **Pre-compute complex expressions** into variables before the SQL
 3. **Use array expansion** for dynamic `IN` clauses instead of string building — **always from a local variable, not a UDObject property**
 4. **Avoid complex expressions** in production code
-5. **Use `RunSQL`** for DML statements (INSERT, UPDATE, DELETE)
+5. **Use `RunSQL`** for statements that return no rows (INSERT, UPDATE, DELETE, DDL), inside `:TRY`/`:CATCH`
 6. **Use `LSearch`** for single-value lookups with explicit parameters
 7. **Inside SQL strings**, use uppercase SQL keywords and functions; preserve
    the author's casing for other SQL identifiers (force-folding is
@@ -607,8 +616,8 @@ In SSL data source files, `:PARAMETERS` uses inline `:=` assignment for defaults
 ```
 
 **Rules:**
-- Inline `:=` defaults are **optional** per parameter — `:PARAMETERS patOrigRec;` with no default is valid
-- `:PARAMETERS;` with no parameters is an error
+- Every parameter **must** have an inline `:=` default. A data source with a parameter that has none fails when it runs, whatever the caller passes: `Incorrect synatx in :PARAMETERS. No default value for one or more parameters.`
+- `:PARAMETERS;` with no parameters is an error — a data source that takes no parameters leaves the `:PARAMETERS` line out
 - There is no separate `:DEFAULT` statement — defaults are inline
 - The preprocessor rewrites the above into standard form before the script runs:
   ```ssl
@@ -654,14 +663,18 @@ Data sources are invoked at runtime via `RunDS`:
 /* Call with default parameters;
 oResult := RunDS("Category.DataSourceName");
 
-/* Call with parameter overrides (array of {name, value} pairs);
-oResult := RunDS("Category.DataSourceName", {{"sStatus", "P"}, {"nLimit", 25}});
+/* Call with parameter overrides, in :PARAMETERS order;
+oResult := RunDS("Category.DataSourceName", {"P", 25});
 
 /* Return as SSLDataset;
 oDs := RunDS("Category.DataSourceName",, "ssldataset");
 ```
 
-Use `GetDSParameters(sDsName)` to introspect a data source's parameter metadata at runtime.
+Parameter values bind by **position**, in the order the data source declares them in `:PARAMETERS`; names are not matched. Trailing values left out take their inline defaults, and extra values are ignored. Passing `{name, value}` pairs does not work: each pair is bound whole to one parameter.
+
+The return-type argument (`"ssldataset"`, `"xml"`, and so on) converts only an `SSLDataset` result. A STARLIMS-mode data source whose body returns an array (for example from `SQLExecute`) returns that array whatever return type the caller asks for; return an `SSLDataset` (for example from `GetSSLDataset`) when callers need the other return types.
+
+Use `GetDSParameters(sDsName)` to get a data source's parameter names in declaration order, which is the order `RunDS` binds them.
 
 ### Key Takeaways for Agents
 
@@ -770,13 +783,13 @@ Variables must be prefixed to indicate type:
 ### 3. Complete Error Handling Pattern
 
 ```ssl
-:DECLARE sDatasetXml, sComplexQuery, oErr, sErrMsg;
+:DECLARE aRows, sComplexQuery, oErr, sErrMsg;
 sComplexQuery := "SELECT * FROM Sample";
 
 /* Structured exception handling;
 :TRY;
-    sDatasetXml := GetDataSet(sComplexQuery);
-    :IF Empty(sDatasetXml);
+    aRows := SQLExecute(sComplexQuery);
+    :IF Len(aRows) == 0;
         RaiseError("No data found for query");
     :ENDIF;
 :CATCH;
@@ -786,10 +799,8 @@ sComplexQuery := "SELECT * FROM Sample";
     ClearLastSSLError();
     :RETURN .F.;
 :FINALLY;
-    /* Cleanup resources;
-    :IF IsDefined("sDatasetXml");
-        sDatasetXml := "";
-    :ENDIF;
+    /* Runs on success and on failure;
+    UsrMes("Sample query finished");
 :ENDTRY;
 ```
 
@@ -844,7 +855,7 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 | **Object Creation** | `oObj := new MyClass();` | `oObj := BuiltInClass{};` or `oObj := CreateUdObject("Category.UserClass", {args});` |
 | **Object Property** | `oObj.Property` | `oObj:Property` |
 | **DS Parameters** | `:PARAMETERS p1; :DEFAULT p1, "val";` (in data source) | `:PARAMETERS p1 := "val";` (in data source) |
-| **DS Parameters** | `:PARAMETERS;` (empty, in data source) | `:PARAMETERS p1 := "default";` (at least one required) |
+| **DS Parameters** | `:PARAMETERS;` (empty, in data source) | `:PARAMETERS p1 := "default";`, or leave the line out when the data source takes no parameters |
 
 ---
 
@@ -869,10 +880,10 @@ sReplaced := StrTran(sInput, "Hello", "Hi");  /* Replace exact-case text;
 17. **:ENDFOR Is Not Valid:** Although `:ENDFOR` is a reserved word, it is **not a usable keyword**. FOR loops must be terminated with `:NEXT`, not `:ENDFOR` — using `:ENDFOR` is rejected as a syntax error.
 18. **String Equality:** The `=` operator for strings returns `.T.` if right operand is empty OR left starts with right. Use `==` when you need an exact string match. **`!=` asymmetry:** `!=` negates `==` (exact match), not `=` (prefix match), so `=` and `!=` are **not logical opposites** for strings — e.g., `"Logged" = "Log"` is `.T.` AND `"Logged" != "Log"` is also `.T.`. The `<>` and `#` operators behave identically to `!=` but `!=` is preferred.
 19. **Default Variable Value:** All declared variables start as empty string `""`, not `NIL`.
-20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays.
+20. **SQLExecute Exclusivity:** Only `SQLExecute` supports `?varName?` syntax. Other database functions such as `RunSQL`, `LSearch`, `LSelect`, `LSelect1`, `LSelectC`, and `GetDataSet` require positional `?` with value arrays; `GetSSLDataset` uses `@name` with name and value arrays.
 21. **Complex Expression Warning:** Using expressions like `?sPrefix + sSuffix?` in SQLExecute triggers a performance warning. Pre-compute values instead.
 22. **:REGION vs `/* region`:** `:REGION`/`:ENDREGION` is a legacy functional construct that captures body text for later retrieval via `GetRegion()`. For IDE folding and procedure grouping, prefer `/* region` / `/* endregion` comments.
-23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Defaults are optional per parameter. See §4A.
+23. **Data source files use different parameter syntax.** In data source files, `:PARAMETERS` uses inline `:=` defaults (`:PARAMETERS p1 := val;`) — not separate `:DEFAULT` statements. Every parameter must have an inline default. See §4A.
 24. **Data source directives are not SSL keywords.** `:DSN`, `:TABLENAME`, `:NULLASBLANK`, and `:INVARIANTDATECOLUMNS` only exist in SQL data source files and are handled by the data source preprocessor before the script runs. Do not flag them as unknown keywords.
 25. **Data source parameter syntax is preprocessed.** The `:=` inline syntax in data source `:PARAMETERS` is rewritten by the preprocessor into standard `:PARAMETERS` + `:DEFAULT` before the script runs. The runtime never sees the `:=` form.
 

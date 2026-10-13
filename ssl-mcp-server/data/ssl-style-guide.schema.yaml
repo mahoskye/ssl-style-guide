@@ -1360,7 +1360,13 @@ ssl_style_guide:
         - LSelect1
         - LSelectC
         - GetDataSet
-      note: Only SQLExecute supports ?name? substitution; other DB functions use positional ? with parameter arrays. In SSL v11, `LSelect` matches `LSelect1` when `aFieldList` is omitted or NIL, while `LSelectC` delegates to `LSelect`; explicit field lists are not supported.
+      at_name_supported_by:
+        - GetSSLDataset  # @name in the SQL text and in the names array, with a parallel values array
+      values_array_position:
+        third: [RunSQL, LSelect1]
+        fourth: [LSearch, LSelect, LSelectC]  # LSearch(sql,,, {v}), LSelect(sql,,, {v})
+        second: [GetDataSet]                  # GetDataSet(sql, {v})
+      note: "Three placeholder shapes: ?name? for SQLExecute only (input substitution, never an output bind); positional ? with a values array for the other DB functions; @name with name and value arrays for GetSSLDataset. LSelect and LSelectC take an aFieldList second that is not implemented: skip it, because any value raises fieldList != NULL - Not implemented yet."
       array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
       placeholder_patterns:
       - ?name?
@@ -1740,11 +1746,11 @@ ssl_style_guide:
         ssl_data_source:
           preprocessor: ssl_data_source_preprocessor
           parameters:
-            syntax: ":PARAMETERS p1 := val1, p2;"
+            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
             inline_defaults: true  # := assignment, not separate :DEFAULT
-            default_required: false  # inline defaults are optional per parameter
-            empty_parameters_error: true  # :PARAMETERS; with no params is an error
-            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1;  # a :DEFAULT is emitted only for parameters that declare one"
+            default_required: true  # every parameter must have an inline default; one without fails when the data source runs
+            empty_parameters_error: true  # :PARAMETERS; with no params is an error — omit the line instead
+            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
           comments:
             syntax: ssl  # /* text; — opened by /*, closed by the first ;
             note: >
@@ -1754,14 +1760,14 @@ ssl_style_guide:
               file type.
           structure:
             - header_comment (optional)
-            - ":PARAMETERS with optional inline := defaults"
+            - ":PARAMETERS with inline := defaults (omit the line when there are no parameters)"
             - ssl_script_body
         sql_data_source:
           preprocessor: sql_data_source_preprocessor
           parameters:
-            syntax: ":PARAMETERS p1 := val1, p2;"
+            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
             inline_defaults: true
-            default_required: false
+            default_required: true  # every parameter must have an inline default; one without fails when the data source runs
             empty_parameters_error: true
           directives:
             - ":DSN := connectionName;  # database connection"
@@ -1797,7 +1803,7 @@ ssl_style_guide:
           structure:
             - header_comment (optional)
             - builder_directives (optional)
-            - ":PARAMETERS with optional inline := defaults (optional)"
+            - ":PARAMETERS with inline := defaults (optional — omit the line when there are no parameters)"
             - sql_query
           structure_note: >
             The SQL body must follow the :PARAMETERS block when one is present;
@@ -1808,6 +1814,9 @@ ssl_style_guide:
         - rule: no_default_statements_in_datasource
           severity: error
           message: "Data source files use inline := defaults in :PARAMETERS, not separate :DEFAULT statements."
+        - rule: datasource_default_required
+          severity: error
+          message: "Every parameter in a data source :PARAMETERS declaration must have an inline := default value. A parameter without one makes the data source fail when it runs: No default value for one or more parameters."
         - rule: no_flag_builder_directives
           severity: info
           message: ":DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS are valid builder directives in SQL data source files."
