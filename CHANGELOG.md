@@ -12,6 +12,8 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## Schema 1.9.0, MCP 1.15.2 — 2026-10-13
+
 ### Added
 - Rule records `constructor_after_methods` (Constructor last is a style
   convention) and `branch_literal_target` (pass `Branch()` a literal target)
