@@ -1,0 +1,9 @@
+-- PendingItems: read an owner's items for one exact status.
+-- Returns item_id and priority, highest priority first.
+:PARAMETERS sOwner := "", sStatus := "PENDING";
+
+SELECT item_id, priority
+FROM calibration_item
+WHERE owner_key = @sOwner
+	AND status = @sStatus
+ORDER BY priority DESC, item_id
