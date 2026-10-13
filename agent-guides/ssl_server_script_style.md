@@ -231,7 +231,7 @@ Use repository memory as the provisional learning layer and this instruction fil
 
 Before editing or reviewing a server script:
 
-1. Consult relevant repository memory notes (this repo: the agent-quality-lab judgments and MEMORY layer) when the task touches a documented SSL behavior, known tool limitation, or established repository convention.
+1. Consult relevant repository memory notes (for example, notes kept by your agent tooling) when the task touches a documented SSL behavior, known tool limitation, or established repository convention.
 2. Apply a memory note only within its stated scope. When a note conflicts with the authoritative SSL reference, a reproducible runtime result, or a more specific instruction, stop and resolve the conflict rather than choosing silently.
 
 During implementation and validation, treat these as learning candidates:

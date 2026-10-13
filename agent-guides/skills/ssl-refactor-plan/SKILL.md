@@ -51,7 +51,7 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
    - Do not approve behavior-sensitive cleanup silently; put it in the spec
      with verification notes and open questions
 
-6. **Write the spec** to `specs/refactor-<kebab-file-or-goal>.md` by default
+6. **Write the spec** to `docs/specs/refactor-<kebab-file-or-goal>.md` by default
    unless the user provided a target path.
 
 ## Spec Format

@@ -167,7 +167,7 @@ and check commands; `bun run check:consistency` (in `ssl-mcp-server/`) also runs
 
 ## Metadata
 
-- Version: `1.4.0` (mirrors `metadata.version` in `ssl-style-guide/ssl-style-guide.schema.yaml`)
+- Version: mirrors `metadata.version` in `ssl-style-guide/ssl-style-guide.schema.yaml`; see [CHANGELOG.md](CHANGELOG.md)
 - SSL version: `v11`
 - Maintainers: `PaperBull / maho`
 - License: `MIT`

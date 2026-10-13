@@ -106,6 +106,8 @@ Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`
 - Assignments indented 4 spaces below
 
 ### MERGE
+For formatting existing code only. Agents do not write `MERGE` (see the basic-SQL rule in the agent boundaries).
+
 - `ON` at column 0 (not indented under `USING`)
 - Multi-line ON conditions: `AND` indented 4 (aligned under first condition inside parens)
 - `UPDATE SET` / `INSERT` / `DELETE WHERE` indented 4 under `WHEN`
