@@ -176,7 +176,7 @@ ssl_style_guide:
     region:
       begin: :REGION
       end: :ENDREGION
-      note: "Current, supported body-capture construct: stores raw body text for retrieval and $placeholder$ substitution via GetRegion(sValue, vSrc, vDst). Distinct from folding-only /* region comments; the construct the style guide actually dropped was C#-style #region."
+      note: "Current, supported body-capture construct: stores raw body text for retrieval and $placeholder$ substitution via GetRegion(sValue, vSrc, vDst). Distinct from folding-only /* region comments; the construct the style guide actually dropped was C#-style #region. Region markers inside a comment define nothing. GetRegion also finds regions defined in a script pulled in with :INCLUDE."
     inline_code:
       begin: :BEGININLINECODE
       end: :ENDINLINECODE
@@ -184,7 +184,7 @@ ssl_style_guide:
       accepted_name_forms:
         - bare_identifier
         - quoted_identifier
-      note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue)."
+      note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue). The block is stored when execution reaches it, like any other statement, so a block with the same name that runs after DeleteInlineCode stores the name again. Before the block is reached, GetInlineCode returns an empty string if no inline block is stored yet, and raises 'not in scope' if a different block is. The block body does not run where the block stands."
     error:
       marker: :ERROR
       resume: :RESUME  # optional — last statement of the :ERROR handler; switches to resume mode
@@ -402,7 +402,8 @@ ssl_style_guide:
     logical_evaluation:
       short_circuit: true
       truth_values: .T. (true), .F. (false)
-      nil_evaluates: error  # a non-boolean condition or .NOT. operand (including NIL) raises; it is not coerced to .F.
+      nil_evaluates: error  # a non-boolean condition (:IF, :WHILE, :CASE), .NOT. operand or left operand of .AND./.OR. (including NIL) raises; it is not coerced to .F.
+      right_operand: returned_unchanged  # when the left operand does not decide the result, .AND./.OR. return the right operand as is: .T. .AND. "x" is "x", .F. .OR. "x" is "x"
     string_concatenation:
       operator: + (plus)
       implicit_concatenation: false
@@ -974,7 +975,7 @@ ssl_style_guide:
       indentation: top_level  # :CLASS does not increase indent level; class members stay at file-level indentation
       notes:
       - Class name is syntactically optional, but explicit names are preferred for maintained code.
-      - Constructor must be declared after regular methods.
+      - By convention, Constructor is declared after the regular methods; a class that declares it first compiles and runs the same way.
     methods:
       - :PROCEDURE ...;
     fields:
@@ -1078,7 +1079,7 @@ ssl_style_guide:
         script only; two-segment DoProc targets are rejected at runtime;
         three-segment targets route through the ExecFunction executor path
         (cross-script dispatch).
-      class_method_restriction: DoProc is rejected inside class methods; use Me:Method() or Base:Method() instead
+      class_method_restriction: "A DoProc target that is a bare procedure name is rejected inside class methods; use Me:Method() or Base:Method() instead. Fully qualified 'Category.Script.Procedure' targets compile and run."
       exec_function:
         entry_point: 'ExecFunction("Category.Script", {params})'
         procedure: 'ExecFunction("Category.Script.Proc", {params})'
@@ -1663,7 +1664,7 @@ ssl_style_guide:
     label_behavior:
       level: authoritative
       token_text: "The token text includes the word LABEL — :LABEL SKIP; produces \"LABEL SKIP\". Branch() targets must include \"LABEL\" in the string."
-      scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
+      scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly, including case. A literal target that matches no label fails to compile."
     # END GENERATED lints.label_behavior
     # BEGIN GENERATED lints.parameter_skipping_style: edit rules/ and run bun tools/generate-rules.mjs
     parameter_skipping_style:
@@ -1675,7 +1676,7 @@ ssl_style_guide:
     class_rules:
       - rule: class_member_order
         severity: info
-        message: "Tooling enforces the successful class member order used by this guide: :INHERIT, :DECLARE, regular methods, then Constructor."
+        message: "Class members are ordered :INHERIT, then class-level :DECLARE fields, then methods."
       - rule: underscore_private_convention
         severity: info
         message: "Underscore-prefixed members (_name) are excluded from reflection — this is the SSL private convention."
@@ -1790,8 +1791,8 @@ ssl_style_guide:
       - :CLASS [ClassName];
       - :INHERIT Category.ClassName; (optional — must precede :DECLARE; a plain name does not compile)
       - :DECLARE class_fields; (must follow :INHERIT, must precede methods)
-      - :PROCEDURE regular_methods; (must precede Constructor)
-      - :PROCEDURE Constructor; (must be last procedure in class)
+      - :PROCEDURE regular_methods;
+      - :PROCEDURE Constructor; (last by convention; declaring it first compiles and runs the same way)
       - end: file_end  # no :ENDCLASS keyword; class ends at EOF
     class_file_constraint:
       level: authoritative

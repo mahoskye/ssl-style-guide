@@ -982,12 +982,13 @@ When refactoring, maintain a progress block in your notes:
 ```
 
 ### Class Rules
-<!-- rules: id=class_ends_at_eof,one_class_per_file,one_class_or_script_per_file,explicit_class_name,class_member_order,me_base_for_method_calls,doproc_in_class,constructor_return_value -->
+<!-- rules: id=class_ends_at_eof,one_class_per_file,one_class_or_script_per_file,explicit_class_name,class_member_order,constructor_after_methods,me_base_for_method_calls,doproc_in_class,constructor_return_value -->
 - `:CLASS` continues to end of file; there is no `:ENDCLASS`.
 - Define only one `:CLASS` per file.
 - One file should represent either a class definition, a script, or a data source.
 - Give every class an explicit name in `:CLASS`; the name is syntactically optional.
-- Keep class member order as `:INHERIT`, `:DECLARE`, regular methods, then `Constructor`.
+- Order class members as `:INHERIT`, then the class-level `:DECLARE` fields, then the methods.
+- By convention, declare `Constructor` after the regular methods, as the last method of the class; a class that declares it first compiles and runs the same way.
 - Call sibling or inherited methods with `Me:Method()` and `Base:Method()`.
 - Do not call `DoProc` with a bare procedure name inside class methods; it is a compile-time error. Use `Me:Method()` or `Base:Method()`.
 - `:RETURN` inside a `Constructor` cannot return a value.

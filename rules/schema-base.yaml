@@ -107,7 +107,7 @@ lints:
   label_behavior:
     level: authoritative
     token_text: !rule branch_target_label
-    scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
+    scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly, including case. A literal target that matches no label fails to compile."
   parameter_skipping_style:
     level: style_only
     rule: !rule skip_commas_adjacent
