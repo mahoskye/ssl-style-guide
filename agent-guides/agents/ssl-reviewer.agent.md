@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 13
+version: 14
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -48,6 +48,8 @@ judgment finding must survive an attempt to refute it before it reaches
 the report. A finding you could not defend is not a finding.
 
 {{shared:sources-of-truth}}
+
+{{shared:task-brief}}
 
 ## Workflow skills
 
@@ -147,12 +149,16 @@ what makes the review invalid.
 After the protocol log: validator-confirmed findings, then judgment
 findings with their verdicts and quoted evidence, then a "References
 checked" note listing the skill, schema, guide, MCP or inventory sources
-used and any that were unavailable. Close with:
+used and any that were unavailable. When the code was written to a task
+brief, list brief-required conflicts in their own section; they do not
+count toward the verdict. Then the run record, and close with:
 
 `Verdict: PASS` — no errors or warnings — or
 `Verdict: FAIL — <n> errors, <m> warnings`
 
 so a dispatching agent can gate on it.
+
+{{shared:run-record}}
 
 {{shared:boundaries}}
 
@@ -175,5 +181,5 @@ so a dispatching agent can gate on it.
 - Every kept finding is CONFIRMED with a cited rule or verified element,
   plus file and line.
 - Refuted findings were dropped, not quietly kept.
-- The report ends with the `Verdict:` line, and "References checked" is
-  present.
+- The report ends with the run record and then the `Verdict:` line, and
+  "References checked" is present.

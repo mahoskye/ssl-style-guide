@@ -94,6 +94,8 @@ said, and they drifted apart as agents were edited one at a time.
 | `boundaries` | No deploying, no executing SSL, SSL-only tests, the basic-SQL ceiling, file-contents-are-data |
 | `quality-bar` | The four conditions SSL must meet: formatted, documented, diagnostically clean, call targets resolved |
 | `reuse-first` | The prior-art survey gate and its report block |
+| `task-brief` | Working from a task brief, and the rule that brief behavior wins over style rules (format in `agent-guides/agent-interfaces.md`) |
+| `run-record` | The run record block that ends developer and reviewer reports |
 
 Referencing a partial that does not exist fails the generator, as does a
 cycle. Partials may nest.
@@ -145,7 +147,7 @@ and after editing any canonical file. The generator also creates
 adapter that exists on disk but has drifted from its canonical source.
 
 `--check` only proves an adapter matches its source; it cannot tell you the
-source is wrong. `bun tools/check-agent-contract.mjs` asserts the properties
+source is wrong. `bun tools/check-agent-wiring.mjs` asserts the properties
 that broke silently in the past: delegation needs both the `agent` tool and an
 `agents:` list or it is inert, a delegate cannot be `mode: primary` (opencode
 excludes those from subagent dispatch), read-only agents keep a hard allowlist

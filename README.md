@@ -24,6 +24,48 @@ For prerequisites, setup, and the check commands, see
 - `agent-guides/ssl_refactoring_guide.md`
   Refactoring workflow, structure, and formatting guidance for maintained code.
 
+## Role and Interfaces
+
+**What this repository is canonical for.** SSL *language behavior*, meaning
+signatures, semantics, errors and element inventory, is defined by the
+published reference,
+[starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference).
+This repository vendors that inventory. Where the two disagree, the reference
+is fixed first. This repository is canonical for everything built on top of
+it:
+
+- the style rules and their severities (the schema);
+- the grammars;
+- the agent guides;
+- the agent definitions and skills;
+- the formats agents exchange with other tools.
+
+**Who consumes what.**
+
+| Artifact | Consumers | How |
+|----------|-----------|-----|
+| `ssl-element-reference.json`, `ssl-element-meta.json` | starlims-lsp; this repo's MCP server | LSP vendors copies and checks them against a sibling checkout; MCP bundles them |
+| `ssl-style-guide.schema.yaml` | MCP server; starlims-lsp and the VS Code extension (rule slugs) | MCP bundles it; the LSP and extension mirror its rule slugs by hand |
+| Agent guides, EBNF, machine packs | MCP server; agents | Bundled; read at run time |
+| Agent definitions and skills | Claude Code, opencode, Copilot, Codex | `tools/generate-agents.mjs`, `tools/deploy-agents.mjs`, `tools/deploy-skills.mjs` |
+| Tree-sitter grammar | `tools/style_review.py` | Compiled at run time |
+| TextMate grammar | none outside this repo | The VS Code extension ships its own (see #91) |
+
+**Agent interfaces.** Tools outside this repo can give the agents a *task
+brief* instead of a ticket. In return, the developer and reviewer report a
+*run record* that traces what produced the code. Both formats are defined in
+[`agent-guides/agent-interfaces.md`](agent-guides/agent-interfaces.md), and
+this repository owns them.
+
+**Data boundary.** This repository is public. Tools here may be run against
+private code (for example `tools/style_review.py`), but their outputs, any
+code they read, and anything that identifies its authors never land here.
+Only reviewed, aggregate conclusions do.
+
+**Proposing a rule change.** Open an issue with the *Rule proposal* template.
+Findings from agent runs and style surveys come in the same way, and a
+maintainer reviews each one before any rule changes.
+
 ## Repo Contents
 
 - `ssl-style-guide/ssl-style-guide.schema.yaml`
