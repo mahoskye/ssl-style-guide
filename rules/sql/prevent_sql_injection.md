@@ -9,7 +9,7 @@ applies_to: [server_script, class, ssl_data_source]
 rule: >-
   Prefer parameterized database calls; do not concatenate user or runtime
   values into SQL when placeholders can bind them.
-categories: [database]
+categories: [database, strings]
 machine: { list: must_follow }
 related_elements: [SQLExecute, RunSQL, LSearch, LSelect1, GetDataSet]
 enforced_by: [lsp:diag.sql_injection]
@@ -31,6 +31,8 @@ verification:
     ("Do not concatenate user or runtime values into SQL when placeholders
     can bind them."); merged here. The agent boundaries say the same
     ("Parameterize every value"). The schema's security flags are verified.
+    Also merged: the strings pack's avoid item "Do not use string
+    concatenation for SQL values when parameterization is available.".
 ---
 
 ## Rationale

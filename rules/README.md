@@ -5,8 +5,9 @@ the machine packs, and the rule lists in skills and guides are generated from
 the records and checked in CI. The design is in
 [docs/design/rules-source.md](../docs/design/rules-source.md) (#101).
 
-**Migration status:** the `data-sources`, `sql` and `server-scripts` domains
-are migrated. Every other rule is still hand-written where it always was.
+**Migration status:** the `language`, `data-sources`, `sql` and
+`server-scripts` domains are migrated. The `classes` and `naming` rules are
+still hand-written where they always were.
 
 ## Layout
 
@@ -22,10 +23,10 @@ are migrated. Every other rule is still hand-written where it always was.
 | Output | From | Generator |
 |---|---|---|
 | `rules/INDEX.md` | all records | `tools/generate-rules.mjs` |
-| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `module_structure.data_source_modules`, `sql.formatting`, `sql.parameters`, `procedures.visibility_annotations`, `error_handling.guidance` and `documentation.file_banner` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
+| The subtrees of `ssl-style-guide/ssl-style-guide.schema.yaml` named in `schema-base.yaml` (between their `BEGIN GENERATED` / `END GENERATED` comments): `comments.rules`; `lints.style_rules`, `lints.not_preferred_operators`, `lints.compile_errors`, `lints.type_safety`, `lints.variable_behavior`, `lints.label_behavior`, `lints.parameter_skipping_style`, `lints.class_rules`, `lints.coding_standards` and `lints.deprecated_keywords`; `procedures.visibility_annotations`; `error_handling.guidance`; `documentation.file_banner`; `module_structure.data_source_modules`; `sql.formatting` and `sql.parameters` | `schema-base.yaml` plus each record's `schema` placements | `tools/generate-rules.mjs` |
 | Regions between `<!-- rules: … -->` and `<!-- /rules -->` in `agent-guides/` and `ssl-style-guide/` Markdown | the selected records' `rule` text | `tools/generate-rules.mjs` |
 | `must_follow` / `avoid` in `agent-guides/machine/categories/<id>.json` for each category with `lists_from_rules: true` | records with `machine.list`, in that category's `order` | `tools/generate-machine-docs.mjs` |
-| Data-source, SQL and server-script bullets in `agent-guides/machine/foundation.md` | records with `machine.foundation: non_negotiable`, each placed by `renderFoundation` | `tools/generate-machine-docs.mjs` |
+| The bullets of the Non-Negotiable and Does Not Have lists in `agent-guides/machine/foundation.md`, except the three class bullets | records with `machine.foundation: non_negotiable` or `does_not_have`, each placed by `renderFoundation` | `tools/generate-machine-docs.mjs` |
 
 Placements outside a generated region (for example
 `module_structure.class_file_constraint.rule`) are not written; the check
@@ -35,6 +36,16 @@ a plain string, either a value or one entry of a list of strings; a `lint` or
 entry may carry more (such as a lint's `scope` note). Likewise, a record in
 a category that is not generated yet must appear word for word in that
 category's hard-coded list.
+
+A path addresses an entry of a list of mappings through the entry's `rule`,
+`keyword` or `operator` value. So
+`lints.compile_errors.rules.one_class_per_file.message` is the `message` of
+the compile-error entry whose `rule` is `one_class_per_file`, and
+`lints.deprecated_keywords.:LABEL.message` is the message of the `:LABEL`
+entry. A record whose id is not the entry's slug, or whose entry carries keys
+a `lint` placement cannot produce (`scope`, `threshold`, `replacement`),
+supplies only the message this way; the other keys stay in
+`schema-base.yaml`.
 
 ## Record format
 
@@ -50,7 +61,8 @@ applies_to: [ssl_data_source, sql_data_source]
 rule: >-                               # one imperative line; Markdown code spans allowed
   Give every data-source parameter an inline `:=` default; ...
 categories: [data-sources]             # ids from categories.yaml
-machine: { list: must_follow, foundation: non_negotiable }   # optional
+machine: { list: must_follow, foundation: non_negotiable }   # optional; list and/or
+                                       # foundation (non_negotiable | does_not_have)
 related_elements: [PARAMETERS, RunDS]  # optional; names from ssl-element-reference.json
 enforced_by: [reviewer]                # lsp:diag.<slug> | lsp:fmt.<slug> | reviewer | none
 schema:                                # optional placements in the schema

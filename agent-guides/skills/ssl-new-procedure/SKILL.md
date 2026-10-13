@@ -23,14 +23,16 @@ Generate a new SSL procedure skeleton using `$ARGUMENTS` (first token is the pro
    name unless the user explicitly wants to shadow the built-in.
 
 3. **Use these core SSL rules in the scaffold:**
-   - Colon-prefixed keywords must be UPPERCASE
-   - Almost every statement, including comments, must end with `;`
-   - Never place `;` inside comment body text
-   - Prefer tabs for indentation; if adapting to an existing space-indented file,
-     preserve 4-space indentation
-   - Use one statement per line
-   - Use `==` for exact string equality
-   <!-- rules: id=parameters_first,default_after_parameters,declare_locals_at_start,doproc_for_same_file_procedures,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally wrap=80 -->
+   <!-- rules: id=keyword_uppercase,statement_semicolon,no_semicolon_in_comment_text,indent_tabs_preferred,one_statement_per_line,equals_vs_strict_equals,parameters_first,default_after_parameters,declare_locals_at_start,doproc_for_same_file_procedures,try_requires_handler,single_catch_per_try,try_and_finally_bodies_not_empty,no_control_exit_in_finally wrap=80 -->
+   - Colon-prefixed SSL keywords are uppercase and case-sensitive, for example
+     `:IF` and `:BEGINCASE`.
+   - Almost every SSL statement, including comments, must end with a semicolon.
+   - Never include a semicolon inside comment text; the first semicolon ends the
+     comment and the remaining text becomes executable code.
+   - Prefer tabs for indentation; if the file already uses spaces, preserve
+     4-space indentation.
+   - Use one statement per line.
+   - Use `==` for exact string equality; `=` is prefix-style for strings.
    - `:PARAMETERS` must appear before any other statements in a script or
      procedure body.
    - `:DEFAULT` must immediately follow `:PARAMETERS`.

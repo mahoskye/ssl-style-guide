@@ -17,13 +17,17 @@ schema:
   - path: module_structure.class_file_constraint.rule
     form: value
     value: one_class_or_script_per_file
+  - path: lints.compile_errors.rules.class_or_script.message
+    form: text
+    message: A file is either a :CLASS definition or a script, never both.
 verification:
   basis: reference
   note: >-
     Kept from the data-sources and module-structure packs, which state it
     word for word, and the schema's class_file_constraint. Merged: the
     module-structure pack's "Do not mix class definitions, script procedures,
-    and data-source bodies in one file."
+    and data-source bodies in one file.", and the schema's compile_errors
+    entry class_or_script, whose message stays word for word.
 ---
 
 ## Rationale
@@ -56,5 +60,6 @@ run through `RunDS`. Mixing kinds in one file breaks the structure of each.
 ## Notes
 
 The schema also states the class half of this rule as
-`lints.compile_errors.class_or_script`, the slug starlims-lsp reports. That
-entry moves with the classes domain in a later phase.
+`lints.compile_errors.class_or_script`, the slug starlims-lsp reports. The
+record supplies that entry's message; the slug stays in
+`rules/schema-base.yaml`.

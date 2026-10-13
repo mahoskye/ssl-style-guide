@@ -231,7 +231,13 @@ function validateRecord(fm, file, domainDir, categoryIds, elementNames, problems
       for (const key of Object.keys(m)) {
         if (!['list', 'foundation'].includes(key)) problems.push(`${where}: unknown machine field '${key}'`);
       }
-      if (!MACHINE_LISTS.includes(m.list)) problems.push(`${where}: machine.list must be one of: ${MACHINE_LISTS.join(', ')}`);
+      // A foundation-only record (no pack text) may leave out `list`.
+      if (m.list === undefined && m.foundation === undefined) {
+        problems.push(`${where}: machine needs a list, a foundation, or both`);
+      }
+      if (m.list !== undefined && !MACHINE_LISTS.includes(m.list)) {
+        problems.push(`${where}: machine.list must be one of: ${MACHINE_LISTS.join(', ')}`);
+      }
       if (m.foundation !== undefined && !FOUNDATION_LISTS.includes(m.foundation)) {
         problems.push(`${where}: machine.foundation must be one of: ${FOUNDATION_LISTS.join(', ')}`);
       }
@@ -470,7 +476,7 @@ export function packLists(records, categoryId) {
   const order = loadCategories().find((c) => c.id === categoryId)?.order ?? [];
   const position = (r) => (order.includes(r.id) ? order.indexOf(r.id) : Infinity);
   const members = liveRecords(records)
-    .filter((r) => r.machine && r.categories.includes(categoryId))
+    .filter((r) => r.machine?.list && r.categories.includes(categoryId))
     .sort((a, b) => position(a) - position(b));
   return {
     must_follow: members.filter((r) => r.machine.list === 'must_follow').map(plainRule),

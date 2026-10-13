@@ -8,15 +8,12 @@
   ],
   "summary": "Assignment, arithmetic, comparison, logical, containment, and member-access operators.",
   "must_follow": [
-    "Use := for assignment.",
-    "Use == when exact string equality matters.",
+    "= assignment: assignment is := (plus +=, -=, ...); x = y is a comparison expression, never an assignment.",
+    "Use == for exact string equality; = is prefix-style for strings.",
     "Use spaces around assignment, arithmetic, comparison, and logical operators.",
-    "Use no spaces around member access colon."
+    "Prefer no spaces around : in member access even though SSL accepts spaced forms."
   ],
-  "avoid": [
-    "Do not treat = as exact string equality.",
-    "Do not assume != negates string prefix equality."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "assignment",

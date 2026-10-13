@@ -215,21 +215,23 @@ ssl_style_guide:
         This rule applies to SSL source, including ssl_data_source bodies.
         SQL data-source files use SQL comment syntax instead — see
         module_structure.data_source_modules.sql_data_source.comments.
+    # BEGIN GENERATED comments.rules: edit rules/ and run bun tools/generate-rules.mjs
     rules:
-    - level: style_only
-      rule: Begin major sections (procedures, classes, regions) with a short summary.
-    - level: style_only
-      rule: Use sentence-case and keep comments concise.
-    - level: style_only
-      rule: Prefer comments that explain 'why' rather than restating 'what'.
-    - level: authoritative
-      rule: All comments must end with semicolon (SSL requirement).
-    - level: authoritative
-      rule: "Never include a semicolon inside comment text — it prematurely ends the comment, causing the remaining text to be parsed as executable code."
-    - level: authoritative
-      rule: "Single-line format: /* comment text here;"
-    - level: style_only
-      rule: "Multi-line layout: /* alone on the first line, the text lines, then ; alone on the last line (examples.multi_line). The language accepts any layout, since the comment simply ends at the first semicolon, but use this one for new comments. The documentation_header form follows it, with ' * ' line prefixes. The file banner and procedure_headers templates carry the delimiters on their star rules instead."
+      - level: style_only
+        rule: "Begin major sections (procedures, classes, regions) with a short summary."
+      - level: style_only
+        rule: "Use sentence-case and keep comments concise."
+      - level: style_only
+        rule: "Prefer comments that explain 'why' rather than restating 'what'."
+      - level: authoritative
+        rule: "All comments must end with semicolon (SSL requirement)."
+      - level: authoritative
+        rule: "Never include a semicolon inside comment text — it prematurely ends the comment, causing the remaining text to be parsed as executable code."
+      - level: authoritative
+        rule: "Single-line format: /* comment text here;"
+      - level: style_only
+        rule: "Multi-line layout: /* alone on the first line, the text lines, then ; alone on the last line (examples.multi_line). The language accepts any layout, since the comment simply ends at the first semicolon, but use this one for new comments. The documentation_header form follows it, with ' * ' line prefixes. The file banner and procedure_headers templates carry the delimiters on their star rules instead."
+    # END GENERATED comments.rules
     examples:
       single_line: "/* This is a single-line comment;"
       multi_line: |
@@ -1533,13 +1535,15 @@ ssl_style_guide:
       note: positional parameter skipping
   lints:
     level: advisory
+    # BEGIN GENERATED lints.style_rules: edit rules/ and run bun tools/generate-rules.mjs
     style_rules:
-      disallow_globals: true
-      prefer_positive_logic: true
-      no_nested_ternaries: true
-      limit_block_depth: 4
-      max_params_per_procedure: 8  # style recommendation; STARLIMS warns at 20
+      disallow_globals: true # Prefer :DECLARE with parameter passing over :PUBLIC variables, which any procedure on the call stack can read or overwrite.
+      prefer_positive_logic: true # Prefer positive logic: when an :IF has an :ELSE, test the positive condition first.
+      no_nested_ternaries: true # Do not nest IIf calls; use :IF or :BEGINCASE for more than two outcomes.
+      limit_block_depth: 4 # Limit block nesting to 4 levels.
+      max_params_per_procedure: 8 # Keep procedures to at most 8 parameters; more than 20 parameters on a procedure or method draws a warning, so group related state into arrays or objects.
       require_else_for_if: false
+    # END GENERATED lints.style_rules
     hungarian_notation:
       enabled: true
       strict_mode: true
@@ -1564,6 +1568,7 @@ ssl_style_guide:
       prefer_exists_over_distinct: true
       use_between_for_ranges: true
       avoid_select_star: true
+    # BEGIN GENERATED lints.not_preferred_operators: edit rules/ and run bun tools/generate-rules.mjs
     not_preferred_operators:
       - operator: "#"
         severity: info
@@ -1573,43 +1578,47 @@ ssl_style_guide:
         severity: info
         message: "Not preferred — use != instead of <> for inequality."
         replacement: "!="
+    # END GENERATED lints.not_preferred_operators
+    # BEGIN GENERATED lints.compile_errors: edit rules/ and run bun tools/generate-rules.mjs
     compile_errors:
       level: authoritative
       rules:
-      # These mirror current SSL validation rules — catch them early with clear messages
-      - rule: exitfor_in_finally
-        message: ":EXITFOR inside a :FINALLY block is rejected."
-      - rule: exitwhile_in_finally
-        message: ":EXITWHILE inside a :FINALLY block is rejected."
-      - rule: loop_in_finally
-        message: ":LOOP inside a :FINALLY block is rejected."
-      - rule: return_in_finally
-        message: ":RETURN inside a :FINALLY block is rejected."
-      - rule: exitfor_outside_loop
-        message: ":EXITFOR must be inside a :FOR loop."
-      - rule: exitwhile_outside_loop
-        message: ":EXITWHILE must be inside a :WHILE loop."
-      - rule: loop_outside_loop
-        message: ":LOOP must be inside a :WHILE or :FOR loop."
-      - rule: one_class_per_file
-        message: "Only one :CLASS definition allowed per file."
-      - rule: class_or_script
-        message: "A file is either a :CLASS definition or a script, never both."
-      - rule: doproc_in_class
-        severity: error
-        message: "An unqualified DoProc target is a compile-time error inside class methods. Use Me:MethodName() / Base:MethodName() for methods on the class or its base; fully qualified 'Category.Script.Procedure' targets referencing deployed script procedures are allowed."
-        scope: >
-          The error fires only when the DoProc target is a string literal with
-          a bare (single-segment) procedure name. Fully qualified three-segment
-          'Category.Script.Procedure' literals are valid inside class methods.
-          Two-segment 'Category.Script' targets are not a class-specific issue —
-          they are rejected at runtime everywhere ("Invalid procedure name").
-          A target supplied as a variable or expression is not checked at
-          compile time, so tooling may warn on such calls in class methods
-          but should not report the compile error. ExecFunction has no
-          class-method restriction in any form.
-      - rule: constructor_return_value
-        message: ":RETURN inside a Constructor cannot return a value."
+        # These mirror current SSL validation rules — catch them early with clear messages
+        - rule: exitfor_in_finally
+          message: ":EXITFOR inside a :FINALLY block is rejected."
+        - rule: exitwhile_in_finally
+          message: ":EXITWHILE inside a :FINALLY block is rejected."
+        - rule: loop_in_finally
+          message: ":LOOP inside a :FINALLY block is rejected."
+        - rule: return_in_finally
+          message: ":RETURN inside a :FINALLY block is rejected."
+        - rule: exitfor_outside_loop
+          message: ":EXITFOR must be inside a :FOR loop."
+        - rule: exitwhile_outside_loop
+          message: ":EXITWHILE must be inside a :WHILE loop."
+        - rule: loop_outside_loop
+          message: ":LOOP must be inside a :WHILE or :FOR loop."
+        - rule: one_class_per_file
+          message: "Only one :CLASS definition allowed per file."
+        - rule: class_or_script
+          message: "A file is either a :CLASS definition or a script, never both."
+        - rule: doproc_in_class
+          severity: error
+          message: "An unqualified DoProc target is a compile-time error inside class methods. Use Me:MethodName() / Base:MethodName() for methods on the class or its base; fully qualified 'Category.Script.Procedure' targets referencing deployed script procedures are allowed."
+          scope: >
+            The error fires only when the DoProc target is a string literal with
+            a bare (single-segment) procedure name. Fully qualified
+            three-segment 'Category.Script.Procedure' literals are valid inside
+            class methods. Two-segment 'Category.Script' targets are not a
+            class-specific issue — they are rejected at runtime everywhere
+            ("Invalid procedure name"). A target supplied as a variable or
+            expression is not checked at compile time, so tooling may warn on
+            such calls in class methods but should not report the compile error.
+            ExecFunction has no class-method restriction in any form.
+        - rule: constructor_return_value
+          message: ":RETURN inside a Constructor cannot return a value."
+    # END GENERATED lints.compile_errors
+    # BEGIN GENERATED lints.type_safety: edit rules/ and run bun tools/generate-rules.mjs
     type_safety:
       - rule: for_numeric_values
         severity: warning
@@ -1629,23 +1638,31 @@ ssl_style_guide:
       - rule: equals_vs_strict_equals
         severity: info
         message: "For strings, = is loose equality (returns .T. if right is empty or if left starts with right) while == does exact matching. != negates == (strict), not = (loose), so = and != are not logical opposites for strings. For other types, both delegate to the same comparison. Prefer == for string comparisons where exact match is needed."
+    # END GENERATED lints.type_safety
+    # BEGIN GENERATED lints.variable_behavior: edit rules/ and run bun tools/generate-rules.mjs
     variable_behavior:
       level: authoritative
       rules:
-      - rule: redeclare_is_noop
-        message: "Re-declaring an existing variable with :DECLARE is silently ignored — no error, existing value preserved."
-      - rule: variable_lookup_order
-        message: "Variable lookup: local scope → caller scopes (up call stack) → public variables (:PUBLIC)."
-      - rule: numeric_type
-        message: "SSL has one numeric type for whole and fractional values. The underlying native type varies with the value (whole numbers report System.Int32, fractions System.Double)."
+        - rule: redeclare_is_noop
+          message: "Re-declaring an existing variable with :DECLARE is silently ignored — no error, existing value preserved."
+        - rule: variable_lookup_order
+          message: "Variable lookup: local scope → caller scopes (up call stack) → public variables (:PUBLIC)."
+        - rule: numeric_type
+          message: "SSL has one numeric type for whole and fractional values. The underlying native type varies with the value (whole numbers report System.Int32, fractions System.Double)."
+    # END GENERATED lints.variable_behavior
+    # BEGIN GENERATED lints.label_behavior: edit rules/ and run bun tools/generate-rules.mjs
     label_behavior:
       level: authoritative
       token_text: "The token text includes the word LABEL — :LABEL SKIP; produces \"LABEL SKIP\". Branch() targets must include \"LABEL\" in the string."
       scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
+    # END GENERATED lints.label_behavior
+    # BEGIN GENERATED lints.parameter_skipping_style: edit rules/ and run bun tools/generate-rules.mjs
     parameter_skipping_style:
       level: style_only
       rule: "House style: write skipped-argument commas adjacent with no intervening spaces — {param1,,param3}, not {param1, , param3}. Both forms are valid and behave the same."
       trailing_params: "Omit trailing optional parameters rather than passing empty values."
+    # END GENERATED lints.parameter_skipping_style
+    # BEGIN GENERATED lints.class_rules: edit rules/ and run bun tools/generate-rules.mjs
     class_rules:
       - rule: class_member_order
         severity: info
@@ -1660,6 +1677,8 @@ ssl_style_guide:
         threshold: 20
         severity: warning
         message: "Procedures with more than 20 parameters generate a warning."
+    # END GENERATED lints.class_rules
+    # BEGIN GENERATED lints.coding_standards: edit rules/ and run bun tools/generate-rules.mjs
     coding_standards:
       - rule: limit_public_vars
         severity: warning
@@ -1679,21 +1698,24 @@ ssl_style_guide:
       - rule: constructor_outside_class
         severity: warning
         message: "Constructor syntax is only meaningful inside a :CLASS definition."
+    # END GENERATED lints.coding_standards
+    # BEGIN GENERATED lints.deprecated_keywords: edit rules/ and run bun tools/generate-rules.mjs
     deprecated_keywords:
       - keyword: :ERROR
         severity: warning
         message: ":ERROR is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
-        replacement: ":TRY"
+        replacement: :TRY
         autofix: false
       - keyword: :RESUME
         severity: warning
         message: ":RESUME is legacy error handling. Prefer :TRY/:CATCH/:FINALLY in new and refactored code."
-        replacement: ":TRY"
+        replacement: :TRY
         autofix: false
       - keyword: :LABEL
         severity: warning
         message: ":LABEL is legacy flow control (used with Branch()). Prefer structured constructs (:IF/:WHILE/:FOR) in new code."
         autofix: false
+    # END GENERATED lints.deprecated_keywords
   documentation:
     level: style_only
     procedure_headers:

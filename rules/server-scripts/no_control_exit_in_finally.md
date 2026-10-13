@@ -17,6 +17,19 @@ enforced_by:
   - lsp:diag.exitfor_in_finally
   - lsp:diag.exitwhile_in_finally
   - lsp:diag.loop_in_finally
+schema:
+  - path: lints.compile_errors.rules.exitfor_in_finally.message
+    form: text
+    message: ":EXITFOR inside a :FINALLY block is rejected."
+  - path: lints.compile_errors.rules.exitwhile_in_finally.message
+    form: text
+    message: ":EXITWHILE inside a :FINALLY block is rejected."
+  - path: lints.compile_errors.rules.loop_in_finally.message
+    form: text
+    message: ":LOOP inside a :FINALLY block is rejected."
+  - path: lints.compile_errors.rules.return_in_finally.message
+    form: text
+    message: ":RETURN inside a :FINALLY block is rejected."
 verification:
   basis: reference
   note: >-
@@ -99,5 +112,5 @@ compile-time error inside `:FINALLY`.
 ## Notes
 
 The schema states this as four `lints.compile_errors` entries, one per
-keyword. Their slugs are not this record's id, so they stay in the
-hand-maintained schema until the language domain is migrated.
+keyword. Their slugs are not this record's id, so the record supplies only
+each entry's message; the slugs stay in `rules/schema-base.yaml`.

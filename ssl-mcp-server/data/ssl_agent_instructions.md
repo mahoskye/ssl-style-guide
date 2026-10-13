@@ -20,10 +20,12 @@ Authoritative rules describe documented language behavior; style recommendations
 
 ### Style Guidance for New and Refactored Code
 
-1. **End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;`** unless multi-match behavior is intentional.
-2. **Prefer no spaces around `:`** in member access even though SSL accepts spaced forms.
-3. **Use `/* region` / `/* endregion` comments for editor grouping** instead of `:REGION` / `:ENDREGION`.
-4. **Prefer `:TRY` / `:CATCH` / `:FINALLY` over `:ERROR` / `:RESUME`** in new code.
+<!-- rules: id=prefer_exitcase,member_access_no_spaces,comment_regions_for_grouping,prefer_try_over_error_resume -->
+- End each `:CASE` / `:OTHERWISE` block with `:EXITCASE;` unless multi-match behavior is intentional.
+- Prefer no spaces around `:` in member access even though SSL accepts spaced forms.
+- Use `/* region` / `/* endregion` comments for editor grouping instead of `:REGION` / `:ENDREGION`.
+- Prefer `:TRY`/`:CATCH`/`:FINALLY` over legacy `:ERROR`/`:RESUME`.
+<!-- /rules -->
 
 ## 1. High-Level Overview
 

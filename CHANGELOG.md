@@ -33,6 +33,15 @@ Entries before this file existed are reconstructed from the release commits.
   logging and module-structure pack lists, the foundation's server-script
   bullets, and rule regions in the `ssl-new-procedure` skill and the
   server-script baseline. The parsed schema is unchanged.
+- Rules source, language (#101): 62 records in `rules/language/` cover
+  keywords, semicolons and comments, statement structure, operators and
+  equality, types and `NIL`, arrays, formatting and variable behavior, plus
+  `sqlexecute_no_values_array` in `rules/sql/`. They generate the schema's
+  `comments.rules` and most `lints` subtrees, the control-flow, loops,
+  strings, arrays, dates, formatting, types and operators pack lists, the
+  foundation's language bullets and its whole "SSL Does Not Have" list, and
+  rule regions in the review, refactor and new-procedure skills and the
+  agent guide's style quick start. The parsed schema is unchanged.
 
 ### Changed
 - `ssl-refactor-plan` writes specs under `docs/specs/`, matching the agents.

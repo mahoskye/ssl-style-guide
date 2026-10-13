@@ -8,13 +8,39 @@
 # `order` lists every record in the category, in the order packs, regions and
 # rules/INDEX.md show them.
 #
-# Generated so far (#101): data-sources, database and sql, then the
-# server-script categories transactions, procedures, error-handling, logging
-# and module-structure. Labels, aliases, summaries and element lists still live
-# in CATEGORY_DEFS and move here in phase 2.
+# Generated (#101): every category except classes, objects and naming (their
+# domains are next), and files, email and security, whose lists are API and
+# security guidance that no domain record states yet. Labels, aliases,
+# summaries and element lists still live in CATEGORY_DEFS.
 categories:
   - id: control-flow
+    lists_from_rules: true
+    order:
+      - keyword_uppercase
+      - keywords_colon_prefixed
+      - condition_keyword_semicolon
+      - begincase_requires_case
+      - prefer_exitcase
+      - exitcase_last_in_branch
+      - otherwise_for_default_handling
+      - one_statement_per_line
+      - statement_semicolon
+      - no_semicolon_in_comment_text
+      - no_truthy_falsy_coercion
+      - label_is_legacy
+      - branch_target_label
+      - prefer_positive_logic
+      - no_nested_iif
+      - limit_block_depth
   - id: loops
+    lists_from_rules: true
+    order:
+      - arrays_one_based
+      - endfor_invalid
+      - step_spacing
+      - no_control_exit_in_finally
+      - loop_control_inside_loop
+      - for_numeric_values
   - id: database
     lists_from_rules: true
     order:
@@ -23,6 +49,7 @@ categories:
       - sql_positional_placeholders
       - getssldataset_at_name_markers
       - empty_optional_param_array
+      - sqlexecute_no_values_array
   - id: sql
     lists_from_rules: true
     order:
@@ -68,8 +95,29 @@ categories:
       - end_transaction_in_finally_when_started
       - guard_transaction_finalization
   - id: strings
+    lists_from_rules: true
+    order:
+      - equals_vs_strict_equals
+      - dollar_for_containment
+      - bracket_strings_for_quotes
+      - dollar_string_only
+      - prevent_sql_injection
   - id: arrays
+    lists_from_rules: true
+    order:
+      - arrays_one_based
+      - net_collections_zero_based
+      - declare_arrays_before_use
+      - skip_commas_adjacent
+      - check_alen_before_index
+      - no_nil_target_array
+      - array_literal_braces
   - id: dates
+    lists_from_rules: true
+    order:
+      - explicit_type_conversion
+      - invariant_date_handling
+      - check_builtin_parameter_types
   - id: classes
   - id: objects
   - id: procedures
@@ -91,6 +139,14 @@ categories:
       - visibility_annotation_form
       - visibility_annotation_exact_form
       - visibility_annotations_script_only
+      - declare_before_use
+      - declare_initializer
+      - redeclare_is_noop
+      - variable_lookup_order
+      - limit_public_vars
+      - no_positional_parameter_access
+      - bare_calls_are_builtins
+      - max_params_warning
   - id: data-sources
     lists_from_rules: true
     order:
@@ -143,9 +199,49 @@ categories:
   - id: email
   - id: security
   - id: formatting
+    lists_from_rules: true
+    order:
+      - one_statement_per_line
+      - statement_semicolon
+      - no_semicolon_in_comment_text
+      - no_c_style_comment_closer
+      - operator_spacing
+      - comment_regions_for_grouping
+      - indent_tabs_preferred
+      - comment_section_summaries
+      - comment_sentence_case
+      - comments_explain_why
+      - single_line_comment_form
+      - multi_line_comment_layout
   - id: naming
   - id: types
+    lists_from_rules: true
+    order:
+      - null_literal_is_nil
+      - check_builtin_parameter_types
+      - dotnet_member_passthrough
+      - explicit_type_conversion
+      - arrays_one_based
+      - for_numeric_values
+      - no_truthy_falsy_coercion
+      - code_block_comparison
+      - code_block_structure
+      - nil_in_operations
+      - nil_not_empty_string
+      - numeric_type
+      - limstypeex_numeric_not_number
   - id: operators
+    lists_from_rules: true
+    order:
+      - assignment_operator
+      - equals_vs_strict_equals
+      - operator_spacing
+      - member_access_no_spaces
+      - dollar_string_only
+      - not_preferred_operator
+      - one_assignment_per_statement
+      - no_ternary_operator
+      - code_block_comparison
   - id: logging
     lists_from_rules: true
     order:

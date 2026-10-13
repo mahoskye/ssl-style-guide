@@ -8,15 +8,12 @@
   ],
   "summary": "String literals, comparison semantics, containment, and common string helpers.",
   "must_follow": [
-    "Use == for exact string equality.",
-    "Remember that = is prefix-style for strings and is not the same as exact equality.",
+    "Use == for exact string equality; = is prefix-style for strings.",
     "Use $ for containment tests.",
-    "Use bracket strings when SQL or text contains many quotes."
+    "Use bracket strings when SQL or text contains many quotes.",
+    "Prefer parameterized database calls; do not concatenate user or runtime values into SQL when placeholders can bind them."
   ],
-  "avoid": [
-    "Do not assume = and != are logical opposites for strings.",
-    "Do not use string concatenation for SQL values when parameterization is available."
-  ],
+  "avoid": [],
   "elements": [
     {
       "name": "Len",
