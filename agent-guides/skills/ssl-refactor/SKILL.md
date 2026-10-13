@@ -83,17 +83,20 @@ Apply changes in this priority order (or focus on `[goal]` if specified):
 **SQL Safety:**
 - Replace string concatenation in SQL with proper parameterization
 - `SQLExecute`: use `?varName?` substitution
-- Other DB functions: use positional `?` with parameter arrays
+- Other DB functions: use positional `?` with a values array, in the slot the
+  signature gives (`LSearch`, `LSelect`, `LSelectC` take it fourth;
+  `GetDataSet` second)
+- `GetSSLDataset`: use `@name` markers with parallel name and value arrays
 - When using array expansion for `IN` clauses, ensure the array is a local variable — UDObject array properties cause a runtime error and must be copied to a local first
 - Inside SQL strings, uppercase SQL keywords and functions; preserve the
   author's casing for other SQL identifiers (never force-fold — it breaks
   case-sensitive SQL Server collations)
 
 **Control Flow:**
-- Add `:EXITCASE;` at end of `:CASE` and `:OTHERWISE` blocks (unless multi-match behavior is intentional)
+- Add `:EXITCASE;` as the last statement of `:CASE` and `:OTHERWISE` blocks (unless multi-match behavior is intentional); never nest it inside an `:IF`, which is a compile error
 - Replace bare procedure calls with `DoProc("ProcName", {args})`
 - Inside class methods, replace any `DoProc` with `Me:Method()`
-- Inside class methods, qualify unqualified reads/writes of `:DECLARE` class fields with `Me:fieldName` (or `Base:fieldName` for inherited fields). A bare identifier creates a local instead of touching the field.
+- Inside class methods, qualify unqualified reads/writes of `:DECLARE` class fields with `Me:fieldName` (or `Base:fieldName` for inherited fields). A bare identifier never touches the field: it follows normal lookup (local, then caller scopes, then publics), so a read can raise `Variable [name] is undefined!` and a write can land on a caller's or a public variable.
 
 **Comments:**
 - Fix comments that contain `;` in the comment body text (move semicolon to end only)

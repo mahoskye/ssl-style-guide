@@ -35,7 +35,7 @@ detail.
 - In scripts and procedures, `:PARAMETERS` appears before any other statement
   and `:DEFAULT` immediately follows `:PARAMETERS`.
 - Data source files are different: `:PARAMETERS` uses inline `:=` defaults,
-  optional per parameter.
+  required on every parameter.
 - SSL arrays are 1-based; collections on .NET objects reached via colon member
   access (for example `dataSet:Tables[0]`) are 0-based.
 - Use `==` for exact string equality; `=` is prefix-style for strings.
@@ -44,7 +44,7 @@ detail.
   `ExecFunction("Category.Script.Proc", {args})` for external script entry
   points.
 - Built-in classes instantiate with curly braces, for example `Email{}`.
-- User-defined classes instantiate with `CreateUdObject("ClassName")`.
+- User-defined classes instantiate with `CreateUdObject("Category.ClassName")`.
 - Inside class methods, access fields through `Me:fieldName` or
   `Base:fieldName`.
 - Prefer `:TRY`/`:CATCH`/`:FINALLY`; bare `:TRY ... :ENDTRY` is invalid.

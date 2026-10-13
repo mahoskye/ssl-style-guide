@@ -163,6 +163,9 @@ Generate a new SSL class skeleton using `$ARGUMENTS` (first token is the class n
    - `DoProc` cannot be used inside class methods — use `Me:Method()` for same-class calls, `Base:Method()` for inherited
    - `:CLASS` continues to end of file; do not add `:ENDCLASS`
    - Constructor must be the **last** procedure in the class
+   - With `:INHERIT`, the parent's parameterless `Constructor` runs automatically
+     first; a parent `Constructor` that takes parameters runs only if the derived
+     `Constructor` calls `Base:Constructor(args)`
    - Class files have no script entry point — to instantiate: `CreateUdObject("Category.ClassName")`
    - One class per file (enforced by the language)
    - All statements end with `;`

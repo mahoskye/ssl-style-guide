@@ -102,13 +102,13 @@ The schema classifies guidance into three levels:
   Maintainability, security, and performance guidance.
 
 Examples of authoritative rules include uppercase colon-prefixed keywords,
-mandatory statement terminators, declaration-before-use, SSL's 1-based arrays,
-and the distinction between direct built-in calls and `DoProc` / `ExecFunction`
-for script procedures.
+mandatory statement terminators, `:PARAMETERS` and `:DEFAULT` placement, SSL's
+1-based arrays, and the distinction between direct built-in calls and `DoProc` /
+`ExecFunction` for script procedures.
 
-Examples of style guidance include tabs preferred for indentation, no spaces
-around member-access colons, one statement per line, and comment-region usage
-for editor folding.
+Examples of style guidance include declaring every variable before use, tabs
+preferred for indentation, no spaces around member-access colons, one statement
+per line, and comment-region usage for editor folding.
 
 ### Data Source Files
 

@@ -36,7 +36,8 @@ Plan a behavior-preserving refactor for the SSL file at `$ARGUMENTS`.
    - Note internal calls (`DoProc`, `Me:`, `Base:`) and external calls
      (`ExecFunction`, database APIs)
    - Note `:INCLUDE` targets and `:PUBLIC` declarations — included scripts are
-     spliced in full and `:PUBLIC` variables are call-stack scoped, so the
+     spliced in full and `:PUBLIC` variables are shared across the running
+     program (any procedure can read or update them), so the
      file's real symbol surface may extend beyond its own text; record these in
      the spec's Current behavior section
    - Confirm built-in functions, classes, keywords, and operators with the

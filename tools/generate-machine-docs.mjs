@@ -103,7 +103,8 @@ const CATEGORY_DEFS = [
     mustFollow: [
       'Prefer parameterized database calls.',
       'SQLExecute is the only database API that supports named ?param? substitution.',
-      'RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays.',
+      'RunSQL, LSearch, LSelect, LSelect1, LSelectC, and GetDataSet use positional ? placeholders with value arrays; LSearch, LSelect and LSelectC take the array fourth and GetDataSet second.',
+      'GetSSLDataset uses @name markers with parallel name and value arrays.',
       'Inside SQL strings, use uppercase SQL keywords and functions; preserve the author\'s casing for other SQL identifiers (force-folding is dialect-conditional and breaks case-sensitive SQL Server collations).',
     ],
     avoid: [
@@ -274,12 +275,14 @@ const CATEGORY_DEFS = [
       'Keep class member order as :INHERIT, :DECLARE, regular methods, then Constructor.',
       'Access class fields through Me:fieldName or Base:fieldName inside methods.',
       'Call sibling or inherited methods with Me:Method() and Base:Method().',
-      'Use CreateUdObject("ClassName") for user-defined classes.',
+      'Use CreateUdObject("Category.ClassName") for user-defined classes; a bare class name is looked up only among the default categories.',
+      'Write :INHERIT with the full Category.ClassName of the parent class.',
     ],
     avoid: [
       'Do not assign to class fields with bare identifiers inside methods.',
-      'Do not call DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.',
+      'Do not call DoProc with a bare procedure name inside class methods; it is a compile-time error. Use Me:Method() or Base:Method().',
       'Do not instantiate built-in classes with CreateUdObject.',
+      'Do not write :INHERIT with a plain class name; it is a compile-time error.',
     ],
     related: ['objects', 'procedures', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
@@ -318,7 +321,7 @@ const CATEGORY_DEFS = [
     avoid: [
       'Do not call custom script procedures directly as MyProc().',
       'Do not put :DEFAULT on a :DECLARE line.',
-      'Do not use DoProc with an unqualified procedure name inside class methods; fully qualified Category.Script.Procedure targets are allowed.',
+      'Do not use DoProc with a bare procedure name inside class methods; it is a compile-time error.',
     ],
     related: ['classes', 'module-structure', 'naming'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
@@ -330,9 +333,9 @@ const CATEGORY_DEFS = [
     summary: 'SSL and SQL data-source syntax, inline defaults, and builder directives.',
     elements: ['PARAMETERS', 'RunDS', 'GetDSParameters', 'DSN', 'TABLENAME', 'NULLASBLANK', 'INVARIANTDATECOLUMNS'],
     mustFollow: [
-      'Invoke data sources with RunDS("Category.DataSourceName", {params}); GetDSParameters returns a data source parameter definition list.',
+      'Invoke data sources with RunDS("Category.DataSourceName", {values}); values bind by position in :PARAMETERS order, not by name. GetDSParameters returns the parameter names in that order.',
       'Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.',
-      'Data-source parameter defaults are optional; when wanted, express them inline with :=.',
+      'Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.',
       'Reference SQL data-source parameters in the SQL body as @name placeholders.',
       'Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.',
       'SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.',
@@ -340,6 +343,8 @@ const CATEGORY_DEFS = [
     ],
     avoid: [
       'Do not apply normal script :PARAMETERS/:DEFAULT layout to data-source files.',
+      'Do not pass {name, value} pairs to RunDS; each pair is bound whole to one parameter.',
+      'Do not write ?name? markers in a SQL data-source body; use @name.',
       'Do not treat builder directives as reusable SSL keywords outside data-source contexts.',
     ],
     related: ['database', 'sql', 'procedures'],
@@ -475,7 +480,8 @@ const CATEGORY_DEFS = [
     mustFollow: [
       'Use NIL for the nil literal and .T./.F. for booleans.',
       'Look up function parameter types before relying on coercion.',
-      'Remember that member access can dispatch to underlying runtime members when no SSL-side member matches.',
+      'Strings, numbers, booleans, dates and arrays have no SSL-defined members; a : call reaches a case-sensitive native .NET member or raises (arrays have :Length, not :Count).',
+      'Convert types explicitly with Val() and LimsString(); only date ± number and date - date coerce.',
     ],
     avoid: [
       'Do not assume every built-in coerces strings, numbers, dates, and NIL interchangeably.',
@@ -671,7 +677,7 @@ detail.
 - In scripts and procedures, \`:PARAMETERS\` appears before any other statement
   and \`:DEFAULT\` immediately follows \`:PARAMETERS\`.
 - Data source files are different: \`:PARAMETERS\` uses inline \`:=\` defaults,
-  optional per parameter.
+  required on every parameter.
 - SSL arrays are 1-based; collections on .NET objects reached via colon member
   access (for example \`dataSet:Tables[0]\`) are 0-based.
 - Use \`==\` for exact string equality; \`=\` is prefix-style for strings.
@@ -680,7 +686,7 @@ detail.
   \`ExecFunction("Category.Script.Proc", {args})\` for external script entry
   points.
 - Built-in classes instantiate with curly braces, for example \`Email{}\`.
-- User-defined classes instantiate with \`CreateUdObject("ClassName")\`.
+- User-defined classes instantiate with \`CreateUdObject("Category.ClassName")\`.
 - Inside class methods, access fields through \`Me:fieldName\` or
   \`Base:fieldName\`.
 - Prefer \`:TRY\`/\`:CATCH\`/\`:FINALLY\`; bare \`:TRY ... :ENDTRY\` is invalid.

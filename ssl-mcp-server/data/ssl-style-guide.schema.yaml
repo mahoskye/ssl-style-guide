@@ -166,6 +166,7 @@ ssl_style_guide:
       exit: :EXITCASE  # Without :EXITCASE, later :CASE expressions are still evaluated and additional matching bodies may execute, but :OTHERWISE stays skipped once any case body has run
       end: :ENDCASE
       constraint: at_least_one_case  # :BEGINCASE requires at least one :CASE block
+      exitcase_placement: last statement of its :CASE/:OTHERWISE branch, directly in the branch body — a statement after it, or :EXITCASE nested inside :IF, is a compile error
     try:
       begin: :TRY
       catch: :CATCH
@@ -186,8 +187,9 @@ ssl_style_guide:
       note: "Legacy named code-storage construct that stores a named SSL body for later retrieval via GetInlineCode(sValue, aVariables) / DeleteInlineCode(sValue)."
     error:
       marker: :ERROR
-      resume: :RESUME  # optional — switches to resume mode inside :ERROR handler
-      note: "Legacy scope-based handler. :ERROR body requires ≥1 statement. :RESUME wraps each subsequent statement in individual try/catch."
+      resume: :RESUME  # optional — last statement of the :ERROR handler; switches to resume mode
+      placement: trailing  # :ERROR starts the last section of a procedure and runs to :ENDPROC
+      note: "Legacy procedure-level handler. :ERROR is the last section of a procedure and protects the statements before it; the statements after it are the handler body (≥1 statement), which runs only when a protected statement fails. A handler placed first protects nothing. With :RESUME as the last handler statement, every failing protected statement runs the handler and execution continues at the next statement."
     class:
       begin: :CLASS
       end: null  # no :ENDCLASS — class ends at EOF
@@ -300,20 +302,27 @@ ssl_style_guide:
     - '/='
     - '^='
     - '%='
-    # Full precedence (low → high): .OR., .AND., equality/containment, relational,
+    assignment_semantics:
+      level: authoritative
+      targets: variable, object property (oTask:Status), or array element (aItems[1])
+      value: "An assignment evaluates to the assigned value; a compound assignment evaluates to the updated left-side value"
+      associativity: "right — chained assignment such as sStatus := sDefault := \"PENDING\"; is valid"
+      precedence: lowest of all operators
+      style: "Prefer one assignment per line; use a chained assignment only when every target should receive the same value"
+    # Full precedence (low → high): assignment, .OR., .AND., equality/containment, relational,
     # shift, additive, multiplicative, power (right-assoc), unary.
     # See ssl-ebnf-grammar.md for the canonical production chain.
     comparison_operators:
       equality:                    # precedence: same level as containment (below relational)
-      - '='    # loose equality (for strings: .T. if right is empty or left starts with right; for other types: exact match)
+      - '='    # loose equality (strings: .T. if right is empty or left starts with right; numbers, booleans, dates: exact match; arrays and objects: same instance)
       - '=='   # strict equality (exact match)
       inequality:                  # precedence: same level as equality
       - '!='   # not equals (negates ==, not =)
       - '<>'   # not equals (equivalent to !=)
       - '#'    # not equals (equivalent to !=)
       relational:                  # precedence: above equality/containment
-      - '<'    # less than
-      - '>'    # greater than
+      - '<'    # less than (strings: alphabetical, ties lowercase-first)
+      - '>'    # greater than (strings: alphabetical, ties lowercase-first)
       - '<='   # less than or equal
       - '>='   # greater than or equal
       containment:                 # precedence: same level as equality (below relational)
@@ -391,7 +400,7 @@ ssl_style_guide:
     logical_evaluation:
       short_circuit: true
       truth_values: .T. (true), .F. (false)
-      nil_evaluates: false
+      nil_evaluates: error  # a non-boolean condition or .NOT. operand (including NIL) raises; it is not coerced to .F.
     string_concatenation:
       operator: + (plus)
       implicit_concatenation: false
@@ -427,7 +436,8 @@ ssl_style_guide:
     include_target_forms:
       - ":INCLUDE ScriptName;"
       - ":INCLUDE Category.ScriptName;"
-      - ':INCLUDE "ScriptName";' # quoted targets also occur and are accepted
+    include_invalid_forms:
+      - ':INCLUDE "ScriptName";' # a quoted-string target is not accepted (raises unexpected char: '"')
   procedures:
     signature:
       level: authoritative
@@ -450,8 +460,10 @@ ssl_style_guide:
       syntax:
         - "/*@private;"
         - "/*@protected;"
-      placement: own line immediately before :PROCEDURE
-      effect: "Both make the procedure inaccessible via DoProc/ExecFunction"
+      placement: own line immediately before :PROCEDURE, with no blank line between them (a blank line breaks the association)
+      exact_form: "Lowercase, with no space between /* and @ — /*@Private; or /* @private; is not recognized"
+      not_a_comment: "Although they use comment syntax, SSL recognizes them as access modifiers, not regular comments; formatters must not respace, recase or separate them from :PROCEDURE"
+      effect: "Both block calls from other scripts; procedures in the same script can still call the procedure"
       class_restriction: "These annotations have no effect on class methods — class methods are always Public|Virtual"
     return:
       keyword: :RETURN
@@ -950,7 +962,7 @@ ssl_style_guide:
     level: authoritative
     signature:
       begin: :CLASS [Name];
-      inherit: :INHERIT BaseName; or :INHERIT Category.ScriptName;
+      inherit: :INHERIT Category.ClassName;  # a plain name is a compile-time error
       members:
       - :DECLARE ...;
       - :PROCEDURE ...;
@@ -997,8 +1009,8 @@ ssl_style_guide:
       traditional:
         keywords:
           - :ERROR
-          - :RESUME  # optional — switches to resume mode (each statement wrapped in individual try/catch)
-        note: "Legacy scope-based error handling. :ERROR defines a handler that applies to all subsequent code in the current scope and must contain at least one statement. :RESUME inside the handler switches to resume mode, wrapping each subsequent statement individually — significant performance cost."
+          - :RESUME  # optional — last handler statement; switches to resume mode (each protected statement handled individually)
+        note: "Legacy procedure-level error handling. :ERROR starts the last section of a procedure, runs to :ENDPROC, and protects the statements before it; the handler body after it must contain at least one statement. A handler placed first protects nothing. Without :RESUME, the first failure runs the handler and ends the procedure. With :RESUME as the last handler statement, every failing protected statement runs the handler and execution continues at the statement after the one that failed — significant performance cost. With :RESUME, an error raised inside a :TRY body in the protected region goes to the handler and :CATCH does not run, so do not combine resume mode with :TRY/:CATCH."
       structured:
         - :TRY
         - body  # requires at least one statement
@@ -1021,13 +1033,13 @@ ssl_style_guide:
       level: authoritative
       note: "GetLastSSLError() returns an SSLError object with these members:"
       members:
-        - ":Message        # short error message"
-        - ":Description    # detailed description"
+        - ":Message        # alias of :Description"
+        - ":Description    # primary error message text"
         - ":Operation      # operation that caused the error"
-        - ":Code           # numeric error code"
-        - ":GenCode        # general/category error code"
-        - ":FullDescription      # combined message + description"
-        - ":FullDescriptionEx    # extended full description with inner exceptions"
+        - ":Code           # numeric error code (the code passed to RaiseError)"
+        - ":GenCode        # numeric error code"
+        - ":FullDescription      # multi-line diagnostic text with abbreviated stack details and nested causes"
+        - ":FullDescriptionEx    # multi-line diagnostic text with full stack details and nested causes"
         - ":InnerException       # nested SSLError from a chained exception"
         - ":NETException         # underlying .NET exception object (if available)"
     guidance:
@@ -1096,11 +1108,11 @@ ssl_style_guide:
       - DoProc("ProcedureName", {params})
       - ExecFunction("Category.Script", {params})
       - ExecFunction("Category.Script.Proc", {params})
-      - ExecUdf("UdfName", {params})
-      - Eval(vCode[, vArg1[, vArg2 ...]])
+      - ExecUdf(sCode, [aArgs], [bCacheCode])   # sCode is SSL source text, not a name
+      - Eval(fnCode, [vArg1], [vArg2], ...)    # fnCode is a code block; Eval does not compile source text
       - Branch(vTarget)
-    dynamic_procedures: GetRegion(sValue, vSrc, vDst)
-    inline_code: GetInlineCode(sValue, aVariables)
+    dynamic_procedures: GetRegion(sRegionName, [aSourceValues], [aDestinationValues])
+    inline_code: GetInlineCode(sValue, [aVariables])
     code_blocks: "{|params| expression}"
   special_literals:
     level: authoritative
@@ -1114,7 +1126,7 @@ ssl_style_guide:
       constructor: ":PROCEDURE Constructor; ... :ENDPROC"
       constructor_note: reserved constructor declaration name inside :CLASS; treat it specially only in that declaration position, not as a standalone constructor literal
     date_functions:
-      - CToD("2026-03-05")
+      - CToD("3/5/2026")   # parsed with the session date format (M/d/yyyy by default)
       - DateFromNumbers(2026, 3, 5)
       - Today()
       - Now()
@@ -1127,11 +1139,13 @@ ssl_style_guide:
       level: authoritative
       rule: >-
         Built-in value types (string, number, date, array, boolean,
-        netobject) are backed by .NET values; ':' member access forwards to
-        the underlying .NET object when no SSL-side member matches (e.g.
-        sName:Length, sName:ToUpper(), dDate:Year, dDate:AddDays(3),
-        aList:Count, nVal:ToString()). This is legitimate dispatch, not an
-        error. MakeNETObject(value) wraps a value explicitly as netobject.
+        netobject) are backed by .NET values and have no SSL-defined ':'
+        members, so every ':' call on them reaches a native .NET member or
+        raises (e.g. sName:Length, sName:ToUpper(), dDate:Year,
+        dDate:AddDays(3), aList:Length, nVal:ToString()). Native member names
+        are case-sensitive (aList:Clone() works, aList:clone() raises). This
+        is legitimate dispatch, not an error. MakeNETObject(value) wraps a
+        value explicitly as netobject.
       tooling_note: >-
         Tools must never flag an unmatched ':' member on these types as an
         unknown-member error — a typo cannot be distinguished from a valid
@@ -1144,14 +1158,17 @@ ssl_style_guide:
           - 1-based indexing — first element is aValues[1]
           - May contain mixed value types including NIL and other arrays
           - Empty() returns .T. only when the array has no top-level elements
+          - No SSL-defined ':' members — aList:Count raises Invalid property and aList:clone() raises Invalid method; use ALen()/Len() or the native aList:Length
+          - The native aList:Clone() (capital C) copies the top level only — nested arrays are shared
           - Literal syntax {expr1, expr2, ...}; nested {{...}, {...}}
       boolean:
         summary: Logical true/false values.
         runtime_type: LOGIC
         notes:
           - Two literal values .T. and .F.
-          - Strict equality only — comparing to non-boolean types raises a runtime error
-          - .AND. and .OR. short-circuit
+          - Strict equality only — comparing to a non-boolean, non-NIL value raises a runtime error; NIL on the right does not raise
+          - The native bVal:ToString() returns "True"/"False" — use LimsString() for .T./.F. text
+          - .AND. and .OR. short-circuit; the left operand must be boolean; .OR. with a .F. left operand returns the right operand unchanged, so keep both operands boolean
           - Empty() on a boolean acts as logical negation, not an "uninitialized" check
       codeblock:
         summary: First-class callable expression value.
@@ -1166,19 +1183,21 @@ ssl_style_guide:
           - No date literal syntax — create via Today(), Now(), CToD(), DateFromNumbers(), StringToDate()
           - Supports adding/subtracting numeric day offsets and date-difference subtraction
           - Not indexable
+          - The native dVal:ToString() gives date and time in the server's format — pass a format (dVal:ToString("yyyy-MM-dd")) or use DToC()
+          - Any ':' member access on an empty date raises — guard with Empty() first
       netobject:
         summary: Dynamic wrapper for external .NET objects.
         runtime_type: OBJECT
         notes:
           - Created via MakeNETObject(), LimsNETConnect(), LimsNETTypeOf()
-          - Member access through GetProperty(), SetProperty(), IsProperty(), Invoke()
-          - IsEmpty() returns .T. only when the wrapped reference is null
+          - Only the wrapped type's native .NET members work, and their names are case-sensitive
+          - GetProperty(), SetProperty(), IsProperty(), Invoke(), IsEmpty() and ToJson() raise Invalid method on a netobject
           - AddProperty() is not supported on netobject
       number:
         summary: Single numeric type covering integers and fractional values.
         runtime_type: NUMERIC
         notes:
-          - All numbers are 64-bit floating-point — no separate integer type
+          - One numeric type for whole and fractional values; the native .NET type varies with the value (System.Int32 for whole numbers, System.Double for fractions), so the available native members differ
           - Supports arithmetic, comparison, exponentiation (^ or **), and shift (<<, >>) operators
           - Bitwise operations through _AND() / _OR() / _XOR() / _NOT() function calls
           - Scalar — does not support [] indexing
@@ -1188,7 +1207,8 @@ ssl_style_guide:
         runtime_type: OBJECT
         notes:
           - Member access via colon syntax (oVal:propName) or GetProperty/SetProperty
-          - Created via CreateLocal(), CreateUdObject(), built-in class instantiation Class{}, or user-class CreateUdObject("ClassName")
+          - Created via CreateUdObject(), CreateUdObject({{"Prop", value}}), built-in class instantiation Class{}, or user-class CreateUdObject("Category.ClassName")
+          - CreateLocal() does not create objects — it creates a local variable by name and raises with no arguments
           - XmlType property controls the root element name used by Serialize()
           - IsEmpty() always returns .F. for objects
           - Direct [] indexing of object members is not supported
@@ -1224,7 +1244,7 @@ ssl_style_guide:
     variable_naming:
       hungarian_notation_required: true
       meaningful_names: true
-      max_length: 20  # variables, 30 for functions
+      max_length: 20  # variable characters after the type prefix; 30 for procedure and function names
   security_best_practices:
     sql_injection_prevention:
       always_use_parameters: true
@@ -1357,7 +1377,13 @@ ssl_style_guide:
         - LSelect1
         - LSelectC
         - GetDataSet
-      note: Only SQLExecute supports ?name? substitution; other DB functions use positional ? with parameter arrays. In SSL v11, `LSelect` matches `LSelect1` when `aFieldList` is omitted or NIL, while `LSelectC` delegates to `LSelect`; explicit field lists are not supported.
+      at_name_supported_by:
+        - GetSSLDataset  # @name in the SQL text and in the names array, with a parallel values array
+      values_array_position:
+        third: [RunSQL, LSelect1]
+        fourth: [LSearch, LSelect, LSelectC]  # LSearch(sql,,, {v}), LSelect(sql,,, {v})
+        second: [GetDataSet]                  # GetDataSet(sql, {v})
+      note: "Three placeholder shapes: ?name? for SQLExecute only (input substitution, never an output bind); positional ? with a values array for the other DB functions; @name with name and value arrays for GetSSLDataset. LSelect and LSelectC take an aFieldList second that is not implemented: skip it, because any value raises fieldList != NULL - Not implemented yet."
       array_expansion_caveat: "Array expansion for IN clauses (?arrayVar?) requires a local variable. UDObject array properties used directly (e.g., ?oObj:ArrayProp?) cause runtime error 'The current array has more than 1 dimmension.' — copy to a local variable first. Scalar UDObject properties are not affected."
       placeholder_patterns:
       - ?name?
@@ -1398,7 +1424,10 @@ ssl_style_guide:
     object_creation:
       builtin_classes:
         syntax: ClassName{parameters}
-        note: Built-in SSL classes use curly braces for instantiation
+        note: Built-in SSL classes use curly braces for instantiation. all_classes is the full built-in class inventory; the classes in no_direct_constructor cannot be created with ClassName{}.
+        no_direct_constructor:
+          SSLExpando: "SSLExpando{} raises the compile-time error Invalid built-in class: SSLExpando — create dynamic objects with CreateUdObject()"
+          SSLBaseDictionary: "No direct constructor — use SSLStringDictionary{} or SSLIntDictionary{}"
         all_classes:
           - AzureStorage
           - BatchSupport
@@ -1441,13 +1470,13 @@ ssl_style_guide:
       user_defined_objects:
         syntax:
           - CreateUdObject()
-          - CreateUdObject("ClassName")
-          - CreateUdObject("ClassName", {params})
-        note: CreateUdObject() returns an empty dynamic object; string forms dispatch to objects defined with :CLASS
+          - CreateUdObject("Category.ClassName")
+          - CreateUdObject("Category.ClassName", {params})
+        note: "CreateUdObject() returns an empty dynamic object; string forms instantiate a :CLASS script named as Category.ClassName. A bare class name is looked up only among the default categories, so for a class in your own category it raises: There is no script with name: <name> among default categories."
         examples:
           - oDynamic := CreateUdObject();
-          - oCustom := CreateUdObject("MyClass");
-          - oCustom := CreateUdObject("MyClass", {param1, param2});
+          - oCustom := CreateUdObject("Samples.SampleTicket");
+          - oCustom := CreateUdObject("Samples.SampleTicket", {param1, param2});
       anonymous_objects:
         syntax: CreateUdObject({{"Prop", value}, {"Other", value2}})
         note: Anonymous UDO with property/value pairs
@@ -1516,7 +1545,7 @@ ssl_style_guide:
         fn: code_block
         v: variant  # any/variant — for variables whose type is unknown or changes
       exceptions:
-        loop_counters: [i, j, k, x, y, z]
+        loop_counters: [i, j, k, x, y, z]  # only when declared; prefer a script-specific name in a script that calls other scripts
         ssl_constants: [NIL, .T., .F.]
         preserve_existing_acronym_casing: true
     security:
@@ -1600,13 +1629,14 @@ ssl_style_guide:
       - rule: variable_lookup_order
         message: "Variable lookup: local scope → caller scopes (up call stack) → public variables (:PUBLIC)."
       - rule: numeric_type
-        message: "All numbers are stored as 64-bit floating-point (double). There is no separate integer type."
+        message: "SSL has one numeric type for whole and fractional values. The underlying native type varies with the value (whole numbers report System.Int32, fractions System.Double)."
     label_behavior:
       level: authoritative
       token_text: "The token text includes the word LABEL — :LABEL SKIP; produces \"LABEL SKIP\". Branch() targets must include \"LABEL\" in the string."
+      scope: "Labels are visible only within their own procedure or script body, and a target must match the stored label text exactly."
     parameter_skipping_style:
       level: style_only
-      rule: "Skipped-argument commas must be adjacent with no intervening spaces: {param1,,param3} not {param1, , param3}."
+      rule: "House style: write skipped-argument commas adjacent with no intervening spaces — {param1,,param3}, not {param1, , param3}. Both forms are valid and behave the same."
       trailing_params: "Omit trailing optional parameters rather than passing empty values."
     class_rules:
       - rule: class_member_order
@@ -1616,8 +1646,8 @@ ssl_style_guide:
         severity: info
         message: "Underscore-prefixed members (_name) are excluded from reflection — this is the SSL private convention."
       - rule: inherit_qualified_name
-        severity: warning
-        message: "Qualified :INHERIT names are common, but bare or qualified base names are accepted."
+        severity: error
+        message: ":INHERIT requires the full Category.ClassName of the parent class. A plain name is a compile-time error: Specify the full name of the class in :INHERIT : categoryname.scriptname!"
       - rule: max_params_warning
         threshold: 20
         severity: warning
@@ -1625,7 +1655,7 @@ ssl_style_guide:
     coding_standards:
       - rule: limit_public_vars
         severity: warning
-        message: ":PUBLIC variables are call-stack scoped — visible to the declaring scope and every scope it calls, for the lifetime of the declaring frame — and risk namespace pollution. Prefer :DECLARE with parameter passing."
+        message: ":PUBLIC variables are shared across the running program — any procedure can read or update them, including procedures called after the declaring procedure has returned — and anything on the call stack can overwrite them. Prefer :DECLARE with parameter passing."
       - rule: prefer_exitcase
         severity: warning
         message: ":EXITCASE is syntactically optional, but without it later :CASE expressions are still evaluated and additional matching bodies may execute. :OTHERWISE still stays skipped once any earlier case body has run. Always include :EXITCASE unless multi-match behavior is intentional."
@@ -1717,7 +1747,7 @@ ssl_style_guide:
       Recommended conventional order: :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.
     class_modules:
       - :CLASS [ClassName];
-      - :INHERIT BaseName; or :INHERIT Category.ScriptName; (optional — must precede :DECLARE)
+      - :INHERIT Category.ClassName; (optional — must precede :DECLARE; a plain name does not compile)
       - :DECLARE class_fields; (must follow :INHERIT, must precede methods)
       - :PROCEDURE regular_methods; (must precede Constructor)
       - :PROCEDURE Constructor; (must be last procedure in class)
@@ -1748,11 +1778,11 @@ ssl_style_guide:
         ssl_data_source:
           preprocessor: ssl_data_source_preprocessor
           parameters:
-            syntax: ":PARAMETERS p1 := val1, p2;"
+            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
             inline_defaults: true  # := assignment, not separate :DEFAULT
-            default_required: false  # inline defaults are optional per parameter
-            empty_parameters_error: true  # :PARAMETERS; with no params is an error
-            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1;  # a :DEFAULT is emitted only for parameters that declare one"
+            default_required: true  # every parameter must have an inline default; one without fails when the data source runs
+            empty_parameters_error: true  # :PARAMETERS; with no params is an error — omit the line instead
+            rewritten_to: ":PARAMETERS p1, p2; :DEFAULT p1, val1; :DEFAULT p2, val2;"
           comments:
             syntax: ssl  # /* text; — opened by /*, closed by the first ;
             note: >
@@ -1762,14 +1792,14 @@ ssl_style_guide:
               file type.
           structure:
             - header_comment (optional)
-            - ":PARAMETERS with optional inline := defaults"
+            - ":PARAMETERS with inline := defaults (omit the line when there are no parameters)"
             - ssl_script_body
         sql_data_source:
           preprocessor: sql_data_source_preprocessor
           parameters:
-            syntax: ":PARAMETERS p1 := val1, p2;"
+            syntax: ":PARAMETERS p1 := val1, p2 := val2;"
             inline_defaults: true
-            default_required: false
+            default_required: true  # every parameter must have an inline default; one without fails when the data source runs
             empty_parameters_error: true
           directives:
             - ":DSN := connectionName;  # database connection"
@@ -1805,7 +1835,7 @@ ssl_style_guide:
           structure:
             - header_comment (optional)
             - builder_directives (optional)
-            - ":PARAMETERS with optional inline := defaults (optional)"
+            - ":PARAMETERS with inline := defaults (optional — omit the line when there are no parameters)"
             - sql_query
           structure_note: >
             The SQL body must follow the :PARAMETERS block when one is present;
@@ -1816,6 +1846,9 @@ ssl_style_guide:
         - rule: no_default_statements_in_datasource
           severity: error
           message: "Data source files use inline := defaults in :PARAMETERS, not separate :DEFAULT statements."
+        - rule: datasource_default_required
+          severity: error
+          message: "Every parameter in a data source :PARAMETERS declaration must have an inline := default value. A parameter without one makes the data source fail when it runs: No default value for one or more parameters."
         - rule: no_flag_builder_directives
           severity: info
           message: ":DSN, :TABLENAME, :NULLASBLANK, :INVARIANTDATECOLUMNS are valid builder directives in SQL data source files."
@@ -1835,7 +1868,7 @@ ssl_style_guide:
     data_types:
       implicit: true  # SSL is loosely typed
       style_hint_reference: hungarian_notation
-      type_conversion: automatic
+      type_conversion: explicit  # no implicit conversion; only date ± number and date - date coerce. Use Val()/LimsString()
     generic_function_pattern: "[A-Za-z_][A-Za-z0-9_]*\\s*\\("  # regex for recognizing function-name tokens
   editor_support:
     level: advisory

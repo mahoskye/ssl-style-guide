@@ -94,7 +94,7 @@ optional and not a formality.
 
 - Re-read the surrounding code. Does context legitimately explain the
   pattern — file type, an `:INCLUDE`-provided declaration,
-  call-stack-scoped `:PUBLIC`, intentional multi-match fallthrough,
+  a program-wide `:PUBLIC` declared elsewhere, intentional multi-match fallthrough,
   `.NET` member passthrough?
 - Confirm the rule you cite exists in the schema, `ssl_style_rule`, or
   the guides, and that the severity you assign is the one the Severity

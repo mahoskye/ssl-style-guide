@@ -8,9 +8,9 @@
   ],
   "summary": "SSL and SQL data-source syntax, inline defaults, and builder directives.",
   "must_follow": [
-    "Invoke data sources with RunDS(\"Category.DataSourceName\", {params}); GetDSParameters returns a data source parameter definition list.",
+    "Invoke data sources with RunDS(\"Category.DataSourceName\", {values}); values bind by position in :PARAMETERS order, not by name. GetDSParameters returns the parameter names in that order.",
     "Data source files use inline :PARAMETERS defaults with := instead of separate :DEFAULT statements.",
-    "Data-source parameter defaults are optional; when wanted, express them inline with :=.",
+    "Give every data-source parameter an inline := default; a parameter without one makes the data source fail when it runs.",
     "Reference SQL data-source parameters in the SQL body as @name placeholders.",
     "Use SQL comment syntax (-- and /* ... */) in SQL data-source bodies, not the SSL comment form.",
     "SQL data-source builder directives are preprocessed before compilation and are not normal SSL keywords.",
@@ -18,6 +18,8 @@
   ],
   "avoid": [
     "Do not apply normal script :PARAMETERS/:DEFAULT layout to data-source files.",
+    "Do not pass {name, value} pairs to RunDS; each pair is bound whole to one parameter.",
+    "Do not write ?name? markers in a SQL data-source body; use @name.",
     "Do not treat builder directives as reusable SSL keywords outside data-source contexts."
   ],
   "elements": [

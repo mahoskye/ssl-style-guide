@@ -109,9 +109,10 @@ three-segment path; an `ExecFunction` root is a verified script entry
 point, never a class file. Before wrapping an unresolved name in
 `DoProc`, check `ssl_lookup` — it may be a built-in you call directly.
 Every database call matches the shape `ssl_signature` returned: the
-marker style (`?name?` for `SQLExecute` versus positional `?` for the
-LSelect family) and the slot the values occupy are copied from the
-signature, not assumed from another language's conventions.
+marker style (`?name?` for `SQLExecute`, positional `?` for the LSelect
+family and the other database functions, `@name` for `GetSSLDataset`) and
+the slot the values occupy are copied from the signature, not assumed
+from another language's conventions.
 
 **`ssl_diagnose` does not check built-in argument types.** It will
 accept `Str(sSomeString)` even though `Str` takes a number. A clean

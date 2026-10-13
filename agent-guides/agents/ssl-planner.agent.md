@@ -150,7 +150,8 @@ construct a way it changes behavior:
 - `:BEGINCASE` fallthrough — adding or moving `:EXITCASE` changes which
   case bodies run.
 - The symbol surface beyond the file's own text: `:INCLUDE` splicing and
-  call-stack-scoped `:PUBLIC` variables.
+  `:PUBLIC` variables, which any procedure in the running program can read
+  or update.
 - Data-source preprocessing — inline `:=` defaults and builder
   directives are not ordinary SSL.
 - Unqualified class-field access — adding or removing `Me:` changes

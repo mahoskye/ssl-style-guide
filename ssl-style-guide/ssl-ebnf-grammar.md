@@ -387,7 +387,7 @@ Newline ::= "\n" | "\r\n" | "\r" (* Line termination characters *)
 
 19. **Error Handling**: SSL supports both traditional error handling with `:ERROR` and structured exception handling with `:TRY`/`:CATCH`/`:FINALLY`/`:ENDTRY`.
 
-20. **Labels and Branching**: SSL supports legacy `:LABEL` and `Branch()` for label-based branching. The `StringLiteral` argument should typically be of the format `"LABEL actualLabelName"`. Structured control flow is generally preferred when it expresses the logic clearly.
+20. **Labels and Branching**: SSL supports legacy `:LABEL` and `Branch()` for label-based branching. The `StringLiteral` argument should typically be of the format `"LABEL actualLabelName"`. Labels are local to one procedure or script body, and a target must match the stored label text exactly. Structured control flow is generally preferred when it expresses the logic clearly.
 
 21. **Dynamic Code**: SSL supports dynamic code execution through dynamic execution functions and code blocks.
 
