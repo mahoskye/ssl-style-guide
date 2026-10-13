@@ -26,19 +26,26 @@ For prerequisites, setup, and the check commands, see
 
 ## Role and Interfaces
 
-**What this repository is canonical for.** SSL *language behavior*, meaning
-signatures, semantics, errors and element inventory, is defined by the
-published reference,
-[starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference).
-This repository vendors that inventory. Where the two disagree, the reference
-is fixed first. This repository is canonical for everything built on top of
-it:
+**What this repository is for.** It is a best-effort definition of the
+STARLIMS Scripting Language for tooling, built from hands-on experience and from
+excerpts of official and unofficial documentation. It is the home for every SSL
+technical document and every language and style rule developed for SSL. That
+covers:
 
-- the style rules and their severities (the schema);
-- the grammars;
+- the rule schema and its severities;
+- the grammars: EBNF, tree-sitter and TextMate;
 - the agent guides;
 - the agent definitions and skills;
 - the formats agents exchange with other tools.
+
+Other projects sync *from* here, whether or not an artifact has a consumer
+today.
+
+The per-element reference that grew out of this work (signatures, behavior,
+errors) is now published separately as
+[starlims-ssl-reference](https://github.com/mahoskye/starlims-ssl-reference).
+Its element inventory is re-vendored here (see `CONTRIBUTING.md`), so a
+correction to an element's documented behavior is made there and flows back.
 
 **Who consumes what.**
 
@@ -48,8 +55,8 @@ it:
 | `ssl-style-guide.schema.yaml` | MCP server; starlims-lsp and the VS Code extension (rule slugs) | MCP bundles it; the LSP and extension mirror its rule slugs by hand |
 | Agent guides, EBNF, machine packs | MCP server; agents | Bundled; read at run time |
 | Agent definitions and skills | Claude Code, opencode, Copilot, Codex | `tools/generate-agents.mjs`, `tools/deploy-agents.mjs`, `tools/deploy-skills.mjs` |
-| Tree-sitter grammar | `tools/style_review.py` | Compiled at run time |
-| TextMate grammar | none outside this repo | The VS Code extension ships its own (see #91) |
+| Tree-sitter grammar | Editors; the private snapshot survey (via a sibling checkout) | Grammar and queries |
+| TextMate grammar | The VS Code extension | Canonical here; the extension syncs from it (see #91) |
 
 **Agent interfaces.** Tools outside this repo can give the agents a *task
 brief* instead of a ticket. In return, the developer and reviewer report a
