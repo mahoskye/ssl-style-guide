@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 281,
+  "count": 283,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -784,7 +784,7 @@
         "ssl_data_source"
       ],
       "rule": "Limit block nesting to 4 levels.",
-      "rationale": "Deeply nested blocks are hard to follow. Early returns or a helper procedure\nflatten them.",
+      "rationale": "Deeply nested blocks are hard to follow. Early returns or a helper procedure\nflatten them. Four levels is the 95th percentile nesting depth of STARLIMS\n12's own base layer, so deeper code is unusual even in the product itself.",
       "exceptions": null,
       "examples": {
         "good": [
@@ -1408,6 +1408,51 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/check_alen_before_index.md"
+    },
+    {
+      "id": "array_index_whole_number",
+      "title": "An array index is a whole number",
+      "domain": "language",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "error",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Index an array with a whole number only: a fractional index raises at run time, and division gives a whole number only when it divides evenly, so wrap a computed index in `Integer()` or otherwise guarantee a whole number.",
+      "rationale": "SSL has one numeric type, and `/` always divides exactly (`3 / 2` is `1.5`),\nso an index computed by division is a fraction whenever the division does not\ncome out even. `aItems[2.5]` and `aItems[3 / 2]` raise at run time, while\n`aItems[4 / 2]` works, so code that indexes with a quotient can pass its tests\nand fail on the next input size. `Integer()` makes the index a whole number on\nevery input.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aItems, nMiddle, sMiddle;\n\naItems := {\"A\", \"B\", \"C\"};\nnMiddle := Integer(ALen(aItems) / 2) + 1;\nsMiddle := aItems[nMiddle];\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aItems, sMiddle;\naItems := {\"A\", \"B\", \"C\"};\nsMiddle := aItems[ALen(aItems) / 2];\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "arrays"
+      ],
+      "related_elements": [
+        "Integer",
+        "divide",
+        "array"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/array_index_whole_number.md"
     },
     {
       "id": "no_nil_target_array",
@@ -2093,7 +2138,7 @@
         "class"
       ],
       "rule": "Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.",
-      "rationale": "Most procedures are short. In a production snapshot the 75th percentile of\nprocedure length was about 35 code lines and the 95th about 100, so a\nprocedure past 80 code lines is near the top of normal. Length alone is not a\ndefect, but a long procedure often does several things, such as validating\ninput, reading data, applying a policy and writing a result, and each of those\nis easier to read, test and change as its own procedure (refactoring guide,\n§6.1 Extract Procedure).",
+      "rationale": "Most procedures are short. In STARLIMS 12's own base layer three procedures in\nfour have at most 32 code lines, and the 95th percentile is about 83, so a\nprocedure past 80 code lines is among the longest one in twenty of the\nproduct's own procedures. Class methods run shorter still (95th percentile 61). Length alone is not a\ndefect, but a long procedure often does several things, such as validating\ninput, reading data, applying a policy and writing a result, and each of those\nis easier to read, test and change as its own procedure (refactoring guide,\n§6.1 Extract Procedure).",
       "exceptions": "A procedure that does one thing at length, such as a single long SQL statement\nor a linear sequence of steps that only make sense together, stays as it is.\nNever split a procedure only to get under the number, and never collapse\ndistinct responsibilities or remove demonstrated guards to shorten it.",
       "examples": {
         "good": [
@@ -3736,6 +3781,52 @@
       "source": "rules/language/bare_logical_operator.md"
     },
     {
+      "id": "parenthesize_negated_comparison",
+      "title": "Parenthesize a negated comparison",
+      "domain": "language",
+      "status": "active",
+      "level": "authoritative",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Write a negated comparison as `.NOT. (a = b)`: `.NOT.` binds before the comparison operators, so `.NOT. a = b` negates `a` alone.",
+      "rationale": "`.NOT.` applies to the operand right after it, before any comparison is\nevaluated. `.NOT. sCode = \"AB\"` therefore means `(.NOT. sCode) = \"AB\"`: on a\nstring, `.NOT.` raises at run time (\"the operator/method: .NOT. is not\nimplemented on type: SSLString\"), and on a logical it silently computes\n`(.NOT. b) = x` instead of the negated comparison. Parentheses make the\nexpression mean what it says.\n\n`!=` and `#` compare exactly, like `==`, so `sCode != \"AB\"` is the same as\n`.NOT. (sCode == \"AB\")`. Neither is a drop-in replacement for\n`.NOT. (sCode = \"AB\")`, which negates `=`'s prefix match.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sCode, bOtherPrefix, bOtherCode;\n\nsCode := \"ABC\";\n\n/* Deliberate prefix test, .T. unless sCode starts with AB;\nbOtherPrefix := .NOT. (sCode = \"AB\");\nbOtherCode := .NOT. (sCode == \"AB\");\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sCode, bOtherPrefix;\nsCode := \"ABC\";\nbOtherPrefix := .NOT. sCode = \"AB\";\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "operators"
+      ],
+      "related_elements": [
+        "not",
+        "equals",
+        "strict-equals",
+        "not-equals"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/parenthesize_negated_comparison.md"
+    },
+    {
       "id": "script_size_review",
       "title": "A large server script is a prompt to check its responsibilities",
       "domain": "language",
@@ -3745,9 +3836,9 @@
       "applies_to": [
         "server_script"
       ],
-      "rule": "Treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.",
-      "rationale": "Most server scripts are small. In a production snapshot the 75th percentile of\nscript size was about 35 code lines and the 95th about 115, so a script past\n400 code lines or 12 local procedures is well beyond the top of normal and\nlikely holds more than one responsibility. Regions that group related\nprocedures by responsibility make such a script navigable without changing how\nit runs. Moving a responsibility to its own script has a cost: a call through\n`ExecFunction` resolves its string target at run time and crosses into a\nseparate deployment unit, where a local `DoProc` stays inside the file. Pay\nthat cost only for a responsibility that is reusable on its own or owned\nindependently.",
-      "exceptions": "The numbers are review triggers, not limits. Never split a script only to get\nunder them, and never collapse distinct responsibilities or remove\ndemonstrated guards to shorten it.",
+      "rule": "Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.",
+      "rationale": "Most server scripts are small. In STARLIMS 12's own base layer the median\nscript has 21 code lines, the 95th percentile about 200, and most scripts have\nno local procedures at all; the few large scripts are nearly always broken\ninto procedures. That shape, up to about 200 code lines with zero or one local\nprocedure, is the one to aim for. Code written on top of the product tends to\nrun larger, so the review trigger is deliberately generous: a script past 400\ncode lines or 12 local procedures is well beyond the product's own top of\nnormal and likely holds more than one responsibility. Regions that group related\nprocedures by responsibility make such a script navigable without changing how\nit runs. Moving a responsibility to its own script has a cost: a call through\n`ExecFunction` resolves its string target at run time and crosses into a\nseparate deployment unit, where a local `DoProc` stays inside the file. Pay\nthat cost only for a responsibility that is reusable on its own or owned\nindependently.",
+      "exceptions": "The 200-line, one-procedure shape is a target, and the 400-line,\n12-procedure numbers are review triggers; neither is a limit. Never split a script only to get\nunder them, and never collapse distinct responsibilities or remove\ndemonstrated guards to shorten it.",
       "examples": {
         "good": [
           {

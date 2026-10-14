@@ -12,7 +12,8 @@
     "Index collections on .NET objects reached via colon member access (for example dataSet:Tables[0]) as 0-based.",
     "Declare array variables before use and initialize arrays before appending.",
     "Use adjacent commas with no spaces for skipped optional parameters.",
-    "Check ALen before reading an index from dynamic input."
+    "Check ALen before reading an index from dynamic input.",
+    "Index an array with a whole number only: a fractional index raises at run time, and division gives a whole number only when it divides evenly, so wrap a computed index in Integer() or otherwise guarantee a whole number."
   ],
   "avoid": [
     "Do not pass NIL as the target array to mutating array helpers."

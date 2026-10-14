@@ -11,7 +11,8 @@
     "= assignment: assignment is := (plus +=, -=, ...); x = y is a comparison expression, never an assignment.",
     "Use == for exact string equality; = is prefix-style for strings.",
     "Use spaces around assignment, arithmetic, comparison, and logical operators.",
-    "Prefer no spaces around : in member access even though SSL accepts spaced forms."
+    "Prefer no spaces around : in member access even though SSL accepts spaced forms.",
+    "Write a negated comparison as .NOT. (a = b): .NOT. binds before the comparison operators, so .NOT. a = b negates a alone."
   ],
   "avoid": [],
   "elements": [

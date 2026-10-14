@@ -21,10 +21,10 @@ schema:
 verification:
   basis: observed
   note: >-
-    The threshold is provisional: it sits near the top of the procedure
-    lengths measured in a production snapshot (75th percentile about 35 code
-    lines, 95th about 100) and will be replaced once a size survey of the v12
-    base layer is available. The trigger restates the server-script style
+    Confirmed on STARLIMS 12: the threshold sits at the 95th percentile of
+    procedure length in STARLIMS 12's own base layer (about 83 code lines;
+    the 75th percentile is 32, the 90th 57 and the 99th 162), and class
+    methods run shorter (95th percentile 61). The trigger restates the server-script style
     guide's "line count and procedure count are review triggers, not
     acceptance limits" with a number. No starlims-lsp diagnostic counts
     procedure lines yet, so a reviewer applies it.
@@ -32,9 +32,10 @@ verification:
 
 ## Rationale
 
-Most procedures are short. In a production snapshot the 75th percentile of
-procedure length was about 35 code lines and the 95th about 100, so a
-procedure past 80 code lines is near the top of normal. Length alone is not a
+Most procedures are short. In STARLIMS 12's own base layer three procedures in
+four have at most 32 code lines, and the 95th percentile is about 83, so a
+procedure past 80 code lines is among the longest one in twenty of the
+product's own procedures. Class methods run shorter still (95th percentile 61). Length alone is not a
 defect, but a long procedure often does several things, such as validating
 input, reading data, applying a policy and writing a result, and each of those
 is easier to read, test and change as its own procedure (refactoring guide,

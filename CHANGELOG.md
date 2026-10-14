@@ -23,14 +23,30 @@ Entries before this file existed are reconstructed from the release commits.
 - Rule records `procedure_length_review` and `script_size_review` (advisory,
   info, applied by the reviewer): a procedure or class method over 80 code
   lines, or a server script over 400 code lines or 12 local procedures, is a
-  prompt to check its responsibilities, not a limit. The thresholds are
-  provisional. The server-script style guide and the refactoring guide's
-  Extract Procedure section state them.
+  prompt to check its responsibilities, not a limit. `script_size_review`
+  also gives the shape to aim for: up to about 200 code lines with at most
+  one local procedure. The thresholds are confirmed on STARLIMS 12 (the
+  procedure trigger is its base layer's 95th percentile, about 83 code
+  lines; the ideal script is the base layer's typical shape). The
+  server-script style guide and the refactoring guide's Extract Procedure
+  section state them.
 - Schema: `lints.style_rules.procedure_length_review` (80) and
   `lints.style_rules.script_size_review` (`max_code_lines: 400`,
-  `max_local_procedures: 12`).
+  `max_local_procedures: 12`, `ideal_code_lines: 200`,
+  `ideal_local_procedures: 1`).
+- Rule record `parenthesize_negated_comparison` (authoritative, warning,
+  applied by the reviewer): write a negated comparison as `.NOT. (a = b)`;
+  `.NOT.` binds before the comparison operators, so `.NOT. s = "AB"` raises
+  on a string and computes `(.NOT. b) = x` on a logical. `!=` and `#` compare
+  exactly, so they do not replace `.NOT. (s = x)`.
+- Rule record `array_index_whole_number` (authoritative, error, applied by
+  the reviewer): a fractional array index raises at run time, and division
+  gives a whole number only when it divides evenly, so wrap a computed index
+  in `Integer()`.
 
 ### Changed
+- `limit_block_depth`: its rationale records that 4 is the 95th percentile
+  nesting depth of STARLIMS 12's base layer.
 - Severities decided by the style guide (the LSP follows): `limit_public_vars` and `max_params_warning` are info, `global_assignment` is warning.
 - `code_block_structure` is an error: a code block with no bound variable
   does not compile.
