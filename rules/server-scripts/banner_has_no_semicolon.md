@@ -2,7 +2,7 @@
 id: banner_has_no_semicolon
 title: No semicolon inside the banner
 domain: server-scripts
-status: active
+status: removed
 level: authoritative
 severity: error
 applies_to: [server_script, class]
@@ -11,44 +11,18 @@ rule: >-
   anywhere inside it.
 categories: [module-structure]
 enforced_by: [lsp:diag.comment_text_after_terminator]
-schema:
-  - path: documentation.file_banner.rules
-    form: text
-    message: >-
-      The banner is a single SSL comment, so it ends at the first semicolon.
-      No semicolon may appear inside it.
 verification:
   basis: reference
   note: >-
-    Kept from the server-script baseline's banner bullets. The schema's
-    documentation.file_banner.rules says the same in words.
+    Kept from the server-script baseline's banner bullets. Removed: a banner
+    follows the same comment rules as every other comment, so this record
+    folded into no_semicolon_in_comment_text, which carries its banner
+    example. Its documentation.file_banner.rules entry was dropped, since
+    comments.rules states the rule for every comment.
 ---
 
 ## Rationale
 
 An SSL comment runs from `/*` to the first `;`. A semicolon inside the
 banner ends the comment there, and the rest of the banner is read as code.
-
-## Examples
-
-### Good
-
-```ssl
-/* ********************************************************************************
-Description.. : Records a status change for one sample.
-Returns...... : {.T., NIL} on success
-Date......... : 2026-10-13
-********************************************************************************;
-:RETURN {.T., NIL};
-```
-
-### Bad
-
-```ssl
-/* ********************************************************************************
-Description.. : Records a status change; for one sample.
-Returns...... : {.T., NIL} on success
-Date......... : 2026-10-13
-********************************************************************************;
-:RETURN {.T., NIL};
-```
+See `no_semicolon_in_comment_text`, which now states this for every comment.

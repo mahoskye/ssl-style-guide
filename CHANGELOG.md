@@ -23,6 +23,12 @@ Entries before this file existed are reconstructed from the release commits.
 
 ### Changed
 - Severities decided by the style guide (the LSP follows): `limit_public_vars` and `max_params_warning` are info, `global_assignment` is warning.
+- `code_block_structure` is an error: a code block with no bound variable
+  does not compile.
+- `no_semicolon_in_comment_text` covers every comment, banners and doc
+  blocks included, with a banner example; its rationale says what the
+  stranded text does (usually a syntax error, occasionally valid code such as
+  a member access that runs silently).
 - MCP: pins starlims-lsp v0.26.0. The CLI contract is unchanged, but
   `ssl_format` output changes for most files: brackets and wrapped declaration
   lists align their contents, a blank line separates logical sections, runs
@@ -84,6 +90,12 @@ Entries before this file existed are reconstructed from the release commits.
   `default_on_declare_line` reports.
 - The skill-example check passes `--` before each file and reports a usage
   error from the binary instead of an unparseable result.
+
+### Removed
+- Rule record `banner_has_no_semicolon` (now `status: removed`): a banner
+  follows the general comment rule, `no_semicolon_in_comment_text`. Its
+  schema entry under `documentation.file_banner.rules` is dropped, since
+  `comments.rules` states the rule for every comment.
 
 ## Schema 1.9.0, MCP 1.15.2 — 2026-10-13
 

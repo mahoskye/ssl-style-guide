@@ -449,19 +449,31 @@
         "ssl_data_source"
       ],
       "rule": "Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.",
-      "rationale": "An SSL comment runs from `/*` to the first `;`. A semicolon written as\npunctuation inside the comment ends it there, and the rest of the line runs\nas code.",
+      "rationale": "An SSL comment runs from `/*` to the first `;`, whatever kind of comment it\nis: a one-line note, a file banner, a procedure doc block, or a section or\nregion comment. There is no separate rule for any of them. A semicolon\nwritten as punctuation inside the text ends the comment there, and the rest\nof the text is read as code.\n\nUsually that text is not valid SSL, since two bare words in a row never form\na statement, and the script does not compile. Occasionally it reads as valid\ncode and runs silently: a stranded doc line such as `Parameters: none;` is a\nmember access on an undeclared variable, so nothing points at the broken\ncomment.",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "ssl",
             "code": ":DECLARE nCount;\n\n/* Set the count, then reset it;\nnCount := 0;\n"
+          },
+          {
+            "lang": "ssl",
+            "code": "/* ********************************************************************************\nDescription.. : Records a status change for one sample.\nReturns...... : {.T., NIL} on success\nDate......... : 2026-10-13\n********************************************************************************;\n:RETURN {.T., NIL};\n"
           }
         ],
         "bad": [
           {
             "lang": "ssl",
             "code": ":DECLARE nCount;\n/* Set the count; then reset it;\nnCount := 0;\n"
+          },
+          {
+            "lang": "ssl",
+            "code": "/* ********************************************************************************\nDescription.. : Records a status change; for one sample.\nReturns...... : {.T., NIL} on success\nDate......... : 2026-10-13\n********************************************************************************;\n:RETURN {.T., NIL};\n"
+          },
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nCount;\n/*\nResets the count;\nParameters: none\n;\nnCount := 0;\n"
           }
         ]
       },
@@ -3278,14 +3290,14 @@
       "domain": "language",
       "status": "active",
       "level": "authoritative",
-      "severity": "warning",
+      "severity": "error",
       "applies_to": [
         "server_script",
         "class",
         "ssl_data_source"
       ],
       "rule": "Write a code block as `{|params| expression}`, with at least one parameter and a single-expression body.",
-      "rationale": "A code block is one expression with its bound variables. It has no statement\nlist, and it needs at least one bound variable.",
+      "rationale": "A code block is one expression with its bound variables. It has no statement\nlist, and it needs at least one bound variable: a code block with none, such\nas `{|| 1}`, does not compile.",
       "exceptions": null,
       "examples": {
         "good": [
@@ -7673,7 +7685,7 @@
       "id": "banner_has_no_semicolon",
       "title": "No semicolon inside the banner",
       "domain": "server-scripts",
-      "status": "active",
+      "status": "removed",
       "level": "authoritative",
       "severity": "error",
       "applies_to": [
@@ -7681,21 +7693,11 @@
         "class"
       ],
       "rule": "The banner is one comment, so it ends at the first `;`. Never put `;` anywhere inside it.",
-      "rationale": "An SSL comment runs from `/*` to the first `;`. A semicolon inside the\nbanner ends the comment there, and the rest of the banner is read as code.",
+      "rationale": "An SSL comment runs from `/*` to the first `;`. A semicolon inside the\nbanner ends the comment there, and the rest of the banner is read as code.\nSee `no_semicolon_in_comment_text`, which now states this for every comment.",
       "exceptions": null,
       "examples": {
-        "good": [
-          {
-            "lang": "ssl",
-            "code": "/* ********************************************************************************\nDescription.. : Records a status change for one sample.\nReturns...... : {.T., NIL} on success\nDate......... : 2026-10-13\n********************************************************************************;\n:RETURN {.T., NIL};\n"
-          }
-        ],
-        "bad": [
-          {
-            "lang": "ssl",
-            "code": "/* ********************************************************************************\nDescription.. : Records a status change; for one sample.\nReturns...... : {.T., NIL} on success\nDate......... : 2026-10-13\n********************************************************************************;\n:RETURN {.T., NIL};\n"
-          }
-        ]
+        "good": [],
+        "bad": []
       },
       "enforced_by": [
         "lsp:diag.comment_text_after_terminator"
@@ -7704,9 +7706,7 @@
         "module-structure"
       ],
       "related_elements": [],
-      "schema_paths": [
-        "documentation.file_banner.rules"
-      ],
+      "schema_paths": [],
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/banner_has_no_semicolon.md"

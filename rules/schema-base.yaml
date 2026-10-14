@@ -180,7 +180,6 @@ documentation:
       - !rule file_banner_continuation_alignment
       - !rule file_banner_modified_entries
       - !rule generated_banner_omits_author
-      - !rule banner_has_no_semicolon
 module_structure:
   data_source_modules:
     level: authoritative

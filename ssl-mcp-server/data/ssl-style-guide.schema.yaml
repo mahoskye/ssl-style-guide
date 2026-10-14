@@ -1757,7 +1757,6 @@ ssl_style_guide:
         - "Continuation lines align under the first character after the colon and space."
         - "Record later changes as new lines below Date in the same style: Modified..... : YYYY-MM-DD [initials] - [change]. Never rewrite an earlier entry."
         - "Generated code omits the Author line rather than inventing initials. A banner without Author is complete in that case."
-        - "The banner is a single SSL comment, so it ends at the first semicolon. No semicolon may appear inside it."
     # END GENERATED documentation.file_banner
     code_comments:
       style: SSL_comments  # /* comment; format

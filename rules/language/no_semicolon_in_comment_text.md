@@ -27,14 +27,28 @@ verification:
     text; the first semicolon ends the comment.", the skills' "Never place ;
     inside comment body text", the agent guide's quick start rule 10, and the
     schema's comments.rules entry. The foundation bullet's second sentence
-    (end every comment with ; alone) is no_c_style_comment_closer.
+    (end every comment with ; alone) is no_c_style_comment_closer. Also
+    merged: banner_has_no_semicolon (now removed), whose banner example is
+    the second Good and Bad fence here, and its schema entry under
+    documentation.file_banner.rules, which comments.rules already covers.
+    Checked with starlims-lsp v0.26.0: the stranded line `Parameters: none`
+    in the third Bad fence draws no syntax error, only the early-termination
+    diagnostic and an undeclared-variable warning.
 ---
 
 ## Rationale
 
-An SSL comment runs from `/*` to the first `;`. A semicolon written as
-punctuation inside the comment ends it there, and the rest of the line runs
-as code.
+An SSL comment runs from `/*` to the first `;`, whatever kind of comment it
+is: a one-line note, a file banner, a procedure doc block, or a section or
+region comment. There is no separate rule for any of them. A semicolon
+written as punctuation inside the text ends the comment there, and the rest
+of the text is read as code.
+
+Usually that text is not valid SSL, since two bare words in a row never form
+a statement, and the script does not compile. Occasionally it reads as valid
+code and runs silently: a stranded doc line such as `Parameters: none;` is a
+member access on an undeclared variable, so nothing points at the broken
+comment.
 
 ## Examples
 
@@ -47,10 +61,37 @@ as code.
 nCount := 0;
 ```
 
+```ssl
+/* ********************************************************************************
+Description.. : Records a status change for one sample.
+Returns...... : {.T., NIL} on success
+Date......... : 2026-10-13
+********************************************************************************;
+:RETURN {.T., NIL};
+```
+
 ### Bad
 
 ```ssl
 :DECLARE nCount;
 /* Set the count; then reset it;
+nCount := 0;
+```
+
+```ssl
+/* ********************************************************************************
+Description.. : Records a status change; for one sample.
+Returns...... : {.T., NIL} on success
+Date......... : 2026-10-13
+********************************************************************************;
+:RETURN {.T., NIL};
+```
+
+```ssl
+:DECLARE nCount;
+/*
+Resets the count;
+Parameters: none
+;
 nCount := 0;
 ```
