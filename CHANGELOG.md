@@ -122,12 +122,25 @@ Entries before this file existed are reconstructed from the release commits.
   in the checkout, the catalog check is skipped with a warning naming the
   checkout's version and the pin (a failure with `--strict-severity`).
   `--lsp-catalog <dir>` still reads the directory as it is (#126).
+- TextMate grammar: label names, joined (`:LABELName;`) and spaced
+  (`:LABEL Name;`, `:LABEL Name Alias;`), are scoped `entity.name.label.ssl`;
+  the exact access modifiers `/*@private;` and `/*@protected;` are scoped
+  `storage.modifier.access.ssl` inside the comment; a code block with no bound
+  variable (`{|| ...}`) is `invalid.illegal.ssl`. The built-in function and
+  class lists already match the element inventory (330 functions, 29
+  classes); `check:consistency` now also checks the class list against the
+  element inventory (#127).
 
 ### Removed
 - Rule record `banner_has_no_semicolon` (now `status: removed`): a banner
   follows the general comment rule, `no_semicolon_in_comment_text`. Its
   schema entry under `documentation.file_banner.rules` is dropped, since
   `comments.rules` states the rule for every comment.
+
+### Fixed
+- TextMate grammar: a code block's parameter list ends at its second `|`.
+  Before, the parameter scope never closed, and everything after the first
+  code block in a file was scoped as code-block parameters (#127).
 
 ## Schema 1.9.0, MCP 1.15.2 — 2026-10-13
 

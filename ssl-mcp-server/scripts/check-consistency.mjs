@@ -136,6 +136,10 @@ const elementFunctions = loadedData.elements
   .filter((element) => element.type === 'function')
   .map((element) => element.name)
   .sort();
+const elementClasses = loadedData.elements
+  .filter((element) => element.type === 'class')
+  .map((element) => element.name)
+  .sort();
 
 // Counts match the published ssl-docs reference (../ssl-docs/content/reference/).
 assertEqual(highlightFunctions.length, 330, 'Tree-sitter built-in function count');
@@ -144,11 +148,13 @@ assertEqual(highlightClasses.length, 29, 'Tree-sitter built-in class count');
 assertEqual(textMateClasses.length, 29, 'TextMate built-in class count');
 assertEqual(schemaBuiltinClasses.length, 29, 'Schema built-in class count');
 assertEqual(elementFunctions.length, 330, 'Element inventory function count');
+assertEqual(elementClasses.length, 29, 'Element inventory class count');
 
 assertArrayEqual(highlightFunctions, textMateFunctions, 'Tree-sitter/TextMate function inventory');
 assertArrayEqual(highlightFunctions, elementFunctions, 'Tree-sitter/element function inventory');
 assertArrayEqual(highlightClasses, textMateClasses, 'Tree-sitter/TextMate class inventory');
 assertArrayEqual(schemaBuiltinClasses, textMateClasses, 'Schema/TextMate built-in classes');
+assertArrayEqual(elementClasses, textMateClasses, 'Element/TextMate built-in classes');
 
 if (!highlights.includes('Built-in SSL function inventory (synchronized with TextMate highlighting)')) {
   fail('Tree-sitter highlights comment drifted from the synchronized inventory wording.');

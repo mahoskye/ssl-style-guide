@@ -27,6 +27,9 @@
       "include": "#functional-region"
     },
     {
+      "include": "#label-declaration"
+    },
+    {
       "include": "#keywords-colon"
     },
     {
@@ -77,9 +80,23 @@
   ],
   "repository": {
     "comment": {
-      "name": "comment.block.ssl",
-      "begin": "/\\*",
-      "end": ";"
+      "patterns": [
+        {
+          "comment": "Access modifiers: the exact lowercase forms /*@private; and /*@protected; set procedure visibility.",
+          "match": "(/\\*)(@(?:private|protected))(;)",
+          "name": "comment.block.ssl",
+          "captures": {
+            "2": {
+              "name": "storage.modifier.access.ssl"
+            }
+          }
+        },
+        {
+          "name": "comment.block.ssl",
+          "begin": "/\\*",
+          "end": ";"
+        }
+      ]
     },
     "string-double": {
       "name": "string.quoted.double.ssl",
@@ -121,7 +138,26 @@
     },
     "keywords-colon": {
       "name": "keyword.control.ssl",
-      "match": ":(?:LABEL(?:\\b[\\t ]+[A-Za-z_][A-Za-z0-9_]*(?:[\\t ]+[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*)|BEGINCASE|BEGININLINECODE|CASE|CATCH|CLASS|DECLARE|DEFAULT|ELSE|ENDCASE|ENDIF|ENDINLINECODE|ENDPROC|ENDREGION|ENDTRY|ENDWHILE|ERROR|EXITCASE|EXITFOR|EXITWHILE|FINALLY|FOR|IF|INCLUDE|INHERIT|LOOP|NEXT|OTHERWISE|PARAMETERS|PROCEDURE|PUBLIC|REGION|RESUME|RETURN|STEP|TO|TRY|WHILE)\\b"
+      "match": ":(?:LABEL|BEGINCASE|BEGININLINECODE|CASE|CATCH|CLASS|DECLARE|DEFAULT|ELSE|ENDCASE|ENDIF|ENDINLINECODE|ENDPROC|ENDREGION|ENDTRY|ENDWHILE|ERROR|EXITCASE|EXITFOR|EXITWHILE|FINALLY|FOR|IF|INCLUDE|INHERIT|LOOP|NEXT|OTHERWISE|PARAMETERS|PROCEDURE|PUBLIC|REGION|RESUME|RETURN|STEP|TO|TRY|WHILE)\\b"
+    },
+    "label-declaration": {
+      "comment": "Labels: joined :LABELName; and spaced :LABEL Name; (extra words, as in :LABEL Name Alias;, are part of the label).",
+      "begin": "(:LABEL)(?:([A-Za-z_][A-Za-z0-9_]*)\\b|(?=\\s+[A-Za-z_]))",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.ssl"
+        },
+        "2": {
+          "name": "entity.name.label.ssl"
+        }
+      },
+      "end": "(?=[^\\sA-Za-z0-9_])",
+      "patterns": [
+        {
+          "name": "entity.name.label.ssl",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+        }
+      ]
     },
     "identifier": {
       "name": "variable.other.ssl",
@@ -171,42 +207,67 @@
       ]
     },
     "code-block": {
-      "begin": "(\\{)(\\|)",
-      "beginCaptures": {
-        "1": {
-          "name": "punctuation.section.codeblock.begin.ssl"
-        },
-        "2": {
-          "name": "punctuation.separator.parameters.ssl"
-        }
-      },
-      "end": "\\}",
-      "endCaptures": {
-        "0": {
-          "name": "punctuation.section.codeblock.end.ssl"
-        }
-      },
       "patterns": [
         {
-          "begin": "(?<=\\|)",
-          "end": "(\\|)",
-          "endCaptures": {
+          "comment": "A code block needs at least one bound variable: {|| ...} does not compile.",
+          "begin": "(\\{)(\\|\\s*\\|)",
+          "beginCaptures": {
             "1": {
-              "name": "punctuation.separator.parameters.ssl"
+              "name": "punctuation.section.codeblock.begin.ssl"
+            },
+            "2": {
+              "name": "invalid.illegal.ssl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.codeblock.end.ssl"
             }
           },
           "patterns": [
             {
-              "name": "variable.parameter.ssl",
-              "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+              "include": "#expressions"
             }
-          ]
+          ],
+          "name": "meta.code-block.ssl"
         },
         {
-          "include": "#expressions"
+          "comment": "Code block {|params| expression}: the parameter list ends at the second bar.",
+          "begin": "(\\{)(\\|)([^|]*)(\\|)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.section.codeblock.begin.ssl"
+            },
+            "2": {
+              "name": "punctuation.separator.parameters.ssl"
+            },
+            "3": {
+              "patterns": [
+                {
+                  "name": "variable.parameter.ssl",
+                  "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+                }
+              ]
+            },
+            "4": {
+              "name": "punctuation.separator.parameters.ssl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.codeblock.end.ssl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#expressions"
+            }
+          ],
+          "name": "meta.code-block.ssl"
         }
-      ],
-      "name": "meta.code-block.ssl"
+      ]
     },
     "array-literal": {
       "begin": "\\{",
