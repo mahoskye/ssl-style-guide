@@ -4,7 +4,7 @@ title: Never assign to a global
 domain: server-scripts
 status: active
 level: authoritative
-severity: error
+severity: warning
 applies_to: [server_script, class]
 rule: >-
   Never assign to a global; nothing makes it read-only, and every routine

@@ -4,7 +4,7 @@ title: Keep parameter lists short
 domain: language
 status: active
 level: advisory
-severity: warning
+severity: info
 applies_to: [server_script, class]
 rule: >-
   Keep procedures to at most 8 parameters; more than 20 parameters on a

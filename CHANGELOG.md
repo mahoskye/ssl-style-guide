@@ -22,6 +22,7 @@ Entries before this file existed are reconstructed from the release commits.
   (1) and `formatting.blank_lines.max_consecutive` (2) (#124, #125).
 
 ### Changed
+- Severities decided by the style guide (the LSP follows): `limit_public_vars` and `max_params_warning` are info, `global_assignment` is warning.
 - MCP: pins starlims-lsp v0.26.0. The CLI contract is unchanged, but
   `ssl_format` output changes for most files: brackets and wrapped declaration
   lists align their contents, a blank line separates logical sections, runs

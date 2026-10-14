@@ -1896,7 +1896,7 @@
       "domain": "language",
       "status": "active",
       "level": "advisory",
-      "severity": "warning",
+      "severity": "info",
       "applies_to": [
         "server_script",
         "class"
@@ -2030,7 +2030,7 @@
       "domain": "language",
       "status": "active",
       "level": "advisory",
-      "severity": "warning",
+      "severity": "info",
       "applies_to": [
         "server_script",
         "class"
@@ -5652,7 +5652,7 @@
       "domain": "server-scripts",
       "status": "active",
       "level": "authoritative",
-      "severity": "error",
+      "severity": "warning",
       "applies_to": [
         "server_script",
         "class"

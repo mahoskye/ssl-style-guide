@@ -1695,7 +1695,7 @@ ssl_style_guide:
     # BEGIN GENERATED lints.coding_standards: edit rules/ and run bun tools/generate-rules.mjs
     coding_standards:
       - rule: limit_public_vars
-        severity: warning
+        severity: info
         message: ":PUBLIC variables are shared across the running program — any procedure can read or update them, including procedures called after the declaring procedure has returned — and anything on the call stack can overwrite them. Prefer :DECLARE with parameter passing."
       - rule: prefer_exitcase
         severity: warning
