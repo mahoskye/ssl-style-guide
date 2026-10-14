@@ -42,6 +42,7 @@ schema's `no_direct_constructor`.
 
 ```ssl
 :DECLARE oEmail;
+
 oEmail := Email{};
 ```
 

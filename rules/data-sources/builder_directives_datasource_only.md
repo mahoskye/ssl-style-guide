@@ -36,6 +36,7 @@ script, call the data source with `RunDS`.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := RunDS("Samples.ByStatus", {"A"});
 ```
 

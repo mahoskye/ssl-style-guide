@@ -33,7 +33,9 @@ that mixes them shows a block structure that is not the real one.
 ```ssl
 :PROCEDURE Show;
 	:DECLARE nCount;
+
 	nCount := 0;
+
 	:RETURN nCount;
 :ENDPROC;
 ```

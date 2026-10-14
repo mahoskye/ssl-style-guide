@@ -28,6 +28,7 @@ with zero says the same thing less plainly.
 
 ```ssl
 :DECLARE sStatus, bFound;
+
 sStatus := "Logged";
 bFound := "Log" $ sStatus;
 ```

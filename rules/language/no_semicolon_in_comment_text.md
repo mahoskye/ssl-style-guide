@@ -42,6 +42,7 @@ as code.
 
 ```ssl
 :DECLARE nCount;
+
 /* Set the count, then reset it;
 nCount := 0;
 ```

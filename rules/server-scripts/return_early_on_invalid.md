@@ -30,11 +30,13 @@ rejection visible where it happens.
 ```ssl
 :PROCEDURE CloseOrder;
 	:PARAMETERS sOrdNo;
+
 	:IF Empty(sOrdNo);
 		:RETURN {.F., {"MISSING_ORDER", "An order number is required."}};
 	:ENDIF;
 
 	SQLExecute("UPDATE ordtask SET status = 'Done' WHERE ordno = ?sOrdNo?");
+
 	:RETURN {.T., NIL};
 :ENDPROC;
 ```

@@ -38,6 +38,7 @@ list, and it needs at least one bound variable.
 
 ```ssl
 :DECLARE fnDouble;
+
 fnDouble := {|x| x * 2};
 ```
 

@@ -211,7 +211,7 @@ bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --str
 ```
 
 CI does not pass `--strict-severity` yet: six records still disagree with
-starlims-lsp v0.25.0.
+starlims-lsp v0.26.0.
 
 | Record | Record severity | LSP diagnostic | LSP default |
 |--------|-----------------|----------------|-------------|

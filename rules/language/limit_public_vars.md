@@ -43,7 +43,9 @@ everything that runs after it, so any of that code can change it.
 :PROCEDURE Total;
 	:PARAMETERS nBase;
 	:DECLARE nTotal;
+
 	nTotal := nBase + 1;
+
 	:RETURN nTotal;
 :ENDPROC;
 ```

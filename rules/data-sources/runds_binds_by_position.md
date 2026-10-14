@@ -42,6 +42,7 @@ ignored.
 
 ```ssl
 :DECLARE oResult;
+
 oResult := RunDS("Samples.ByStatus", {"P", 25});
 ```
 

@@ -35,7 +35,9 @@ reads an empty string instead.
 ```ssl
 :PROCEDURE CurrentUser;
 	:DECLARE sUser;
+
 	sUser := MYUSERNAME;
+
 	:RETURN sUser;
 :ENDPROC;
 ```

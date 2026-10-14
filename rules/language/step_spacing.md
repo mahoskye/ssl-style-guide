@@ -34,7 +34,9 @@ rather than as the `:STEP` keyword.
 
 ```ssl
 :DECLARE i, nTotal;
+
 nTotal := 0;
+
 :FOR i := 1 :TO 9 :STEP 2;
 	nTotal += i;
 :NEXT;

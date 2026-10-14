@@ -35,6 +35,7 @@ packed `SELECT` list reads left to right like prose.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT ordno, testcode, status
     FROM ordtask

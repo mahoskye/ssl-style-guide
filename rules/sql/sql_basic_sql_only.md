@@ -41,6 +41,7 @@ fine; rewriting it is a separate decision.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT ordno, COUNT(*) AS ntests

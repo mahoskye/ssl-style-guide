@@ -32,6 +32,7 @@ accident.
 
 ```ssl
 :DECLARE aRows;
+
 /* Codes differ only by case, so this match must be case-sensitive;
 aRows := SQLExecute("
     SELECT ordno

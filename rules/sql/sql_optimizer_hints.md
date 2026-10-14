@@ -41,6 +41,7 @@ back.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT /*+ INDEX(t ix_status) */ ordno

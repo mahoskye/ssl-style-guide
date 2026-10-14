@@ -47,6 +47,7 @@ Recalculate the totals before the report runs.
 The report reads them without checking.
 ;
 :DECLARE nTotal;
+
 nTotal := 0;
 ```
 

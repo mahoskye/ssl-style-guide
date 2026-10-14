@@ -36,6 +36,7 @@ single statements.
 
 ```ssl
 :DECLARE nCount, nTotal;
+
 nCount := 0;
 nTotal := 0;
 ```

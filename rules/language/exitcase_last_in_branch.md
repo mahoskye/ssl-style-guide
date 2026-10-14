@@ -42,7 +42,9 @@ statements in the same branch.
 
 ```ssl
 :DECLARE nCount, sLabel;
+
 nCount := 0;
+
 :BEGINCASE;
 :CASE nCount == 0;
 	sLabel := "none";

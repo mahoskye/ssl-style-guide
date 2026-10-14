@@ -30,7 +30,9 @@ it changes their behavior too.
 ```ssl
 :PROCEDURE CurrentUser;
 	:DECLARE sUser;
+
 	sUser := MYUSERNAME;
+
 	:RETURN sUser;
 :ENDPROC;
 ```

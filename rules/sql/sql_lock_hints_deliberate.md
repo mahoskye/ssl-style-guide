@@ -30,6 +30,7 @@ habit blocks other work; one left out lets two commands act on the same row.
 :PROCEDURE ClaimOrder;
 	:PARAMETERS sOrdNo;
 	:DECLARE aRows;
+
 	/* Lock the row so a second claim waits for this one;
 	aRows := SQLExecute("
 	    SELECT ordno, status
@@ -37,6 +38,7 @@ habit blocks other work; one left out lets two commands act on the same row.
 	    WHERE ordno = ?sOrdNo?
 	    FOR UPDATE
 	");
+
 	:RETURN aRows;
 :ENDPROC;
 ```

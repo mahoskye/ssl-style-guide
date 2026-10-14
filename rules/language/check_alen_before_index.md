@@ -29,9 +29,11 @@ than expected.
 ```ssl
 :PROCEDURE FirstItem;
 	:PARAMETERS aItems;
+
 	:IF ALen(aItems) < 1;
 		:RETURN NIL;
 	:ENDIF;
+
 	:RETURN aItems[1];
 :ENDPROC;
 ```

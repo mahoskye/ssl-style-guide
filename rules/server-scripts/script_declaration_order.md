@@ -38,6 +38,7 @@ what it shares, then its own locals, in the same place in every file.
 :DECLARE nCount;
 
 nCount := Len(sName);
+
 :RETURN nCount;
 ```
 

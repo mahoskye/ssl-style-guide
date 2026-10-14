@@ -39,7 +39,9 @@ as the statement that was meant.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 0;
+
 :WHILE nCount < 3;
 	nCount += 1;
 :ENDWHILE;

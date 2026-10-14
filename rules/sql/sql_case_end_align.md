@@ -36,6 +36,7 @@ belonging to the whole expression.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT o.ordno,
            CASE

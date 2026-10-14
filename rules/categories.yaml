@@ -300,6 +300,7 @@ categories:
       - align_related_elements
       - expressions_on_one_line
       - wrapped_list_alignment
+      - bracket_contents_align
       - continuation_indent_shows_structure
       - envelope_one_line
   - id: naming

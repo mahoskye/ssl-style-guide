@@ -47,6 +47,7 @@ branches are broken.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT o.ordno,
            CASE

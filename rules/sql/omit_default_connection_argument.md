@@ -34,6 +34,7 @@ A call to a named connection passes that connection.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("SELECT ordno FROM ordtask");
 ```
 

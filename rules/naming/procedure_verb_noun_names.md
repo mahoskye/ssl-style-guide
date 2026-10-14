@@ -31,6 +31,7 @@ an action.
 ```ssl
 :PROCEDURE CalculateTotal;
 	:PARAMETERS nQty, nPrice;
+
 	:RETURN nQty * nPrice;
 :ENDPROC;
 ```

@@ -30,6 +30,7 @@ reason makes the reader rebuild it.
 
 ```ssl
 :DECLARE sMessage;
+
 sMessage := "Loaded " + LimsString(3) + " rows";
 ```
 

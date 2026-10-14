@@ -34,8 +34,10 @@ scrolling. SQL inside strings has its own limit in `sql_max_line_length`.
 :PROCEDURE Describe;
 	:PARAMETERS sName, sStatus;
 	:DECLARE sOut;
+
 	sOut := sName + " is a fairly long string literal that " + sStatus
 		+ " keeps going past the limit";
+
 	:RETURN sOut;
 :ENDPROC;
 ```

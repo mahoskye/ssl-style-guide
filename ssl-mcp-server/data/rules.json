@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 278,
+  "count": 279,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -30,7 +30,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n:IF nCount > 0;\n\tnCount := 1;\n:ENDIF;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n:IF nCount > 0;\n\tnCount := 1;\n:ENDIF;\n"
           }
         ],
         "bad": [
@@ -79,7 +79,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n:WHILE nCount < 3;\n\tnCount += 1;\n:ENDWHILE;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n:WHILE nCount < 3;\n\tnCount += 1;\n:ENDWHILE;\n"
           }
         ],
         "bad": [
@@ -128,7 +128,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n:IF nCount > 0;\n\tnCount := 1;\n:ENDIF;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n:IF nCount > 0;\n\tnCount := 1;\n:ENDIF;\n"
           }
         ],
         "bad": [
@@ -174,7 +174,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, sLabel;\nnCount := 0;\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
+            "code": ":DECLARE nCount, sLabel;\n\nnCount := 0;\n\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
           }
         ],
         "bad": [
@@ -221,7 +221,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, sLabel;\nnCount := 0;\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
+            "code": ":DECLARE nCount, sLabel;\n\nnCount := 0;\n\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
           }
         ],
         "bad": [
@@ -270,7 +270,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, sLabel;\nnCount := 0;\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
+            "code": ":DECLARE nCount, sLabel;\n\nnCount := 0;\n\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
           }
         ],
         "bad": [
@@ -317,7 +317,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, sLabel;\nnCount := 0;\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
+            "code": ":DECLARE nCount, sLabel;\n\nnCount := 0;\n\n:BEGINCASE;\n:CASE nCount == 0;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"some\";\n\t:EXITCASE;\n:ENDCASE;\n"
           }
         ],
         "bad": [
@@ -363,7 +363,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, nTotal;\nnCount := 0;\nnTotal := 0;\n"
+            "code": ":DECLARE nCount, nTotal;\n\nnCount := 0;\nnTotal := 0;\n"
           }
         ],
         "bad": [
@@ -407,7 +407,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\n/* Start from zero;\nnCount := 0;\nnCount := 1;\n"
+            "code": ":DECLARE nCount;\n\n/* Start from zero;\nnCount := 0;\nnCount := 1;\n"
           }
         ],
         "bad": [
@@ -455,7 +455,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\n/* Set the count, then reset it;\nnCount := 0;\n"
+            "code": ":DECLARE nCount;\n\n/* Set the count, then reset it;\nnCount := 0;\n"
           }
         ],
         "bad": [
@@ -499,7 +499,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 3;\n:WHILE nCount > 0;\n\tnCount -= 1;\n:ENDWHILE;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 3;\n\n:WHILE nCount > 0;\n\tnCount -= 1;\n:ENDWHILE;\n"
           }
         ],
         "bad": [
@@ -549,7 +549,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n:IF nCount == 0;\n\tnCount := 1;\n:ENDIF;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n:IF nCount == 0;\n\tnCount := 1;\n:ENDIF;\n"
           }
         ],
         "bad": [
@@ -685,7 +685,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE bDone, nCount;\nbDone := .F.;\nnCount := 0;\n:IF bDone;\n\tnCount := 2;\n:ELSE;\n\tnCount := 1;\n:ENDIF;\n"
+            "code": ":DECLARE bDone, nCount;\n\nbDone := .F.;\nnCount := 0;\n\n:IF bDone;\n\tnCount := 2;\n:ELSE;\n\tnCount := 1;\n:ENDIF;\n"
           }
         ],
         "bad": [
@@ -732,7 +732,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, sLabel;\nnCount := 0;\n:BEGINCASE;\n:CASE nCount > 1;\n\tsLabel := \"many\";\n\t:EXITCASE;\n:CASE nCount == 1;\n\tsLabel := \"one\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:ENDCASE;\n"
+            "code": ":DECLARE nCount, sLabel;\n\nnCount := 0;\n\n:BEGINCASE;\n:CASE nCount > 1;\n\tsLabel := \"many\";\n\t:EXITCASE;\n:CASE nCount == 1;\n\tsLabel := \"one\";\n\t:EXITCASE;\n:OTHERWISE;\n\tsLabel := \"none\";\n\t:EXITCASE;\n:ENDCASE;\n"
           }
         ],
         "bad": [
@@ -778,7 +778,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE n;\nn := 0;\n:IF n == 0;\n\t:IF n == 0;\n\t\tn := 1;\n\t:ENDIF;\n:ENDIF;\n"
+            "code": ":DECLARE n;\n\nn := 0;\n\n:IF n == 0;\n\t:IF n == 0;\n\t\tn := 1;\n\t:ENDIF;\n:ENDIF;\n"
           }
         ],
         "bad": [
@@ -821,7 +821,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE SumItems;\n\t:PARAMETERS aItems;\n\t:DECLARE i, nTotal;\n\n\tnTotal := 0;\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal += aItems[i];\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
+            "code": ":PROCEDURE SumItems;\n\t:PARAMETERS aItems;\n\t:DECLARE i, nTotal;\n\n\tnTotal := 0;\n\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal += aItems[i];\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -870,7 +870,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE i, nTotal;\nnTotal := 0;\n:FOR i := 1 :TO 3;\n\tnTotal += i;\n:NEXT;\n"
+            "code": ":DECLARE i, nTotal;\n\nnTotal := 0;\n\n:FOR i := 1 :TO 3;\n\tnTotal += i;\n:NEXT;\n"
           }
         ],
         "bad": [
@@ -916,7 +916,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE i, nTotal;\nnTotal := 0;\n:FOR i := 1 :TO 9 :STEP 2;\n\tnTotal += i;\n:NEXT;\n"
+            "code": ":DECLARE i, nTotal;\n\nnTotal := 0;\n\n:FOR i := 1 :TO 9 :STEP 2;\n\tnTotal += i;\n:NEXT;\n"
           }
         ],
         "bad": [
@@ -962,7 +962,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE i, nTotal;\nnTotal := 0;\n:FOR i := 1 :TO 9;\n\t:IF nTotal > 10;\n\t\t:EXITFOR;\n\t:ENDIF;\n\tnTotal += i;\n:NEXT;\n"
+            "code": ":DECLARE i, nTotal;\n\nnTotal := 0;\n\n:FOR i := 1 :TO 9;\n\t:IF nTotal > 10;\n\t\t:EXITFOR;\n\t:ENDIF;\n\n\tnTotal += i;\n:NEXT;\n"
           }
         ],
         "bad": [
@@ -1013,7 +1013,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE i, nTotal;\nnTotal := 0;\n:FOR i := 1 :TO 3;\n\tnTotal += i;\n:NEXT;\n"
+            "code": ":DECLARE i, nTotal;\n\nnTotal := 0;\n\n:FOR i := 1 :TO 3;\n\tnTotal += i;\n:NEXT;\n"
           }
         ],
         "bad": [
@@ -1061,7 +1061,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, bDone;\nsStatus := \"Complete\";\nbDone := sStatus == \"Complete\";\n"
+            "code": ":DECLARE sStatus, bDone;\n\nsStatus := \"Complete\";\nbDone := sStatus == \"Complete\";\n"
           }
         ],
         "bad": [
@@ -1109,7 +1109,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, bFound;\nsStatus := \"Logged\";\nbFound := \"Log\" $ sStatus;\n"
+            "code": ":DECLARE sStatus, bFound;\n\nsStatus := \"Logged\";\nbFound := \"Log\" $ sStatus;\n"
           }
         ],
         "bad": [
@@ -1153,7 +1153,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sNote;\nsNote := [He said \"it's ready\"];\n"
+            "code": ":DECLARE sNote;\n\nsNote := [He said \"it's ready\"];\n"
           }
         ],
         "bad": [
@@ -1194,7 +1194,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sCodes, bFound;\nsCodes := \"PH,TOC,TSS\";\nbFound := \"TOC\" $ sCodes;\n"
+            "code": ":DECLARE sCodes, bFound;\n\nsCodes := \"PH,TOC,TSS\";\nbFound := \"TOC\" $ sCodes;\n"
           }
         ],
         "bad": [
@@ -1286,7 +1286,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aItems;\naItems := {};\nAAdd(aItems, 1);\n"
+            "code": ":DECLARE aItems;\n\naItems := {};\nAAdd(aItems, 1);\n"
           }
         ],
         "bad": [
@@ -1330,7 +1330,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows, sStatus;\nsStatus := \"Logged\";\naRows := LSearch(\"SELECT ordno FROM orders WHERE status = ?\",,, {sStatus});\n"
+            "code": ":DECLARE aRows, sStatus;\n\nsStatus := \"Logged\";\naRows := LSearch(\"SELECT ordno FROM orders WHERE status = ?\",,, {sStatus});\n"
           }
         ],
         "bad": [
@@ -1373,7 +1373,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE FirstItem;\n\t:PARAMETERS aItems;\n\t:IF ALen(aItems) < 1;\n\t\t:RETURN NIL;\n\t:ENDIF;\n\t:RETURN aItems[1];\n:ENDPROC;\n"
+            "code": ":PROCEDURE FirstItem;\n\t:PARAMETERS aItems;\n\n\t:IF ALen(aItems) < 1;\n\t\t:RETURN NIL;\n\t:ENDIF;\n\n\t:RETURN aItems[1];\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -1416,7 +1416,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aItems;\naItems := {};\nAAdd(aItems, 1);\n"
+            "code": ":DECLARE aItems;\n\naItems := {};\nAAdd(aItems, 1);\n"
           }
         ],
         "bad": [
@@ -1461,7 +1461,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aItems;\naItems := {1, 2};\n"
+            "code": ":DECLARE aItems;\n\naItems := {1, 2};\n"
           }
         ],
         "bad": [
@@ -1506,7 +1506,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sMessage;\nsMessage := \"Total: \" + LimsString(5);\n"
+            "code": ":DECLARE sMessage;\n\nsMessage := \"Total: \" + LimsString(5);\n"
           }
         ],
         "bad": [
@@ -1554,7 +1554,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\n/* LOGDATE is compared across sites, so read it as an invariant date;\naRows := SQLExecute(\"SELECT ordno, logdate FROM orders\",,,, {\"LOGDATE\"});\n"
+            "code": ":DECLARE aRows;\n\n/* LOGDATE is compared across sites, so read it as an invariant date;\naRows := SQLExecute(\"SELECT ordno, logdate FROM orders\",,,, {\"LOGDATE\"});\n"
           }
         ],
         "bad": [
@@ -1599,7 +1599,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE dDue, dNext;\ndDue := CToD(\"3/5/2026\");\ndNext := DateAdd(dDue, 7);\n"
+            "code": ":DECLARE dDue, dNext;\n\ndDue := CToD(\"3/5/2026\");\ndNext := DateAdd(dDue, 7);\n"
           }
         ],
         "bad": [
@@ -1641,7 +1641,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE oEmail;\noEmail := Email{};\noEmail:Subject := \"Results ready\";\n"
+            "code": ":DECLARE oEmail;\n\noEmail := Email{};\noEmail:Subject := \"Results ready\";\n"
           }
         ],
         "bad": [
@@ -1688,7 +1688,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE OrderName;\n\t:PARAMETERS oOrder;\n\t:RETURN oOrder:Name;\n:ENDPROC;\n"
+            "code": ":PROCEDURE OrderName;\n\t:PARAMETERS oOrder;\n\n\t:RETURN oOrder:Name;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -1730,7 +1730,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, nTotal;\nnCount := 1;\nnTotal := nCount + 1;\n"
+            "code": ":DECLARE nCount, nTotal;\n\nnCount := 1;\nnTotal := nCount + 1;\n"
           }
         ],
         "bad": [
@@ -1773,7 +1773,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 1;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 1;\n"
           }
         ],
         "bad": [
@@ -1818,7 +1818,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 5;\nnCount := 0;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 5;\nnCount := 0;\n"
           }
         ],
         "bad": [
@@ -1863,7 +1863,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Total;\n\t:PARAMETERS nBase;\n\t:DECLARE nTotal;\n\tnTotal := nBase + 1;\n\t:RETURN nTotal;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS nBase;\n\t:DECLARE nTotal;\n\n\tnTotal := nBase + 1;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -1908,7 +1908,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Total;\n\t:PARAMETERS nBase;\n\t:DECLARE nTotal;\n\tnTotal := nBase + 1;\n\t:RETURN nTotal;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS nBase;\n\t:DECLARE nTotal;\n\n\tnTotal := nBase + 1;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -1955,7 +1955,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Greet;\n\t:PARAMETERS sName;\n\t:RETURN \"Hello \" + sName;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Greet;\n\t:PARAMETERS sName;\n\n\t:RETURN \"Hello \" + sName;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -1997,7 +1997,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sName;\nsName := AllTrim(\" admin \");\n"
+            "code": ":DECLARE sName;\n\nsName := AllTrim(\" admin \");\n"
           }
         ],
         "bad": [
@@ -2042,7 +2042,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE SaveOrder;\n\t:PARAMETERS oOrder;\n\t:RETURN oOrder:orderNo;\n:ENDPROC;\n"
+            "code": ":PROCEDURE SaveOrder;\n\t:PARAMETERS oOrder;\n\n\t:RETURN oOrder:orderNo;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2089,7 +2089,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Total;\n\t:PARAMETERS nQty, nPrice;\n\t:DEFAULT nQty, 0;\n\t:DEFAULT nPrice, 0;\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS nQty, nPrice;\n\t:DEFAULT nQty, 0;\n\t:DEFAULT nPrice, 0;\n\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2130,7 +2130,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\n/* Reset the count;\nnCount := 0;\n"
+            "code": ":DECLARE nCount;\n\n/* Reset the count;\nnCount := 0;\n"
           }
         ],
         "bad": [
@@ -2171,7 +2171,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nTotal;\nnTotal := 1 + 2;\n"
+            "code": ":DECLARE nTotal;\n\nnTotal := 1 + 2;\n"
           }
         ],
         "bad": [
@@ -2216,7 +2216,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": "/* region Validation Helpers;\n:PROCEDURE CheckName;\n\t:PARAMETERS sName;\n\t:RETURN !Empty(sName);\n:ENDPROC;\n/* endregion;\n"
+            "code": "/* region Validation Helpers;\n:PROCEDURE CheckName;\n\t:PARAMETERS sName;\n\n\t:RETURN !Empty(sName);\n:ENDPROC;\n\n/* endregion;\n"
           }
         ],
         "bad": [
@@ -2261,7 +2261,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Show;\n\t:DECLARE nCount;\n\tnCount := 0;\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Show;\n\t:DECLARE nCount;\n\n\tnCount := 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2303,7 +2303,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": "/* region Totals;\n/* Sum the line amounts for one order;\n:PROCEDURE SumLines;\n\t:PARAMETERS aLines;\n\t:DECLARE i, nTotal;\n\n\tnTotal := 0;\n\t:FOR i := 1 :TO ALen(aLines);\n\t\tnTotal += aLines[i];\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n/* endregion;\n"
+            "code": "/* region Totals;\n/* Sum the line amounts for one order;\n:PROCEDURE SumLines;\n\t:PARAMETERS aLines;\n\t:DECLARE i, nTotal;\n\n\tnTotal := 0;\n\n\t:FOR i := 1 :TO ALen(aLines);\n\t\tnTotal += aLines[i];\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n\n/* endregion;\n"
           }
         ],
         "bad": [
@@ -2346,7 +2346,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\n/* Retry once before reporting the failure;\nnCount := 1;\n"
+            "code": ":DECLARE nCount;\n\n/* Retry once before reporting the failure;\nnCount := 1;\n"
           }
         ],
         "bad": [
@@ -2390,7 +2390,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n/* Count is reset at the start of each run;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n/* Count is reset at the start of each run;\n"
           }
         ],
         "bad": [
@@ -2435,7 +2435,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": "/*\nRecalculate the totals before the report runs.\nThe report reads them without checking.\n;\n:DECLARE nTotal;\nnTotal := 0;\n"
+            "code": "/*\nRecalculate the totals before the report runs.\nThe report reads them without checking.\n;\n:DECLARE nTotal;\n\nnTotal := 0;\n"
           }
         ],
         "bad": [
@@ -2478,7 +2478,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\t:IF nCount > 0;\n\t\tnCount := nCount - 1;\n\t:ENDIF;\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\n\t:IF nCount > 0;\n\t\tnCount := nCount - 1;\n\t:ENDIF;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2521,7 +2521,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\t:WHILE nCount > 0;\n\t\tnCount := nCount - 1;\n\t:ENDWHILE;\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CountDown;\n\t:PARAMETERS nCount;\n\n\t:WHILE nCount > 0;\n\t\tnCount := nCount - 1;\n\t:ENDWHILE;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2562,7 +2562,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\t:IF nCount > 0;\n\t\tsText := \"some\";\n\t:ELSE;\n\t\tsText := \"none\";\n\t:ENDIF;\n\t:RETURN sText;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\n\t:IF nCount > 0;\n\t\tsText := \"some\";\n\t:ELSE;\n\t\tsText := \"none\";\n\t:ENDIF;\n\n\t:RETURN sText;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2603,7 +2603,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\t:BEGINCASE;\n\t:CASE nCount == 0;\n\t\tsText := \"none\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsText := \"some\";\n\t\t:EXITCASE;\n\t:ENDCASE;\n\t:RETURN sText;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS nCount;\n\t:DECLARE sText;\n\n\t:BEGINCASE;\n\t:CASE nCount == 0;\n\t\tsText := \"none\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsText := \"some\";\n\t\t:EXITCASE;\n\t:ENDCASE;\n\n\t:RETURN sText;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2644,7 +2644,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Show;\n\t:DECLARE nCount;\n\tnCount := 0;\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Show;\n\t:DECLARE nCount;\n\n\tnCount := 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2685,7 +2685,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aItems;\naItems := {1, 2, 3};\n"
+            "code": ":DECLARE aItems;\n\naItems := {1, 2, 3};\n"
           }
         ],
         "bad": [
@@ -2728,7 +2728,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nLength;\nnLength := Len(\"abc\");\n"
+            "code": ":DECLARE nLength;\n\nnLength := Len(\"abc\");\n"
           }
         ],
         "bad": [
@@ -2771,7 +2771,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nLength;\nnLength := Len(\"abc\");\n"
+            "code": ":DECLARE nLength;\n\nnLength := Len(\"abc\");\n"
           }
         ],
         "bad": [
@@ -2812,7 +2812,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName, sStatus;\n\t:DECLARE sOut;\n\tsOut := sName + \" is a fairly long string literal that \" + sStatus\n\t\t+ \" keeps going past the limit\";\n\t:RETURN sOut;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName, sStatus;\n\t:DECLARE sOut;\n\n\tsOut := sName + \" is a fairly long string literal that \" + sStatus\n\t\t+ \" keeps going past the limit\";\n\n\t:RETURN sOut;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2853,7 +2853,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\tbOk := .F.;\n\t:IF nVal > 1\n\t\t.AND. nVal < 5\n\t\t.AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\t:RETURN bOk;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\n\tbOk := .F.;\n\n\t:IF nVal > 1\n\t\t.AND. nVal < 5\n\t\t.AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\n\t:RETURN bOk;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -2896,7 +2896,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nTotal;\nnTotal := 1\n\t+ 2;\n"
+            "code": ":DECLARE nTotal;\n\nnTotal := 1\n\t+ 2;\n"
           }
         ],
         "bad": [
@@ -2971,35 +2971,38 @@
         "server_script",
         "class"
       ],
-      "rule": "Put one blank line between logical sections and between regions.",
-      "rationale": "A blank line marks where one step of the logic ends and the next begins.",
-      "exceptions": null,
+      "rule": "Put one blank line between logical sections and between regions: after the declarations, before a control block that follows code and after its closer when more code follows, before a section comment that follows code, and before a procedure's final `:RETURN`; add none at the start or end of a body.",
+      "rationale": "A blank line marks where one step of the logic ends and the next begins.\nNaming the boundaries makes the layout the same in every file: the\ndeclarations stand apart from the work, each control block reads as one\nunit, a section comment opens the code it describes, and the result a\nprocedure returns is easy to find.",
+      "exceptions": "Consecutive declarations stay together, a comment between two declarations\nstays with them, and a comment directly above a block or the final\n`:RETURN` takes the blank line above itself instead of being separated from\nthe code it describes. Blank lines an author added elsewhere are kept.",
       "examples": {
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Total;\n\t:PARAMETERS aItems;\n\t:DECLARE nTotal, i;\n\n\tnTotal := 0;\n\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal := nTotal + aItems[i];\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS aItems;\n\t:DECLARE nTotal, i;\n\n\tnTotal := 0;\n\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal := nTotal + aItems[i];\n\t:NEXT;\n\n\tnTotal := Round(nTotal, 2);\n\n\t/* Apply the discount;\n\t:IF nTotal > 50;\n\t\tnTotal := nTotal * 0.9;\n\t:ENDIF;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
           }
         ],
         "bad": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Total;\n\t:PARAMETERS aItems;\n\t:DECLARE nTotal, i;\n\tnTotal := 0;\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal := nTotal + aItems[i];\n\t:NEXT;\n\t:RETURN nTotal;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Total;\n\t:PARAMETERS aItems;\n\t:DECLARE nTotal, i;\n\tnTotal := 0;\n\t:FOR i := 1 :TO ALen(aItems);\n\t\tnTotal := nTotal + aItems[i];\n\t:NEXT;\n\tnTotal := Round(nTotal, 2);\n\t/* Apply the discount;\n\t:IF nTotal > 50;\n\t\tnTotal := nTotal * 0.9;\n\t:ENDIF;\n\t:RETURN nTotal;\n:ENDPROC;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:fmt.blank_lines_between_sections"
       ],
       "categories": [
         "formatting"
       ],
       "related_elements": [],
       "schema_paths": [
-        "formatting.blank_lines.before_region"
+        "formatting.blank_lines.before_region",
+        "formatting.blank_lines.between_sections"
       ],
       "aliases": [],
-      "issues": [],
+      "issues": [
+        "#125"
+      ],
       "source": "rules/language/blank_line_between_sections.md"
     },
     {
@@ -3014,33 +3017,37 @@
         "class",
         "ssl_data_source"
       ],
-      "rule": "Do not leave three or more consecutive blank lines; reduce such a run to one.",
-      "rationale": "A run of blank lines suggests a missing piece of code and pushes the rest of\nthe logic off the screen.",
+      "rule": "Do not leave three or more consecutive blank lines; reduce such a run to two.",
+      "rationale": "A run of blank lines suggests a missing piece of code and pushes the rest of\nthe logic off the screen. One or two blank lines are an author's grouping and\nstay.",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n\nnCount := nCount + 1;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n\nnCount := nCount + 1;\n"
           }
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": ":DECLARE nCount;\nnCount := 0;\n\n\n\nnCount := nCount + 1;\n"
+            "lang": "ssl",
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n\n\n\n\nnCount := nCount + 1;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:fmt.max_consecutive_blank_lines"
       ],
       "categories": [
         "formatting"
       ],
       "related_elements": [],
-      "schema_paths": [],
+      "schema_paths": [
+        "formatting.blank_lines.max_consecutive"
+      ],
       "aliases": [],
-      "issues": [],
+      "issues": [
+        "#125"
+      ],
       "source": "rules/language/no_excess_blank_lines.md"
     },
     {
@@ -3061,7 +3068,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": "/* region Validation;\n:PROCEDURE IsValid;\n\t:PARAMETERS sValue;\n\t:RETURN !Empty(sValue);\n:ENDPROC;\n/* endregion;\n"
+            "code": "/* region Validation;\n:PROCEDURE IsValid;\n\t:PARAMETERS sValue;\n\n\t:RETURN !Empty(sValue);\n:ENDPROC;\n\n/* endregion;\n"
           }
         ],
         "bad": [
@@ -3143,7 +3150,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE vValue, bDone;\nvValue := NIL;\nbDone := .F.;\n"
+            "code": ":DECLARE vValue, bDone;\n\nvValue := NIL;\nbDone := .F.;\n"
           }
         ],
         "bad": [
@@ -3190,7 +3197,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aItems, nCount;\naItems := {1, 2};\nnCount := aItems:Length;\n"
+            "code": ":DECLARE aItems, nCount;\n\naItems := {1, 2};\nnCount := aItems:Length;\n"
           }
         ],
         "bad": [
@@ -3236,7 +3243,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE fnDouble, nValue;\nfnDouble := {|x| x * 2};\nnValue := Eval(fnDouble, 4);\n"
+            "code": ":DECLARE fnDouble, nValue;\n\nfnDouble := {|x| x * 2};\nnValue := Eval(fnDouble, 4);\n"
           }
         ],
         "bad": [
@@ -3284,7 +3291,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE fnDouble;\nfnDouble := {|x| x * 2};\n"
+            "code": ":DECLARE fnDouble;\n\nfnDouble := {|x| x * 2};\n"
           }
         ],
         "bad": [
@@ -3331,7 +3338,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE AddOne;\n\t:PARAMETERS nValue;\n\t:IF nValue == NIL;\n\t\t:RETURN 1;\n\t:ENDIF;\n\t:RETURN nValue + 1;\n:ENDPROC;\n"
+            "code": ":PROCEDURE AddOne;\n\t:PARAMETERS nValue;\n\n\t:IF nValue == NIL;\n\t\t:RETURN 1;\n\t:ENDIF;\n\n\t:RETURN nValue + 1;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3377,7 +3384,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sName, bMissing;\nbMissing := sName == \"\";\n"
+            "code": ":DECLARE sName, bMissing;\n\nbMissing := sName == \"\";\n"
           }
         ],
         "bad": [
@@ -3423,7 +3430,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nHalf;\nnHalf := Integer(5 / 2);\n"
+            "code": ":DECLARE nHalf;\n\nnHalf := Integer(5 / 2);\n"
           }
         ],
         "bad": [
@@ -3469,7 +3476,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 1;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 1;\n"
           }
         ],
         "bad": [
@@ -3513,7 +3520,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, bDiff;\nnCount := 1;\nbDiff := nCount != 2;\n"
+            "code": ":DECLARE nCount, bDiff;\n\nnCount := 1;\nbDiff := nCount != 2;\n"
           }
         ],
         "bad": [
@@ -3561,7 +3568,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, sDefault;\nsStatus := sDefault := \"PENDING\";\n"
+            "code": ":DECLARE sStatus, sDefault;\n\nsStatus := sDefault := \"PENDING\";\n"
           }
         ],
         "bad": [
@@ -3606,7 +3613,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount, sLabel;\nnCount := 0;\nsLabel := IIf(nCount > 0, \"some\", \"none\");\n"
+            "code": ":DECLARE nCount, sLabel;\n\nnCount := 0;\nsLabel := IIf(nCount > 0, \"some\", \"none\");\n"
           }
         ],
         "bad": [
@@ -3649,7 +3656,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE InRange;\n\t:PARAMETERS nVal;\n\t:RETURN nVal > 5 .AND. nVal < 10;\n:ENDPROC;\n"
+            "code": ":PROCEDURE InRange;\n\t:PARAMETERS nVal;\n\n\t:RETURN nVal > 5 .AND. nVal < 10;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3689,7 +3696,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\t:IF Empty(sOrdNo);\n\t\t:RETURN {.F., {\"MISSING_ORDER\", \"An order number is required.\"}};\n\t:ENDIF;\n\n\tSQLExecute(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?sOrdNo?\");\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\n\t:IF Empty(sOrdNo);\n\t\t:RETURN {.F., {\"MISSING_ORDER\", \"An order number is required.\"}};\n\t:ENDIF;\n\n\tSQLExecute(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?sOrdNo?\");\n\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3729,7 +3736,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:DECLARE sLabel;\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\tsLabel := \"Approved\";\n\t\t:EXITCASE;\n\t:CASE sRoute == \"REJECT\";\n\t\tsLabel := \"Rejected\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsLabel := \"Pending\";\n\t\t:EXITCASE;\n\t:ENDCASE;\n\t:RETURN sLabel;\n:ENDPROC;\n"
+            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:DECLARE sLabel;\n\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\tsLabel := \"Approved\";\n\t\t:EXITCASE;\n\t:CASE sRoute == \"REJECT\";\n\t\tsLabel := \"Rejected\";\n\t\t:EXITCASE;\n\t:OTHERWISE;\n\t\tsLabel := \"Pending\";\n\t\t:EXITCASE;\n\t:ENDCASE;\n\n\t:RETURN sLabel;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3769,7 +3776,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\t:RETURN \"Approved\";\n\t:OTHERWISE;\n\t\t:RETURN \"Pending\";\n\t:ENDCASE;\n:ENDPROC;\n"
+            "code": ":PROCEDURE RouteLabel;\n\t:PARAMETERS sRoute;\n\n\t:BEGINCASE;\n\t:CASE sRoute == \"APPROVE\";\n\t\t:RETURN \"Approved\";\n\t:OTHERWISE;\n\t\t:RETURN \"Pending\";\n\t:ENDCASE;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3809,7 +3816,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE IsFinal;\n\t:PARAMETERS sStatus;\n\t:RETURN AScanExact({\"Done\", \"Cancelled\"}, sStatus) > 0;\n:ENDPROC;\n"
+            "code": ":PROCEDURE IsFinal;\n\t:PARAMETERS sStatus;\n\n\t:RETURN AScanExact({\"Done\", \"Cancelled\"}, sStatus) > 0;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3849,7 +3856,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Validate;\n\t:PARAMETERS sOrdNo, sStatus;\n\t:IF Empty(sOrdNo);\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:IF Empty(sStatus);\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:RETURN .T.;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Validate;\n\t:PARAMETERS sOrdNo, sStatus;\n\n\t:IF Empty(sOrdNo);\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:IF Empty(sStatus);\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:RETURN .T.;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -3889,7 +3896,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE SumRows;\n\t:PARAMETERS aRows;\n\t:DECLARE i, nTotal, bDone;\n\n\tnTotal := 0;\n\tbDone := .F.;\n\t:FOR i := 1 :TO ALen(aRows);\n\t\t:TRY;\n\t\t\tnTotal += aRows[i];\n\t\t:FINALLY;\n\t\t\tbDone := nTotal > 100;\n\t\t:ENDTRY;\n\n\t\t:IF bDone;\n\t\t\t:EXITFOR;\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
+            "code": ":PROCEDURE SumRows;\n\t:PARAMETERS aRows;\n\t:DECLARE i, nTotal, bDone;\n\n\tnTotal := 0;\n\tbDone := .F.;\n\n\t:FOR i := 1 :TO ALen(aRows);\n\t\t:TRY;\n\t\t\tnTotal += aRows[i];\n\t\t:FINALLY;\n\t\t\tbDone := nTotal > 100;\n\t\t:ENDTRY;\n\n\t\t:IF bDone;\n\t\t\t:EXITFOR;\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN nTotal;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4463,7 +4470,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE ParseCodes;\n\t:PARAMETERS sCodes;\n\t:DECLARE aCodes;\n\taCodes := BuildArray(AllTrim(sCodes));\n\t:RETURN aCodes;\n:ENDPROC;\n"
+            "code": ":PROCEDURE ParseCodes;\n\t:PARAMETERS sCodes;\n\t:DECLARE aCodes;\n\n\taCodes := BuildArray(AllTrim(sCodes));\n\n\t:RETURN aCodes;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4505,7 +4512,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE RouteCode;\n\t:PARAMETERS sRoute;\n\t:RETURN AllTrim(sRoute);\n:ENDPROC;\n"
+            "code": ":PROCEDURE RouteCode;\n\t:PARAMETERS sRoute;\n\n\t:RETURN AllTrim(sRoute);\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4548,7 +4555,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo, nCount;\n\t:DECLARE sFmt, sMessage;\n\tsFmt := \"\";\n\tsMessage := sFmt:Format(\"Order {0} has {1} tests\", {sOrdNo, nCount});\n\t:RETURN sMessage;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo, nCount;\n\t:DECLARE sFmt, sMessage;\n\n\tsFmt := \"\";\n\tsMessage := sFmt:Format(\"Order {0} has {1} tests\", {sOrdNo, nCount});\n\n\t:RETURN sMessage;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4588,7 +4595,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sFmt;\n\tsFmt := \"\";\n\t:RETURN sFmt:Format(\"Order {0}\", {sOrdNo});\n:ENDPROC;\n"
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sFmt;\n\n\tsFmt := \"\";\n\n\t:RETURN sFmt:Format(\"Order {0}\", {sOrdNo});\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4628,7 +4635,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE IsKnownRoute;\n\t:PARAMETERS sRoute;\n\t:RETURN AScanExact({\"APPROVE\", \"REJECT\"}, sRoute) > 0;\n:ENDPROC;\n"
+            "code": ":PROCEDURE IsKnownRoute;\n\t:PARAMETERS sRoute;\n\n\t:RETURN AScanExact({\"APPROVE\", \"REJECT\"}, sRoute) > 0;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4719,7 +4726,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CountSamples;\n\t:DECLARE oCounter;\n\n\toCounter := CreateUdObject(\"Samples.Counter\");\n\toCounter:Increment();\n\t:RETURN oCounter:nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CountSamples;\n\t:DECLARE oCounter;\n\n\toCounter := CreateUdObject(\"Samples.Counter\");\n\toCounter:Increment();\n\n\t:RETURN oCounter:nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4808,7 +4815,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE BuildRequest;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE oState;\n\toState := CreateUdObject();\n\toState:ordNo := sOrdNo;\n\toState:isValid := .F.;\n\toState:failureCode := \"\";\n\toState:failureMessage := \"\";\n\t:RETURN oState;\n:ENDPROC;\n"
+            "code": ":PROCEDURE BuildRequest;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE oState;\n\n\toState := CreateUdObject();\n\toState:ordNo := sOrdNo;\n\toState:isValid := .F.;\n\toState:failureCode := \"\";\n\toState:failureMessage := \"\";\n\n\t:RETURN oState;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4850,7 +4857,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE LoadSample;\n\t:PARAMETERS sSampleId;\n\t:DECLARE sStatus;\n\n\tsStatus := \"\";\n\t:RETURN sSampleId + sStatus;\n:ENDPROC;\n"
+            "code": ":PROCEDURE LoadSample;\n\t:PARAMETERS sSampleId;\n\t:DECLARE sStatus;\n\n\tsStatus := \"\";\n\n\t:RETURN sSampleId + sStatus;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4896,7 +4903,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE LoadSample;\n\t:PARAMETERS sSampleId, nMaxRows;\n\t:DEFAULT sSampleId, \"\";\n\t:DEFAULT nMaxRows, 100;\n\t:DECLARE sStatus;\n\n\tsStatus := \"\";\n\t:RETURN sSampleId + sStatus + LimsString(nMaxRows);\n:ENDPROC;\n"
+            "code": ":PROCEDURE LoadSample;\n\t:PARAMETERS sSampleId, nMaxRows;\n\t:DEFAULT sSampleId, \"\";\n\t:DEFAULT nMaxRows, 100;\n\t:DECLARE sStatus;\n\n\tsStatus := \"\";\n\n\t:RETURN sSampleId + sStatus + LimsString(nMaxRows);\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4940,7 +4947,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Main;\n\t:PARAMETERS sSampleId;\n\t:DECLARE sStatus;\n\n\tsStatus := DoProc(\"LoadStatus\", {sSampleId});\n\t:RETURN sStatus;\n:ENDPROC;\n\n:PROCEDURE LoadStatus;\n\t:PARAMETERS sSampleId;\n\t:RETURN Upper(sSampleId);\n:ENDPROC;\n"
+            "code": ":PROCEDURE Main;\n\t:PARAMETERS sSampleId;\n\t:DECLARE sStatus;\n\n\tsStatus := DoProc(\"LoadStatus\", {sSampleId});\n\n\t:RETURN sStatus;\n:ENDPROC;\n\n:PROCEDURE LoadStatus;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN Upper(sSampleId);\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -4982,7 +4989,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Main;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.ChangeStatus\", {sSampleId, \"A\"});\n\t:RETURN aResult;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Main;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.ChangeStatus\", {sSampleId, \"A\"});\n\n\t:RETURN aResult;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5024,7 +5031,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Main;\n\t:PARAMETERS sSampleId;\n\t:RETURN DoProc(\"FormatId\", {sSampleId});\n:ENDPROC;\n\n:PROCEDURE FormatId;\n\t:PARAMETERS sSampleId;\n\t:RETURN Upper(AllTrim(sSampleId));\n:ENDPROC;\n"
+            "code": ":PROCEDURE Main;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN DoProc(\"FormatId\", {sSampleId});\n:ENDPROC;\n\n:PROCEDURE FormatId;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN Upper(AllTrim(sSampleId));\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5069,7 +5076,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CountRows;\n\t:DECLARE nCount;\n\n\tnCount := 0;\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CountRows;\n\t:DECLARE nCount;\n\n\tnCount := 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5112,7 +5119,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CountRows;\n\t:PARAMETERS aRows;\n\t:DECLARE i, nCount;\n\n\tnCount := 0;\n\t:FOR i := 1 :TO ALen(aRows);\n\t\tnCount += 1;\n\t:NEXT;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CountRows;\n\t:PARAMETERS aRows;\n\t:DECLARE i, nCount;\n\n\tnCount := 0;\n\n\t:FOR i := 1 :TO ALen(aRows);\n\t\tnCount += 1;\n\t:NEXT;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5154,7 +5161,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": "/*\n * Procedure: BuildRequest\n * Description: Validates the request and prepares the operation state.\n * Parameters:\n *   sRequestId - Operation request identifier\n * Returns: aResult - {.T., operation state} or failure envelope\n;\n:PROCEDURE BuildRequest;\n\t:PARAMETERS sRequestId;\n\t:RETURN ExecFunction(\"Requests.Prepare\", {sRequestId});\n:ENDPROC;\n"
+            "code": "/*\n * Procedure: BuildRequest\n * Description: Validates the request and prepares the operation state.\n * Parameters:\n *   sRequestId - Operation request identifier\n * Returns: aResult - {.T., operation state} or failure envelope\n;\n:PROCEDURE BuildRequest;\n\t:PARAMETERS sRequestId;\n\n\t:RETURN ExecFunction(\"Requests.Prepare\", {sRequestId});\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5235,7 +5242,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE FormatId;\n\t:PARAMETERS sSampleId;\n\t:RETURN Upper(AllTrim(sSampleId));\n:ENDPROC;\n"
+            "code": ":PROCEDURE FormatId;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN Upper(AllTrim(sSampleId));\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5491,7 +5498,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit;\n\t:DECLARE oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
+            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit;\n\t:DECLARE oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5533,7 +5540,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit;\n\t:DECLARE oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
+            "code": ":PROCEDURE SendRequest;\n\t:PARAMETERS sUrl;\n\t:DECLARE nRetry, nRetryLimit;\n\t:DECLARE oErr, sDiag;\n\n\tnRetry := 0;\n\tnRetryLimit := 3;\n\tsDiag := \"\";\n\toErr := NIL;\n\n\t:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5575,7 +5582,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName;\n\t:DECLARE nCount, sLabel, sText;\n\n\tnCount := Len(sName);\n\tsLabel := \"Name\";\n\tsText := sLabel + \": \" + sName;\n\t:RETURN {nCount, sText};\n:ENDPROC;\n"
+            "code": ":PROCEDURE Describe;\n\t:PARAMETERS sName;\n\t:DECLARE nCount, sLabel, sText;\n\n\tnCount := Len(sName);\n\tsLabel := \"Name\";\n\tsText := sLabel + \": \" + sName;\n\n\t:RETURN {nCount, sText};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5617,7 +5624,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE sUser;\n\tsUser := MYUSERNAME;\n\t:RETURN sUser;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE sUser;\n\n\tsUser := MYUSERNAME;\n\n\t:RETURN sUser;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5657,7 +5664,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE sUser;\n\tsUser := MYUSERNAME;\n\t:RETURN sUser;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CurrentUser;\n\t:DECLARE sUser;\n\n\tsUser := MYUSERNAME;\n\n\t:RETURN sUser;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -5697,7 +5704,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE TwoLines;\n\t:PARAMETERS sFirst, sSecond;\n\t:RETURN sFirst + Chr(13) + Chr(10) + sSecond;\n:ENDPROC;\n"
+            "code": ":PROCEDURE TwoLines;\n\t:PARAMETERS sFirst, sSecond;\n\n\t:RETURN sFirst + Chr(13) + Chr(10) + sSecond;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6099,7 +6106,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE ChangeStatus;\n\t:PARAMETERS sSampleId, sStatus;\n\n\t:TRY;\n\t\t:IF Empty(sStatus);\n\t\t\tRaiseError(\"A status is required\");\n\t\t:ENDIF;\n\t\tExecFunction(\"Samples.WriteStatus\", {sSampleId, sStatus});\n\t:CATCH;\n\t\tClearLastSSLError();\n\t\t:RETURN {.F., {\"STATUS_REQUIRED\", \"A status is required.\"}};\n\t:ENDTRY;\n\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
+            "code": ":PROCEDURE ChangeStatus;\n\t:PARAMETERS sSampleId, sStatus;\n\n\t:TRY;\n\t\t:IF Empty(sStatus);\n\t\t\tRaiseError(\"A status is required\");\n\t\t:ENDIF;\n\n\t\tExecFunction(\"Samples.WriteStatus\", {sSampleId, sStatus});\n\t:CATCH;\n\t\tClearLastSSLError();\n\t\t:RETURN {.F., {\"STATUS_REQUIRED\", \"A status is required.\"}};\n\t:ENDTRY;\n\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6503,7 +6510,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE LoadOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.Load\", {sSampleId});\n\t:IF LimsTypeEx(aResult) != \"ARRAY\" .OR. ALen(aResult) < 2;\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:IF !aResult[1];\n\t\t:RETURN aResult;\n\t:ENDIF;\n\n\t:IF LimsTypeEx(aResult[2]) != \"OBJECT\";\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:RETURN {.T., aResult[2]:Owner};\n:ENDPROC;\n"
+            "code": ":PROCEDURE LoadOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.Load\", {sSampleId});\n\n\t:IF LimsTypeEx(aResult) != \"ARRAY\" .OR. ALen(aResult) < 2;\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:IF !aResult[1];\n\t\t:RETURN aResult;\n\t:ENDIF;\n\n\t:IF LimsTypeEx(aResult[2]) != \"OBJECT\";\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:RETURN {.T., aResult[2]:Owner};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6793,7 +6800,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sMessage;\nsMessage := \"Loaded \" + LimsString(3) + \" rows\";\n"
+            "code": ":DECLARE sMessage;\n\nsMessage := \"Loaded \" + LimsString(3) + \" rows\";\n"
           }
         ],
         "bad": [
@@ -6827,24 +6834,24 @@
         "class"
       ],
       "rule": "When a declaration or similar comma-separated statement wraps, indent each hanging line so its first item aligns with the first item after the keyword.",
-      "rationale": "Aligned items read as one list, and the hanging lines do not look like\nstatements of their own.",
+      "rationale": "Aligned items read as one list, and the hanging lines do not look like\nstatements of their own. The alignment is the statement's indent followed by\nspaces, so it holds at any tab width.",
       "exceptions": null,
       "examples": {
         "good": [
           {
-            "lang": "text",
-            "code": ":DECLARE sRequestId, sRouteCode, sSettingKey, nRetryCount, nRetryLimit,\n         bStarted, bCommit;\n"
+            "lang": "ssl",
+            "code": ":PROCEDURE StartRequest;\n\t:PARAMETERS sRequestId, sRouteCode;\n\t:DECLARE sSettingKey, nRetryCount, nRetryLimit, bStarted, sStatus, sMessage,\n\t         bCommit;\n\n\tsSettingKey := sRouteCode + \"_\" + sRequestId;\n\tnRetryCount := 0;\n\tnRetryLimit := 3;\n\tbStarted := nRetryCount < nRetryLimit;\n\tsStatus := \"\";\n\tsMessage := sSettingKey;\n\tbCommit := bStarted .AND. Empty(sStatus) .AND. !Empty(sMessage);\n\n\t:RETURN bCommit;\n:ENDPROC;\n"
           }
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": ":DECLARE sRequestId, sRouteCode, sSettingKey, nRetryCount, nRetryLimit,\nbStarted, bCommit;\n"
+            "lang": "ssl",
+            "code": ":PROCEDURE StartRequest;\n\t:PARAMETERS sRequestId, sRouteCode;\n\t:DECLARE sSettingKey, nRetryCount, nRetryLimit, bStarted, sStatus, sMessage,\n\t\tbCommit;\n\n\tsSettingKey := sRouteCode + \"_\" + sRequestId;\n\tnRetryCount := 0;\n\tnRetryLimit := 3;\n\tbStarted := nRetryCount < nRetryLimit;\n\tsStatus := \"\";\n\tsMessage := sSettingKey;\n\tbCommit := bStarted .AND. Empty(sStatus) .AND. !Empty(sMessage);\n\n\t:RETURN bCommit;\n:ENDPROC;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:fmt.indent_style"
       ],
       "categories": [
         "formatting"
@@ -6852,8 +6859,52 @@
       "related_elements": [],
       "schema_paths": [],
       "aliases": [],
-      "issues": [],
+      "issues": [
+        "#120"
+      ],
       "source": "rules/server-scripts/wrapped_list_alignment.md"
+    },
+    {
+      "id": "bracket_contents_align",
+      "title": "Continuation lines inside brackets align with the first item",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Inside an unclosed `(`, `{` or `[` whose first item shares the bracket's line, align each continuation line with that first item (the opening line's indentation, then spaces); a bracket that ends its line hangs, with its items one level in and a leading closing delimiter back at the opening line's indentation; when an item would not fit at the aligned column, break right after the bracket and hang its items.",
+      "rationale": "Aligned items show which bracket they belong to, so a reader sees the\nargument or element structure without counting delimiters. A bracket that\nends its line has no first item to align with, so its items hang one level\nin and the closing delimiter lines up with the line that opened it. The\nalignment is the line's own indent followed by spaces, so it holds at any\ntab width.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE BuildRow;\n\t:PARAMETERS sSampleNo, sMatrix, sSite, dTaken, sRemarks;\n\t:DECLARE aStatusCodes, nFirstQuarterRevenue, nSecondQuarterRevenue,\n\t         nThirdQuarterRevenue;\n\n\taStatusCodes := {\n\t\t\"Logged\", \"Received\", \"In Progress\",\n\t\t\"Complete\"\n\t};\n\tnFirstQuarterRevenue := 100;\n\tnSecondQuarterRevenue := 200;\n\tnThirdQuarterRevenue := 300;\n\tDoProc(\"CalculateTotals\", {nFirstQuarterRevenue, nSecondQuarterRevenue,\n\t                           nThirdQuarterRevenue});\n\n\t:RETURN {sSampleNo, sMatrix, sSite, dTaken, aStatusCodes,\n\t         sRemarks};\n:ENDPROC;\n\n:PROCEDURE CalculateTotals;\n\t:PARAMETERS nFirst, nSecond, nThird;\n\n\t:RETURN nFirst + nSecond + nThird;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE BuildRow;\n\t:PARAMETERS sSampleNo, sMatrix, sSite, dTaken, sRemarks;\n\t:DECLARE aStatusCodes, nFirstQuarterRevenue, nSecondQuarterRevenue,\n\t         nThirdQuarterRevenue;\n\n\taStatusCodes := {\n\t\"Logged\", \"Received\", \"In Progress\",\n\t\"Complete\"\n\t\t};\n\tnFirstQuarterRevenue := 100;\n\tnSecondQuarterRevenue := 200;\n\tnThirdQuarterRevenue := 300;\n\tDoProc(\"CalculateTotals\", {nFirstQuarterRevenue, nSecondQuarterRevenue,\n\t\tnThirdQuarterRevenue});\n\n\t:RETURN {sSampleNo, sMatrix, sSite, dTaken, aStatusCodes,\n\t\tsRemarks};\n:ENDPROC;\n\n:PROCEDURE CalculateTotals;\n\t:PARAMETERS nFirst, nSecond, nThird;\n\n\t:RETURN nFirst + nSecond + nThird;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "lsp:fmt.indent_style"
+      ],
+      "categories": [
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [
+        "#124"
+      ],
+      "source": "rules/server-scripts/bracket_contents_align.md"
     },
     {
       "id": "continuation_indent_shows_structure",
@@ -6866,25 +6917,25 @@
         "server_script",
         "class"
       ],
-      "rule": "Indent continuations to reveal expression or argument structure; do not copy incidental alignment columns from another file.",
+      "rule": "Indent continuations to reveal expression or argument structure: outside brackets, one level past the line that opened the statement; inside a bracket, as `bracket_contents_align` says. Do not copy incidental alignment columns from another file.",
       "rationale": "The indent of a continuation line tells the reader which part of the\nexpression it belongs to; a column copied from elsewhere tells them nothing.",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\tbOk := .F.;\n\t:IF nVal > 1\n\t\t.AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\t:RETURN bOk;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\n\tbOk := .F.;\n\n\t:IF nVal > 1\n\t\t.AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\n\t:RETURN bOk;\n:ENDPROC;\n"
           }
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": ":IF nVal > 1\n                                        .AND. sName == \"x\";\n"
+            "lang": "ssl",
+            "code": ":PROCEDURE Check;\n\t:PARAMETERS nVal, sName;\n\t:DECLARE bOk;\n\n\tbOk := .F.;\n\n\t:IF nVal > 1\n                                        .AND. sName == \"x\";\n\t\tbOk := .T.;\n\t:ENDIF;\n\n\t:RETURN bOk;\n:ENDPROC;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:fmt.indent_style"
       ],
       "categories": [
         "formatting"
@@ -6892,7 +6943,9 @@
       "related_elements": [],
       "schema_paths": [],
       "aliases": [],
-      "issues": [],
+      "issues": [
+        "#124"
+      ],
       "source": "rules/server-scripts/continuation_indent_shows_structure.md"
     },
     {
@@ -6913,7 +6966,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Fail;\n\t:PARAMETERS sCode, sMessage;\n\t:RETURN {.F., {sCode, sMessage}};\n:ENDPROC;\n"
+            "code": ":PROCEDURE Fail;\n\t:PARAMETERS sCode, sMessage;\n\n\t:RETURN {.F., {sCode, sMessage}};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6953,7 +7006,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE IsCount;\n\t:PARAMETERS vValue;\n\t:RETURN LimsTypeEx(vValue) == \"NUMERIC\";\n:ENDPROC;\n"
+            "code": ":PROCEDURE IsCount;\n\t:PARAMETERS vValue;\n\n\t:RETURN LimsTypeEx(vValue) == \"NUMERIC\";\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6995,7 +7048,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE HasName;\n\t:PARAMETERS vName;\n\t:IF LimsTypeEx(vName) != \"STRING\";\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:RETURN Len(vName) > 0;\n:ENDPROC;\n"
+            "code": ":PROCEDURE HasName;\n\t:PARAMETERS vName;\n\n\t:IF LimsTypeEx(vName) != \"STRING\";\n\t\t:RETURN .F.;\n\t:ENDIF;\n\n\t:RETURN Len(vName) > 0;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -7081,7 +7134,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE Connect;\n\t:PARAMETERS sUser, sPassword;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Integration.Connect\", {sUser, sPassword});\n\tInfoMes(\"[INFO] Connect\", \"Connected as \" + sUser);\n\t:RETURN aResult;\n:ENDPROC;\n"
+            "code": ":PROCEDURE Connect;\n\t:PARAMETERS sUser, sPassword;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Integration.Connect\", {sUser, sPassword});\n\tInfoMes(\"[INFO] Connect\", \"Connected as \" + sUser);\n\n\t:RETURN aResult;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -7253,7 +7306,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PARAMETERS sName;\n:DEFAULT sName, \"\";\n:INCLUDE Shared.Helpers;\n:DECLARE nCount;\n\nnCount := Len(sName);\n:RETURN nCount;\n"
+            "code": ":PARAMETERS sName;\n:DEFAULT sName, \"\";\n:INCLUDE Shared.Helpers;\n:DECLARE nCount;\n\nnCount := Len(sName);\n\n:RETURN nCount;\n"
           }
         ],
         "bad": [
@@ -7296,7 +7349,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PARAMETERS sName;\n:DEFAULT sName, \"\";\n:INCLUDE Shared.Helpers;\n:DECLARE nCount;\n\nnCount := Len(sName);\n:RETURN nCount;\n"
+            "code": ":PARAMETERS sName;\n:DEFAULT sName, \"\";\n:INCLUDE Shared.Helpers;\n:DECLARE nCount;\n\nnCount := Len(sName);\n\n:RETURN nCount;\n"
           }
         ],
         "bad": [
@@ -7341,7 +7394,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": "/* ********************************************************************************\nDescription.. : Records a status change for one sample.\nParameters... : sSampleId - Sample to update\nReturns...... : {.T., NIL} on success\n                {.F., {sCode, sMessage}} on failure\nDate......... : 2026-10-13\n********************************************************************************;\n:PARAMETERS sSampleId;\n:DEFAULT sSampleId, \"\";\n:DECLARE aResult;\n\naResult := DoProc(\"ChangeStatus\", {sSampleId});\n\n:RETURN aResult;\n\n/* region Status changes;\n\n/*\n * Procedure: ChangeStatus\n * Description: Writes the status change.\n * Parameters:\n *   sSampleId - Sample to update\n * Returns: aResult - {.T., NIL} on success or a failure envelope\n;\n:PROCEDURE ChangeStatus;\n\t:PARAMETERS sSampleId;\n\t:RETURN ExecFunction(\"Samples.WriteStatus\", {sSampleId});\n:ENDPROC;\n\n/* endregion;\n"
+            "code": "/* ********************************************************************************\nDescription.. : Records a status change for one sample.\nParameters... : sSampleId - Sample to update\nReturns...... : {.T., NIL} on success\n                {.F., {sCode, sMessage}} on failure\nDate......... : 2026-10-13\n********************************************************************************;\n:PARAMETERS sSampleId;\n:DEFAULT sSampleId, \"\";\n:DECLARE aResult;\n\naResult := DoProc(\"ChangeStatus\", {sSampleId});\n\n:RETURN aResult;\n\n/* region Status changes;\n\n/*\n * Procedure: ChangeStatus\n * Description: Writes the status change.\n * Parameters:\n *   sSampleId - Sample to update\n * Returns: aResult - {.T., NIL} on success or a failure envelope\n;\n:PROCEDURE ChangeStatus;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN ExecFunction(\"Samples.WriteStatus\", {sSampleId});\n:ENDPROC;\n\n/* endregion;\n"
           }
         ],
         "bad": [
@@ -7876,7 +7929,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE ReadRows;\n\t:DECLARE aRows;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+            "code": ":PROCEDURE ReadRows;\n\t:DECLARE aRows;\n\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask\");\n\n\t:RETURN aRows;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -7916,7 +7969,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE RunReport;\n\t:PARAMETERS sReport;\n\t:DECLARE vResult;\n\tvResult := NIL;\n\t:IF AScanExact({\"Daily\", \"Weekly\"}, sReport) > 0;\n\t\tvResult := ExecFunction(\"Reports.\" + sReport);\n\t:ENDIF;\n\t:RETURN vResult;\n:ENDPROC;\n"
+            "code": ":PROCEDURE RunReport;\n\t:PARAMETERS sReport;\n\t:DECLARE vResult;\n\n\tvResult := NIL;\n\n\t:IF AScanExact({\"Daily\", \"Weekly\"}, sReport) > 0;\n\t\tvResult := ExecFunction(\"Reports.\" + sReport);\n\t:ENDIF;\n\n\t:RETURN vResult;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -7960,7 +8013,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE oResult;\noResult := RunDS(\"Samples.ByStatus\", {\"P\", 25});\n"
+            "code": ":DECLARE oResult;\n\noResult := RunDS(\"Samples.ByStatus\", {\"P\", 25});\n"
           }
         ],
         "bad": [
@@ -8496,7 +8549,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := RunDS(\"Samples.ByStatus\", {\"A\"});\n"
+            "code": ":DECLARE aRows;\n\naRows := RunDS(\"Samples.ByStatus\", {\"A\"});\n"
           }
         ],
         "bad": [
@@ -8723,7 +8776,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sOrdNo, aRows;\nsOrdNo := \"A1001\";\naRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n"
+            "code": ":DECLARE sOrdNo, aRows;\n\nsOrdNo := \"A1001\";\naRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n"
           }
         ],
         "bad": [
@@ -8775,7 +8828,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = ?sStatus?\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = ?sStatus?\");\n"
           }
         ],
         "bad": [
@@ -8828,7 +8881,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := LSelect(\"SELECT ordno FROM ordtask WHERE status = ?\",,, {sStatus});\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := LSelect(\"SELECT ordno FROM ordtask WHERE status = ?\",,, {sStatus});\n"
           }
         ],
         "bad": [
@@ -8881,7 +8934,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sSql, sStatus, oDs;\nsStatus := \"Logged\";\nsSql := \"SELECT ordno FROM ordtask WHERE status = @status\";\noDs := GetSSLDataset(sSql,, {\"status\"}, {sStatus});\n"
+            "code": ":DECLARE sSql, sStatus, oDs;\n\nsStatus := \"Logged\";\nsSql := \"SELECT ordno FROM ordtask WHERE status = @status\";\noDs := GetSSLDataset(sSql,, {\"status\"}, {sStatus});\n"
           }
         ],
         "bad": [
@@ -8925,7 +8978,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sXml;\nsXml := GetDataSet(\"SELECT ordno FROM ordtask\");\n"
+            "code": ":DECLARE sXml;\n\nsXml := GetDataSet(\"SELECT ordno FROM ordtask\");\n"
           }
         ],
         "bad": [
@@ -8972,7 +9025,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"SELECT ordno FROM orders WHERE status = ?sStatus?\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"SELECT ordno FROM orders WHERE status = ?sStatus?\");\n"
           }
         ],
         "bad": [
@@ -9015,7 +9068,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE ReadSamples;\n\t:PARAMETERS oFilter;\n\t:DECLARE aStatusCodes, aRows;\n\taStatusCodes := oFilter:statusCodes;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatusCodes?)\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+            "code": ":PROCEDURE ReadSamples;\n\t:PARAMETERS oFilter;\n\t:DECLARE aStatusCodes, aRows;\n\n\taStatusCodes := oFilter:statusCodes;\n\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatusCodes?)\");\n\n\t:RETURN aRows;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -9057,7 +9110,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE bDone, oErr;\n\tbDone := .F.;\n\t:TRY;\n\t\tbDone := RunSQL(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?\",, {sOrdNo});\n\t:CATCH;\n\t\toErr := GetLastSSLError();\n\t\tErrorMes(\"[ERROR] CloseOrder \" + sOrdNo, Left(oErr:Description, 2000));\n\t\tClearLastSSLError();\n\t:ENDTRY;\n\t:RETURN bDone;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE bDone, oErr;\n\n\tbDone := .F.;\n\n\t:TRY;\n\t\tbDone := RunSQL(\"UPDATE ordtask SET status = 'Done' WHERE ordno = ?\",, {sOrdNo});\n\t:CATCH;\n\t\toErr := GetLastSSLError();\n\t\tErrorMes(\"[ERROR] CloseOrder \" + sOrdNo, Left(oErr:Description, 2000));\n\t\tClearLastSSLError();\n\t:ENDTRY;\n\n\t:RETURN bDone;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -9099,7 +9152,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE OrderStatus;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sStatus;\n\tsStatus := LSearch(\"SELECT status FROM ordtask WHERE ordno = ?\",,, {sOrdNo});\n\t:RETURN sStatus;\n:ENDPROC;\n"
+            "code": ":PROCEDURE OrderStatus;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE sStatus;\n\n\tsStatus := LSearch(\"SELECT status FROM ordtask WHERE ordno = ?\",,, {sOrdNo});\n\n\t:RETURN sStatus;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -9141,7 +9194,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE OrderRows;\n\t:PARAMETERS oRequest;\n\t:DECLARE sOrdNo, aRows;\n\tsOrdNo := oRequest:ordNo;\n\taRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+            "code": ":PROCEDURE OrderRows;\n\t:PARAMETERS oRequest;\n\t:DECLARE sOrdNo, aRows;\n\n\tsOrdNo := oRequest:ordNo;\n\taRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n\n\t:RETURN aRows;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -9183,7 +9236,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE ReadByStatus;\n\t:PARAMETERS aStatuses;\n\t:DECLARE aRows;\n\taRows := {};\n\t:IF ALen(aStatuses) > 0;\n\t\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)\");\n\t:ENDIF;\n\t:RETURN aRows;\n:ENDPROC;\n"
+            "code": ":PROCEDURE ReadByStatus;\n\t:PARAMETERS aStatuses;\n\t:DECLARE aRows;\n\n\taRows := {};\n\n\t:IF ALen(aStatuses) > 0;\n\t\taRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)\");\n\t:ENDIF;\n\n\t:RETURN aRows;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -9225,7 +9278,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"SELECT ordno FROM ordtask\");\n"
           }
         ],
         "bad": [
@@ -9265,7 +9318,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\t:IF LimsRecordsAffected() != 1;\n\t\t:RETURN {.F., {\"NOT_UPDATED\", \"The order was not updated.\"}};\n\t:ENDIF;\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\n\t:IF LimsRecordsAffected() != 1;\n\t\t:RETURN {.F., {\"NOT_UPDATED\", \"The order was not updated.\"}};\n\t:ENDIF;\n\n\t:RETURN {.T., NIL};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -9306,7 +9359,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT o.ordno, t.testcode\n    FROM orders o\n    INNER JOIN ordtask t\n      ON t.ordno = o.ordno\n    WHERE t.status = ?sStatus?\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT o.ordno, t.testcode\n    FROM orders o\n    INNER JOIN ordtask t\n      ON t.ordno = o.ordno\n    WHERE t.status = ?sStatus?\n\");\n"
           }
         ],
         "bad": [
@@ -9351,7 +9404,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, testcode\n    FROM ordtask\n    WHERE status = ?sStatus?\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, testcode\n    FROM ordtask\n    WHERE status = ?sStatus?\n\");\n"
           }
         ],
         "bad": [
@@ -9396,7 +9449,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, testcode\n    FROM ordtask\n    WHERE status = ?sStatus?\n    ORDER BY ordno\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, testcode\n    FROM ordtask\n    WHERE status = ?sStatus?\n    ORDER BY ordno\n\");\n"
           }
         ],
         "bad": [
@@ -9441,7 +9494,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, testcode, status, logdate, result, analyst, department\n    FROM ordtask\n    WHERE status = ?sStatus?\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, testcode, status, logdate, result, analyst, department\n    FROM ordtask\n    WHERE status = ?sStatus?\n\");\n"
           }
         ],
         "bad": [
@@ -9486,7 +9539,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT ordno, testcode, status\n    FROM ordtask\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT ordno, testcode, status\n    FROM ordtask\n\");\n"
           }
         ],
         "bad": [
@@ -9532,7 +9585,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sPrefix, sSuffix, sOrdNo, aRows;\nsPrefix := \"A\";\nsSuffix := \"1001\";\nsOrdNo := sPrefix + sSuffix;\naRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n"
+            "code": ":DECLARE sPrefix, sSuffix, sOrdNo, aRows;\n\nsPrefix := \"A\";\nsSuffix := \"1001\";\nsOrdNo := sPrefix + sSuffix;\naRows := SQLExecute(\"SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?\");\n"
           }
         ],
         "bad": [
@@ -9575,7 +9628,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aStatuses, aRows;\naStatuses := {\"Logged\", \"Done\"};\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)\");\n"
+            "code": ":DECLARE aStatuses, aRows;\n\naStatuses := {\"Logged\", \"Done\"};\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)\");\n"
           }
         ],
         "bad": [
@@ -9619,7 +9672,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, COUNT(*) AS ntests\n    FROM ordtask\n    WHERE status = ?sStatus?\n    GROUP BY ordno\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, COUNT(*) AS ntests\n    FROM ordtask\n    WHERE status = ?sStatus?\n    GROUP BY ordno\n\");\n"
           }
         ],
         "bad": [
@@ -9665,7 +9718,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"SELECT SampleID, Status FROM Sample WHERE Status = ?sStatus?\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"SELECT SampleID, Status FROM Sample WHERE Status = ?sStatus?\");\n"
           }
         ],
         "bad": [
@@ -9712,7 +9765,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute('SELECT \"OrderNo\", \"Status\" FROM \"ExtOrders\"');\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute('SELECT \"OrderNo\", \"Status\" FROM \"ExtOrders\"');\n"
           }
         ],
         "bad": [
@@ -9757,7 +9810,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT o.ordno, t.testcode\n    FROM orders o\n    INNER JOIN ordtask t\n      ON t.ordno = o.ordno\n      AND t.testcode = 'PH'\n    WHERE o.status = ?sStatus?\n      AND t.status = 'Done'\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT o.ordno, t.testcode\n    FROM orders o\n    INNER JOIN ordtask t\n      ON t.ordno = o.ordno\n      AND t.testcode = 'PH'\n    WHERE o.status = ?sStatus?\n      AND t.status = 'Done'\n\");\n"
           }
         ],
         "bad": [
@@ -9804,7 +9857,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno, t.testcode\n    FROM orders o\n    INNER JOIN ordtask t\n      ON t.ordno = o.ordno\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT o.ordno, t.testcode\n    FROM orders o\n    INNER JOIN ordtask t\n      ON t.ordno = o.ordno\n\");\n"
           }
         ],
         "bad": [
@@ -9850,7 +9903,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT ordno, COUNT(*) AS ntests\n    FROM ordtask\n    GROUP BY ordno\n      HAVING COUNT(*) > 1\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT ordno, COUNT(*) AS ntests\n    FROM ordtask\n    GROUP BY ordno\n      HAVING COUNT(*) > 1\n\");\n"
           }
         ],
         "bad": [
@@ -9939,7 +9992,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN 'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN 'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ],
         "bad": [
@@ -9986,7 +10039,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ],
         "bad": [
@@ -10032,7 +10085,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN 'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT o.ordno,\n           CASE\n               WHEN o.status = 'L' THEN 'Logged'\n               WHEN o.status = 'C' THEN 'Complete'\n               ELSE 'Unknown'\n           END AS status_desc\n    FROM orders o\n\");\n"
           }
         ],
         "bad": [
@@ -10125,7 +10178,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT ordno, testcode, status AS task_status, UPPER(result) AS result_upper\n    FROM ordtask\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT ordno, testcode, status AS task_status, UPPER(result) AS result_upper\n    FROM ordtask\n\");\n"
           }
         ],
         "bad": [
@@ -10169,7 +10222,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT o.ordno, o.testcode, o.status AS task_status, o.logdate, o.analyst,\n           UPPER(o.result) AS result_upper\n    FROM ordtask o\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT o.ordno, o.testcode, o.status AS task_status, o.logdate, o.analyst,\n           UPPER(o.result) AS result_upper\n    FROM ordtask o\n\");\n"
           }
         ],
         "bad": [
@@ -10215,7 +10268,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sOrdNo, sTestCode;\nsOrdNo := \"A1001\";\nsTestCode := \"PH\";\nRunSQL(\"\n    INSERT INTO ordtask (\n        ordno, testcode, status\n    )\n    VALUES (\n        ?, ?, 'Logged'\n    )\n\",, {sOrdNo, sTestCode});\n"
+            "code": ":DECLARE sOrdNo, sTestCode;\n\nsOrdNo := \"A1001\";\nsTestCode := \"PH\";\nRunSQL(\"\n    INSERT INTO ordtask (\n        ordno, testcode, status\n    )\n    VALUES (\n        ?, ?, 'Logged'\n    )\n\",, {sOrdNo, sTestCode});\n"
           }
         ],
         "bad": [
@@ -10261,7 +10314,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sOrdNo, sStatus;\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nRunSQL(\"\n    UPDATE ordtask SET\n        status = ?,\n        testcode = 'PH'\n    WHERE ordno = ?\n\",, {sStatus, sOrdNo});\n"
+            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nRunSQL(\"\n    UPDATE ordtask SET\n        status = ?,\n        testcode = 'PH'\n    WHERE ordno = ?\n\",, {sStatus, sOrdNo});\n"
           }
         ],
         "bad": [
@@ -10299,31 +10352,32 @@
         "embedded_sql",
         "sql_data_source"
       ],
-      "rule": "When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.",
-      "rationale": "In `MERGE`, `ON` is a clause of the statement, not of `USING`, so it starts\nat column 0 like the other clauses. The actions under each `WHEN` indent one\nlevel, the way `THEN` values do.",
+      "rule": "When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), and give the `INSERT` block-style parentheses.",
+      "rationale": "In `MERGE`, `ON` is a clause of the statement, not of `USING`, so it starts\nat column 0 like the other clauses. The actions under each `WHEN` indent one\nlevel, the way `THEN` values do. `UPDATE SET` lays out like a plain `UPDATE`,\nso each assignment is easy to see and to edit.",
       "exceptions": "Agents do not write `MERGE` (see `sql_basic_sql_only`). This layout is for\nformatting `MERGE` statements that already exist.",
       "examples": {
         "good": [
           {
-            "lang": "text",
-            "code": "MERGE INTO ordtask t\nUSING (\n    SELECT ? AS ordno, ? AS status\n    FROM dual\n) s\nON (t.ordno = s.ordno\n    AND t.status <> s.status)\nWHEN MATCHED THEN\n    UPDATE SET t.status = s.status\nWHEN NOT MATCHED THEN\n    INSERT (\n        ordno, status\n    )\n    VALUES (\n        s.ordno, s.status\n    )\n"
+            "lang": "ssl",
+            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nSQLExecute(\"\n    MERGE INTO ordtask t\n    USING (\n        SELECT ?sOrdNo? AS ordno, ?sStatus? AS status\n        FROM dual\n    ) s\n    ON (t.ordno = s.ordno\n        AND t.status <> s.status\n        AND t.department_code = s.department_code)\n    WHEN MATCHED THEN\n        UPDATE SET\n            t.status = s.status,\n            t.changed_on = SYSDATE\n    WHEN NOT MATCHED THEN\n        INSERT (\n            ordno, status\n        )\n        VALUES (\n            s.ordno, s.status\n        )\n\");\n"
           }
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": "MERGE INTO ordtask t\nUSING (SELECT ? AS ordno, ? AS status FROM dual) s\n  ON (t.ordno = s.ordno AND t.status <> s.status)\nWHEN MATCHED THEN UPDATE SET t.status = s.status\nWHEN NOT MATCHED THEN INSERT (ordno, status) VALUES (s.ordno, s.status)\n"
+            "lang": "ssl",
+            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nSQLExecute(\"MERGE INTO ordtask t USING (SELECT ?sOrdNo? AS ordno, ?sStatus? AS status FROM dual) s ON (t.ordno = s.ordno AND t.status <> s.status AND t.department_code = s.department_code) WHEN MATCHED THEN UPDATE SET t.status = s.status, t.changed_on = SYSDATE WHEN NOT MATCHED THEN INSERT (ordno, status) VALUES (s.ordno, s.status)\");\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:fmt.sql_in_strings"
       ],
       "categories": [
         "sql"
       ],
       "related_elements": [
-        "RunSQL"
+        "RunSQL",
+        "SQLExecute"
       ],
       "schema_paths": [
         "sql.formatting.statement_patterns.merge.on",
@@ -10332,7 +10386,9 @@
         "sql.formatting.statement_patterns.merge.insert"
       ],
       "aliases": [],
-      "issues": [],
+      "issues": [
+        "#123"
+      ],
       "source": "rules/sql/sql_merge_layout.md"
     },
     {
@@ -10353,7 +10409,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"\n    SELECT ordno\n    FROM ordtask\n    WHERE status = 'Logged'\n\n    UNION\n\n    SELECT ordno\n    FROM orders\n    WHERE status = 'Open'\n\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"\n    SELECT ordno\n    FROM ordtask\n    WHERE status = 'Logged'\n\n    UNION\n\n    SELECT ordno\n    FROM orders\n    WHERE status = 'Open'\n\");\n"
           }
         ],
         "bad": [
@@ -10397,7 +10453,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT /*+ INDEX(t ix_status) */ ordno\n    FROM ordtask t\n    WHERE status = ?sStatus?\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT /*+ INDEX(t ix_status) */ ordno\n    FROM ordtask t\n    WHERE status = ?sStatus?\n\");\n"
           }
         ],
         "bad": [
@@ -10443,7 +10499,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sOrdNo, sStatus;\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nRunSQL(\"UPDATE ordtask SET status = ? WHERE ordno = ?\",, {sStatus, sOrdNo});\n"
+            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nRunSQL(\"UPDATE ordtask SET status = ? WHERE ordno = ?\",, {sStatus, sOrdNo});\n"
           }
         ],
         "bad": [
@@ -10485,7 +10541,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = 'Logged'\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = 'Logged'\");\n"
           }
         ],
         "bad": [
@@ -10528,7 +10584,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sStatus, aRows;\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, COUNT(*) AS ntests\n    FROM ordtask\n    WHERE status = ?sStatus?\n    GROUP BY ordno\n\");\n"
+            "code": ":DECLARE sStatus, aRows;\n\nsStatus := \"Logged\";\naRows := SQLExecute(\"\n    SELECT ordno, COUNT(*) AS ntests\n    FROM ordtask\n    WHERE status = ?sStatus?\n    GROUP BY ordno\n\");\n"
           }
         ],
         "bad": [
@@ -10571,7 +10627,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = 'Logged'\");\n"
+            "code": ":DECLARE aRows;\n\naRows := SQLExecute(\"SELECT ordno FROM ordtask WHERE status = 'Logged'\");\n"
           }
         ],
         "bad": [
@@ -10611,7 +10667,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE aRows;\n/* Codes differ only by case, so this match must be case-sensitive;\naRows := SQLExecute(\"\n    SELECT ordno\n    FROM ordtask\n    WHERE code = 'Ab' COLLATE Latin1_General_CS_AS\n\");\n"
+            "code": ":DECLARE aRows;\n\n/* Codes differ only by case, so this match must be case-sensitive;\naRows := SQLExecute(\"\n    SELECT ordno\n    FROM ordtask\n    WHERE code = 'Ab' COLLATE Latin1_General_CS_AS\n\");\n"
           }
         ],
         "bad": [
@@ -10651,7 +10707,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\t:RETURN LimsRecordsAffected() == 1;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CloseOrder;\n\t:PARAMETERS sOrdNo;\n\n\tSQLExecute(\"\n\t    UPDATE ordtask SET\n\t        status = 'Done'\n\t    WHERE ordno = ?sOrdNo?\n\t      AND status = 'Logged'\n\t\");\n\n\t:RETURN LimsRecordsAffected() == 1;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -10691,7 +10747,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE ClaimOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE aRows;\n\t/* Lock the row so a second claim waits for this one;\n\taRows := SQLExecute(\"\n\t    SELECT ordno, status\n\t    FROM ordtask\n\t    WHERE ordno = ?sOrdNo?\n\t    FOR UPDATE\n\t\");\n\t:RETURN aRows;\n:ENDPROC;\n"
+            "code": ":PROCEDURE ClaimOrder;\n\t:PARAMETERS sOrdNo;\n\t:DECLARE aRows;\n\n\t/* Lock the row so a second claim waits for this one;\n\taRows := SQLExecute(\"\n\t    SELECT ordno, status\n\t    FROM ordtask\n\t    WHERE ordno = ?sOrdNo?\n\t    FOR UPDATE\n\t\");\n\n\t:RETURN aRows;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -10908,7 +10964,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE oCounter;\noCounter := CreateUdObject(\"Samples.Counter\");\noCounter:Increment();\n"
+            "code": ":DECLARE oCounter;\n\noCounter := CreateUdObject(\"Samples.Counter\");\noCounter:Increment();\n"
           }
         ],
         "bad": [
@@ -10996,7 +11052,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE oEmail;\noEmail := Email{};\n"
+            "code": ":DECLARE oEmail;\n\noEmail := Email{};\n"
           }
         ],
         "bad": [
@@ -11298,7 +11354,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":CLASS Counter;\n:INHERIT Samples.BaseCounter;\n:DECLARE nCount;\n\n:PROCEDURE Constructor;\n\t:PARAMETERS nStart;\n\tBase:Constructor(nStart);\n\tMe:nCount := nStart;\n:ENDPROC;\n"
+            "code": ":CLASS Counter;\n:INHERIT Samples.BaseCounter;\n:DECLARE nCount;\n\n:PROCEDURE Constructor;\n\t:PARAMETERS nStart;\n\n\tBase:Constructor(nStart);\n\tMe:nCount := nStart;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -11470,7 +11526,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":CLASS ResultMailer;\n:DECLARE sTo;\n\n:PROCEDURE SetRecipient;\n\t:PARAMETERS sAddress;\n\tMe:sTo := sAddress;\n:ENDPROC;\n"
+            "code": ":CLASS ResultMailer;\n:DECLARE sTo;\n\n:PROCEDURE SetRecipient;\n\t:PARAMETERS sAddress;\n\n\tMe:sTo := sAddress;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -11602,7 +11658,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE oEmail;\noEmail := Email{};\n"
+            "code": ":DECLARE oEmail;\n\noEmail := Email{};\n"
           }
         ],
         "bad": [
@@ -11649,7 +11705,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sName;\nsName := AllTrim(\" a \");\n"
+            "code": ":DECLARE sName;\n\nsName := AllTrim(\" a \");\n"
           }
         ],
         "bad": [
@@ -11744,7 +11800,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sUserName, nCount;\nsUserName := \"admin\";\nnCount := 0;\n"
+            "code": ":DECLARE sUserName, nCount;\n\nsUserName := \"admin\";\nnCount := 0;\n"
           }
         ],
         "bad": [
@@ -11791,7 +11847,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE MAX_ATTEMPTS;\nMAX_ATTEMPTS := 3;\n"
+            "code": ":DECLARE MAX_ATTEMPTS;\n\nMAX_ATTEMPTS := 3;\n"
           }
         ],
         "bad": [
@@ -11836,7 +11892,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sName, nQty, bDone, dDue, aRows, oMail, fnRule, vResult;\nsName := \"\";\nnQty := 0;\nbDone := .F.;\ndDue := Today();\naRows := {};\noMail := Email{};\nfnRule := {|x| x > 0};\nvResult := NIL;\n"
+            "code": ":DECLARE sName, nQty, bDone, dDue, aRows, oMail, fnRule, vResult;\n\nsName := \"\";\nnQty := 0;\nbDone := .F.;\ndDue := Today();\naRows := {};\noMail := Email{};\nfnRule := {|x| x > 0};\nvResult := NIL;\n"
           }
         ],
         "bad": [
@@ -11923,7 +11979,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE nCount;\nnCount := 0;\n"
+            "code": ":DECLARE nCount;\n\nnCount := 0;\n"
           }
         ],
         "bad": [
@@ -11966,7 +12022,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sCustomerOrderNo;\nsCustomerOrderNo := \"A1\";\n"
+            "code": ":DECLARE sCustomerOrderNo;\n\nsCustomerOrderNo := \"A1\";\n"
           }
         ],
         "bad": [
@@ -12014,7 +12070,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE i, nTotal;\nnTotal := 0;\n:FOR i := 1 :TO 3;\n\tnTotal += i;\n:NEXT;\n"
+            "code": ":DECLARE i, nTotal;\n\nnTotal := 0;\n\n:FOR i := 1 :TO 3;\n\tnTotal += i;\n:NEXT;\n"
           }
         ],
         "bad": [
@@ -12060,7 +12116,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sQCStatus;\n/* QC is spelled this way throughout this script;\nsQCStatus := \"Passed\";\n"
+            "code": ":DECLARE sQCStatus;\n\n/* QC is spelled this way throughout this script;\nsQCStatus := \"Passed\";\n"
           }
         ],
         "bad": [
@@ -12102,7 +12158,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE oOrder;\noOrder := CreateUdObject();\noOrder:orderNo := \"A1\";\noOrder:isValid := .T.;\n"
+            "code": ":DECLARE oOrder;\n\noOrder := CreateUdObject();\noOrder:orderNo := \"A1\";\noOrder:isValid := .T.;\n"
           }
         ],
         "bad": [
@@ -12146,7 +12202,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE LoadOrders;\n\t:DECLARE nRowCount;\n\tnRowCount := 0;\n\t:RETURN nRowCount;\n:ENDPROC;\n"
+            "code": ":PROCEDURE LoadOrders;\n\t:DECLARE nRowCount;\n\n\tnRowCount := 0;\n\n\t:RETURN nRowCount;\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -12188,7 +12244,7 @@
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE CalculateTotal;\n\t:PARAMETERS nQty, nPrice;\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
+            "code": ":PROCEDURE CalculateTotal;\n\t:PARAMETERS nQty, nPrice;\n\n\t:RETURN nQty * nPrice;\n:ENDPROC;\n"
           }
         ],
         "bad": [

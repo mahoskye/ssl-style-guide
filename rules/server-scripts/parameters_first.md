@@ -42,6 +42,7 @@ is always the first statement after `:PROCEDURE` or at the top of a script.
 	:DECLARE sStatus;
 
 	sStatus := "";
+
 	:RETURN sSampleId + sStatus;
 :ENDPROC;
 ```

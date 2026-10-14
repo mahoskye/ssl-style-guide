@@ -36,6 +36,7 @@ values.
 
 ```ssl
 :DECLARE nHalf;
+
 nHalf := Integer(5 / 2);
 ```
 

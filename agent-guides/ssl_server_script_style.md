@@ -118,7 +118,7 @@ A long block is not, by itself, a reason to add a comment.
 - Use one statement per line.
 - Almost every SSL statement, including comments, must end with a semicolon.
 - Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.
-- Indent continuations to reveal expression or argument structure; do not copy incidental alignment columns from another file.
+- Indent continuations to reveal expression or argument structure: outside brackets, one level past the line that opened the statement; inside a bracket, as `bracket_contents_align` says. Do not copy incidental alignment columns from another file.
 - Use `AllTrim` when normalizing caller input, route values, settings text or external response text; `Trim` strips trailing whitespace only.
 - Declare `sFmt` with the other string locals and use `sFmt:Format(template, {value1, value2, ...})` for messages, paths, setting keys and other composed text.
 - Pass `sFmt:Format` one array holding every replacement value, including for a single placeholder.

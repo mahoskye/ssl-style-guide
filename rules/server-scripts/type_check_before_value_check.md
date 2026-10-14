@@ -33,6 +33,7 @@ the type check has to come first.
 ```ssl
 :PROCEDURE HasName;
 	:PARAMETERS vName;
+
 	:IF LimsTypeEx(vName) != "STRING";
 		:RETURN .F.;
 	:ENDIF;

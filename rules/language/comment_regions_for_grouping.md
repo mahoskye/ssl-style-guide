@@ -36,8 +36,10 @@ fold in the editor.
 /* region Validation Helpers;
 :PROCEDURE CheckName;
 	:PARAMETERS sName;
+
 	:RETURN !Empty(sName);
 :ENDPROC;
+
 /* endregion;
 ```
 

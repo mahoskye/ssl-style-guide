@@ -31,6 +31,7 @@ how the reference documents every function.
 
 ```ssl
 :DECLARE nLength;
+
 nLength := Len("abc");
 ```
 

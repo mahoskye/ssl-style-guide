@@ -36,6 +36,7 @@ the explicit call, the parent's fields keep their declared empty values.
 
 :PROCEDURE Constructor;
 	:PARAMETERS nStart;
+
 	Base:Constructor(nStart);
 	Me:nCount := nStart;
 :ENDPROC;

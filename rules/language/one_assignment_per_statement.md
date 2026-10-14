@@ -37,6 +37,7 @@ the second assignment inside the first.
 
 ```ssl
 :DECLARE sStatus, sDefault;
+
 sStatus := sDefault := "PENDING";
 ```
 

@@ -12,8 +12,46 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- Rule record `bracket_contents_align`: inside an unclosed `(`, `{` or `[`
+  whose first item shares the bracket's line, continuation lines align with
+  that first item; a bracket that ends its line hangs one level in, with its
+  closing delimiter back at the opening line's indentation; an item that
+  would not fit at the aligned column makes the bracket hang (#124).
+- Schema: `formatting.bracket_continuation`, `formatting.blank_lines.between_sections`
+  (1) and `formatting.blank_lines.max_consecutive` (2) (#124, #125).
+
 ### Changed
-- MCP 1.16.0: pins starlims-lsp v0.25.0. `ssl_diagnose` reports the new
+- MCP: pins starlims-lsp v0.26.0. The CLI contract is unchanged, but
+  `ssl_format` output changes for most files: brackets and wrapped declaration
+  lists align their contents, a blank line separates logical sections, runs
+  of three or more blank lines collapse to two, unary operators attach to
+  their operands, and MERGE `UPDATE SET` lays out like a plain `UPDATE`.
+- `blank_line_between_sections` names its boundaries (after the declarations,
+  before a control block that follows code and after its closer, before a
+  section comment, before a procedure's final `:RETURN`, none at the start or
+  end of a body) and is enforced by the formatter
+  (`lsp:fmt.blank_lines_between_sections`) (#125).
+- `no_excess_blank_lines` caps a run of blank lines at two instead of one,
+  enforced by `lsp:fmt.max_consecutive_blank_lines` (#125).
+- `wrapped_list_alignment` is enforced by the formatter (`lsp:fmt.indent_style`),
+  which now aligns the hanging lines of a `:DECLARE`, `:PARAMETERS` or
+  `:PUBLIC` list under the first item; its examples are validated SSL (#120).
+- `continuation_indent_shows_structure` says a continuation outside brackets
+  takes one level and points to `bracket_contents_align` for brackets; it is
+  formatter-enforced. The schema's `formatting.continuation_indent` now
+  describes continuations outside brackets only (#124).
+- `sql_merge_layout`, the SQL reference (§2.12, §7.4) and the schema's
+  `sql.formatting.statement_patterns.merge.update_set`: MERGE `UPDATE SET` ends
+  its line at `SET`, and each assignment takes its own line one level in, as
+  in a plain `UPDATE`. The record is formatter-enforced
+  (`lsp:fmt.sql_in_strings`) apart from `DELETE WHERE` (#123).
+- Rule and skill examples follow the v0.26.0 formatter layout: Good examples
+  gain the section blank lines, and the `ssl-unit-test` skill example aligns
+  a wrapped call argument under the bracket's first item.
+- The `ssl-handoff` agent (version 9) no longer lists section blank lines as
+  something the formatter leaves to it.
+- MCP 1.16.0: from starlims-lsp v0.25.0, `ssl_diagnose` reports the new
   error-severity codes (`exitcase_last_in_branch`, `include_quoted_target`,
   `datasource_default_required`, `inline_default_outside_datasource`,
   `inherit_qualified_name`, `inherit_position`, `endclass_invalid`,

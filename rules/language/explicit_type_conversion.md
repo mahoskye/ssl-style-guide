@@ -37,6 +37,7 @@ subtracting days on a date, and subtracting two dates, mix types.
 
 ```ssl
 :DECLARE sMessage;
+
 sMessage := "Total: " + LimsString(5);
 ```
 

@@ -42,6 +42,7 @@ to the clause above it.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT ordno, testcode

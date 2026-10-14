@@ -36,7 +36,9 @@ for that adds a dependency, a round trip and a failure mode.
 :PROCEDURE ParseCodes;
 	:PARAMETERS sCodes;
 	:DECLARE aCodes;
+
 	aCodes := BuildArray(AllTrim(sCodes));
+
 	:RETURN aCodes;
 :ENDPROC;
 ```

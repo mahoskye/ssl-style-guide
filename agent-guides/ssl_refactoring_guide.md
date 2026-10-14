@@ -302,7 +302,7 @@ Multi-line conditions:
 
 <!-- rules: id=blank_line_between_procedures,blank_line_between_sections -->
 - Put one blank line between procedures.
-- Put one blank line between logical sections and between regions.
+- Put one blank line between logical sections and between regions: after the declarations, before a control block that follows code and after its closer when more code follows, before a section comment that follows code, and before a procedure's final `:RETURN`; add none at the start or end of a body.
 <!-- /rules -->
 
 Inside procedures, use blank lines as readability needs.

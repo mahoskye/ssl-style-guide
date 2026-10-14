@@ -38,6 +38,7 @@ changed columns easy to scan and to diff.
 
 ```ssl
 :DECLARE sOrdNo, sStatus;
+
 sOrdNo := "A1001";
 sStatus := "Done";
 RunSQL("

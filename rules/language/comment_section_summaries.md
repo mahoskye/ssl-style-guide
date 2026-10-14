@@ -35,12 +35,14 @@ decide whether to read the section without reading all of it.
 	:DECLARE i, nTotal;
 
 	nTotal := 0;
+
 	:FOR i := 1 :TO ALen(aLines);
 		nTotal += aLines[i];
 	:NEXT;
 
 	:RETURN nTotal;
 :ENDPROC;
+
 /* endregion;
 ```
 

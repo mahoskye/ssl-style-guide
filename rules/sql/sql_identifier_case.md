@@ -48,6 +48,7 @@ setting `ssl.format.sql.identifierCase: lower` is that opt-in.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("SELECT SampleID, Status FROM Sample WHERE Status = ?sStatus?");
 ```

@@ -38,6 +38,7 @@ procedure in the same script is not found that way.
 
 ```ssl
 :DECLARE sName;
+
 sName := AllTrim(" admin ");
 ```
 

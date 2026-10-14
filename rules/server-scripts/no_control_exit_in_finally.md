@@ -58,6 +58,7 @@ compile-time error inside `:FINALLY`.
 
 	nTotal := 0;
 	bDone := .F.;
+
 	:FOR i := 1 :TO ALen(aRows);
 		:TRY;
 			nTotal += aRows[i];

@@ -37,6 +37,7 @@ so a review reports a late declaration as a suggestion, not an error.
 	:DECLARE i, nCount;
 
 	nCount := 0;
+
 	:FOR i := 1 :TO ALen(aRows);
 		nCount += 1;
 	:NEXT;

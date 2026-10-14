@@ -31,6 +31,7 @@ comparison is evaluated against a non-Unicode column.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("SELECT ordno FROM ordtask WHERE status = 'Logged'");
 ```
 

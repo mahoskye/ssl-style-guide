@@ -50,6 +50,7 @@ A deliberate prefix test may use `=`. Say so in a comment.
 
 ```ssl
 :DECLARE sStatus, bDone;
+
 sStatus := "Complete";
 bDone := sStatus == "Complete";
 ```

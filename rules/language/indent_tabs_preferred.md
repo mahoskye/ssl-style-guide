@@ -37,7 +37,9 @@ space-indented file wholesale buries the real change in an unreadable diff.
 ```ssl
 :PROCEDURE Show;
 	:DECLARE nCount;
+
 	nCount := 0;
+
 	:RETURN nCount;
 :ENDPROC;
 ```

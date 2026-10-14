@@ -35,7 +35,9 @@ and the next line is then read as part of the condition.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 0;
+
 :IF nCount > 0;
 	nCount := 1;
 :ENDIF;

@@ -33,6 +33,7 @@ and external names around it; new names follow the normal camelCase body.
 
 ```ssl
 :DECLARE sQCStatus;
+
 /* QC is spelled this way throughout this script;
 sQCStatus := "Passed";
 ```

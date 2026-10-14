@@ -42,6 +42,7 @@ stays.
 
 ```ssl
 :DECLARE sXml;
+
 sXml := GetDataSet("SELECT ordno FROM ordtask");
 ```
 

@@ -28,6 +28,7 @@ given. With `NIL` there is no array to change, and the call fails.
 
 ```ssl
 :DECLARE aItems;
+
 aItems := {};
 AAdd(aItems, 1);
 ```

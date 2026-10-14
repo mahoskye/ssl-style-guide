@@ -35,8 +35,10 @@ the branches removes the negation.
 
 ```ssl
 :DECLARE bDone, nCount;
+
 bDone := .F.;
 nCount := 0;
+
 :IF bDone;
 	nCount := 2;
 :ELSE;

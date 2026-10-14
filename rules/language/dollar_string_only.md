@@ -34,6 +34,7 @@ when the expression runs.
 
 ```ssl
 :DECLARE sCodes, bFound;
+
 sCodes := "PH,TOC,TSS";
 bFound := "TOC" $ sCodes;
 ```

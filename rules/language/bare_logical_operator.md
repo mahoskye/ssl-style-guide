@@ -33,6 +33,7 @@ says.
 ```ssl
 :PROCEDURE InRange;
 	:PARAMETERS nVal;
+
 	:RETURN nVal > 5 .AND. nVal < 10;
 :ENDPROC;
 ```

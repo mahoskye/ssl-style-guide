@@ -34,7 +34,9 @@ header must be a number.
 
 ```ssl
 :DECLARE i, nTotal;
+
 nTotal := 0;
+
 :FOR i := 1 :TO 3;
 	nTotal += i;
 :NEXT;

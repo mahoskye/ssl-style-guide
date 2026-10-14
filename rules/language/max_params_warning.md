@@ -42,6 +42,7 @@ parameters the platform itself warns.
 ```ssl
 :PROCEDURE SaveOrder;
 	:PARAMETERS oOrder;
+
 	:RETURN oOrder:orderNo;
 :ENDPROC;
 ```

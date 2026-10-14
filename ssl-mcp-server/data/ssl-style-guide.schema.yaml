@@ -82,7 +82,8 @@ ssl_style_guide:
     allow_space_indentation: true
     space_indent_width: 4
     indent_width: 1            # 1 tab per nesting level (or 4 spaces when using space indentation)
-    continuation_indent: 1     # 1 tab (or 4 spaces) for continuation lines
+    continuation_indent: 1     # 1 tab (or 4 spaces) for a continuation outside brackets (after :=, a leading operator, a member chain)
+    bracket_continuation: align_with_first_item  # inside an unclosed ( { [ whose first item shares its line: align with that item (indent + spaces); a bracket that ends its line hangs one level in, and its closer returns to the opening line's indent
     trim_trailing_whitespace: true
     spaces:
       around_assignment: true
@@ -97,6 +98,8 @@ ssl_style_guide:
       between_top_level_blocks: 1
       before_region: 1
       before_procedure: 1
+      between_sections: 1      # after declarations; before a control block that follows code and after its closer; before a section comment; before a procedure's final :RETURN
+      max_consecutive: 2       # runs of three or more blank lines collapse to two
     statement_terminator: ;
     one_statement_per_line: true
   keywords:
@@ -1359,10 +1362,11 @@ ssl_style_guide:
           set: on same line as UPDATE # In UPDATE, keep SET on the UPDATE line and indent the assignments 4 spaces below it.
           assignments: indented 4 under UPDATE SET # In UPDATE, keep SET on the UPDATE line and indent the assignments 4 spaces below it.
         merge:
-          on: column 0 (not indented under USING) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
-          on_and: indented 4 (aligned under first condition inside parens) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
-          update_set: indented 4 under WHEN MATCHED # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
-          insert: indented 4 under WHEN NOT MATCHED; block-style parens # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
+          on: column 0 (not indented under USING) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), and give the INSERT block-style parentheses.
+          on_and: indented 4 (aligned under first condition inside parens) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), and give the INSERT block-style parentheses.
+          update_set: indented 4 under WHEN MATCHED; SET ends its line, each
+            assignment on its own line indented 4 under UPDATE SET # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), and give the INSERT block-style parentheses.
+          insert: indented 4 under WHEN NOT MATCHED; block-style parens # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), and give the INSERT block-style parentheses.
         set_operations:
           vertical_spacing: blank line before and after operator # Put a blank line before and after UNION, UNION ALL, INTERSECT and MINUS.
         optimizer_hints:

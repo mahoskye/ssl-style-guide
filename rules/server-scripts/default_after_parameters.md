@@ -44,6 +44,7 @@ other statement may come between.
 	:DECLARE sStatus;
 
 	sStatus := "";
+
 	:RETURN sSampleId + sStatus + LimsString(nMaxRows);
 :ENDPROC;
 ```

@@ -31,6 +31,7 @@ already carries the type prefix.
 
 ```ssl
 :DECLARE oOrder;
+
 oOrder := CreateUdObject();
 oOrder:orderNo := "A1";
 oOrder:isValid := .T.;

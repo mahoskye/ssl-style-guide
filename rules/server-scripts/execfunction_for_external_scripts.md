@@ -38,6 +38,7 @@ one procedure in it. The array's elements become the target's parameters.
 	:DECLARE aResult;
 
 	aResult := ExecFunction("Samples.ChangeStatus", {sSampleId, "A"});
+
 	:RETURN aResult;
 :ENDPROC;
 ```

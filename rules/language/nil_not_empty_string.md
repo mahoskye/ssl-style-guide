@@ -38,6 +38,7 @@ on it is never true.
 
 ```ssl
 :DECLARE sName, bMissing;
+
 bMissing := sName == "";
 ```
 

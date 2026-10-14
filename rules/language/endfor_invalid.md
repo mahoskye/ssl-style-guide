@@ -35,7 +35,9 @@ as a syntax error. `:NEXT` is the only closer of a `:FOR` loop.
 
 ```ssl
 :DECLARE i, nTotal;
+
 nTotal := 0;
+
 :FOR i := 1 :TO 3;
 	nTotal += i;
 :NEXT;

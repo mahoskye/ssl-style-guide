@@ -46,7 +46,9 @@ both operands logical.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 3;
+
 :WHILE nCount > 0;
 	nCount -= 1;
 :ENDWHILE;

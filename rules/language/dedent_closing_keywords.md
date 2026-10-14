@@ -32,9 +32,11 @@ ends, so a reader can match the pair by eye.
 ```ssl
 :PROCEDURE CountDown;
 	:PARAMETERS nCount;
+
 	:WHILE nCount > 0;
 		nCount := nCount - 1;
 	:ENDWHILE;
+
 	:RETURN nCount;
 :ENDPROC;
 ```

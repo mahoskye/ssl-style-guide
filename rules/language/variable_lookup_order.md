@@ -37,7 +37,9 @@ procedure can read or change its caller's variable by accident.
 :PROCEDURE Total;
 	:PARAMETERS nBase;
 	:DECLARE nTotal;
+
 	nTotal := nBase + 1;
+
 	:RETURN nTotal;
 :ENDPROC;
 ```

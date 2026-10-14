@@ -37,6 +37,7 @@ A short, simple lookup (one table, one condition) may stay on one line.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT o.ordno, t.testcode

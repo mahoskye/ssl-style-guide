@@ -35,6 +35,7 @@ get the wrong one.
 
 :PROCEDURE SetRecipient;
 	:PARAMETERS sAddress;
+
 	Me:sTo := sAddress;
 :ENDPROC;
 ```

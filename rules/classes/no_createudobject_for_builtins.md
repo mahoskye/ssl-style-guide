@@ -31,6 +31,7 @@ classes. A built-in class name passed to it is not found.
 
 ```ssl
 :DECLARE oEmail;
+
 oEmail := Email{};
 ```
 

@@ -37,6 +37,7 @@ A fixed order inside a group makes a missing or duplicate name easy to spot.
 	nCount := Len(sName);
 	sLabel := "Name";
 	sText := sLabel + ": " + sName;
+
 	:RETURN {nCount, sText};
 :ENDPROC;
 ```

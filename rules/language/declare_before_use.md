@@ -38,6 +38,7 @@ declaration; declaring one hides it.
 
 ```ssl
 :DECLARE nCount, nTotal;
+
 nCount := 1;
 nTotal := nCount + 1;
 ```

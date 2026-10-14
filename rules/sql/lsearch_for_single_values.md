@@ -31,7 +31,9 @@ needs no result array to unpack.
 :PROCEDURE OrderStatus;
 	:PARAMETERS sOrdNo;
 	:DECLARE sStatus;
+
 	sStatus := LSearch("SELECT status FROM ordtask WHERE ordno = ?",,, {sOrdNo});
+
 	:RETURN sStatus;
 :ENDPROC;
 ```

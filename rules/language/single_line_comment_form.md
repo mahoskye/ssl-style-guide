@@ -34,7 +34,9 @@ semicolon the comment never ends.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 0;
+
 /* Count is reset at the start of each run;
 ```
 

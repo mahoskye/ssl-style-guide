@@ -30,6 +30,7 @@ not there, and the copies drift apart over time.
 ```ssl
 :PROCEDURE IsFinal;
 	:PARAMETERS sStatus;
+
 	:RETURN AScanExact({"Done", "Cancelled"}, sStatus) > 0;
 :ENDPROC;
 ```

@@ -36,6 +36,7 @@ with `:DECLARE` starts empty; assign it a value in a separate statement.
 	:DECLARE nCount;
 
 	nCount := 0;
+
 	:RETURN nCount;
 :ENDPROC;
 ```

@@ -34,8 +34,10 @@ the placeholder receives.
 :PROCEDURE OrderRows;
 	:PARAMETERS oRequest;
 	:DECLARE sOrdNo, aRows;
+
 	sOrdNo := oRequest:ordNo;
 	aRows := SQLExecute("SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?");
+
 	:RETURN aRows;
 :ENDPROC;
 ```

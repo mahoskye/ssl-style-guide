@@ -30,7 +30,9 @@ flatten them.
 
 ```ssl
 :DECLARE n;
+
 n := 0;
+
 :IF n == 0;
 	:IF n == 0;
 		n := 1;

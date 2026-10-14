@@ -33,8 +33,10 @@ and only suggests a pairing that does not exist.
 /* region Validation;
 :PROCEDURE IsValid;
 	:PARAMETERS sValue;
+
 	:RETURN !Empty(sValue);
 :ENDPROC;
+
 /* endregion;
 ```
 

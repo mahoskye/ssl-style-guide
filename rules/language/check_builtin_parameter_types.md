@@ -35,6 +35,7 @@ you what a call accepts.
 
 ```ssl
 :DECLARE dDue, dNext;
+
 dDue := CToD("3/5/2026");
 dNext := DateAdd(dDue, 7);
 ```

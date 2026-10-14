@@ -34,6 +34,7 @@ next `;`, so the code it swallows never runs.
 
 ```ssl
 :DECLARE nCount;
+
 /* Reset the count;
 nCount := 0;
 ```

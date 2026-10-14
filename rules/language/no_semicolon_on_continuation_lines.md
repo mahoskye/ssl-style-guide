@@ -32,6 +32,7 @@ invalid statement of its own.
 
 ```ssl
 :DECLARE nTotal;
+
 nTotal := 1
 	+ 2;
 ```

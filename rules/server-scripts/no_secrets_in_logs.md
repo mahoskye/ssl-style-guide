@@ -35,6 +35,7 @@ secrets protect. A value written to a log has to be treated as disclosed.
 
 	aResult := ExecFunction("Integration.Connect", {sUser, sPassword});
 	InfoMes("[INFO] Connect", "Connected as " + sUser);
+
 	:RETURN aResult;
 :ENDPROC;
 ```
