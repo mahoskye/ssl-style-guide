@@ -427,6 +427,8 @@ UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows for " + sSiteCode
 
 ### 6.1 Extract Procedure
 
+<!-- rule: procedure_length_review -->Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.<!-- /rule --> Extract a procedure for each separate responsibility, never only to bring a count down.
+
 **Before:**
 ```ssl
 /* Long inline logic;

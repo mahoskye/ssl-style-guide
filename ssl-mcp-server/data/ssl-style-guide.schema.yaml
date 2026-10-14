@@ -1548,6 +1548,10 @@ ssl_style_guide:
       no_nested_ternaries: true # Do not nest IIf calls; use :IF or :BEGINCASE for more than two outcomes.
       limit_block_depth: 4 # Limit block nesting to 4 levels.
       max_params_per_procedure: 8 # Keep procedures to at most 8 parameters; more than 20 parameters on a procedure or method draws a warning, so group related state into arrays or objects.
+      procedure_length_review: 80 # Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.
+      script_size_review:
+        max_code_lines: 400
+        max_local_procedures: 12
       require_else_for_if: false
     # END GENERATED lints.style_rules
     # BEGIN GENERATED lints.hungarian_notation: edit rules/ and run bun tools/generate-rules.mjs

@@ -206,6 +206,7 @@ categories:
       - no_positional_parameter_access
       - bare_calls_are_builtins
       - max_params_warning
+      - procedure_length_review
       - omit_parameters_when_none
       - default_value_by_type
       - doc_block_parameter_alignment
@@ -371,6 +372,7 @@ categories:
       - parameters_first
       - server_script_file_shape
       - regions_group_related_procedures
+      - script_size_review
       - file_banner_required
       - banner_returns_exact_shape
       - file_banner_continuation_alignment

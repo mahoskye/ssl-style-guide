@@ -20,6 +20,15 @@ Entries before this file existed are reconstructed from the release commits.
   would not fit at the aligned column makes the bracket hang (#124).
 - Schema: `formatting.bracket_continuation`, `formatting.blank_lines.between_sections`
   (1) and `formatting.blank_lines.max_consecutive` (2) (#124, #125).
+- Rule records `procedure_length_review` and `script_size_review` (advisory,
+  info, applied by the reviewer): a procedure or class method over 80 code
+  lines, or a server script over 400 code lines or 12 local procedures, is a
+  prompt to check its responsibilities, not a limit. The thresholds are
+  provisional. The server-script style guide and the refactoring guide's
+  Extract Procedure section state them.
+- Schema: `lints.style_rules.procedure_length_review` (80) and
+  `lints.style_rules.script_size_review` (`max_code_lines: 400`,
+  `max_local_procedures: 12`).
 
 ### Changed
 - Severities decided by the style guide (the LSP follows): `limit_public_vars` and `max_params_warning` are info, `global_assignment` is warning.
