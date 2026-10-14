@@ -46,6 +46,7 @@ Entries before this file existed are reconstructed from the release commits.
   in `Integer()`.
 
 ### Changed
+- Element metadata re-vendored from the reference after its operator-specifics update (starlims-ssl-reference#186, #187).
 - `limit_block_depth`: its rationale records that 4 is the 95th percentile
   nesting depth of STARLIMS 12's base layer.
 - Severities decided by the style guide (the LSP follows): `limit_public_vars` and `max_params_warning` are info, `global_assignment` is warning.
