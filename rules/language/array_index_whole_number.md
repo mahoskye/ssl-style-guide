@@ -13,13 +13,15 @@ rule: >-
 categories: [arrays]
 machine: { list: must_follow }
 related_elements: [Integer, divide, array]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.array_index_whole_number]
 verification:
   basis: observed
   note: >-
     Verified on STARLIMS 12: `a[2.5]` and `a[3 / 2]` raise at run time, while
     `a[4 / 2]` reads the second element. The language reference documents the
-    behavior. No starlims-lsp diagnostic flags it, so a reviewer applies it.
+    behavior. starlims-lsp v0.27.0 reports a fractional literal index and an
+    index computed with `/` as array_index_whole_number (error); it accepts
+    `a[4 / 2]`, which divides evenly, and an index wrapped in Integer().
 ---
 
 ## Rationale

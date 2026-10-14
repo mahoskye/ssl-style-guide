@@ -12,15 +12,17 @@ rule: >-
 categories: [operators]
 machine: { list: must_follow }
 related_elements: [not, equals, strict-equals, not-equals]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.parenthesize_negated_comparison]
 verification:
   basis: observed
   note: >-
     Verified on STARLIMS 12: `.NOT. s = "AB"` on a string raises "the
     operator/method: .NOT. is not implemented on type: SSLString", and on a
     logical operand the expression is evaluated as `(.NOT. b) = x`. The
-    language reference documents the precedence. No starlims-lsp diagnostic
-    flags it yet (starlims-lsp#339), so a reviewer applies it.
+    language reference documents the precedence. starlims-lsp v0.27.0
+    reports it as parenthesize_negated_comparison: a warning, and an error
+    when the negated operand is a string or number literal, which always
+    raises.
 ---
 
 ## Rationale
@@ -60,7 +62,12 @@ bOtherPrefix := .NOT. sCode = "AB";
 
 The bad line raises at run time: `.NOT.` is applied to the string `sCode`.
 
-## Notes
+```ssl
+:DECLARE sCodes, bMissing;
 
-Once starlims-lsp#339 adds a diagnostic for an unparenthesized negated
-comparison, add it to `enforced_by`.
+sCodes := "ABC";
+bMissing := .NOT. "X" $ sCodes;
+```
+
+`.NOT.` is applied to the literal `"X"`, which always raises, so this one is
+reported as an error. Write `.NOT. ("X" $ sCodes)`.

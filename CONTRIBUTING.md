@@ -74,7 +74,7 @@ cd ..
 bun tools/check-reference-drift.mjs   # inventory vs. reference repo (comparisons skip without ../ssl-docs)
 bun tools/check-agent-wiring.mjs      # delegation, read-only allowlists, editing protocols
 bun tools/check-skill-examples.mjs    # skill and rule examples: formatted, validate clean (needs the LSP binary)
-bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog  # enforced_by vs. LSP catalog
+bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity  # enforced_by and severity vs. LSP catalog
 ```
 
 The rules check, run by `check:consistency` or on its own, resolves each
@@ -94,9 +94,9 @@ PRs. Pass `--strict` to make it an error, for example before a release.
 
 The rules check warns when a record's severity differs from the default
 severity of the LSP diagnostic that enforces it. Pass `--strict-severity` to
-make that an error. CI does not pass it yet, because six records still
-disagree with starlims-lsp v0.26.0; when you change a record's
-severity or `enforced_by`, run it locally so you add no new disagreement (see
+make that an error. CI passes it: every record agrees with starlims-lsp
+v0.27.0. When you change a record's severity or `enforced_by`, run it locally
+too (see
 [rules/README.md](rules/README.md#severity-agreement-with-the-lsp)).
 
 The Tree-sitter grammar has its own commands (`npm run gen`, `npm test`) under

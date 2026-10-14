@@ -24,7 +24,7 @@ The source fix in the sibling LSP excludes qualified members while preserving
 bare-global diagnostics, their ranges, and severity.
 
 Validation used a locally rebuilt binary containing that fix. The fix shipped
-in starlims-lsp v0.25.0, so the binary the MCP server pins (v0.26.0) no
+in starlims-lsp v0.25.0, so the binary the MCP server pins (v0.27.0) no
 longer reports those false positives. Reproduce the local check from the
 style-guide repository root:
 

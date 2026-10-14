@@ -517,11 +517,20 @@
         "bad": [
           {
             "lang": "ssl",
+            "code": ":DECLARE nCount;\n\nnCount := 3;\n\n:WHILE 1;\n\tnCount -= 1;\n\n\t:IF nCount = 0;\n\t\t:EXITWHILE;\n\t:ENDIF;\n:ENDWHILE;\n"
+          },
+          {
+            "lang": "ssl",
+            "code": ":DECLARE bReady;\n\nbReady := .T.;\n\n:IF \"Y\" .AND. bReady;\n\tbReady := .F.;\n:ENDIF;\n"
+          },
+          {
+            "lang": "text",
             "code": ":DECLARE nCount;\nnCount := 3;\n:WHILE nCount;\n\tnCount -= 1;\n:ENDWHILE;\n"
           }
         ]
       },
       "enforced_by": [
+        "lsp:diag.non_logical_condition",
         "reviewer"
       ],
       "categories": [
@@ -658,13 +667,13 @@
         ],
         "bad": [
           {
-            "lang": "text",
-            "code": "sTarget := \"LABEL SKIP\";\nBranch(sTarget);\n:LABEL SKIP;\n"
+            "lang": "ssl",
+            "code": ":DECLARE sTarget;\n\nsTarget := \"LABEL SKIP\";\nBranch(sTarget);\n:LABEL SKIP;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.branch_literal_target"
       ],
       "categories": [
         "control-flow"
@@ -1439,7 +1448,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.array_index_whole_number"
       ],
       "categories": [
         "arrays"
@@ -2155,7 +2164,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.procedure_length_review"
       ],
       "categories": [
         "procedures"
@@ -3806,11 +3815,15 @@
           {
             "lang": "ssl",
             "code": ":DECLARE sCode, bOtherPrefix;\nsCode := \"ABC\";\nbOtherPrefix := .NOT. sCode = \"AB\";\n"
+          },
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sCodes, bMissing;\n\nsCodes := \"ABC\";\nbMissing := .NOT. \"X\" $ sCodes;\n"
           }
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.parenthesize_negated_comparison"
       ],
       "categories": [
         "operators"
@@ -3854,7 +3867,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.script_size_review"
       ],
       "categories": [
         "module-structure"
@@ -5273,6 +5286,10 @@
           }
         ],
         "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountRows;\n\t:DECLARE nCount :DEFAULT 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
+          },
           {
             "lang": "ssl",
             "code": ":PROCEDURE CountRows;\n\t:DECLARE nCount; :DEFAULT nCount, 0;\n\n\t:RETURN nCount;\n:ENDPROC;\n"
@@ -10533,20 +10550,20 @@
         "embedded_sql",
         "sql_data_source"
       ],
-      "rule": "When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), and give the `INSERT` block-style parentheses.",
+      "rule": "When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), keep `DELETE WHERE` on one line with each `AND`/`OR` of its condition on its own line 4 spaces further in, and give the `INSERT` block-style parentheses.",
       "rationale": "In `MERGE`, `ON` is a clause of the statement, not of `USING`, so it starts\nat column 0 like the other clauses. The actions under each `WHEN` indent one\nlevel, the way `THEN` values do. `UPDATE SET` lays out like a plain `UPDATE`,\nso each assignment is easy to see and to edit.",
       "exceptions": "Agents do not write `MERGE` (see `sql_basic_sql_only`). This layout is for\nformatting `MERGE` statements that already exist.",
       "examples": {
         "good": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nSQLExecute(\"\n    MERGE INTO ordtask t\n    USING (\n        SELECT ?sOrdNo? AS ordno, ?sStatus? AS status\n        FROM dual\n    ) s\n    ON (t.ordno = s.ordno\n        AND t.status <> s.status\n        AND t.department_code = s.department_code)\n    WHEN MATCHED THEN\n        UPDATE SET\n            t.status = s.status,\n            t.changed_on = SYSDATE\n    WHEN NOT MATCHED THEN\n        INSERT (\n            ordno, status\n        )\n        VALUES (\n            s.ordno, s.status\n        )\n\");\n"
+            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nSQLExecute(\"\n    MERGE INTO ordtask t\n    USING (\n        SELECT ?sOrdNo? AS ordno, ?sStatus? AS status\n        FROM dual\n    ) s\n    ON (t.ordno = s.ordno\n        AND t.status <> s.status\n        AND t.department_code = s.department_code)\n    WHEN MATCHED THEN\n        UPDATE SET\n            t.status = s.status,\n            t.changed_on = SYSDATE\n        DELETE WHERE t.status = 'Cancelled'\n            AND t.changed_on < SYSDATE - 30\n    WHEN NOT MATCHED THEN\n        INSERT (\n            ordno, status\n        )\n        VALUES (\n            s.ordno, s.status\n        )\n\");\n"
           }
         ],
         "bad": [
           {
             "lang": "ssl",
-            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nSQLExecute(\"MERGE INTO ordtask t USING (SELECT ?sOrdNo? AS ordno, ?sStatus? AS status FROM dual) s ON (t.ordno = s.ordno AND t.status <> s.status AND t.department_code = s.department_code) WHEN MATCHED THEN UPDATE SET t.status = s.status, t.changed_on = SYSDATE WHEN NOT MATCHED THEN INSERT (ordno, status) VALUES (s.ordno, s.status)\");\n"
+            "code": ":DECLARE sOrdNo, sStatus;\n\nsOrdNo := \"A1001\";\nsStatus := \"Done\";\nSQLExecute(\"MERGE INTO ordtask t USING (SELECT ?sOrdNo? AS ordno, ?sStatus? AS status FROM dual) s ON (t.ordno = s.ordno AND t.status <> s.status AND t.department_code = s.department_code) WHEN MATCHED THEN UPDATE SET t.status = s.status, t.changed_on = SYSDATE DELETE WHERE t.status = 'Cancelled' AND t.changed_on < SYSDATE - 30 WHEN NOT MATCHED THEN INSERT (ordno, status) VALUES (s.ordno, s.status)\");\n"
           }
         ]
       },
@@ -10564,7 +10581,8 @@
         "sql.formatting.statement_patterns.merge.on",
         "sql.formatting.statement_patterns.merge.on_and",
         "sql.formatting.statement_patterns.merge.update_set",
-        "sql.formatting.statement_patterns.merge.insert"
+        "sql.formatting.statement_patterns.merge.insert",
+        "sql.formatting.statement_patterns.merge.delete_where"
       ],
       "aliases": [],
       "issues": [

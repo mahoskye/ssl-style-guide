@@ -13,7 +13,7 @@ rule: >-
   trigger, not a limit.
 categories: [procedures]
 related_elements: [PROCEDURE, DoProc]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.procedure_length_review]
 schema:
   - path: lints.style_rules.procedure_length_review
     form: value
@@ -26,8 +26,13 @@ verification:
     the 75th percentile is 32, the 90th 57 and the 99th 162), and class
     methods run shorter (95th percentile 61). The trigger restates the server-script style
     guide's "line count and procedure count are review triggers, not
-    acceptance limits" with a number. No starlims-lsp diagnostic counts
-    procedure lines yet, so a reviewer applies it.
+    acceptance limits" with a number. starlims-lsp v0.27.0 reports a
+    procedure or class method past the trigger as procedure_length_review
+    (info, setting ssl.diagnostics.maxProcedureCodeLines, default 80),
+    counting code lines the same way; it is hidden unless info diagnostics
+    are shown. Whether the procedure has more than one responsibility stays
+    a reviewer's judgment. The examples stay text, since a fence long enough
+    to draw the diagnostic would bury the point.
 ---
 
 ## Rationale

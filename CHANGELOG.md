@@ -21,7 +21,7 @@ Entries before this file existed are reconstructed from the release commits.
 - Schema: `formatting.bracket_continuation`, `formatting.blank_lines.between_sections`
   (1) and `formatting.blank_lines.max_consecutive` (2) (#124, #125).
 - Rule records `procedure_length_review` and `script_size_review` (advisory,
-  info, applied by the reviewer): a procedure or class method over 80 code
+  info, enforced by the starlims-lsp diagnostics of the same names): a procedure or class method over 80 code
   lines, or a server script over 400 code lines or 12 local procedures, is a
   prompt to check its responsibilities, not a limit. `script_size_review`
   also gives the shape to aim for: up to about 200 code lines with at most
@@ -30,17 +30,18 @@ Entries before this file existed are reconstructed from the release commits.
   lines; the ideal script is the base layer's typical shape). The
   server-script style guide and the refactoring guide's Extract Procedure
   section state them.
+- Schema: `sql.formatting.statement_patterns.merge.delete_where`.
 - Schema: `lints.style_rules.procedure_length_review` (80) and
   `lints.style_rules.script_size_review` (`max_code_lines: 400`,
   `max_local_procedures: 12`, `ideal_code_lines: 200`,
   `ideal_local_procedures: 1`).
 - Rule record `parenthesize_negated_comparison` (authoritative, warning,
-  applied by the reviewer): write a negated comparison as `.NOT. (a = b)`;
+  enforced by `lsp:diag.parenthesize_negated_comparison`): write a negated comparison as `.NOT. (a = b)`;
   `.NOT.` binds before the comparison operators, so `.NOT. s = "AB"` raises
   on a string and computes `(.NOT. b) = x` on a logical. `!=` and `#` compare
   exactly, so they do not replace `.NOT. (s = x)`.
-- Rule record `array_index_whole_number` (authoritative, error, applied by
-  the reviewer): a fractional array index raises at run time, and division
+- Rule record `array_index_whole_number` (authoritative, error, enforced by
+  `lsp:diag.array_index_whole_number`): a fractional array index raises at run time, and division
   gives a whole number only when it divides evenly, so wrap a computed index
   in `Integer()`.
 
@@ -54,7 +55,8 @@ Entries before this file existed are reconstructed from the release commits.
   blocks included, with a banner example; its rationale says what the
   stranded text does (usually a syntax error, occasionally valid code such as
   a member access that runs silently).
-- MCP: pins starlims-lsp v0.26.0. The CLI contract is unchanged, but
+- MCP: pins starlims-lsp v0.27.0 (through v0.25.0 and v0.26.0). v0.26.0
+  keeps the CLI contract, but
   `ssl_format` output changes for most files: brackets and wrapped declaration
   lists align their contents, a blank line separates logical sections, runs
   of three or more blank lines collapse to two, unary operators attach to
@@ -77,7 +79,11 @@ Entries before this file existed are reconstructed from the release commits.
   `sql.formatting.statement_patterns.merge.update_set`: MERGE `UPDATE SET` ends
   its line at `SET`, and each assignment takes its own line one level in, as
   in a plain `UPDATE`. The record is formatter-enforced
-  (`lsp:fmt.sql_in_strings`) apart from `DELETE WHERE` (#123).
+  (`lsp:fmt.sql_in_strings`) (#123). From v0.27.0 that includes
+  `DELETE WHERE`, which stays on one line under its `WHEN` with each
+  `AND`/`OR` one level past the `DELETE`; the rule text, the schema and the
+  SQL reference's §2.12 formatting rules say so, and the record's examples
+  include one (#129).
 - Rule and skill examples follow the v0.26.0 formatter layout: Good examples
   gain the section blank lines, and the `ssl-unit-test` skill example aligns
   a wrapped call argument under the bracket's first item.
@@ -130,6 +136,26 @@ Entries before this file existed are reconstructed from the release commits.
   class lists already match the element inventory (330 functions, 29
   classes); `check:consistency` now also checks the class list against the
   element inventory (#127).
+- MCP 1.16.0: from starlims-lsp v0.27.0, validation can fail on four more
+  codes. `branch_literal_target` (a `Branch()` target that is not a string
+  literal), `non_logical_condition` (a literal non-logical condition or
+  `.AND.`/`.OR.` left operand) and `array_index_whole_number` (a fractional
+  or `/`-computed array index) are new errors, and
+  `comment_text_after_terminator` is now an error. The new
+  `parenthesize_negated_comparison` warning is an error on a literal operand,
+  and `--info` adds `procedure_length_review` and `script_size_review` (#129).
+- Rule records cite the v0.27.0 diagnostics that enforce them:
+  `branch_literal_target`, `parenthesize_negated_comparison`,
+  `array_index_whole_number`, `procedure_length_review`,
+  `script_size_review`, and `no_truthy_falsy_coercion`
+  (`non_logical_condition`, for literals; a reviewer still checks variables).
+  Their Bad examples are validated SSL where the diagnostic reports them; the
+  size records keep text examples (#129).
+- `no_default_on_declare_line`: `:DECLARE nCount :DEFAULT 0;` is back as a Bad
+  example, since v0.27.0 reports it again (#129).
+- `no_semicolon_in_comment_text` agrees with v0.27.0's
+  `comment_text_after_terminator` severity (error), so CI now runs the rules
+  check with `--strict-severity` (#129).
 
 ### Removed
 - Rule record `banner_has_no_semicolon` (now `status: removed`): a banner

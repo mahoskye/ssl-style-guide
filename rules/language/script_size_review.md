@@ -14,7 +14,7 @@ rule: >-
   script only when it is reusable on its own or independently owned.
 categories: [module-structure]
 related_elements: [REGION, DoProc, ExecFunction]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.script_size_review]
 schema:
   - path: lints.style_rules.script_size_review
     form: value
@@ -33,8 +33,16 @@ verification:
     200 code lines with zero or one procedure. The triggers are deliberately
     generous, to leave developers room. The trigger restates the server-script style guide's
     "line count and procedure count are review triggers, not acceptance
-    limits" with numbers. No starlims-lsp diagnostic measures script size yet,
-    so a reviewer applies it.
+    limits" with numbers. starlims-lsp v0.27.0 reports a server script past
+    either trigger as script_size_review (info, settings
+    ssl.diagnostics.maxScriptCodeLines, default 400, and
+    ssl.diagnostics.maxScriptProcedures, default 12), counting code lines
+    the same way; it is hidden unless info diagnostics are shown. The
+    diagnostic is the prompt, so it also reports a large script that is
+    already organized into regions, like the Good example; how to organize
+    the script, and the 200-line ideal, stay a reviewer's judgment. The
+    examples stay text, since a fence large enough to draw the diagnostic
+    would bury the point.
 ---
 
 ## Rationale

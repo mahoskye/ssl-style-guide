@@ -12,8 +12,9 @@ rule: >-
   (under the first condition inside the parentheses), indent `UPDATE SET`,
   `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the
   `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces
-  further in (as in a plain `UPDATE`), and give the `INSERT` block-style
-  parentheses.
+  further in (as in a plain `UPDATE`), keep `DELETE WHERE` on one line with
+  each `AND`/`OR` of its condition on its own line 4 spaces further in, and
+  give the `INSERT` block-style parentheses.
 categories: [sql]
 related_elements: [RunSQL, SQLExecute]
 enforced_by: [lsp:fmt.sql_in_strings]
@@ -30,6 +31,9 @@ schema:
   - path: sql.formatting.statement_patterns.merge.insert
     form: value
     value: indented 4 under WHEN NOT MATCHED; block-style parens
+  - path: sql.formatting.statement_patterns.merge.delete_where
+    form: value
+    value: indented 4 under WHEN MATCHED; DELETE WHERE on one line, each AND/OR on its own line indented 4 under DELETE
 verification:
   basis: convention
   note: >-
@@ -37,8 +41,9 @@ verification:
     merge patterns. #123 set the UPDATE SET layout to match a plain UPDATE.
     starlims-lsp v0.26.0 formats a MERGE in an SSL string this way,
     including the INSERT and VALUES block layout and the UPDATE SET
-    assignments. It splits a MERGE DELETE WHERE into DELETE and a WHERE at
-    column 0, so a reviewer applies the DELETE WHERE part.
+    assignments. From v0.27.0 it also keeps DELETE WHERE on one line under
+    its WHEN, with each AND/OR one level past the DELETE, so the whole layout
+    is formatter-applied; the examples include a DELETE WHERE.
 issues: ["#123"]
 ---
 
@@ -76,6 +81,8 @@ SQLExecute("
         UPDATE SET
             t.status = s.status,
             t.changed_on = SYSDATE
+        DELETE WHERE t.status = 'Cancelled'
+            AND t.changed_on < SYSDATE - 30
     WHEN NOT MATCHED THEN
         INSERT (
             ordno, status
@@ -93,5 +100,5 @@ SQLExecute("
 
 sOrdNo := "A1001";
 sStatus := "Done";
-SQLExecute("MERGE INTO ordtask t USING (SELECT ?sOrdNo? AS ordno, ?sStatus? AS status FROM dual) s ON (t.ordno = s.ordno AND t.status <> s.status AND t.department_code = s.department_code) WHEN MATCHED THEN UPDATE SET t.status = s.status, t.changed_on = SYSDATE WHEN NOT MATCHED THEN INSERT (ordno, status) VALUES (s.ordno, s.status)");
+SQLExecute("MERGE INTO ordtask t USING (SELECT ?sOrdNo? AS ordno, ?sStatus? AS status FROM dual) s ON (t.ordno = s.ordno AND t.status <> s.status AND t.department_code = s.department_code) WHEN MATCHED THEN UPDATE SET t.status = s.status, t.changed_on = SYSDATE DELETE WHERE t.status = 'Cancelled' AND t.changed_on < SYSDATE - 30 WHEN NOT MATCHED THEN INSERT (ordno, status) VALUES (s.ordno, s.status)");
 ```

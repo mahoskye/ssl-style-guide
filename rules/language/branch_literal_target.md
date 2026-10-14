@@ -12,7 +12,7 @@ rule: >-
   statement without an error, even when its text matches the label exactly.
 categories: [control-flow]
 related_elements: [LABEL, Branch]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.branch_literal_target]
 verification:
   basis: observed
   note: >-
@@ -21,7 +21,8 @@ verification:
     target never jumped, at script level or inside a procedure: variables,
     parameters, the bare label name, other casings, the joined form and a
     constant expression all fell through, while the same text as a literal
-    reached the label.
+    reached the label. starlims-lsp v0.27.0 reports every non-literal target
+    as branch_literal_target (error), including a constant expression.
 ---
 
 ## Rationale
@@ -42,12 +43,14 @@ Branch("LABEL SKIP");
 :LABEL SKIP;
 ```
 
-Any `:LABEL` draws the legacy-keyword warning (see `label_is_legacy`), so both
-forms are shown as text.
+Any `:LABEL` draws the legacy-keyword warning (see `label_is_legacy`), so the
+good form is shown as text.
 
 ### Bad
 
-```text
+```ssl
+:DECLARE sTarget;
+
 sTarget := "LABEL SKIP";
 Branch(sTarget);
 :LABEL SKIP;
