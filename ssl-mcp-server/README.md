@@ -31,6 +31,15 @@ extra finding per file among files that already validate without errors,
 and none of its rules is error severity, so it never flips `valid`. The
 naming-convention audit (`hungarian_notation`) is deliberately excluded.
 
+With starlims-lsp v0.27.0, four codes can make `valid` false that did not
+before: `branch_literal_target`, `non_logical_condition` and
+`array_index_whole_number` are new error codes, and
+`comment_text_after_terminator` is now an error. The new warning
+`parenthesize_negated_comparison` is an error when the negated operand is a
+string or number literal. `--info` also shows the size review triggers
+`procedure_length_review` and `script_size_review`, which prompt a
+responsibility check and never fail validation.
+
 `ssl_format` formats whole files. On legacy SSL that is not a small
 change — in measurements on real files, most changed under the formatter
 and most had more than half their lines rewritten — so agents are told to
@@ -61,7 +70,7 @@ The `ssl_diagnose` and `ssl_format` tools require the `starlims-lsp` binary
 in `bin/lsp/` (gitignored — binaries are not tracked in this repository).
 `bun run fetch-lsp` downloads the release pinned in `lsp-version.json` for
 the current platform; add `--all` for every platform, or pass a tag
-(`bun run fetch-lsp v0.26.0`) to fetch that version and move the pin.
+(`bun run fetch-lsp v0.27.0`) to fetch that version and move the pin.
 Maintainers with a sibling `starlims-lsp` checkout can build instead with
 `bun run bundle-lsp` (requires Go), or `bun run bundle-lsp --copy` to copy
 already-built binaries.

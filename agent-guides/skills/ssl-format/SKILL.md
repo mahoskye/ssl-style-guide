@@ -134,7 +134,7 @@ Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`
 For formatting existing code only. Agents do not write `MERGE` (see the basic-SQL rule in the agent boundaries).
 
 <!-- rules: id=sql_merge_layout -->
-- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), and give the `INSERT` block-style parentheses.
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), keep `DELETE WHERE` on one line with each `AND`/`OR` of its condition on its own line 4 spaces further in, and give the `INSERT` block-style parentheses.
 <!-- /rules -->
 
 ### Set operations

@@ -586,7 +586,7 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - Align `SELECT` continuation lines to the first column (column 7).
 - In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
 - In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
-- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), and give the `INSERT` block-style parentheses.
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), keep `DELETE WHERE` on one line with each `AND`/`OR` of its condition on its own line 4 spaces further in, and give the `INSERT` block-style parentheses.
 - Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
 - Keep an optimizer hint (`/*+ HINT */`) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
 - Do not put a trailing semicolon inside an embedded SQL string — `"SELECT ... ;"` is not the convention; end the SSL statement, not the SQL text.

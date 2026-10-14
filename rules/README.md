@@ -188,7 +188,7 @@ first.
 3. Check:
 
    ```bash
-   bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog
+   bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
    bun tools/check-skill-examples.mjs
    cd ssl-mcp-server && bun run check:consistency
    ```
@@ -210,16 +210,10 @@ warning. `--strict-severity` makes it a failure (and requires the catalog):
 bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
 ```
 
-CI does not pass `--strict-severity` yet: one record still disagrees with
-starlims-lsp v0.26.0.
-
-| Record | Record severity | LSP diagnostic | LSP default |
-|--------|-----------------|----------------|-------------|
-| `no_semicolon_in_comment_text` | error | `comment_text_after_terminator` | warning |
-
-The style guide decides the severity and the LSP follows; once its default
-changes, CI turns the flag on. Until then, use it locally to confirm a
-change adds no new disagreement.
+CI passes `--strict-severity`: every record agrees with starlims-lsp
+v0.27.0, the pinned version. The style guide decides the severity and the LSP
+follows, so a record whose severity changes ahead of the LSP fails the check
+until the pinned LSP release defaults to the same severity.
 
 A change to the generated schema is a schema change: add a CHANGELOG line, and
 bump `metadata.version` at release as usual.

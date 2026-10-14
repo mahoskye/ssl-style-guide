@@ -31,9 +31,10 @@ verification:
     merged: banner_has_no_semicolon (now removed), whose banner example is
     the second Good and Bad fence here, and its schema entry under
     documentation.file_banner.rules, which comments.rules already covers.
-    Checked with starlims-lsp v0.26.0: the stranded line `Parameters: none`
-    in the third Bad fence draws no syntax error, only the early-termination
-    diagnostic and an undeclared-variable warning.
+    Checked with starlims-lsp v0.27.0, where comment_text_after_terminator
+    is an error by default: each Bad fence draws that one error, at the
+    comment's first `;`, and nothing else, including the third fence, whose
+    stranded line `Parameters: none` parses as code.
 ---
 
 ## Rationale

@@ -350,6 +350,7 @@ sql:
         on_and: !rule sql_merge_layout
         update_set: !rule sql_merge_layout
         insert: !rule sql_merge_layout
+        delete_where: !rule sql_merge_layout
       set_operations:
         vertical_spacing: !rule sql_set_operation_spacing
       optimizer_hints:

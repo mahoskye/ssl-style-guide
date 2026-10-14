@@ -706,6 +706,8 @@ Additional ON conditions align under the first condition inside the parentheses.
 - `UPDATE SET` / `INSERT` / `DELETE WHERE` indented 4 spaces under WHEN
 - `SET` ends the `UPDATE SET` line, and each assignment starts its own line 4 spaces
   further in, as in a plain `UPDATE` (§2.10)
+- `DELETE WHERE` stays on one line; each `AND`/`OR` of its condition starts its own
+  line 4 spaces further in than `DELETE`
 
 ---
 

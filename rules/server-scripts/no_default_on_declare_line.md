@@ -19,7 +19,10 @@ verification:
     word. The agent guide's quick start (rule 3) says the same.
     starlims-lsp's default_on_declare_line reports a :DEFAULT whose target is
     not a :PARAMETERS name, on any line (re-scoped in v0.25.0), so it covers
-    this case and a :DEFAULT on a local anywhere else.
+    a :DEFAULT on a local anywhere. From v0.27.0 it also reports a :DEFAULT
+    inside an unterminated :DECLARE list (`:DECLARE nCount :DEFAULT 0;`),
+    which v0.25.0 and v0.26.0 left unreported, so that example is back as
+    the first Bad fence.
 ---
 
 ## Rationale
@@ -42,6 +45,14 @@ with `:DECLARE` starts empty; assign it a value in a separate statement.
 ```
 
 ### Bad
+
+```ssl
+:PROCEDURE CountRows;
+	:DECLARE nCount :DEFAULT 0;
+
+	:RETURN nCount;
+:ENDPROC;
+```
 
 ```ssl
 :PROCEDURE CountRows;

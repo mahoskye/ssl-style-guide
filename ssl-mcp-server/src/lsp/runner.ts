@@ -147,7 +147,9 @@ export type SslInput = ({ code: string } | { file: string }) & {
  * are noisy in an editor, and all three are aimed at exactly this
  * LLM-facing surface.
  *
- * The info tier carries style observations and idiom notes.
+ * The info tier carries style observations, idiom notes, and (from
+ * v0.27.0) the size review triggers procedure_length_review and
+ * script_size_review.
  * hungarian_type_mismatch reports a name whose prefix promises one type
  * over an expression producing another. --strict adds the three checks
  * an editor withholds because a human mid-edit has names that are
