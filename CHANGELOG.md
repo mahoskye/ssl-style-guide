@@ -115,6 +115,13 @@ Entries before this file existed are reconstructed from the release commits.
   `default_on_declare_line` reports.
 - The skill-example check passes `--` before each file and reports a usage
   error from the binary instead of an unparseable result.
+- The rules check (`generate-rules`, and `check:consistency` through it)
+  reads the sibling `../starlims-lsp` catalog at the LSP tag pinned in
+  `ssl-mcp-server/lsp-version.json` instead of whatever that checkout has
+  checked out, so local runs check the same catalog as CI. When the tag isn't
+  in the checkout, the catalog check is skipped with a warning naming the
+  checkout's version and the pin (a failure with `--strict-severity`).
+  `--lsp-catalog <dir>` still reads the directory as it is (#126).
 
 ### Removed
 - Rule record `banner_has_no_semicolon` (now `status: removed`): a banner

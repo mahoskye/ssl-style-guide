@@ -77,6 +77,17 @@ bun tools/check-skill-examples.mjs    # skill and rule examples: formatted, vali
 bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog  # enforced_by vs. LSP catalog
 ```
 
+The rules check, run by `check:consistency` or on its own, resolves each
+record's `enforced_by` against the starlims-lsp behavior catalog. Without
+`--lsp-catalog` it reads the catalog from a sibling `../starlims-lsp` git
+checkout **at the tag pinned in `ssl-mcp-server/lsp-version.json`**, whatever
+that checkout has checked out, so a local run checks the same catalog CI does.
+If the pinned tag isn't in the checkout, the catalog check is skipped with a
+warning that names the checkout's version and the pin; run
+`git -C ../starlims-lsp fetch --tags` to get it. Without a sibling checkout the
+catalog check is skipped. `--lsp-catalog <dir>` reads that directory as it is,
+for example to try catalog changes you haven't tagged.
+
 The drift check reports content drift (vendored element data behind the
 reference repo) as a warning, so reference-repo merges don't block unrelated
 PRs. Pass `--strict` to make it an error, for example before a release.

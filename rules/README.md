@@ -193,9 +193,13 @@ first.
    cd ssl-mcp-server && bun run check:consistency
    ```
 
-`--lsp-catalog` points at a starlims-lsp checkout (CI uses the tag pinned in
-`ssl-mcp-server/lsp-version.json`). Without the flag, the catalog check is
-skipped when `../starlims-lsp` is absent. The checker warns, without failing,
+`--lsp-catalog` points at a starlims-lsp catalog directory and reads it as it
+is (CI checks out the tag pinned in `ssl-mcp-server/lsp-version.json`).
+Without the flag, the checker reads the catalog from the sibling
+`../starlims-lsp` git checkout at that pinned tag, whatever the checkout has
+checked out. When the tag isn't in the checkout, the catalog check is skipped
+with a warning naming the checkout's version and the pin (fetch its tags to fix
+it); when `../starlims-lsp` is absent, it is skipped with a note. The checker warns, without failing,
 when a record's severity differs from the diagnostic's default severity, when
 a record is active but the catalog entry with its slug is removed, and when a
 catalog `schema_ref` into a generated region does not resolve.
@@ -204,7 +208,8 @@ catalog `schema_ref` into a generated region does not resolve.
 
 A record's `severity` should equal the `default_severity` of each
 `lsp:diag.<slug>` in its `enforced_by`. By default a disagreement is a
-warning. `--strict-severity` makes it a failure (and requires the catalog):
+warning. `--strict-severity` makes it a failure (and requires the catalog, so a skipped
+catalog check fails too):
 
 ```bash
 bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity
