@@ -13,6 +13,23 @@ Entries before this file existed are reconstructed from the release commits.
 ## [Unreleased]
 
 ### Added
+- Rule record `increment_as_statement` (style_only, info, enforced by
+  review): use `++` and `--` as a statement of their own, not inside a
+  larger expression. Postfix produces the old value and prefix the new, and
+  operands are evaluated left to right, so with `i = 1`, `i++ + i++` returns
+  `3` and leaves `i` at `3`. Using the same variable's `++`/`--` twice in one
+  expression, or incrementing a variable the expression also reads, is the
+  case tools should report as a warning. LSP enforcement is requested.
+- Rule record `parenthesize_mixed_logical` (style_only, warning, enforced by
+  review): parenthesize an expression that mixes `.AND.` and `.OR.`;
+  `.AND.` binds tighter, and in `.T. .OR. X .AND. Y` neither `X` nor `Y` is
+  evaluated. LSP enforcement is requested.
+- Rule record `prefer_explicit_trim_concat` (style_only, info, enforced by
+  review): write `Trim(sFirst) + sSecond` instead of string `sFirst - sSecond`.
+  The record notes that `Trim()` also removes trailing tabs and line breaks
+  while `-` removes only spaces. LSP enforcement is requested.
+- The agent guide's operators summary states the three new rules next to
+  the `.AND.`/`.OR.`, `++`/`--` and string `-` facts.
 - Rule record `bracket_contents_align`: inside an unclosed `(`, `{` or `[`
   whose first item shares the bracket's line, continuation lines align with
   that first item; a bracket that ends its line hangs one level in, with its
@@ -46,6 +63,11 @@ Entries before this file existed are reconstructed from the release commits.
   in `Integer()`.
 
 ### Changed
+- `one_assignment_per_statement` (still info) says that an assignment used
+  inside a larger expression, other than a chain that gives every target the
+  same value, is the reported case. An assignment in a condition stays
+  starlims-lsp's `assignment_in_condition` warning. LSP enforcement of the
+  wider case is requested.
 - Element metadata re-vendored from the reference after its operator-specifics update (starlims-ssl-reference#186, #187).
 - `limit_block_depth`: its rationale records that 4 is the 95th percentile
   nesting depth of STARLIMS 12's base layer.

@@ -12,7 +12,8 @@
     "Use == for exact string equality; = is prefix-style for strings.",
     "Use spaces around assignment, arithmetic, comparison, and logical operators.",
     "Prefer no spaces around : in member access even though SSL accepts spaced forms.",
-    "Write a negated comparison as .NOT. (a = b): .NOT. binds before the comparison operators, so .NOT. a = b negates a alone."
+    "Write a negated comparison as .NOT. (a = b): .NOT. binds before the comparison operators, so .NOT. a = b negates a alone.",
+    "Parenthesize an expression that mixes .AND. and .OR.: .AND. binds tighter, so bA .OR. bB .AND. bC means bA .OR. (bB .AND. bC)."
   ],
   "avoid": [],
   "elements": [
