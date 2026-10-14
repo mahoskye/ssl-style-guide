@@ -124,6 +124,7 @@ categories:
       - prevent_sql_injection
       - parse_delimited_input_locally
       - alltrim_for_input_normalization
+      - prefer_explicit_trim_concat
       - format_for_composed_text
       - format_arg_not_array
       - ascanexact_for_fixed_sets
@@ -348,10 +349,13 @@ categories:
       - dollar_string_only
       - not_preferred_operator
       - one_assignment_per_statement
+      - increment_as_statement
       - no_ternary_operator
       - code_block_comparison
       - bare_logical_operator
       - parenthesize_negated_comparison
+      - parenthesize_mixed_logical
+      - prefer_explicit_trim_concat
       - dot_property_access
   - id: logging
     lists_from_rules: true

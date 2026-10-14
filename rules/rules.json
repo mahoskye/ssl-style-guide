@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 283,
+  "count": 286,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -1241,6 +1241,52 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/dollar_string_only.md"
+    },
+    {
+      "id": "prefer_explicit_trim_concat",
+      "title": "Write Trim() and + instead of string minus",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Join strings with `Trim(sFirst) + sSecond`, not `sFirst - sSecond`: on strings, `-` trims trailing spaces from the left operand and then appends, which reads like subtraction.",
+      "rationale": "With two strings, `-` removes trailing space characters from the left\noperand and then appends the right operand: `\"Sample   \" - \"Analysis\"` is\n`\"SampleAnalysis\"`. Nothing is subtracted, but the expression reads like\narithmetic, and a reader who does not know this behavior misreads it.\n`Trim(sFirst) + sSecond` says what happens.",
+      "exceptions": "The two forms differ when the left value ends in whitespace other than a\nspace. `Trim()` removes all trailing whitespace, including tabs and line\nbreaks, while `-` removes only spaces, so `\"Lot\" + Chr(9) - \"A\"` keeps the\ntab and `Trim(\"Lot\" + Chr(9)) + \"A\"` does not. When a value can end in a\ntab or line break and that character must be kept, keep the `-` and say so\nin a comment.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sFirst, sSecond, sResult;\n\nsFirst := \"Sample   \";\nsSecond := \"Analysis\";\n\nsResult := Trim(sFirst) + sSecond;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE sFirst, sSecond, sResult;\n\nsFirst := \"Sample   \";\nsSecond := \"Analysis\";\n\nsResult := sFirst - sSecond;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "operators",
+        "strings"
+      ],
+      "related_elements": [
+        "minus",
+        "plus",
+        "Trim"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/prefer_explicit_trim_concat.md"
     },
     {
       "id": "net_collections_zero_based",
@@ -3672,14 +3718,18 @@
         "class",
         "ssl_data_source"
       ],
-      "rule": "Prefer one assignment per line; use a chained assignment only when every target should receive the same value.",
-      "rationale": "Assignment is right-associative and evaluates to the assigned value, so\n`sStatus := sDefault := \"PENDING\";` is valid. Chaining unrelated targets hides\nthe second assignment inside the first.",
+      "rule": "Prefer one assignment per line; use a chained assignment only when every target should receive the same value, and do not use an assignment inside a larger expression.",
+      "rationale": "Assignment is right-associative and evaluates to the assigned value, so\n`sStatus := sDefault := \"PENDING\";` is valid. A pure chain like that, where\nevery target receives the same value, is the one accepted form.\n\nThe reported case is an assignment used inside a larger expression, such as\n`nTotal := (nCount := 5) * 2;` or an assignment passed as a call argument.\nThe second assignment hides inside the first, and a reader scanning for\nwhere `nCount` changes does not see it. Write it as its own statement.\n\nAn assignment in an `:IF`, `:WHILE` or `:CASE` condition is usually a typo\nfor `=` or `==`. Tools report that case separately, as a warning\n(`assignment_in_condition`).",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "ssl",
             "code": ":DECLARE sStatus, sDefault;\n\nsStatus := sDefault := \"PENDING\";\n"
+          },
+          {
+            "lang": "ssl",
+            "code": ":DECLARE nCount, nTotal;\n\nnCount := 5;\nnTotal := nCount * 2;\n"
           }
         ],
         "bad": [
@@ -3704,6 +3754,56 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/one_assignment_per_statement.md"
+    },
+    {
+      "id": "increment_as_statement",
+      "title": "Use ++ and -- as statements of their own",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Use `++` and `--` as a statement of their own (`nCount++;`), not inside a larger expression; never apply them to the same variable twice in one expression, or to a variable the same expression also reads.",
+      "rationale": "`++` and `--` change the variable and also produce a value: postfix\n(`nIndex++`) produces the value before the change and prefix (`++nIndex`)\nthe value after it. Inside a larger expression the reader has to work out\nwhich value is used, and readers often get it wrong. Operands are evaluated\nleft to right and each `++` takes effect before the next operand is read,\nso with `i = 1`, `i++ + i++` returns `3` (`1 + 2`) and leaves `i` at `3`.\nAs a statement of its own, `nCount++;` has one meaning: add one.\n\nThe rule has two tiers. An increment or decrement inside a larger\nexpression (`nNext := nCount++;`) is an info finding. Using the same\nvariable's `++` or `--` more than once in one expression, or incrementing a\nvariable that the same expression also reads (`aSeen[nIndex++] := nIndex;`),\nis the case readers misjudge, and tools should report it as a warning.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aValues, nCount, nNext;\n\naValues := {10, 20, 30};\nnCount := 1;\n\nnNext := aValues[nCount];\nnCount++;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aValues, nCount, nNext;\n\naValues := {10, 20, 30};\nnCount := 1;\n\nnNext := aValues[nCount++];\n"
+          },
+          {
+            "lang": "ssl",
+            "code": ":DECLARE aSeen, nIndex;\n\naSeen := {0, 0, 0};\nnIndex := 1;\n\naSeen[nIndex++] := nIndex;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "operators"
+      ],
+      "related_elements": [
+        "increment",
+        "decrement",
+        "add-assign",
+        "subtract-assign"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/increment_as_statement.md"
     },
     {
       "id": "no_ternary_operator",
@@ -3838,6 +3938,54 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/parenthesize_negated_comparison.md"
+    },
+    {
+      "id": "parenthesize_mixed_logical",
+      "title": "Parenthesize an expression that mixes .AND. and .OR.",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source"
+      ],
+      "rule": "Parenthesize an expression that mixes `.AND.` and `.OR.`: `.AND.` binds tighter, so `bA .OR. bB .AND. bC` means `bA .OR. (bB .AND. bC)`.",
+      "rationale": "`.AND.` binds tighter than `.OR.`, so `bA .OR. bB .AND. bC` is evaluated as\n`bA .OR. (bB .AND. bC)`, whatever the line breaks suggest. Both operators\nalso skip their right operand once the result is known: in\n`.T. .OR. X .AND. Y`, the whole `X .AND. Y` is the right operand of\n`.OR.`, so neither `X` nor `Y` is evaluated. A reader who groups the\nexpression left to right expects `Y` to run and to decide the result.\n\nAdding parentheses never changes what a correct expression does, and it\nstates which grouping was meant. Without them, a reader cannot tell a\ndeliberate grouping from a mistake.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE bIsAdmin, bIsOwner, bIsActive, bCanEdit;\n\nbIsAdmin := .F.;\nbIsOwner := .T.;\nbIsActive := .T.;\n\nbCanEdit := bIsAdmin .OR. (bIsOwner .AND. bIsActive);\n"
+          },
+          {
+            "lang": "ssl",
+            "code": ":DECLARE bIsAdmin, bIsOwner, bIsActive, bCanEdit;\n\nbIsAdmin := .F.;\nbIsOwner := .T.;\nbIsActive := .T.;\n\nbCanEdit := (bIsAdmin .OR. bIsOwner) .AND. bIsActive;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":DECLARE bIsAdmin, bIsOwner, bIsActive, bCanEdit;\n\nbIsAdmin := .T.;\nbIsOwner := .F.;\nbIsActive := .F.;\n\nbCanEdit := bIsAdmin .OR. bIsOwner .AND. bIsActive;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "operators"
+      ],
+      "related_elements": [
+        "and",
+        "or"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/parenthesize_mixed_logical.md"
     },
     {
       "id": "script_size_review",
