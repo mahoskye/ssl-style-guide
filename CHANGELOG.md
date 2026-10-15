@@ -12,6 +12,8 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## MCP 1.17.0 — 2026-10-15
+
 ### Changed
 - MCP 1.17.0: pins starlims-lsp v0.28.0. The CLI contract is unchanged and
   no new code is an error, so `valid` does not change; `ssl_diagnose` output
