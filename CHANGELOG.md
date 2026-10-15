@@ -12,6 +12,8 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## MCP 1.17.2 — 2026-10-15
+
 ### Changed
 - The MCP server pins starlims-lsp v0.28.2. `ssl_format` no longer adds a
   `;` after a stray closing `}`, `)` or `]`, such as the end of a C-style
