@@ -44,7 +44,9 @@ Identifiers and function names, by contrast, are case-insensitive.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 0;
+
 :IF nCount > 0;
 	nCount := 1;
 :ENDIF;

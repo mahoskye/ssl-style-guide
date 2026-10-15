@@ -52,6 +52,7 @@ error. Skipped optionals are written as adjacent commas, not `NIL`.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := LSelect("SELECT ordno FROM ordtask WHERE status = ?",,, {sStatus});
 ```

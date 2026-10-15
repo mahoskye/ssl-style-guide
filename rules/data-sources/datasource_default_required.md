@@ -12,7 +12,7 @@ rule: >-
 categories: [data-sources]
 machine: { list: must_follow, foundation: non_negotiable }
 related_elements: [PARAMETERS, RunDS]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.datasource_default_required]
 schema:
   - path: module_structure.data_source_modules.lint_rules
     form: lint
@@ -31,9 +31,10 @@ verification:
   note: >-
     A data source with a parameter that has no inline default fails when it
     runs, whatever the caller passes, with "No default value for one or more
-    parameters." (#82, which reversed the optional-default reading of #48). The
-    starlims-lsp catalog still records this diagnostic as removed, following
-    #48, so reviewers enforce it until the two agree.
+    parameters." (#82, which reversed the optional-default reading of #48).
+    starlims-lsp reinstated datasource_default_required in v0.25.0, scoped to
+    the data source's own parameters (procedures defined inside a data source
+    keep ordinary :PARAMETERS signatures).
 issues: ["#48", "#82"]
 ---
 

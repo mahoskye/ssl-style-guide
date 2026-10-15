@@ -37,6 +37,7 @@ obvious; a space between them looks like a missing argument.
 
 ```ssl
 :DECLARE aRows, sStatus;
+
 sStatus := "Logged";
 aRows := LSearch("SELECT ordno FROM orders WHERE status = ?",,, {sStatus});
 ```

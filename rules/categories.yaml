@@ -124,6 +124,7 @@ categories:
       - prevent_sql_injection
       - parse_delimited_input_locally
       - alltrim_for_input_normalization
+      - prefer_explicit_trim_concat
       - format_for_composed_text
       - format_arg_not_array
       - ascanexact_for_fixed_sets
@@ -135,6 +136,7 @@ categories:
       - declare_arrays_before_use
       - skip_commas_adjacent
       - check_alen_before_index
+      - array_index_whole_number
       - no_nil_target_array
       - array_literal_braces
       - ascanexact_for_fixed_sets
@@ -206,6 +208,7 @@ categories:
       - no_positional_parameter_access
       - bare_calls_are_builtins
       - max_params_warning
+      - procedure_length_review
       - omit_parameters_when_none
       - default_value_by_type
       - doc_block_parameter_alignment
@@ -300,6 +303,7 @@ categories:
       - align_related_elements
       - expressions_on_one_line
       - wrapped_list_alignment
+      - bracket_contents_align
       - continuation_indent_shows_structure
       - envelope_one_line
   - id: naming
@@ -345,9 +349,13 @@ categories:
       - dollar_string_only
       - not_preferred_operator
       - one_assignment_per_statement
+      - increment_as_statement
       - no_ternary_operator
       - code_block_comparison
       - bare_logical_operator
+      - parenthesize_negated_comparison
+      - parenthesize_mixed_logical
+      - prefer_explicit_trim_concat
       - dot_property_access
   - id: logging
     lists_from_rules: true
@@ -370,6 +378,7 @@ categories:
       - parameters_first
       - server_script_file_shape
       - regions_group_related_procedures
+      - script_size_review
       - file_banner_required
       - banner_returns_exact_shape
       - file_banner_continuation_alignment

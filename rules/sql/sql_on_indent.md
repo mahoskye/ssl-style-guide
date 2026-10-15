@@ -39,6 +39,7 @@ column 0 (see `sql_merge_layout`).
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT o.ordno, t.testcode
     FROM orders o

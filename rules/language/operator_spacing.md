@@ -39,6 +39,7 @@ produces this layout.
 
 ```ssl
 :DECLARE nTotal;
+
 nTotal := 1 + 2;
 ```
 

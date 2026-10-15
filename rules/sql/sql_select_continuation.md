@@ -41,6 +41,7 @@ name starts. Continuation lines that start there read as one list.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT o.ordno, o.testcode, o.status AS task_status, o.logdate, o.analyst,
            UPPER(o.result) AS result_upper

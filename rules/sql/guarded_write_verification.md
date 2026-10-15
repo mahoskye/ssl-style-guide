@@ -33,15 +33,18 @@ Only the affected-row count tells the command that its guard did not hold.
 ```ssl
 :PROCEDURE CloseOrder;
 	:PARAMETERS sOrdNo;
+
 	SQLExecute("
 	    UPDATE ordtask SET
 	        status = 'Done'
 	    WHERE ordno = ?sOrdNo?
 	      AND status = 'Logged'
 	");
+
 	:IF LimsRecordsAffected() != 1;
 		:RETURN {.F., {"NOT_UPDATED", "The order was not updated."}};
 	:ENDIF;
+
 	:RETURN {.T., NIL};
 :ENDPROC;
 ```

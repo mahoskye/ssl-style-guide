@@ -45,6 +45,7 @@ before other statements makes that visible to a reader.
 :DECLARE nCount;
 
 nCount := Len(sName);
+
 :RETURN nCount;
 ```
 

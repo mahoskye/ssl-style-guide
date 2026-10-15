@@ -34,6 +34,7 @@ meet an unexpected type.
 	:PARAMETERS nQty, nPrice;
 	:DEFAULT nQty, 0;
 	:DEFAULT nPrice, 0;
+
 	:RETURN nQty * nPrice;
 :ENDPROC;
 ```

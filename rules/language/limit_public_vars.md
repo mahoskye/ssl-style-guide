@@ -4,7 +4,7 @@ title: Prefer :DECLARE over :PUBLIC
 domain: language
 status: active
 level: advisory
-severity: warning
+severity: info
 applies_to: [server_script, class]
 rule: >-
   Prefer `:DECLARE` with parameter passing over `:PUBLIC` variables, which any
@@ -43,7 +43,9 @@ everything that runs after it, so any of that code can change it.
 :PROCEDURE Total;
 	:PARAMETERS nBase;
 	:DECLARE nTotal;
+
 	nTotal := nBase + 1;
+
 	:RETURN nTotal;
 :ENDPROC;
 ```

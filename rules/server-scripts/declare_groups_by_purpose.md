@@ -41,6 +41,7 @@ belongs.
 	nRetryLimit := 3;
 	sDiag := "";
 	oErr := NIL;
+
 	:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};
 :ENDPROC;
 ```

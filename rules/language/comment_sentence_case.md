@@ -36,6 +36,7 @@ for attention.
 
 ```ssl
 :DECLARE nCount;
+
 /* Retry once before reporting the failure;
 nCount := 1;
 ```

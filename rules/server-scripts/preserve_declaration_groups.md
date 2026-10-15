@@ -39,6 +39,7 @@ away and turns a small edit into a large diff.
 	nRetryLimit := 3;
 	sDiag := "";
 	oErr := NIL;
+
 	:RETURN {sUrl, nRetry, nRetryLimit, oErr, sDiag};
 :ENDPROC;
 ```

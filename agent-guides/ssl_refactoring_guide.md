@@ -302,7 +302,7 @@ Multi-line conditions:
 
 <!-- rules: id=blank_line_between_procedures,blank_line_between_sections -->
 - Put one blank line between procedures.
-- Put one blank line between logical sections and between regions.
+- Put one blank line between logical sections and between regions: after the declarations, before a control block that follows code and after its closer when more code follows, before a section comment that follows code, and before a procedure's final `:RETURN`; add none at the start or end of a body.
 <!-- /rules -->
 
 Inside procedures, use blank lines as readability needs.
@@ -426,6 +426,8 @@ UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows for " + sSiteCode
 ## Part 6: Common Refactoring Patterns
 
 ### 6.1 Extract Procedure
+
+<!-- rule: procedure_length_review -->Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.<!-- /rule --> Extract a procedure for each separate responsibility, never only to bring a count down. The same applies to the script as a whole: <!-- rule: script_size_review -->Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.<!-- /rule -->
 
 **Before:**
 ```ssl

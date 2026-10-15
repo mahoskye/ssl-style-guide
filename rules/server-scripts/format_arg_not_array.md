@@ -32,7 +32,9 @@ spread into the placeholders.
 :PROCEDURE Describe;
 	:PARAMETERS sOrdNo;
 	:DECLARE sFmt;
+
 	sFmt := "";
+
 	:RETURN sFmt:Format("Order {0}", {sOrdNo});
 :ENDPROC;
 ```

@@ -69,7 +69,7 @@ if (!existsSync(BIN)) {
 const VALIDATE_ARGS = ['--validate', '--info', '--hungarian-types', '--strict'];
 
 function validate(file) {
-  const result = JSON.parse(runLsp([...VALIDATE_ARGS, file]))[0];
+  const result = JSON.parse(runLsp([...VALIDATE_ARGS, '--', file]))[0];
   return result.diagnostics ?? [];
 }
 
@@ -77,6 +77,15 @@ function runLsp(args) {
   try {
     return execFileSync(BIN, args, { encoding: 'utf8' });
   } catch (error) {
+    // Exit 2 is a usage error (an unknown flag, no inputs): nothing on
+    // stdout, the reason on stderr. An unknown flag means the binary is
+    // older than the pinned release.
+    if (error.status === 2) {
+      throw new Error(
+        `starlims-lsp rejected the call: ${String(error.stderr).trim().split('\n')[0]} ` +
+          `(run "bun run fetch-lsp" in ssl-mcp-server/ to update the binary)`
+      );
+    }
     // --validate exits 1 when a document has errors; stdout still holds
     // the JSON we want.
     if (error.stdout) return error.stdout;
@@ -119,7 +128,7 @@ for (const skill of readdirSync(SKILLS_DIR).sort()) {
 
     // 1. Formatter-stable. The formatter does not own data-source layout.
     if (suffix === '.ssl') {
-      const formatted = runLsp(['--format', file]);
+      const formatted = runLsp(['--format', '--', file]);
       if (formatted && formatted !== body) {
         if (FIX) {
           updated = updated.replace(body, formatted);
@@ -137,6 +146,7 @@ for (const skill of readdirSync(SKILLS_DIR).sort()) {
       '--info',
       '--hungarian-types',
       '--strict',
+      '--',
       file,
     ]);
     let result;
@@ -195,7 +205,7 @@ for (const record of records) {
           if (codes.has(code)) failures.push(`${label}: good example produces ${code}`);
         }
         if (suffix === '.ssl') {
-          const formatted = runLsp(['--format', file]);
+          const formatted = runLsp(['--format', '--', file]);
           if (formatted && formatted !== fence.code) failures.push(`${label}: not formatter-clean`);
         }
       } else {
@@ -203,7 +213,7 @@ for (const record of records) {
           if (!codes.has(code)) failures.push(`${label}: bad example does not produce ${code}`);
         }
         if (fmtCodes.length > 0 && suffix === '.ssl') {
-          const formatted = runLsp(['--format', file]);
+          const formatted = runLsp(['--format', '--', file]);
           if (!formatted || formatted === fence.code) {
             failures.push(`${label}: formatter leaves the bad example unchanged (${fmtCodes.join(', ')})`);
           }

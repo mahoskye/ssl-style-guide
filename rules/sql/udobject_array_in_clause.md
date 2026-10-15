@@ -41,8 +41,10 @@ A scalar property such as `?oUser:ID?` binds normally.
 :PROCEDURE ReadSamples;
 	:PARAMETERS oFilter;
 	:DECLARE aStatusCodes, aRows;
+
 	aStatusCodes := oFilter:statusCodes;
 	aRows := SQLExecute("SELECT ordno FROM ordtask WHERE status IN (?aStatusCodes?)");
+
 	:RETURN aRows;
 :ENDPROC;
 ```

@@ -31,6 +31,7 @@ A `:BEGINCASE` lists the choices side by side at one level, where a chain of
 :PROCEDURE RouteLabel;
 	:PARAMETERS sRoute;
 	:DECLARE sLabel;
+
 	:BEGINCASE;
 	:CASE sRoute == "APPROVE";
 		sLabel := "Approved";
@@ -42,6 +43,7 @@ A `:BEGINCASE` lists the choices side by side at one level, where a chain of
 		sLabel := "Pending";
 		:EXITCASE;
 	:ENDCASE;
+
 	:RETURN sLabel;
 :ENDPROC;
 ```

@@ -31,6 +31,7 @@ points to a real type error.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 0;
 ```
 

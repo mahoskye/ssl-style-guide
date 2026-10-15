@@ -39,6 +39,7 @@ caller.
 	:DECLARE aResult;
 
 	aResult := ExecFunction("Samples.Load", {sSampleId});
+
 	:IF LimsTypeEx(aResult) != "ARRAY" .OR. ALen(aResult) < 2;
 		:RETURN {.F., {"SAMPLE_CONTRACT", "Invalid sample result."}};
 	:ENDIF;

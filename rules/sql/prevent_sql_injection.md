@@ -54,6 +54,7 @@ anything a user or another system supplied.
 
 ```ssl
 :DECLARE sOrdNo, aRows;
+
 sOrdNo := "A1001";
 aRows := SQLExecute("SELECT testcode FROM ordtask WHERE ordno = ?sOrdNo?");
 ```

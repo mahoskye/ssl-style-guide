@@ -32,12 +32,14 @@ where a reviewer sees them, each on its own line.
 ```ssl
 :PROCEDURE CloseOrder;
 	:PARAMETERS sOrdNo;
+
 	SQLExecute("
 	    UPDATE ordtask SET
 	        status = 'Done'
 	    WHERE ordno = ?sOrdNo?
 	      AND status = 'Logged'
 	");
+
 	:RETURN LimsRecordsAffected() == 1;
 :ENDPROC;
 ```

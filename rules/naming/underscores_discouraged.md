@@ -35,7 +35,9 @@ and the `_` private-member prefix are the exceptions.
 ```ssl
 :PROCEDURE LoadOrders;
 	:DECLARE nRowCount;
+
 	nRowCount := 0;
+
 	:RETURN nRowCount;
 :ENDPROC;
 ```

@@ -39,6 +39,7 @@ them (`RunSQL(sSql,, aValues)`).
 
 ```ssl
 :DECLARE aItems;
+
 aItems := {1, 2, 3};
 ```
 

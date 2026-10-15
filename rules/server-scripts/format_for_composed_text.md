@@ -34,8 +34,10 @@ concatenations hides it between the quotes.
 :PROCEDURE Describe;
 	:PARAMETERS sOrdNo, nCount;
 	:DECLARE sFmt, sMessage;
+
 	sFmt := "";
 	sMessage := sFmt:Format("Order {0} has {1} tests", {sOrdNo, nCount});
+
 	:RETURN sMessage;
 :ENDPROC;
 ```

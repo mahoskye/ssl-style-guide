@@ -37,6 +37,7 @@ markers.
 
 ```ssl
 :DECLARE sSql, sStatus, oDs;
+
 sStatus := "Logged";
 sSql := "SELECT ordno FROM ordtask WHERE status = @status";
 oDs := GetSSLDataset(sSql,, {"status"}, {sStatus});

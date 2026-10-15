@@ -52,6 +52,7 @@ Collections on .NET objects reached through colon member access are 0-based
 	:DECLARE i, nTotal;
 
 	nTotal := 0;
+
 	:FOR i := 1 :TO ALen(aItems);
 		nTotal += aItems[i];
 	:NEXT;

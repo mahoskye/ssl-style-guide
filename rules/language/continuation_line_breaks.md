@@ -40,12 +40,15 @@ the next statement.
 :PROCEDURE Check;
 	:PARAMETERS nVal, sName;
 	:DECLARE bOk;
+
 	bOk := .F.;
+
 	:IF nVal > 1
 		.AND. nVal < 5
 		.AND. sName == "x";
 		bOk := .T.;
 	:ENDIF;
+
 	:RETURN bOk;
 :ENDPROC;
 ```

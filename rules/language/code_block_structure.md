@@ -4,7 +4,7 @@ title: Code block literal shape
 domain: language
 status: active
 level: authoritative
-severity: warning
+severity: error
 applies_to: [server_script, class, ssl_data_source]
 rule: >-
   Write a code block as `{|params| expression}`, with at least one parameter
@@ -24,13 +24,15 @@ verification:
   note: >-
     Kept from the schema's expressions.code_block_literals and the
     types.codeblock note ("Literal syntax requires at least one parameter and
-    a single-expression body").
+    a single-expression body"). Severity error: checked on STARLIMS 12, a
+    code block with no bound variable does not compile.
 ---
 
 ## Rationale
 
 A code block is one expression with its bound variables. It has no statement
-list, and it needs at least one bound variable.
+list, and it needs at least one bound variable: a code block with none, such
+as `{|| 1}`, does not compile.
 
 ## Examples
 
@@ -38,6 +40,7 @@ list, and it needs at least one bound variable.
 
 ```ssl
 :DECLARE fnDouble;
+
 fnDouble := {|x| x * 2};
 ```
 

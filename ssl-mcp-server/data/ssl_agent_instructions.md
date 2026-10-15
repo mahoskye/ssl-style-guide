@@ -413,13 +413,13 @@ SSL's built-in scalar and array types are backed by underlying .NET values. Stri
 
 ### Operators Summary
 
-* **Assignment:** `:=` — the target can be a variable, an object property (`oTask:Status`) or an array element (`aItems[1]`). Assignment has the lowest precedence, is right-associative and evaluates to the assigned value, so `sStatus := sDefault := "PENDING";` is valid. <!-- rule: one_assignment_per_statement -->Prefer one assignment per line; use a chained assignment only when every target should receive the same value.<!-- /rule -->
-* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=` — each evaluates to the updated left-side value, so it can appear inside a condition such as `(nIndex += 1) <= nCount`.
+* **Assignment:** `:=` — the target can be a variable, an object property (`oTask:Status`) or an array element (`aItems[1]`). Assignment has the lowest precedence, is right-associative and evaluates to the assigned value, so `sStatus := sDefault := "PENDING";` is valid. <!-- rule: one_assignment_per_statement -->Prefer one assignment per line; use a chained assignment only when every target should receive the same value, and do not use an assignment inside a larger expression.<!-- /rule -->
+* **Compound Assignment:** `+=`, `-=`, `*=`, `/=`, `^=`, `%=` — each evaluates to the updated left-side value, so SSL accepts it inside a larger expression such as `(nIndex += 1) <= nCount`. Don't write it that way: update the variable in its own statement, then test it (`one_assignment_per_statement`, `assignment_in_condition`).
 * **Comparison:** `=`, `==`, `!=`, `<>`, `#`, `<`, `>`, `<=`, `>=` — prefer `!=` over `<>` or `#` for not-equals
-* **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`)
+* **Logical:** `.AND.`, `.OR.`, `.NOT.`, `!` (must include periods for `.AND.`/`.OR.`/`.NOT.`). Both `.AND.` and `.OR.` skip the right operand once the result is known. <!-- rule: parenthesize_mixed_logical -->Parenthesize an expression that mixes `.AND.` and `.OR.`: `.AND.` binds tighter, so `bA .OR. bB .AND. bC` means `bA .OR. (bB .AND. bC)`.<!-- /rule -->
 * **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `**` (power), `%` (modulo)
-* **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value. The target can be a variable, an array element (`aCounts[1]++`) or an object property (`oStats:nHits++`) holding a number or a date (a date steps by one day).
-* **String:** `+` (concatenation), `-` (trim+concat), `$` (contains)
+* **Unary:** `++` (increment), `--` (decrement) — both prefix (`++i`) and postfix (`i++`) forms are supported. Prefix returns the new value; postfix returns the original value. The target can be a variable, an array element (`aCounts[1]++`) or an object property (`oStats:nHits++`) holding a number or a date (a date steps by one day). Operands are evaluated left to right, so with `i = 1`, `i++ + i++` returns `3` and leaves `i` at `3`. <!-- rule: increment_as_statement -->Use `++` and `--` as a statement of their own (`nCount++;`), not inside a larger expression; never apply them to the same variable twice in one expression, or to a variable the same expression also reads.<!-- /rule -->
+* **String:** `+` (concatenation), `-` (trims trailing spaces from the left operand, then concatenates), `$` (contains). <!-- rule: prefer_explicit_trim_concat -->Join strings with `Trim(sFirst) + sSecond`, not `sFirst - sSecond`: on strings, `-` trims trailing spaces from the left operand and then appends, which reads like subtraction.<!-- /rule -->
 * **Bitwise (function call syntax):** `_AND(a, b)`, `_OR(a, b)`, `_XOR(a, b)`, `_NOT(a)`, `<<`, `>>`
 
 ---
@@ -586,7 +586,7 @@ for every statement type: `ssl-style-guide/sql-canonical-compact-reference.md`
 - Align `SELECT` continuation lines to the first column (column 7).
 - In `INSERT`, put the opening `(` on the `INSERT INTO` line, indent the columns 4 spaces, and put the closing `)` on its own line; lay out `VALUES` the same way.
 - In `UPDATE`, keep `SET` on the `UPDATE` line and indent the assignments 4 spaces below it.
-- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), keep `DELETE WHERE` on one line with each `AND`/`OR` of its condition on its own line 4 spaces further in, and give the `INSERT` block-style parentheses.
 - Put a blank line before and after `UNION`, `UNION ALL`, `INTERSECT` and `MINUS`.
 - Keep an optimizer hint (`/*+ HINT */`) immediately after its action keyword; never remove or reformat a hint without understanding its purpose.
 - Do not put a trailing semicolon inside an embedded SQL string — `"SELECT ... ;"` is not the convention; end the SSL statement, not the SQL text.

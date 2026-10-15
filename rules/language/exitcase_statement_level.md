@@ -32,6 +32,7 @@ closing keyword, so it does not dedent.
 :PROCEDURE Describe;
 	:PARAMETERS nCount;
 	:DECLARE sText;
+
 	:BEGINCASE;
 	:CASE nCount == 0;
 		sText := "none";
@@ -40,6 +41,7 @@ closing keyword, so it does not dedent.
 		sText := "some";
 		:EXITCASE;
 	:ENDCASE;
+
 	:RETURN sText;
 :ENDPROC;
 ```

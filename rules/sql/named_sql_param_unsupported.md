@@ -51,6 +51,7 @@ connection name: an array passed there is not a values array.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("SELECT ordno FROM ordtask WHERE status = ?sStatus?");
 ```

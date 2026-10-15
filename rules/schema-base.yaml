@@ -33,6 +33,8 @@ lints:
     no_nested_ternaries: !rule no_nested_iif
     limit_block_depth: !rule limit_block_depth
     max_params_per_procedure: !rule max_params_warning
+    procedure_length_review: !rule procedure_length_review
+    script_size_review: !rule script_size_review
     require_else_for_if: false
   hungarian_notation:
     enabled: true
@@ -180,7 +182,6 @@ documentation:
       - !rule file_banner_continuation_alignment
       - !rule file_banner_modified_entries
       - !rule generated_banner_omits_author
-      - !rule banner_has_no_semicolon
 module_structure:
   data_source_modules:
     level: authoritative
@@ -349,6 +350,7 @@ sql:
         on_and: !rule sql_merge_layout
         update_set: !rule sql_merge_layout
         insert: !rule sql_merge_layout
+        delete_where: !rule sql_merge_layout
       set_operations:
         vertical_spacing: !rule sql_set_operation_spacing
       optimizer_hints:

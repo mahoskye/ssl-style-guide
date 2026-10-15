@@ -28,6 +28,7 @@ before assigning `{}` fails.
 
 ```ssl
 :DECLARE aItems;
+
 aItems := {};
 AAdd(aItems, 1);
 ```

@@ -39,11 +39,13 @@ declared in the same file.
 ```ssl
 :PROCEDURE Main;
 	:PARAMETERS sSampleId;
+
 	:RETURN DoProc("FormatId", {sSampleId});
 :ENDPROC;
 
 :PROCEDURE FormatId;
 	:PARAMETERS sSampleId;
+
 	:RETURN Upper(AllTrim(sSampleId));
 :ENDPROC;
 ```

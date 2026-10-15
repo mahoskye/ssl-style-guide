@@ -35,11 +35,13 @@ other block body.
 :PROCEDURE Describe;
 	:PARAMETERS nCount;
 	:DECLARE sText;
+
 	:IF nCount > 0;
 		sText := "some";
 	:ELSE;
 		sText := "none";
 	:ENDIF;
+
 	:RETURN sText;
 :ENDPROC;
 ```

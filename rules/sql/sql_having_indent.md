@@ -38,6 +38,7 @@ purpose.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT ordno, COUNT(*) AS ntests
     FROM ordtask

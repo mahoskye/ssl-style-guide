@@ -73,8 +73,8 @@ The manual SSL rules below (source: `agent-guides/ssl_refactoring_guide.md` Part
 - Put one blank line between procedures.
 - Put an access modifier on its own line immediately before `:PROCEDURE`, with no blank line between them.
 - Write an access modifier exactly as `/*@private;` or `/*@protected;`: lowercase, with no space between `/*` and `@`.
-- Put one blank line between logical sections and between regions.
-- Do not leave three or more consecutive blank lines; reduce such a run to one.
+- Put one blank line between logical sections and between regions: after the declarations, before a control block that follows code and after its closer when more code follows, before a section comment that follows code, and before a procedure's final `:RETURN`; add none at the start or end of a body.
+- Do not leave three or more consecutive blank lines; reduce such a run to two.
 <!-- /rules -->
 
 An access modifier (`/*@private;` or `/*@protected;`) is not a comment, so the
@@ -134,7 +134,7 @@ Apply to all SQL strings inside `SQLExecute(`, `RunSQL(`, `LSearch(`, `LSelect(`
 For formatting existing code only. Agents do not write `MERGE` (see the basic-SQL rule in the agent boundaries).
 
 <!-- rules: id=sql_merge_layout -->
-- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, and give the `INSERT` block-style parentheses.
+- When formatting an existing `MERGE`, put `ON` at column 0 (not indented under `USING`), indent the `AND` of a multi-line `ON` condition 4 spaces (under the first condition inside the parentheses), indent `UPDATE SET`, `INSERT` and `DELETE WHERE` 4 spaces under their `WHEN`, end the `UPDATE SET` line at `SET` with each assignment on its own line 4 spaces further in (as in a plain `UPDATE`), keep `DELETE WHERE` on one line with each `AND`/`OR` of its condition on its own line 4 spaces further in, and give the `INSERT` block-style parentheses.
 <!-- /rules -->
 
 ### Set operations

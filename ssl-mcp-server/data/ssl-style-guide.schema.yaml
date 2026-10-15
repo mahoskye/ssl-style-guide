@@ -82,7 +82,8 @@ ssl_style_guide:
     allow_space_indentation: true
     space_indent_width: 4
     indent_width: 1            # 1 tab per nesting level (or 4 spaces when using space indentation)
-    continuation_indent: 1     # 1 tab (or 4 spaces) for continuation lines
+    continuation_indent: 1     # 1 tab (or 4 spaces) for a continuation outside brackets (after :=, a leading operator, a member chain)
+    bracket_continuation: align_with_first_item  # inside an unclosed ( { [ whose first item shares its line: align with that item (indent + spaces); a bracket that ends its line hangs one level in, and its closer returns to the opening line's indent
     trim_trailing_whitespace: true
     spaces:
       around_assignment: true
@@ -97,6 +98,8 @@ ssl_style_guide:
       between_top_level_blocks: 1
       before_region: 1
       before_procedure: 1
+      between_sections: 1      # after declarations; before a control block that follows code and after its closer; before a section comment; before a procedure's final :RETURN
+      max_consecutive: 2       # runs of three or more blank lines collapse to two
     statement_terminator: ;
     one_statement_per_line: true
   keywords:
@@ -1359,10 +1362,13 @@ ssl_style_guide:
           set: on same line as UPDATE # In UPDATE, keep SET on the UPDATE line and indent the assignments 4 spaces below it.
           assignments: indented 4 under UPDATE SET # In UPDATE, keep SET on the UPDATE line and indent the assignments 4 spaces below it.
         merge:
-          on: column 0 (not indented under USING) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
-          on_and: indented 4 (aligned under first condition inside parens) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
-          update_set: indented 4 under WHEN MATCHED # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
-          insert: indented 4 under WHEN NOT MATCHED; block-style parens # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, and give the INSERT block-style parentheses.
+          on: column 0 (not indented under USING) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), keep DELETE WHERE on one line with each AND/OR of its condition on its own line 4 spaces further in, and give the INSERT block-style parentheses.
+          on_and: indented 4 (aligned under first condition inside parens) # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), keep DELETE WHERE on one line with each AND/OR of its condition on its own line 4 spaces further in, and give the INSERT block-style parentheses.
+          update_set: indented 4 under WHEN MATCHED; SET ends its line, each
+            assignment on its own line indented 4 under UPDATE SET # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), keep DELETE WHERE on one line with each AND/OR of its condition on its own line 4 spaces further in, and give the INSERT block-style parentheses.
+          insert: indented 4 under WHEN NOT MATCHED; block-style parens # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), keep DELETE WHERE on one line with each AND/OR of its condition on its own line 4 spaces further in, and give the INSERT block-style parentheses.
+          delete_where: indented 4 under WHEN MATCHED; DELETE WHERE on one line, each
+            AND/OR on its own line indented 4 under DELETE # When formatting an existing MERGE, put ON at column 0 (not indented under USING), indent the AND of a multi-line ON condition 4 spaces (under the first condition inside the parentheses), indent UPDATE SET, INSERT and DELETE WHERE 4 spaces under their WHEN, end the UPDATE SET line at SET with each assignment on its own line 4 spaces further in (as in a plain UPDATE), keep DELETE WHERE on one line with each AND/OR of its condition on its own line 4 spaces further in, and give the INSERT block-style parentheses.
         set_operations:
           vertical_spacing: blank line before and after operator # Put a blank line before and after UNION, UNION ALL, INTERSECT and MINUS.
         optimizer_hints:
@@ -1544,6 +1550,12 @@ ssl_style_guide:
       no_nested_ternaries: true # Do not nest IIf calls; use :IF or :BEGINCASE for more than two outcomes.
       limit_block_depth: 4 # Limit block nesting to 4 levels.
       max_params_per_procedure: 8 # Keep procedures to at most 8 parameters; more than 20 parameters on a procedure or method draws a warning, so group related state into arrays or objects.
+      procedure_length_review: 80 # Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.
+      script_size_review:
+        max_code_lines: 400
+        max_local_procedures: 12
+        ideal_code_lines: 200
+        ideal_local_procedures: 1
       require_else_for_if: false
     # END GENERATED lints.style_rules
     # BEGIN GENERATED lints.hungarian_notation: edit rules/ and run bun tools/generate-rules.mjs
@@ -1691,7 +1703,7 @@ ssl_style_guide:
     # BEGIN GENERATED lints.coding_standards: edit rules/ and run bun tools/generate-rules.mjs
     coding_standards:
       - rule: limit_public_vars
-        severity: warning
+        severity: info
         message: ":PUBLIC variables are shared across the running program — any procedure can read or update them, including procedures called after the declaring procedure has returned — and anything on the call stack can overwrite them. Prefer :DECLARE with parameter passing."
       - rule: prefer_exitcase
         severity: warning
@@ -1753,7 +1765,6 @@ ssl_style_guide:
         - "Continuation lines align under the first character after the colon and space."
         - "Record later changes as new lines below Date in the same style: Modified..... : YYYY-MM-DD [initials] - [change]. Never rewrite an earlier entry."
         - "Generated code omits the Author line rather than inventing initials. A banner without Author is complete in that case."
-        - "The banner is a single SSL comment, so it ends at the first semicolon. No semicolon may appear inside it."
     # END GENERATED documentation.file_banner
     code_comments:
       style: SSL_comments  # /* comment; format

@@ -35,6 +35,7 @@ helper is the exception (see `private_raise_only_helpers`).
 ```ssl
 :PROCEDURE FormatId;
 	:PARAMETERS sSampleId;
+
 	:RETURN Upper(AllTrim(sSampleId));
 :ENDPROC;
 ```

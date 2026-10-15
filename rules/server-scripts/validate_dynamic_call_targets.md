@@ -35,10 +35,13 @@ given, so an unchecked value from a caller decides what runs.
 :PROCEDURE RunReport;
 	:PARAMETERS sReport;
 	:DECLARE vResult;
+
 	vResult := NIL;
+
 	:IF AScanExact({"Daily", "Weekly"}, sReport) > 0;
 		vResult := ExecFunction("Reports." + sReport);
 	:ENDIF;
+
 	:RETURN vResult;
 :ENDPROC;
 ```

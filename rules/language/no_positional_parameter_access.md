@@ -33,6 +33,7 @@ SSL has no argument list to index. Each parameter is a named variable from the
 ```ssl
 :PROCEDURE Greet;
 	:PARAMETERS sName;
+
 	:RETURN "Hello " + sName;
 :ENDPROC;
 ```

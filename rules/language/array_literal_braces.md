@@ -35,6 +35,7 @@ verification:
 
 ```ssl
 :DECLARE aItems;
+
 aItems := {1, 2};
 ```
 

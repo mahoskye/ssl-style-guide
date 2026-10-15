@@ -7,7 +7,7 @@ description: >-
   a junior developer could own the code. Makes behavior-preserving edits
   only and delivers a handoff report. Use when code is functionally done and
   needs to be made production- and handoff-ready.
-version: 8
+version: 9
 mode: all
 argument-hint: "<file-path> [additional files or handoff notes]"
 model: inherit
@@ -100,10 +100,11 @@ changed and the full file it produced, then:
   rules. The formatter lays out multi-line and over-long SQL strings but
   leaves a one-line SQL string exactly as written, keyword case included,
   so correct what it produced and finish what it left by hand.
-- Apply what the formatter does not cover: blank-line grouping between
-  logical sections, `/* region ...;` marker placement, line breaks at
-  logical points near the ~90 character target, comment placement and
-  alignment.
+- Apply what the formatter does not cover: `/* region ...;` marker
+  placement, line breaks at logical points near the ~90 character target,
+  comment placement and alignment. The formatter adds a blank line at each
+  section boundary but never removes one, so remove blank lines that split
+  a section in two.
 - Record every formatter decision you overrode in the handoff report —
   these are tuning inputs for improving the formatter.
 

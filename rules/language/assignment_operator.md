@@ -33,6 +33,7 @@ compares and throws the result away, so the variable never changes.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 1;
 ```
 

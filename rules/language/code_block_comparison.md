@@ -32,6 +32,7 @@ expression runs.
 
 ```ssl
 :DECLARE fnDouble, nValue;
+
 fnDouble := {|x| x * 2};
 nValue := Eval(fnDouble, 4);
 ```

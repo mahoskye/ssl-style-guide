@@ -29,7 +29,9 @@ changed without changing the code.
 ```ssl
 :PROCEDURE ReadRows;
 	:DECLARE aRows;
+
 	aRows := SQLExecute("SELECT ordno FROM ordtask");
+
 	:RETURN aRows;
 :ENDPROC;
 ```

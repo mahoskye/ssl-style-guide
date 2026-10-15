@@ -45,11 +45,14 @@ compiles.
 
 ```ssl
 :DECLARE i, nTotal;
+
 nTotal := 0;
+
 :FOR i := 1 :TO 9;
 	:IF nTotal > 10;
 		:EXITFOR;
 	:ENDIF;
+
 	nTotal += i;
 :NEXT;
 ```

@@ -31,6 +31,7 @@ string matches the first string element.
 ```ssl
 :PROCEDURE IsKnownRoute;
 	:PARAMETERS sRoute;
+
 	:RETURN AScanExact({"APPROVE", "REJECT"}, sRoute) > 0;
 :ENDPROC;
 ```

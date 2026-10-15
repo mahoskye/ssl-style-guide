@@ -47,6 +47,7 @@ raises when the call runs.
 
 ```ssl
 :DECLARE aItems, nCount;
+
 aItems := {1, 2};
 nCount := aItems:Length;
 ```

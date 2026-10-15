@@ -31,6 +31,7 @@ arguments are evaluated before it chooses one.
 
 ```ssl
 :DECLARE nCount, sLabel;
+
 nCount := 0;
 sLabel := IIf(nCount > 0, "some", "none");
 ```

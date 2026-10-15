@@ -34,6 +34,7 @@ true, so the check it guards never runs.
 ```ssl
 :PROCEDURE IsCount;
 	:PARAMETERS vValue;
+
 	:RETURN LimsTypeEx(vValue) == "NUMERIC";
 :ENDPROC;
 ```

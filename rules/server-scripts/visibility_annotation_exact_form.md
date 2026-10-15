@@ -11,7 +11,7 @@ rule: >-
   lowercase, with no space between `/*` and `@`.
 categories: [procedures]
 related_elements: [PROCEDURE]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.visibility_annotation]
 schema:
   - path: procedures.visibility_annotations.exact_form
     form: text
@@ -23,8 +23,9 @@ verification:
   note: >-
     Kept from the schema's procedures.visibility_annotations.exact_form.
     Merged: the review skill's "they must be lowercase, have no space after
-    /*". starlims-lsp ignores the spaced form and matches the content without
-    regard to case, so it does not report either variant.
+    /*". starlims-lsp reports a near-miss spelling before :PROCEDURE as a
+    visibility_annotation warning (from v0.25.0; earlier releases ignored the
+    spaced form and matched without regard to case).
 ---
 
 ## Rationale

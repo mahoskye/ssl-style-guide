@@ -45,6 +45,7 @@ condition off from the next clause without spending a full indent level.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT o.ordno, t.testcode

@@ -35,11 +35,13 @@ property, not a new parameter on every procedure.
 :PROCEDURE BuildRequest;
 	:PARAMETERS sOrdNo;
 	:DECLARE oState;
+
 	oState := CreateUdObject();
 	oState:ordNo := sOrdNo;
 	oState:isValid := .F.;
 	oState:failureCode := "";
 	oState:failureMessage := "";
+
 	:RETURN oState;
 :ENDPROC;
 ```

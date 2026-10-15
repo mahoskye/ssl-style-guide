@@ -34,7 +34,9 @@ An empty `:BEGINCASE; :ENDCASE;` block is rejected when the script compiles.
 
 ```ssl
 :DECLARE nCount, sLabel;
+
 nCount := 0;
+
 :BEGINCASE;
 :CASE nCount == 0;
 	sLabel := "none";

@@ -12,6 +12,165 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- Rule record `increment_as_statement` (style_only, info, enforced by
+  review): use `++` and `--` as a statement of their own, not inside a
+  larger expression. Postfix produces the old value and prefix the new, and
+  operands are evaluated left to right, so with `i = 1`, `i++ + i++` returns
+  `3` and leaves `i` at `3`. Using the same variable's `++`/`--` twice in one
+  expression, or incrementing a variable the expression also reads, is the
+  case tools should report as a warning. LSP enforcement is requested.
+- Rule record `parenthesize_mixed_logical` (style_only, warning, enforced by
+  review): parenthesize an expression that mixes `.AND.` and `.OR.`;
+  `.AND.` binds tighter, and in `.T. .OR. X .AND. Y` neither `X` nor `Y` is
+  evaluated. LSP enforcement is requested.
+- Rule record `prefer_explicit_trim_concat` (style_only, info, enforced by
+  review): write `Trim(sFirst) + sSecond` instead of string `sFirst - sSecond`.
+  The record notes that `Trim()` also removes trailing tabs and line breaks
+  while `-` removes only spaces. LSP enforcement is requested.
+- The agent guide's operators summary states the three new rules next to
+  the `.AND.`/`.OR.`, `++`/`--` and string `-` facts.
+- Rule record `bracket_contents_align`: inside an unclosed `(`, `{` or `[`
+  whose first item shares the bracket's line, continuation lines align with
+  that first item; a bracket that ends its line hangs one level in, with its
+  closing delimiter back at the opening line's indentation; an item that
+  would not fit at the aligned column makes the bracket hang (#124).
+- Schema: `formatting.bracket_continuation`, `formatting.blank_lines.between_sections`
+  (1) and `formatting.blank_lines.max_consecutive` (2) (#124, #125).
+- Rule records `procedure_length_review` and `script_size_review` (advisory,
+  info, enforced by the starlims-lsp diagnostics of the same names): a procedure or class method over 80 code
+  lines, or a server script over 400 code lines or 12 local procedures, is a
+  prompt to check its responsibilities, not a limit. `script_size_review`
+  also gives the shape to aim for: up to about 200 code lines with at most
+  one local procedure. The thresholds are confirmed on STARLIMS 12 (the
+  procedure trigger is its base layer's 95th percentile, about 83 code
+  lines; the ideal script is the base layer's typical shape). The
+  server-script style guide and the refactoring guide's Extract Procedure
+  section state them.
+- Schema: `sql.formatting.statement_patterns.merge.delete_where`.
+- Schema: `lints.style_rules.procedure_length_review` (80) and
+  `lints.style_rules.script_size_review` (`max_code_lines: 400`,
+  `max_local_procedures: 12`, `ideal_code_lines: 200`,
+  `ideal_local_procedures: 1`).
+- Rule record `parenthesize_negated_comparison` (authoritative, warning,
+  enforced by `lsp:diag.parenthesize_negated_comparison`): write a negated comparison as `.NOT. (a = b)`;
+  `.NOT.` binds before the comparison operators, so `.NOT. s = "AB"` raises
+  on a string and computes `(.NOT. b) = x` on a logical. `!=` and `#` compare
+  exactly, so they do not replace `.NOT. (s = x)`.
+- Rule record `array_index_whole_number` (authoritative, error, enforced by
+  `lsp:diag.array_index_whole_number`): a fractional array index raises at run time, and division
+  gives a whole number only when it divides evenly, so wrap a computed index
+  in `Integer()`.
+
+### Changed
+- `one_assignment_per_statement` (still info) says that an assignment used
+  inside a larger expression, other than a chain that gives every target the
+  same value, is the reported case. An assignment in a condition stays
+  starlims-lsp's `assignment_in_condition` warning. LSP enforcement of the
+  wider case is requested.
+- Element metadata re-vendored from the reference after its operator-specifics update (starlims-ssl-reference#186, #187).
+- `limit_block_depth`: its rationale records that 4 is the 95th percentile
+  nesting depth of STARLIMS 12's base layer.
+- Severities decided by the style guide (the LSP follows): `limit_public_vars` and `max_params_warning` are info, `global_assignment` is warning.
+- `code_block_structure` is an error: a code block with no bound variable
+  does not compile.
+- `no_semicolon_in_comment_text` covers every comment, banners and doc
+  blocks included, with a banner example; its rationale says what the
+  stranded text does (usually a syntax error, occasionally valid code such as
+  a member access that runs silently).
+- MCP: pins starlims-lsp v0.27.0 (through v0.25.0 and v0.26.0). v0.26.0
+  keeps the CLI contract, but
+  `ssl_format` output changes for most files: brackets and wrapped declaration
+  lists align their contents, a blank line separates logical sections, runs
+  of three or more blank lines collapse to two, unary operators attach to
+  their operands, and MERGE `UPDATE SET` lays out like a plain `UPDATE`.
+- `blank_line_between_sections` names its boundaries (after the declarations,
+  before a control block that follows code and after its closer, before a
+  section comment, before a procedure's final `:RETURN`, none at the start or
+  end of a body) and is enforced by the formatter
+  (`lsp:fmt.blank_lines_between_sections`) (#125).
+- `no_excess_blank_lines` caps a run of blank lines at two instead of one,
+  enforced by `lsp:fmt.max_consecutive_blank_lines` (#125).
+- `wrapped_list_alignment` is enforced by the formatter (`lsp:fmt.indent_style`),
+  which now aligns the hanging lines of a `:DECLARE`, `:PARAMETERS` or
+  `:PUBLIC` list under the first item; its examples are validated SSL (#120).
+- `continuation_indent_shows_structure` says a continuation outside brackets
+  takes one level and points to `bracket_contents_align` for brackets; it is
+  formatter-enforced. The schema's `formatting.continuation_indent` now
+  describes continuations outside brackets only (#124).
+- `sql_merge_layout`, the SQL reference (§2.12, §7.4) and the schema's
+  `sql.formatting.statement_patterns.merge.update_set`: MERGE `UPDATE SET` ends
+  its line at `SET`, and each assignment takes its own line one level in, as
+  in a plain `UPDATE`. The record is formatter-enforced
+  (`lsp:fmt.sql_in_strings`) (#123). From v0.27.0 that includes
+  `DELETE WHERE`, which stays on one line under its `WHEN` with each
+  `AND`/`OR` one level past the `DELETE`; the rule text, the schema and the
+  SQL reference's §2.12 formatting rules say so, and the record's examples
+  include one (#129).
+- Rule and skill examples follow the v0.26.0 formatter layout: Good examples
+  gain the section blank lines, and the `ssl-unit-test` skill example aligns
+  a wrapped call argument under the bracket's first item.
+- The `ssl-handoff` agent (version 9) no longer lists section blank lines as
+  something the formatter leaves to it.
+- MCP 1.16.0: from starlims-lsp v0.25.0, `ssl_diagnose` reports the new
+  error-severity codes (`exitcase_last_in_branch`, `include_quoted_target`,
+  `datasource_default_required`, `inline_default_outside_datasource`,
+  `inherit_qualified_name`, `inherit_position`, `endclass_invalid`,
+  `builder_directive_outside_datasource`, `empty_parameters`,
+  `datasource_sql_question_placeholder`, `stray_block_keyword`), so code that
+  carries one now comes back `valid: false`. `code_block_structure`,
+  `unknown_token`, `scientific_notation` and `named_sql_param_unsupported` are
+  now errors, and `global_assignment` is a warning.
+- MCP: `ssl_diagnose` and `ssl_format` follow the starlims-lsp CLI contract. A
+  usage error (exit 2, nothing on stdout) is returned as an error carrying the
+  binary's stderr message, rather than parsed as output, and a file argument
+  is passed after `--`. The phantom-entry guard stays for binaries older than
+  v0.25.0.
+- MCP: `ssl_format` takes `isDataSource` for data-source content passed as
+  `code`. From v0.25.0 the formatter leaves a SQL-mode data source unchanged
+  only when the input is classified as a data source, and the stability check
+  now carries a `.ds` path's classification to its second pass, so a SQL-mode
+  data source file no longer reports as unstable.
+- Rule records now cite the starlims-lsp diagnostic that enforces them:
+  `exitcase_last_in_branch`, `datasource_default_required`,
+  `inherit_qualified_name`, `datasource_empty_parameters` (`empty_parameters`),
+  `datasource_sql_at_name_placeholders` (`datasource_sql_question_placeholder`),
+  `visibility_annotation_exact_form` (`visibility_annotation`) and
+  `field_access_via_me` (adds `unqualified_field_read`) were reviewer-enforced
+  or partly enforced; `class_ends_at_eof` (`endclass_invalid`) and
+  `builder_directives_datasource_only` (`builder_directive_outside_datasource`)
+  replace `unknown_keyword`, which also clears their severity disagreement.
+  `no_default_on_declare_line` gets a Bad example the re-scoped
+  `default_on_declare_line` reports.
+- The skill-example check passes `--` before each file and reports a usage
+  error from the binary instead of an unparseable result.
+- MCP 1.16.0: from starlims-lsp v0.27.0, validation can fail on four more
+  codes. `branch_literal_target` (a `Branch()` target that is not a string
+  literal), `non_logical_condition` (a literal non-logical condition or
+  `.AND.`/`.OR.` left operand) and `array_index_whole_number` (a fractional
+  or `/`-computed array index) are new errors, and
+  `comment_text_after_terminator` is now an error. The new
+  `parenthesize_negated_comparison` warning is an error on a literal operand,
+  and `--info` adds `procedure_length_review` and `script_size_review` (#129).
+- Rule records cite the v0.27.0 diagnostics that enforce them:
+  `branch_literal_target`, `parenthesize_negated_comparison`,
+  `array_index_whole_number`, `procedure_length_review`,
+  `script_size_review`, and `no_truthy_falsy_coercion`
+  (`non_logical_condition`, for literals; a reviewer still checks variables).
+  Their Bad examples are validated SSL where the diagnostic reports them; the
+  size records keep text examples (#129).
+- `no_default_on_declare_line`: `:DECLARE nCount :DEFAULT 0;` is back as a Bad
+  example, since v0.27.0 reports it again (#129).
+- `no_semicolon_in_comment_text` agrees with v0.27.0's
+  `comment_text_after_terminator` severity (error), so CI now runs the rules
+  check with `--strict-severity` (#129).
+
+### Removed
+- Rule record `banner_has_no_semicolon` (now `status: removed`): a banner
+  follows the general comment rule, `no_semicolon_in_comment_text`. Its
+  schema entry under `documentation.file_banner.rules` is dropped, since
+  `comments.rules` states the rule for every comment.
+
 ## Schema 1.9.0, MCP 1.15.2 — 2026-10-13
 
 ### Added

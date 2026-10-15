@@ -37,6 +37,7 @@ line-length limit benefit from clearer grouping.
 ```ssl
 :PROCEDURE Fail;
 	:PARAMETERS sCode, sMessage;
+
 	:RETURN {.F., {sCode, sMessage}};
 :ENDPROC;
 ```

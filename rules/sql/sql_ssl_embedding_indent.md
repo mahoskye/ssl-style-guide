@@ -34,6 +34,7 @@ other SQL indent (clauses at 0, sub-clauses at 2) is measured from it.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT ordno, testcode

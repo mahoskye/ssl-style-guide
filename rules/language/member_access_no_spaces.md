@@ -37,6 +37,7 @@ member-access colon.
 
 ```ssl
 :DECLARE oEmail;
+
 oEmail := Email{};
 oEmail:Subject := "Results ready";
 ```

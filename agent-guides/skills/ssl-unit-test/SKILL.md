@@ -149,7 +149,7 @@ Prefer tests that need no database. When one genuinely does:
 
 	:IF .NOT. bPassed;
 		ErrorMes("SSL unit test", sLabel + " - expected [" + LimsString(vExpected)
-			+ "] got [" + LimsString(vActual) + "]");
+		         + "] got [" + LimsString(vActual) + "]");
 	:ENDIF;
 
 	:RETURN {sLabel, bPassed};

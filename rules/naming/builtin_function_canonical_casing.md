@@ -41,6 +41,7 @@ casing makes code searchable and consistent with the reference.
 
 ```ssl
 :DECLARE sName;
+
 sName := AllTrim(" a ");
 ```
 

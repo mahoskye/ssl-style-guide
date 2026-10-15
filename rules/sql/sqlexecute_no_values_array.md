@@ -36,6 +36,7 @@ to anything.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("SELECT ordno FROM orders WHERE status = ?sStatus?");
 ```

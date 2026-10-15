@@ -12,7 +12,7 @@ rule: >-
   and other types, including `NIL`, raise an error.
 categories: [control-flow, types]
 related_elements: [IF, WHILE, CASE, and, or]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.non_logical_condition, reviewer]
 schema:
   - path: expressions.logical_evaluation.nil_evaluates
     form: value
@@ -25,8 +25,11 @@ verification:
     ("including NIL ... is not coerced to .F.") merged in. Checked on
     STARLIMS 12: a string or number condition in :IF raises the same error
     as in :WHILE and :CASE, :IF NIL raises, and a non-logical left operand of
-    .AND. or .OR. raises. starlims-lsp v0.24.0 does not report a non-boolean
-    condition.
+    .AND. or .OR. raises. starlims-lsp v0.27.0 reports a literal string,
+    number, NIL, array or code-block condition, and such a literal as the
+    left operand of .AND./.OR., as non_logical_condition (error). It judges
+    literals only, since the type of a variable or call is not known before
+    run time, so a reviewer applies the rule to every other condition.
 ---
 
 ## Rationale
@@ -46,7 +49,9 @@ both operands logical.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 3;
+
 :WHILE nCount > 0;
 	nCount -= 1;
 :ENDWHILE;
@@ -56,8 +61,36 @@ nCount := 3;
 
 ```ssl
 :DECLARE nCount;
+
+nCount := 3;
+
+:WHILE 1;
+	nCount -= 1;
+
+	:IF nCount = 0;
+		:EXITWHILE;
+	:ENDIF;
+:ENDWHILE;
+```
+
+```ssl
+:DECLARE bReady;
+
+bReady := .T.;
+
+:IF "Y" .AND. bReady;
+	bReady := .F.;
+:ENDIF;
+```
+
+```text
+:DECLARE nCount;
 nCount := 3;
 :WHILE nCount;
 	nCount -= 1;
 :ENDWHILE;
 ```
+
+The diagnostic covers a literal condition or left operand only. A variable
+such as `nCount` above has no type known before run time, so a reviewer flags
+it.

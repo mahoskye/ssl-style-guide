@@ -35,6 +35,7 @@ the line.
 
 ```ssl
 :DECLARE nLength;
+
 nLength := Len("abc");
 ```
 

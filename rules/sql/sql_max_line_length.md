@@ -40,6 +40,7 @@ over-long; tokens are never split.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT ordno, testcode, status, logdate, result, analyst, department

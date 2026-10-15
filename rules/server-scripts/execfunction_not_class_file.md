@@ -40,6 +40,7 @@ so `ExecFunction` on it fails when it runs. Instantiate the class with
 
 	oCounter := CreateUdObject("Samples.Counter");
 	oCounter:Increment();
+
 	:RETURN oCounter:nCount;
 :ENDPROC;
 ```

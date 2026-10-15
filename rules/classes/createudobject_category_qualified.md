@@ -44,6 +44,7 @@ name: <name> among default categories.` for a class in your own category.
 
 ```ssl
 :DECLARE oCounter;
+
 oCounter := CreateUdObject("Samples.Counter");
 oCounter:Increment();
 ```

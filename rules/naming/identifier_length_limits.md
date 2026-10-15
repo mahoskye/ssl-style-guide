@@ -43,6 +43,7 @@ the body after the prefix, so the prefix never costs a character.
 
 ```ssl
 :DECLARE sCustomerOrderNo;
+
 sCustomerOrderNo := "A1";
 ```
 

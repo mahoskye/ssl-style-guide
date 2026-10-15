@@ -34,7 +34,9 @@ needs a result-returning function such as `LSearch`, `LSelect` or
 :PROCEDURE CloseOrder;
 	:PARAMETERS sOrdNo;
 	:DECLARE bDone, oErr;
+
 	bDone := .F.;
+
 	:TRY;
 		bDone := RunSQL("UPDATE ordtask SET status = 'Done' WHERE ordno = ?",, {sOrdNo});
 	:CATCH;
@@ -42,6 +44,7 @@ needs a result-returning function such as `LSearch`, `LSelect` or
 		ErrorMes("[ERROR] CloseOrder " + sOrdNo, Left(oErr:Description, 2000));
 		ClearLastSSLError();
 	:ENDTRY;
+
 	:RETURN bDone;
 :ENDPROC;
 ```

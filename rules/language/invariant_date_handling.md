@@ -30,6 +30,7 @@ server settings the reader cannot see.
 
 ```ssl
 :DECLARE aRows;
+
 /* LOGDATE is compared across sites, so read it as an invariant date;
 aRows := SQLExecute("SELECT ordno, logdate FROM orders",,,, {"LOGDATE"});
 ```

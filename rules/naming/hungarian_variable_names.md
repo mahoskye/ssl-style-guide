@@ -46,6 +46,7 @@ Declared loop counters (see `loop_counter_names`), constants, and the literals
 
 ```ssl
 :DECLARE sUserName, nCount;
+
 sUserName := "admin";
 nCount := 0;
 ```

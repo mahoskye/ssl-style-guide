@@ -32,6 +32,7 @@ value you can inspect before the query runs.
 
 ```ssl
 :DECLARE sPrefix, sSuffix, sOrdNo, aRows;
+
 sPrefix := "A";
 sSuffix := "1001";
 sOrdNo := sPrefix + sSuffix;

@@ -42,6 +42,7 @@ shape, so the nth column and the nth value line up when you compare them.
 
 ```ssl
 :DECLARE sOrdNo, sTestCode;
+
 sOrdNo := "A1001";
 sTestCode := "PH";
 RunSQL("

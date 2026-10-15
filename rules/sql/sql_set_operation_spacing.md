@@ -35,6 +35,7 @@ operator show where one query ends and the next begins.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT ordno
     FROM ordtask

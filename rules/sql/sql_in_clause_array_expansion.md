@@ -41,6 +41,7 @@ marker raises a runtime error; copy it to a local first.
 
 ```ssl
 :DECLARE aStatuses, aRows;
+
 aStatuses := {"Logged", "Done"};
 aRows := SQLExecute("SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)");
 ```

@@ -29,6 +29,7 @@ The `:EXITCASE` can never run, and it suggests that the branch might continue.
 ```ssl
 :PROCEDURE RouteLabel;
 	:PARAMETERS sRoute;
+
 	:BEGINCASE;
 	:CASE sRoute == "APPROVE";
 		:RETURN "Approved";

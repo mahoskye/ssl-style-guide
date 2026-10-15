@@ -12,7 +12,7 @@ rule: >-
 categories: [classes]
 machine: { list: must_follow, foundation: non_negotiable }
 related_elements: [me, base, DECLARE]
-enforced_by: [lsp:diag.unqualified_field_assignment]
+enforced_by: [lsp:diag.unqualified_field_assignment, lsp:diag.unqualified_field_read]
 schema:
   - path: classes.fields.access_rule
     form: text
@@ -30,6 +30,8 @@ verification:
     Base:fieldName inside methods." and its avoid item "Do not assign to
     class fields with bare identifiers inside methods.", the review and
     refactor skills, and the schema's classes.fields.access_rule.
+    starlims-lsp reports a bare write as unqualified_field_assignment and,
+    from v0.25.0, a bare read as unqualified_field_read.
 ---
 
 ## Rationale
@@ -45,9 +47,10 @@ undefined!`.
 
 ```ssl
 :CLASS Counter;
-:DECLARE nCount;
+:DECLARE nCount, nLast;
 
 :PROCEDURE Reset;
+	Me:nLast := Me:nCount;
 	Me:nCount := 0;
 :ENDPROC;
 ```
@@ -56,9 +59,10 @@ undefined!`.
 
 ```ssl
 :CLASS Counter;
-:DECLARE nCount;
+:DECLARE nCount, nLast;
 
 :PROCEDURE Reset;
+	Me:nLast := nCount;
 	nCount := 0;
 :ENDPROC;
 ```

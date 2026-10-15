@@ -36,6 +36,7 @@ is missing, so code that works on one installation fails on another.
 ```ssl
 :PROCEDURE TwoLines;
 	:PARAMETERS sFirst, sSecond;
+
 	:RETURN sFirst + Chr(13) + Chr(10) + sSecond;
 :ENDPROC;
 ```

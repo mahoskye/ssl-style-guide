@@ -30,6 +30,7 @@ and double quotes without splitting the string.
 
 ```ssl
 :DECLARE sNote;
+
 sNote := [He said "it's ready"];
 ```
 

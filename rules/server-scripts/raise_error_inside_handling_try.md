@@ -48,6 +48,7 @@ caller's `:TRY` is the handling block (see `private_raise_only_helpers`).
 		:IF Empty(sStatus);
 			RaiseError("A status is required");
 		:ENDIF;
+
 		ExecFunction("Samples.WriteStatus", {sSampleId, sStatus});
 	:CATCH;
 		ClearLastSSLError();

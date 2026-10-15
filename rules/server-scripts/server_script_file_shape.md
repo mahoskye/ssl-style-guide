@@ -62,6 +62,7 @@ aResult := DoProc("ChangeStatus", {sSampleId});
 ;
 :PROCEDURE ChangeStatus;
 	:PARAMETERS sSampleId;
+
 	:RETURN ExecFunction("Samples.WriteStatus", {sSampleId});
 :ENDPROC;
 

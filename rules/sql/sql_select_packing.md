@@ -38,6 +38,7 @@ expression on its own line is still easy to find and read.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT ordno, testcode, status AS task_status, UPPER(result) AS result_upper
     FROM ordtask

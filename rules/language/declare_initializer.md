@@ -35,6 +35,7 @@ verification:
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 1;
 ```
 

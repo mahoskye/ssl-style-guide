@@ -35,6 +35,7 @@ is part of the name, so it survives even an Oracle-only lowercase pass.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute('SELECT "OrderNo", "Status" FROM "ExtOrders"');
 ```
 

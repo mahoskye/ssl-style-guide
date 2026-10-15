@@ -16,7 +16,7 @@ const DiagnoseSchema = z.object({
 export function registerDiagnose(server: McpServer): void {
   server.tool(
     "ssl_diagnose",
-    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Runs the strict agent profile, which adds three checks an editor withholds because a human mid-edit has names that are legitimately undeclared or unused: undeclared_variable (catches a typo'd variable read that the default validator reports as clean), unused_variable, and invalid_sql_param (a ?marker? matching no variable in scope). Also includes info-severity advisories (style observations and idiom notes) and hungarian_type_mismatch, which reports a variable whose Hungarian prefix promises one type while its expression produces another. Treat errors and warnings as actionable and must-fix; hint and info rows are context to report, not churn on. The naming-convention audit (hungarian_notation) is deliberately not included. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
+    "Validate SSL code for syntax errors, style violations, and common mistakes. Returns structured diagnostics with line/column, severity, message, and a stable rule code for programmatic filtering. Runs the strict agent profile, which adds three checks an editor withholds because a human mid-edit has names that are legitimately undeclared or unused: undeclared_variable (catches a typo'd variable read that the default validator reports as clean), unused_variable, and invalid_sql_param (a ?marker? matching no variable in scope). Also includes info-severity advisories (style observations, idiom notes, and the size review triggers procedure_length_review and script_size_review, which prompt a responsibility check rather than set a limit) and hungarian_type_mismatch, which reports a variable whose Hungarian prefix promises one type while its expression produces another. Treat errors and warnings as actionable and must-fix; hint and info rows are context to report, not churn on. The naming-convention audit (hungarian_notation) is deliberately not included. Pass code directly or a file path for large files. For data-source (.ds) content passed via code, set isDataSource so SQL bodies are not flagged with SSL checks.",
     DiagnoseSchema.shape,
     async ({ code, file, isDataSource }) => {
       if (!code && !file) {
@@ -37,7 +37,9 @@ export function registerDiagnose(server: McpServer): void {
         };
       }
 
-      // --validate outputs a JSON array to stdout
+      // --validate writes a JSON array to stdout and exits 0 (all valid)
+      // or 1 (an input has errors); a usage error (exit 2) was already
+      // rejected by runLsp.
       const output = result.stdout.trim();
       if (!output) {
         return {
@@ -57,12 +59,14 @@ export function registerDiagnose(server: McpServer): void {
       try {
         const parsed = JSON.parse(output);
         const entries: Array<{ file?: string }> = Array.isArray(parsed) ? parsed : [parsed];
-        // A binary older than the pinned release doesn't know a flag we
-        // pass and reads it as a file path, emitting a phantom
-        // failed-read entry alongside (or instead of) the real one. Fail
-        // loudly rather than returning the wrong entry. Matched on the
-        // `--` prefix rather than a list of flag names, so a future flag
-        // is covered the day it is added.
+        // Since starlims-lsp v0.25.0 an unknown flag exits 2 with nothing
+        // on stdout, which runLsp turns into an error before we get here.
+        // A binary older than v0.25.0 instead reads a flag it doesn't know
+        // (including the `--` separator) as a file path, emitting a
+        // phantom failed-read entry alongside (or instead of) the real
+        // one. Keep this guard for those binaries: fail loudly rather
+        // than return the wrong entry. Matched on the `--` prefix rather
+        // than a list of flag names, so any flag is covered.
         const unsupported = entries.find((e) => e?.file?.startsWith("--"));
         if (unsupported) {
           return {

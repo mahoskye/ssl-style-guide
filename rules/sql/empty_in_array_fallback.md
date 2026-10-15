@@ -33,10 +33,13 @@ which, so the code decides before it runs.
 :PROCEDURE ReadByStatus;
 	:PARAMETERS aStatuses;
 	:DECLARE aRows;
+
 	aRows := {};
+
 	:IF ALen(aStatuses) > 0;
 		aRows := SQLExecute("SELECT ordno FROM ordtask WHERE status IN (?aStatuses?)");
 	:ENDIF;
+
 	:RETURN aRows;
 :ENDPROC;
 ```

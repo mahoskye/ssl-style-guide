@@ -654,9 +654,10 @@ USING (
 ) src
 ON (tgt.ordno = src.ordno AND tgt.testcode = src.testcode)
 WHEN MATCHED THEN
-    UPDATE SET tgt.result_count = src.result_count,
-               tgt.avg_result = src.avg_result,
-               tgt.updated_date = SYSDATE
+    UPDATE SET
+        tgt.result_count = src.result_count,
+        tgt.avg_result = src.avg_result,
+        tgt.updated_date = SYSDATE
     DELETE WHERE tgt.result_count = 0
 WHEN NOT MATCHED THEN
     INSERT (
@@ -684,8 +685,9 @@ ON (tgt.ordno = src.ordno
     AND tgt.testcode = src.testcode
     AND tgt.logdate = src.logdate)
 WHEN MATCHED THEN
-    UPDATE SET tgt.result_value = src.result_value,
-               tgt.status = src.status
+    UPDATE SET
+        tgt.result_value = src.result_value,
+        tgt.status = src.status
 WHEN NOT MATCHED THEN
     INSERT (
         ordno, testcode, result_value, status, logdate
@@ -702,7 +704,10 @@ Additional ON conditions align under the first condition inside the parentheses.
 - `MERGE INTO`, `USING`, and `ON` at column 0
 - `WHEN MATCHED THEN` / `WHEN NOT MATCHED THEN` at column 0
 - `UPDATE SET` / `INSERT` / `DELETE WHERE` indented 4 spaces under WHEN
-- SET column assignments aligned with continuation indented to match first assignment
+- `SET` ends the `UPDATE SET` line, and each assignment starts its own line 4 spaces
+  further in, as in a plain `UPDATE` (§2.10)
+- `DELETE WHERE` stays on one line; each `AND`/`OR` of its condition starts its own
+  line 4 spaces further in than `DELETE`
 
 ---
 
@@ -1356,8 +1361,9 @@ RunSQL("
     ) src
     ON (tgt.ordno = src.ordno AND tgt.testcode = src.testcode)
     WHEN MATCHED THEN
-        UPDATE SET tgt.result_count = src.cnt,
-                   tgt.updated_date = SYSDATE
+        UPDATE SET
+            tgt.result_count = src.cnt,
+            tgt.updated_date = SYSDATE
     WHEN NOT MATCHED THEN
         INSERT (
             ordno, testcode, result_count, created_date

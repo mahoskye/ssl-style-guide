@@ -45,6 +45,7 @@ reader and to the type checks that read it.
 
 ```ssl
 :DECLARE sName, nQty, bDone, dDue, aRows, oMail, fnRule, vResult;
+
 sName := "";
 nQty := 0;
 bDone := .F.;

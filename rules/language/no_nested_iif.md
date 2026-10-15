@@ -35,7 +35,9 @@ A case block states each outcome on its own line.
 
 ```ssl
 :DECLARE nCount, sLabel;
+
 nCount := 0;
+
 :BEGINCASE;
 :CASE nCount > 1;
 	sLabel := "many";

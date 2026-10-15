@@ -30,6 +30,7 @@ for `GetSSLDataset`. A call that mixes shapes leaves some markers unbound.
 
 ```ssl
 :DECLARE sOrdNo, sStatus;
+
 sOrdNo := "A1001";
 sStatus := "Done";
 RunSQL("UPDATE ordtask SET status = ? WHERE ordno = ?",, {sStatus, sOrdNo});

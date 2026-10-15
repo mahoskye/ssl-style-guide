@@ -37,6 +37,7 @@ comparisons easy to scan.
 
 ```ssl
 :DECLARE nCount, bDiff;
+
 nCount := 1;
 bDiff := nCount != 2;
 ```

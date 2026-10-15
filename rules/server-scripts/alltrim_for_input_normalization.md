@@ -31,6 +31,7 @@ and `Trim` leaves the leading part in place.
 ```ssl
 :PROCEDURE RouteCode;
 	:PARAMETERS sRoute;
+
 	:RETURN AllTrim(sRoute);
 :ENDPROC;
 ```

@@ -36,11 +36,13 @@ passes the array's elements as the procedure's parameters.
 	:DECLARE sStatus;
 
 	sStatus := DoProc("LoadStatus", {sSampleId});
+
 	:RETURN sStatus;
 :ENDPROC;
 
 :PROCEDURE LoadStatus;
 	:PARAMETERS sSampleId;
+
 	:RETURN Upper(sSampleId);
 :ENDPROC;
 ```

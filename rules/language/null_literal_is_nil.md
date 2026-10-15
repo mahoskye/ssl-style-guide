@@ -38,6 +38,7 @@ variable names. The literals are `NIL`, `.T.` and `.F.`.
 
 ```ssl
 :DECLARE vValue, bDone;
+
 vValue := NIL;
 bDone := .F.;
 ```

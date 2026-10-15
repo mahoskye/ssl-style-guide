@@ -38,6 +38,7 @@ under it, and the branches line up as a table of conditions and results.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("
     SELECT o.ordno,
            CASE

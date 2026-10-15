@@ -38,9 +38,11 @@ tabs or in the file's existing 4 spaces, is the layout the formatter produces.
 ```ssl
 :PROCEDURE CountDown;
 	:PARAMETERS nCount;
+
 	:IF nCount > 0;
 		nCount := nCount - 1;
 	:ENDIF;
+
 	:RETURN nCount;
 :ENDPROC;
 ```

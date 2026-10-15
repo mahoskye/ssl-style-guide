@@ -35,6 +35,7 @@ take no type prefix.
 
 ```ssl
 :DECLARE MAX_ATTEMPTS;
+
 MAX_ATTEMPTS := 3;
 ```
 

@@ -46,6 +46,7 @@ written, keyword case included, so fix such a query by hand.
 
 ```ssl
 :DECLARE sStatus, aRows;
+
 sStatus := "Logged";
 aRows := SQLExecute("
     SELECT ordno, COUNT(*) AS ntests

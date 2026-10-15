@@ -33,6 +33,7 @@ adds nothing the call needs.
 
 ```ssl
 :DECLARE aRows;
+
 aRows := SQLExecute("SELECT ordno FROM ordtask WHERE status = 'Logged'");
 ```
 

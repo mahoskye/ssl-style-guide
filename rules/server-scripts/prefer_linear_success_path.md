@@ -29,6 +29,7 @@ one level, instead of at the bottom of a nest.
 ```ssl
 :PROCEDURE Validate;
 	:PARAMETERS sOrdNo, sStatus;
+
 	:IF Empty(sOrdNo);
 		:RETURN .F.;
 	:ENDIF;

@@ -33,6 +33,7 @@ start fresh keeps the old value.
 
 ```ssl
 :DECLARE nCount;
+
 nCount := 5;
 nCount := 0;
 ```
