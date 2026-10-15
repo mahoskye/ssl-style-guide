@@ -47,7 +47,7 @@ Rules, grammars, guides, agents and their formats stay here.
 | `rules/rules.json` (generated from `rules/`) | MCP server (`ssl_style_rule`, `ssl_rules`, `ssl://rules/{id}`) | Bundled; read at run time |
 | Agent definitions and skills | Claude Code, opencode, Copilot, Codex | `tools/generate-agents.mjs`, `tools/deploy-agents.mjs`, `tools/deploy-skills.mjs` |
 | Tree-sitter grammar | Editors; other SSL tools (via a sibling checkout) | Grammar and queries |
-| TextMate grammar | The VS Code extension (planned) | Canonical here; the extension is to sync from it (mahoskye/vs-code-ssl-formatter#113) |
+| TextMate grammar | The VS Code extension | Canonical here; the extension ships a synced copy and its CI fails if the copy is edited by hand (mahoskye/vs-code-ssl-formatter#113) |
 
 **Agent interfaces.** Tools outside this repo can give the agents a *task
 brief* instead of a ticket. In return, the developer and reviewer report a
@@ -169,14 +169,18 @@ maintainer checkouts only.
 ### TextMate Grammar
 
 `ssl-style-guide/ssl.tmLanguage.updated.json` carries the syntax-highlighting
-inventory for editors that rely on TextMate grammars. It is canonical here, and
-the VS Code extension is to sync from it (mahoskye/vs-code-ssl-formatter#113).
+inventory for editors that rely on TextMate grammars. It is canonical here. The
+VS Code extension ships a copy synced from a recorded commit of this file, so
+grammar changes are made here first (mahoskye/vs-code-ssl-formatter#113).
 
 It follows the Tree-sitter highlighting: label names, joined (`:LABELName;`)
 and spaced (`:LABEL Name;`), are `entity.name.label.ssl`; the exact access
 modifiers `/*@private;` and `/*@protected;` get `storage.modifier.access.ssl`
 inside the comment; and a code block with no bound variable (`{|| ...}`),
-which does not compile, is `invalid.illegal.ssl`.
+which does not compile, is `invalid.illegal.ssl`. Inside double- and
+single-quoted strings, SQL placeholders (`?nId?`) are
+`keyword.other.database-parameter.ssl` and ODBC escapes (`{fn NOW()}`) are
+`support.function.odbc-escape.ssl`.
 
 Built-in function
 inventories should stay aligned with Tree-sitter highlighting and the checked-in

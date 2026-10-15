@@ -101,12 +101,22 @@
     "string-double": {
       "name": "string.quoted.double.ssl",
       "begin": "\"",
-      "end": "\""
+      "end": "\"",
+      "patterns": [
+        {
+          "include": "#sql-in-string"
+        }
+      ]
     },
     "string-single": {
       "name": "string.quoted.single.ssl",
       "begin": "'",
-      "end": "'"
+      "end": "'",
+      "patterns": [
+        {
+          "include": "#sql-in-string"
+        }
+      ]
     },
     "string-bracket": {
       "name": "string.quoted.other.bracket.ssl",
@@ -483,6 +493,18 @@
         {
           "name": "variable.language.class-context.ssl",
           "match": "(?i)\\bBASE(?=\\s*:)"
+        }
+      ]
+    },
+    "sql-in-string": {
+      "patterns": [
+        {
+          "name": "keyword.other.database-parameter.ssl",
+          "match": "\\?[^?\\s\"']+\\?"
+        },
+        {
+          "name": "support.function.odbc-escape.ssl",
+          "match": "\\{fn\\s+[^}]+\\}"
         }
       ]
     }

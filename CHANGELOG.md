@@ -12,6 +12,14 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- TextMate grammar: inside double- and single-quoted strings, SQL
+  placeholders (`?nId?`) are scoped `keyword.other.database-parameter.ssl`
+  and ODBC escapes (`{fn NOW()}`) `support.function.odbc-escape.ssl`. The VS
+  Code extension's own grammar highlighted both; this brings them upstream
+  so the extension can sync from this grammar
+  (mahoskye/vs-code-ssl-formatter#113).
+
 ## MCP 1.17.0 — 2026-10-15
 
 ### Changed
