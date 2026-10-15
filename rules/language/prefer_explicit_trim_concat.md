@@ -12,7 +12,7 @@ rule: >-
   which reads like subtraction.
 categories: [operators, strings]
 related_elements: [minus, plus, Trim]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.prefer_explicit_trim_concat]
 verification:
   basis: observed
   note: >-
@@ -21,8 +21,11 @@ verification:
     from the left operand only and then appends the right operand, and a
     trailing tab is kept. The Trim page documents that Trim removes
     trailing tabs, line breaks and other whitespace, not just spaces.
-    Approved as a style rule. starlims-lsp v0.27.0 has no diagnostic for
-    it, so enforced_by stays reviewer. LSP enforcement is requested.
+    Approved as a style rule. Verified on STARLIMS 12; reported by
+    starlims-lsp from v0.28.0, at info. It fires only on a - between two
+    known strings (string literals, builtins documented to return a
+    string, or expressions of those). s-prefixed names count as strings
+    only with --hungarian-types.
 ---
 
 ## Rationale
@@ -32,6 +35,11 @@ operand and then appends the right operand: `"Sample   " - "Analysis"` is
 `"SampleAnalysis"`. Nothing is subtracted, but the expression reads like
 arithmetic, and a reader who does not know this behavior misreads it.
 `Trim(sFirst) + sSecond` says what happens.
+
+The LSP reports a `-` only when both operands are known strings: string
+literals, builtins that return a string, or `s`-prefixed names when
+Hungarian prefixes are read as types (`--hungarian-types`). Numeric and
+date subtraction are never reported.
 
 ## Exceptions
 

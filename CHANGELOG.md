@@ -12,6 +12,30 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Changed
+- MCP 1.17.0: pins starlims-lsp v0.28.0. The CLI contract is unchanged and
+  no new code is an error, so `valid` does not change; `ssl_diagnose` output
+  grows by four style codes. `parenthesize_mixed_logical` is a warning;
+  `increment_as_statement` (warning when the statement increments or reads
+  the variable again), `one_assignment_per_statement` and
+  `prefer_explicit_trim_concat` are info, so with `--info` the loop idioms
+  `:WHILE ++i <= n;` and `:WHILE (i += 1) <= n;` draw an info finding. The
+  `ssl_diagnose` tool description names the four codes.
+- `increment_as_statement`, `parenthesize_mixed_logical`,
+  `one_assignment_per_statement` and `prefer_explicit_trim_concat` are
+  enforced by the starlims-lsp diagnostics of the same names instead of by
+  review. Their Bad examples now produce those codes.
+  `increment_as_statement` states that the LSP reports the warning tier;
+  `one_assignment_per_statement` keeps a whole-condition assignment as
+  `assignment_in_condition`'s; `prefer_explicit_trim_concat` notes that the
+  LSP reports only `-` between two known strings, counting `s`-prefixed
+  names only with `--hungarian-types`.
+- The EBNF guide's array-processing example loops with `:FOR` instead of
+  `:WHILE (i += 1) <= nCount;`, which the style guide's own
+  `one_assignment_per_statement` reports. The agent guide's
+  compound-assignment note cites only `one_assignment_per_statement` for
+  `(nIndex += 1) <= nCount`.
+
 ## Schema 1.10.0, MCP 1.16.0 — 2026-10-15
 
 ### Added

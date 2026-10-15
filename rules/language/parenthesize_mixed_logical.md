@@ -12,16 +12,15 @@ rule: >-
 categories: [operators]
 machine: { list: must_follow }
 related_elements: [and, or]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.parenthesize_mixed_logical]
 verification:
   basis: observed
   note: >-
     Verified on STARLIMS 12 and documented on the language reference's
     .AND. and .OR. operator pages: .AND. groups before .OR., so
     `.T. .OR. .T. .AND. .F.` returns .T., and in `.T. .OR. X .AND. Y`
-    neither X nor Y is evaluated. Approved as a style rule. starlims-lsp
-    v0.27.0 has no diagnostic for it, so enforced_by stays reviewer. LSP
-    enforcement at warning is requested.
+    neither X nor Y is evaluated. Approved as a style rule. Verified on
+    STARLIMS 12; reported by starlims-lsp from v0.28.0, at warning.
 ---
 
 ## Rationale

@@ -40,6 +40,17 @@ string or number literal. `--info` also shows the size review triggers
 `procedure_length_review` and `script_size_review`, which prompt a
 responsibility check and never fail validation.
 
+starlims-lsp v0.28.0 adds four style codes for expression shapes that
+readers misread, none of them an error, so `valid` does not change.
+`parenthesize_mixed_logical` is a warning on an `.AND.` group that is an
+operand of `.OR.` without parentheses. `increment_as_statement` (a `++` or
+`--` inside a larger expression), `one_assignment_per_statement` (an
+assignment whose value a larger expression uses) and
+`prefer_explicit_trim_concat` (string `-` between two known strings) are
+info. `increment_as_statement` is a warning when the same statement
+increments that variable again or reads it. With `--info`, the loop idioms
+`:WHILE ++i <= n;` and `:WHILE (i += 1) <= n;` now draw an info finding.
+
 `ssl_format` formats whole files. On legacy SSL that is not a small
 change — in measurements on real files, most changed under the formatter
 and most had more than half their lines rewritten — so agents are told to
@@ -70,7 +81,7 @@ The `ssl_diagnose` and `ssl_format` tools require the `starlims-lsp` binary
 in `bin/lsp/` (gitignored — binaries are not tracked in this repository).
 `bun run fetch-lsp` downloads the release pinned in `lsp-version.json` for
 the current platform; add `--all` for every platform, or pass a tag
-(`bun run fetch-lsp v0.27.0`) to fetch that version and move the pin.
+(`bun run fetch-lsp v0.28.0`) to fetch that version and move the pin.
 Maintainers with a sibling `starlims-lsp` checkout can build instead with
 `bun run bundle-lsp` (requires Go), or `bun run bundle-lsp --copy` to copy
 already-built binaries.

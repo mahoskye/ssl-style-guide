@@ -95,7 +95,7 @@ PRs. Pass `--strict` to make it an error, for example before a release.
 The rules check warns when a record's severity differs from the default
 severity of the LSP diagnostic that enforces it. Pass `--strict-severity` to
 make that an error. CI passes it: every record agrees with starlims-lsp
-v0.27.0. When you change a record's severity or `enforced_by`, run it locally
+v0.28.0. When you change a record's severity or `enforced_by`, run it locally
 too (see
 [rules/README.md](rules/README.md#severity-agreement-with-the-lsp)).
 
