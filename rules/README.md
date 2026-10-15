@@ -216,7 +216,7 @@ bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --str
 ```
 
 CI passes `--strict-severity`: every record agrees with starlims-lsp
-v0.28.1, the pinned version. The style guide decides the severity and the LSP
+v0.28.2, the pinned version. The style guide decides the severity and the LSP
 follows, so a record whose severity changes ahead of the LSP fails the check
 until the pinned LSP release defaults to the same severity.
 

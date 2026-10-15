@@ -12,6 +12,12 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Changed
+- The MCP server pins starlims-lsp v0.28.2. `ssl_format` no longer adds a
+  `;` after a stray closing `}`, `)` or `]`, such as the end of a C-style
+  block saved as a server script, so formatting such a file no longer adds
+  an error. The CLI contract and the diagnostics are unchanged.
+
 ## Schema 1.10.1, MCP 1.17.1 — 2026-10-15
 
 ### Added
