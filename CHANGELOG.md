@@ -12,6 +12,8 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## Schema 1.10.0, MCP 1.16.0 — 2026-10-15
+
 ### Added
 - Rule record `increment_as_statement` (style_only, info, enforced by
   review): use `++` and `--` as a statement of their own, not inside a
