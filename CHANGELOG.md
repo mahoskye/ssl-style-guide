@@ -20,6 +20,13 @@ Entries before this file existed are reconstructed from the release commits.
   so the extension can sync from this grammar
   (mahoskye/vs-code-ssl-formatter#113).
 
+### Changed
+- The MCP server pins starlims-lsp v0.28.1. `ssl_format` no longer adds a
+  `;` to each line of code that does not parse, such as raw SQL written
+  outside a string, so formatting such a file no longer turns one parse
+  error into one per line. Those lines are left as written. The CLI
+  contract and the diagnostics are unchanged.
+
 ## MCP 1.17.0 — 2026-10-15
 
 ### Changed
