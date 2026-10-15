@@ -1255,7 +1255,7 @@
         "ssl_data_source"
       ],
       "rule": "Join strings with `Trim(sFirst) + sSecond`, not `sFirst - sSecond`: on strings, `-` trims trailing spaces from the left operand and then appends, which reads like subtraction.",
-      "rationale": "With two strings, `-` removes trailing space characters from the left\noperand and then appends the right operand: `\"Sample   \" - \"Analysis\"` is\n`\"SampleAnalysis\"`. Nothing is subtracted, but the expression reads like\narithmetic, and a reader who does not know this behavior misreads it.\n`Trim(sFirst) + sSecond` says what happens.",
+      "rationale": "With two strings, `-` removes trailing space characters from the left\noperand and then appends the right operand: `\"Sample   \" - \"Analysis\"` is\n`\"SampleAnalysis\"`. Nothing is subtracted, but the expression reads like\narithmetic, and a reader who does not know this behavior misreads it.\n`Trim(sFirst) + sSecond` says what happens.\n\nThe LSP reports a `-` only when both operands are known strings: string\nliterals, builtins that return a string, or `s`-prefixed names when\nHungarian prefixes are read as types (`--hungarian-types`). Numeric and\ndate subtraction are never reported.",
       "exceptions": "The two forms differ when the left value ends in whitespace other than a\nspace. `Trim()` removes all trailing whitespace, including tabs and line\nbreaks, while `-` removes only spaces, so `\"Lot\" + Chr(9) - \"A\"` keeps the\ntab and `Trim(\"Lot\" + Chr(9)) + \"A\"` does not. When a value can end in a\ntab or line break and that character must be kept, keep the `-` and say so\nin a comment.",
       "examples": {
         "good": [
@@ -1272,7 +1272,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.prefer_explicit_trim_concat"
       ],
       "categories": [
         "operators",
@@ -3719,7 +3719,7 @@
         "ssl_data_source"
       ],
       "rule": "Prefer one assignment per line; use a chained assignment only when every target should receive the same value, and do not use an assignment inside a larger expression.",
-      "rationale": "Assignment is right-associative and evaluates to the assigned value, so\n`sStatus := sDefault := \"PENDING\";` is valid. A pure chain like that, where\nevery target receives the same value, is the one accepted form.\n\nThe reported case is an assignment used inside a larger expression, such as\n`nTotal := (nCount := 5) * 2;` or an assignment passed as a call argument.\nThe second assignment hides inside the first, and a reader scanning for\nwhere `nCount` changes does not see it. Write it as its own statement.\n\nAn assignment in an `:IF`, `:WHILE` or `:CASE` condition is usually a typo\nfor `=` or `==`. Tools report that case separately, as a warning\n(`assignment_in_condition`).",
+      "rationale": "Assignment is right-associative and evaluates to the assigned value, so\n`sStatus := sDefault := \"PENDING\";` is valid. A pure chain like that, where\nevery target receives the same value, is the one accepted form.\n\nThe reported case is an assignment used inside a larger expression, such as\n`nTotal := (nCount := 5) * 2;` or an assignment passed as a call argument.\nThe second assignment hides inside the first, and a reader scanning for\nwhere `nCount` changes does not see it. Write it as its own statement.\n\nAn assignment that is the whole `:IF`, `:WHILE` or `:CASE` condition is\nusually a typo for `=` or `==`. Tools report that case separately, as a\nwarning (`assignment_in_condition`), and not under this rule. An assignment\ninside a larger condition, such as `:WHILE (nIndex += 1) <= nLast;`, is\nthis rule's case.",
       "exceptions": null,
       "examples": {
         "good": [
@@ -3740,7 +3740,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.one_assignment_per_statement"
       ],
       "categories": [
         "operators"
@@ -3768,7 +3768,7 @@
         "ssl_data_source"
       ],
       "rule": "Use `++` and `--` as a statement of their own (`nCount++;`), not inside a larger expression; never apply them to the same variable twice in one expression, or to a variable the same expression also reads.",
-      "rationale": "`++` and `--` change the variable and also produce a value: postfix\n(`nIndex++`) produces the value before the change and prefix (`++nIndex`)\nthe value after it. Inside a larger expression the reader has to work out\nwhich value is used, and readers often get it wrong. Operands are evaluated\nleft to right and each `++` takes effect before the next operand is read,\nso with `i = 1`, `i++ + i++` returns `3` (`1 + 2`) and leaves `i` at `3`.\nAs a statement of its own, `nCount++;` has one meaning: add one.\n\nThe rule has two tiers. An increment or decrement inside a larger\nexpression (`nNext := nCount++;`) is an info finding. Using the same\nvariable's `++` or `--` more than once in one expression, or incrementing a\nvariable that the same expression also reads (`aSeen[nIndex++] := nIndex;`),\nis the case readers misjudge, and tools should report it as a warning.",
+      "rationale": "`++` and `--` change the variable and also produce a value: postfix\n(`nIndex++`) produces the value before the change and prefix (`++nIndex`)\nthe value after it. Inside a larger expression the reader has to work out\nwhich value is used, and readers often get it wrong. Operands are evaluated\nleft to right and each `++` takes effect before the next operand is read,\nso with `i = 1`, `i++ + i++` returns `3` (`1 + 2`) and leaves `i` at `3`.\nAs a statement of its own, `nCount++;` has one meaning: add one.\n\nThe rule has two tiers. An increment or decrement inside a larger\nexpression (`nNext := nCount++;`) is an info finding. Using the same\nvariable's `++` or `--` more than once in one expression, or incrementing a\nvariable that the same expression also reads (`aSeen[nIndex++] := nIndex;`),\nis the case readers misjudge, and the LSP reports it as a warning\n(`increment_as_statement` at warning severity instead of info).",
       "exceptions": null,
       "examples": {
         "good": [
@@ -3789,7 +3789,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.increment_as_statement"
       ],
       "categories": [
         "operators"
@@ -3973,7 +3973,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.parenthesize_mixed_logical"
       ],
       "categories": [
         "operators"

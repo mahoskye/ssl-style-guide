@@ -57,19 +57,16 @@ The following patterns are frequently seen in SSL code and represent idiomatic u
 4. **Array Processing**:
 
     ```ssl
-    :DECLARE aItems, nCount;
+    :DECLARE aItems, nCount, i;
     aItems := {1, 2, 3, 4, 5};
     nCount := Len(aItems);
 
     /* Process array elements;
-    :DECLARE i;
-    i := 0;
-
-    :WHILE (i += 1) <= nCount;
+    :FOR i := 1 :TO nCount;
 
         /* Process aItems[i];
 
-    :ENDWHILE;
+    :NEXT;
     ```
 
 5. **Error Handling**:

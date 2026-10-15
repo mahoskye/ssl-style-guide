@@ -12,7 +12,7 @@ rule: >-
   expression, or to a variable the same expression also reads.
 categories: [operators]
 related_elements: [increment, decrement, add-assign, subtract-assign]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.increment_as_statement]
 verification:
   basis: observed
   note: >-
@@ -20,11 +20,10 @@ verification:
     and -- operator pages: postfix returns the old value and prefix the new
     one, operands are evaluated left to right, and each ++ takes effect
     before the next operand is read, so with i = 1, `i++ + i++` returns 3
-    and leaves i at 3. Approved as a style rule. starlims-lsp v0.27.0 has
-    no diagnostic for it, so enforced_by stays reviewer. LSP enforcement is
-    requested in two tiers: info for an increment or decrement used inside
-    a larger expression, and warning when the same expression uses that
-    variable again.
+    and leaves i at 3. Approved as a style rule. Verified on STARLIMS 12;
+    reported by starlims-lsp from v0.28.0, at info for an increment or
+    decrement inside a larger expression and at warning when the same
+    statement increments or reads that variable again.
 ---
 
 ## Rationale
@@ -41,7 +40,8 @@ The rule has two tiers. An increment or decrement inside a larger
 expression (`nNext := nCount++;`) is an info finding. Using the same
 variable's `++` or `--` more than once in one expression, or incrementing a
 variable that the same expression also reads (`aSeen[nIndex++] := nIndex;`),
-is the case readers misjudge, and tools should report it as a warning.
+is the case readers misjudge, and the LSP reports it as a warning
+(`increment_as_statement` at warning severity instead of info).
 
 ## Examples
 
@@ -81,5 +81,5 @@ aSeen[nIndex++] := nIndex;
 ```
 
 The same expression increments `nIndex` and reads it, so which element is
-written and which value is stored depend on evaluation order. Tools should
-report this case as a warning.
+written and which value is stored depend on evaluation order. The LSP
+reports this case as a warning.

@@ -12,7 +12,7 @@ rule: >-
   a larger expression.
 categories: [operators]
 related_elements: [assignment]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.one_assignment_per_statement]
 schema:
   - path: expressions.assignment_semantics.style
     form: text
@@ -26,10 +26,11 @@ verification:
     value, so a chained assignment is valid; verified on STARLIMS 12 and
     documented on the language reference's := operator page. The clause
     about an assignment inside a larger expression was approved as a style
-    rule. LSP enforcement of that case at info is requested. starlims-lsp
-    v0.27.0 reports a top-level := in an :IF, :WHILE or :CASE condition as
-    assignment_in_condition, but at warning, not this record's info, so it
-    is not cited in enforced_by.
+    rule. Verified on STARLIMS 12; reported by starlims-lsp from v0.28.0,
+    at info, for an assignment whose value a larger expression uses. A
+    pure chain does not count. A top-level := that is a whole :IF, :WHILE
+    or :CASE condition is assignment_in_condition's (warning), not this
+    record's, so that code is not cited in enforced_by.
 ---
 
 ## Rationale
@@ -43,9 +44,11 @@ The reported case is an assignment used inside a larger expression, such as
 The second assignment hides inside the first, and a reader scanning for
 where `nCount` changes does not see it. Write it as its own statement.
 
-An assignment in an `:IF`, `:WHILE` or `:CASE` condition is usually a typo
-for `=` or `==`. Tools report that case separately, as a warning
-(`assignment_in_condition`).
+An assignment that is the whole `:IF`, `:WHILE` or `:CASE` condition is
+usually a typo for `=` or `==`. Tools report that case separately, as a
+warning (`assignment_in_condition`), and not under this rule. An assignment
+inside a larger condition, such as `:WHILE (nIndex += 1) <= nLast;`, is
+this rule's case.
 
 ## Examples
 
