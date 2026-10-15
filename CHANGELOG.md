@@ -12,6 +12,8 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+## Schema 1.10.1, MCP 1.17.1 — 2026-10-15
+
 ### Added
 - TextMate grammar: inside double- and single-quoted strings, SQL
   placeholders (`?nId?`) are scoped `keyword.other.database-parameter.ssl`
