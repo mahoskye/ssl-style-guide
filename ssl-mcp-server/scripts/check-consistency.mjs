@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { readdirSync, readFileSync, statSync } from 'fs';
-import { execFileSync } from 'child_process';
+import { execFileSync, spawnSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { loadAllData } from '../src/data/loader.ts';
@@ -136,6 +136,10 @@ const elementFunctions = loadedData.elements
   .filter((element) => element.type === 'function')
   .map((element) => element.name)
   .sort();
+const elementClasses = loadedData.elements
+  .filter((element) => element.type === 'class')
+  .map((element) => element.name)
+  .sort();
 
 // Counts match the published ssl-docs reference (../ssl-docs/content/reference/).
 assertEqual(highlightFunctions.length, 330, 'Tree-sitter built-in function count');
@@ -144,11 +148,13 @@ assertEqual(highlightClasses.length, 29, 'Tree-sitter built-in class count');
 assertEqual(textMateClasses.length, 29, 'TextMate built-in class count');
 assertEqual(schemaBuiltinClasses.length, 29, 'Schema built-in class count');
 assertEqual(elementFunctions.length, 330, 'Element inventory function count');
+assertEqual(elementClasses.length, 29, 'Element inventory class count');
 
 assertArrayEqual(highlightFunctions, textMateFunctions, 'Tree-sitter/TextMate function inventory');
 assertArrayEqual(highlightFunctions, elementFunctions, 'Tree-sitter/element function inventory');
 assertArrayEqual(highlightClasses, textMateClasses, 'Tree-sitter/TextMate class inventory');
 assertArrayEqual(schemaBuiltinClasses, textMateClasses, 'Schema/TextMate built-in classes');
+assertArrayEqual(elementClasses, textMateClasses, 'Element/TextMate built-in classes');
 
 if (!highlights.includes('Built-in SSL function inventory (synchronized with TextMate highlighting)')) {
   fail('Tree-sitter highlights comment drifted from the synchronized inventory wording.');
@@ -197,17 +203,24 @@ try {
 // Rule-generated outputs (rules/INDEX.md, the schema's generated regions, and
 // the Markdown rule regions) must match the records in rules/
 // (see tools/generate-rules.mjs). Runs before the machine-docs check, which
-// reads the same records.
-try {
-  execFileSync('bun', [resolve(repoRoot, 'tools/generate-rules.mjs'), '--check'], {
+// reads the same records. Without --lsp-catalog it reads the sibling
+// ../starlims-lsp catalog at the pinned LSP version, as CI does.
+{
+  const result = spawnSync('bun', [resolve(repoRoot, 'tools/generate-rules.mjs'), '--check'], {
     stdio: 'pipe',
   });
-} catch (error) {
-  const detail = [error.stdout, error.stderr]
-    .map((stream) => (stream ? stream.toString().trim() : ''))
-    .filter(Boolean)
-    .join('\n');
-  fail(`Rule outputs out of sync — run 'bun tools/generate-rules.mjs'.\n${detail}`);
+  const stderr = result.stderr ? result.stderr.toString() : '';
+  if (result.status !== 0) {
+    const detail = [result.stdout, result.stderr]
+      .map((stream) => (stream ? stream.toString().trim() : ''))
+      .filter(Boolean)
+      .join('\n');
+    fail(`Rule outputs out of sync — run 'bun tools/generate-rules.mjs'.\n${detail}`);
+  }
+  // A skipped catalog cross-check is not a failure, but say so.
+  for (const line of stderr.split('\n')) {
+    if (line.includes('catalog check skipped')) console.warn(line);
+  }
 }
 
 try {

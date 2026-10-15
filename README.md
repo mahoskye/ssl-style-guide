@@ -172,10 +172,17 @@ maintainer checkouts only.
 inventory for editors that rely on TextMate grammars. It is canonical here, and
 the VS Code extension is to sync from it (mahoskye/vs-code-ssl-formatter#113).
 
+It follows the Tree-sitter highlighting: label names, joined (`:LABELName;`)
+and spaced (`:LABEL Name;`), are `entity.name.label.ssl`; the exact access
+modifiers `/*@private;` and `/*@protected;` get `storage.modifier.access.ssl`
+inside the comment; and a code block with no bound variable (`{|| ...}`),
+which does not compile, is `invalid.illegal.ssl`.
+
 Built-in function
 inventories should stay aligned with Tree-sitter highlighting and the checked-in
 element inventory. Built-in class inventories should stay aligned with the
-schema and Tree-sitter highlights.
+schema, the element inventory and Tree-sitter highlights; `check:consistency`
+checks both.
 
 ### MCP Server
 

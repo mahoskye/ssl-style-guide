@@ -34,13 +34,30 @@
  * Usage:
  *   bun tools/generate-rules.mjs [--check] [--lsp-catalog <dir>] [--strict-severity]
  *
- * --lsp-catalog defaults to ../starlims-lsp/catalog. Without the flag a
- * missing catalog is skipped with a note; with it (or with
- * --strict-severity), a missing catalog fails.
+ * --lsp-catalog <dir> reads that directory as it is. Without the flag the
+ * catalog comes from the sibling checkout ../starlims-lsp, read at the LSP
+ * version pinned in ssl-mcp-server/lsp-version.json, so a local run checks
+ * the same catalog CI does whatever the sibling has checked out. When the
+ * pinned tag is not in the sibling, the catalog check is skipped with a
+ * warning. A sibling that is not a git checkout is read as it is. A missing
+ * catalog is skipped with a note; with --lsp-catalog (or with
+ * --strict-severity), a missing or skipped catalog fails.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import { execFileSync } from 'child_process';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'fs';
+import { tmpdir } from 'os';
+import { dirname, resolve } from 'path';
 import YAML from 'yaml';
 import {
   DOMAINS,
@@ -62,10 +79,10 @@ const catalogArg = process.argv.indexOf('--lsp-catalog');
 // severity is a warning unless --strict-severity is passed.
 const STRICT_SEVERITY = process.argv.includes('--strict-severity');
 const CATALOG_REQUIRED = catalogArg !== -1 || STRICT_SEVERITY;
-const CATALOG_DIR = resolve(
-  REPO_ROOT,
-  catalogArg !== -1 ? process.argv[catalogArg + 1] : '../starlims-lsp/catalog'
-);
+const LSP_SIBLING = resolve(REPO_ROOT, '../starlims-lsp');
+const LSP_PIN_PATH = resolve(REPO_ROOT, 'ssl-mcp-server/lsp-version.json');
+// Set by resolveCatalog() in main(): the directory to read, or null to skip.
+let CATALOG_DIR = null;
 
 const SCHEMA_PATH = resolve(REPO_ROOT, 'ssl-style-guide/ssl-style-guide.schema.yaml');
 const SCHEMA_BASE_PATH = resolve(RULES_DIR, 'schema-base.yaml');
@@ -470,7 +487,76 @@ function catalogEntry(kind, slug) {
   return YAML.parse(raw.slice(4, end));
 }
 
+function git(cwd, args) {
+  return execFileSync('git', ['-C', cwd, ...args], { stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 1 << 28 });
+}
+
+function gitText(cwd, args) {
+  try {
+    return git(cwd, args).toString().trim();
+  } catch {
+    return null;
+  }
+}
+
+// Writes the catalog/ tree of `rev` in the git checkout `repo` into a fresh
+// temporary directory, removed when the process exits. Returns its catalog/.
+function extractCatalog(repo, rev) {
+  const entries = git(repo, ['ls-tree', '-r', '-z', rev, '--', 'catalog'])
+    .toString()
+    .split('\0')
+    .filter(Boolean)
+    .map((line) => {
+      const [meta, path] = line.split('\t');
+      const [, type, oid] = meta.split(' ');
+      return { type, oid, path };
+    })
+    .filter((entry) => entry.type === 'blob');
+  const root = mkdtempSync(resolve(tmpdir(), 'ssl-rules-catalog-'));
+  process.on('exit', () => rmSync(root, { recursive: true, force: true }));
+  // One cat-file process for every blob: "<oid> blob <size>\n<bytes>\n" each.
+  const out = execFileSync('git', ['-C', repo, 'cat-file', '--batch'], {
+    input: entries.map((entry) => entry.oid).join('\n') + '\n',
+    maxBuffer: 1 << 28,
+  });
+  let offset = 0;
+  for (const entry of entries) {
+    const headerEnd = out.indexOf(0x0a, offset);
+    const size = Number(out.toString('utf8', offset, headerEnd).split(' ')[2]);
+    const start = headerEnd + 1;
+    const target = resolve(root, entry.path);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, out.subarray(start, start + size));
+    offset = start + size + 1;
+  }
+  return resolve(root, 'catalog');
+}
+
+// Decides which catalog the cross-check reads (see the header comment).
+function resolveCatalog() {
+  if (catalogArg !== -1) return resolve(REPO_ROOT, process.argv[catalogArg + 1]);
+  const fallback = resolve(LSP_SIBLING, 'catalog');
+  if (!existsSync(LSP_SIBLING)) return fallback;
+  const top = gitText(LSP_SIBLING, ['rev-parse', '--show-toplevel']);
+  if (!top || realpathSync(top) !== realpathSync(LSP_SIBLING)) {
+    console.log(`Note: ${LSP_SIBLING} is not a git checkout; reading its catalog as it is.`);
+    return fallback;
+  }
+  const pin = JSON.parse(readFileSync(LSP_PIN_PATH, 'utf8')).version;
+  if (gitText(LSP_SIBLING, ['rev-parse', '-q', '--verify', `refs/tags/${pin}^{commit}`])) {
+    console.log(`Reading the starlims-lsp catalog at the pinned ${pin} from ${LSP_SIBLING}.`);
+    return extractCatalog(LSP_SIBLING, `refs/tags/${pin}`);
+  }
+  const at = gitText(LSP_SIBLING, ['describe', '--tags', '--always', 'HEAD']) ?? 'an unknown version';
+  const message =
+    `starlims-lsp catalog check skipped: ../starlims-lsp is at ${at}, the pin is ${pin}, ` +
+    `and tag ${pin} is not in that checkout (git -C ../starlims-lsp fetch --tags).`;
+  (STRICT_SEVERITY ? problems : warnings).push(message);
+  return null;
+}
+
 function checkCatalog(records, schemaText) {
+  if (CATALOG_DIR === null) return;
   if (!existsSync(CATALOG_DIR)) {
     if (CATALOG_REQUIRED) problems.push(`starlims-lsp catalog not found at ${CATALOG_DIR}`);
     else console.log(`Note: no starlims-lsp catalog at ${CATALOG_DIR}; enforced_by not resolved (pass --lsp-catalog).`);
@@ -550,6 +636,7 @@ function main() {
     outputs.push({ path: file, content: next });
   }
 
+  CATALOG_DIR = resolveCatalog();
   checkCatalog(records, nextSchema);
 
   for (const warning of warnings) console.warn(`warning: ${warning}`);
