@@ -1,8 +1,8 @@
 # SSL Machine Foundation
 
 Generated compact baseline for SSL agents (source:
-ssl-style-guide.schema.yaml v1.9.0, last_updated
-2026-10-13, via tools/generate-machine-docs.mjs). Use this
+ssl-style-guide.schema.yaml v1.10.0, last_updated
+2026-10-15, via tools/generate-machine-docs.mjs). Use this
 first, then retrieve a category pack or element record for task-specific
 detail.
 
