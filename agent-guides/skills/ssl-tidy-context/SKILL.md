@@ -56,7 +56,9 @@ its line count.
 
 ## The note
 
-Write it to `design/<FileName>.tidy.md` (create `design/` if needed):
+Write it to `design/<name>.tidy.md`, where `<name>` is the file name
+without its extension: `design/OwnerLookup.tidy.md` for
+`OwnerLookup.srvscr`. Create `design/` if needed.
 
 ```text
 # Tidy context: <file path>

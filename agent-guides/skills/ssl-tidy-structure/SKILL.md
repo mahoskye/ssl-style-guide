@@ -11,7 +11,8 @@ disable-model-invocation: true
 ## Before you start
 
 Use the file named in the argument, or the one open in the editor. Read its
-context note, `design/<FileName>.tidy.md`, including the change log. If there
+context note, `design/<name>.tidy.md` (the file
+name without its extension), including the change log. If there
 is no note, stop and ask the user to run `ssl-tidy-context` first.
 
 Load the `simplicity` rules with `ssl_context_pack` (category `simplicity`).

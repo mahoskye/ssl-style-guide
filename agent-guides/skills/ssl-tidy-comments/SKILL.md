@@ -11,7 +11,8 @@ disable-model-invocation: true
 ## Before you start
 
 Use the file named in the argument, or the one open in the editor. Read its
-context note, `design/<FileName>.tidy.md`, if there is one: the change log
+context note, `design/<name>.tidy.md` (the file
+name without its extension), if there is one: the change log
 says what steps 2 and 3 removed, which the comments may still describe.
 
 Load `comments_explain_why` and `document_real_outcomes_only` with

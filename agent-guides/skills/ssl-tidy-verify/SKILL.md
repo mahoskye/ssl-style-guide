@@ -11,7 +11,8 @@ disable-model-invocation: true
 ## Before you start
 
 Use the file named in the argument, or the one open in the editor. Read its
-context note, `design/<FileName>.tidy.md`: the baseline and the change log
+context note, `design/<name>.tidy.md` (the file
+name without its extension): the baseline and the change log
 are what this step checks against.
 
 ## Checks
