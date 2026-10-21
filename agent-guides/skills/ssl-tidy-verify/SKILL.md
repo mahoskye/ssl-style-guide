@@ -15,6 +15,11 @@ context note, `design/<name>.tidy.md` (the file
 name without its extension): the baseline and the change log
 are what this step checks against.
 
+Read the target whole before judging it. A file read stops at a size
+cap (about 50 KB, roughly 1,300 lines of SSL), so keep reading from the
+next offset until the tool reports the end of the file. Your report
+names the line range you read.
+
 ## Checks
 
 1. **Diagnostics.** Run `ssl_diagnose`. Zero errors, and no warning that was

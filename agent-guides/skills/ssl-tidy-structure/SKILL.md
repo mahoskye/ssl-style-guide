@@ -15,6 +15,11 @@ context note, `design/<name>.tidy.md` (the file
 name without its extension), including the change log. If there
 is no note, stop and ask the user to run `ssl-tidy-context` first.
 
+Read the target whole before judging it. A file read stops at a size
+cap (about 50 KB, roughly 1,300 lines of SSL), so keep reading from the
+next offset until the tool reports the end of the file. Your report
+names the line range you read.
+
 Load the `simplicity` rules with `ssl_context_pack` (category `simplicity`).
 The ones this step applies: `return_what_callers_use`,
 `no_shallow_single_use_procedure`, `state_object_for_multistep`,

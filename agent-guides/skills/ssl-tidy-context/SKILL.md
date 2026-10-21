@@ -28,7 +28,9 @@ name it in your first line. If neither is clear, ask.
 
 ## What to find
 
-Read the whole file once. Then find, with searches scoped to the project's
+Read the whole file once: a file read stops at a size cap (about 50 KB,
+roughly 1,300 lines of SSL), so keep reading from the next offset until
+the tool reports the end of the file. Then find, with searches scoped to the project's
 SSL folders (stop at about ten searches, and say what you did not search):
 
 - **How it is called.** Its call name, usually `Category.ScriptName` from its

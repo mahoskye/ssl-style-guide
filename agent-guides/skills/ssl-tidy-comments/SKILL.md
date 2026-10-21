@@ -15,6 +15,11 @@ context note, `design/<name>.tidy.md` (the file
 name without its extension), if there is one: the change log
 says what steps 2 and 3 removed, which the comments may still describe.
 
+Read the target whole before judging it. A file read stops at a size
+cap (about 50 KB, roughly 1,300 lines of SSL), so keep reading from the
+next offset until the tool reports the end of the file. Your report
+names the line range you read.
+
 Load `comments_explain_why` and `document_real_outcomes_only` with
 `ssl_style_rule`.
 
