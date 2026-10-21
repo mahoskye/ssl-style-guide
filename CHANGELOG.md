@@ -44,10 +44,12 @@ Entries before this file existed are reconstructed from the release commits.
   which VS Code Copilot, opencode and Claude Code all read.
 
 ### Added (cleanup sequence)
-- Five user-invoked skills that clean up one SSL file a step at a time:
+- Six user-invoked skills that clean up one SSL file a step at a time:
   `ssl-tidy-context` (maps callers and inputs into a context note),
-  `ssl-tidy-guards`, `ssl-tidy-structure`, `ssl-tidy-comments` and
-  `ssl-tidy-verify`. They set `disable-model-invocation`, so they run only
+  `ssl-tidy-guards`, `ssl-tidy-structure`, `ssl-tidy-clarity` (names
+  positional values, flattens nesting, names long conditions),
+  `ssl-tidy-comments` and `ssl-tidy-verify` (re-proves every change against
+  the code and checks tests and readability against the baseline). They set `disable-model-invocation`, so they run only
   when invoked.
 - The context step searches the project, and the wider codebase when asked,
   and treats the callers it finds as the callers. It records which checks

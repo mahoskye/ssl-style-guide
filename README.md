@@ -240,7 +240,7 @@ only as a rule proposal and an explicit decision. See
 
 ## Agent Skills
 
-`agent-guides/skills/` contains fourteen SSL workflow skills:
+`agent-guides/skills/` contains fifteen SSL workflow skills:
 
 - `ssl-review`
 - `ssl-refactor`
@@ -252,8 +252,9 @@ only as a rule proposal and an explicit decision. See
 - `ssl-new-datasource`
 - `ssl-unit-test`
 - `ssl-tidy-context`, `ssl-tidy-guards`, `ssl-tidy-structure`,
-  `ssl-tidy-comments`, `ssl-tidy-verify`: a five-step cleanup sequence you
-  invoke one step at a time on a file, reviewing the diff between steps
+  `ssl-tidy-clarity`, `ssl-tidy-comments`, `ssl-tidy-verify`: a six-step
+  cleanup sequence you invoke one step at a time on a file, reviewing the
+  diff between steps
 
 These skills should follow the schema and agent guides rather than introducing
 alternative rules or wording. `bun tools/deploy-skills.mjs` installs them into

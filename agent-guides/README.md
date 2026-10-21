@@ -49,7 +49,7 @@ The MCP server also bundles these files and exposes them through
 
 ## Skills
 
-`skills/` contains fourteen SSL workflow skills, each a `SKILL.md` with frontmatter
+`skills/` contains fifteen SSL workflow skills, each a `SKILL.md` with frontmatter
 plus step-by-step instructions:
 
 - `ssl-lookup` — look up a function signature, class member, or keyword
@@ -62,7 +62,7 @@ plus step-by-step instructions:
 - `ssl-new-datasource` — scaffold a new SSL or SQL data source
 - `ssl-unit-test` — write unit tests as SSL procedures the user runs in STARLIMS
 - `ssl-tidy-context` → `ssl-tidy-guards` → `ssl-tidy-structure` →
-  `ssl-tidy-comments` → `ssl-tidy-verify` — a cleanup sequence for one file,
+  `ssl-tidy-clarity` → `ssl-tidy-comments` → `ssl-tidy-verify` — a cleanup sequence for one file,
   invoked by the user one step at a time. Step 1 writes a context note
   (`design/<FileName>.tidy.md`) that the later steps rely on.
 

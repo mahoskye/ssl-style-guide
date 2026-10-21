@@ -1,12 +1,12 @@
 ---
 name: ssl-tidy-structure
-description: Step 3 of 5 of the SSL cleanup sequence. Removes structure nothing needs from one SSL file (unread envelopes and result fields, shallow single-use procedures, state objects in short scripts, unused parameters and variables) using the ssl-tidy-context note. Use only when the user invokes it on a file.
+description: Step 3 of 6 of the SSL cleanup sequence. Removes structure nothing needs from one SSL file (unread envelopes and result fields, shallow single-use procedures, state objects in short scripts, unused parameters and variables) using the ssl-tidy-context note. Use only when the user invokes it on a file.
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
 ---
 
-# SSL cleanup, step 3 of 5: structure
+# SSL cleanup, step 3 of 6: structure
 
 ## Before you start
 
@@ -30,14 +30,17 @@ The ones this step applies: `return_what_callers_use`,
 Inside the file, for procedures whose callers, per the note, are all in
 the file. A procedure the note shows no caller for anywhere in the searched
 scope is unused and goes, with the tests that call only it. Tests that call
-a changed procedure change with it.
+a changed procedure are adapted to it, so the behavior they cover stays
+covered.
 
 - **Envelopes nobody branches on.** A local procedure that never returns
   `.F.`, or whose callers never check the flag, returns its value directly;
   update its callers in the same edit.
 - **Shallow single-use procedures.** Inline a procedure with one caller whose
   body is a few lines and whose name adds nothing the code does not say.
-  Keep one that names a real step of the work.
+  Keep one that names a real step of the work, one that maps to an external
+  format or service contract, and one a test calls to cover behavior that
+  would otherwise go untested.
 - **State objects in short scripts.** When one or two steps share a few
   values, plain locals and parameters replace the object.
 - **Unused things.** Parameters of local procedures that no caller passes
@@ -72,4 +75,4 @@ tests: <test file> - <test case removed or changed> - <for which change>
 ## Finish
 
 Report the changes, the public-surface proposals, and lines before and
-after. Then: "Review the diff, then run `ssl-tidy-comments`."
+after. Then: "Review the diff, then run `ssl-tidy-clarity`."

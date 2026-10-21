@@ -1,12 +1,12 @@
 ---
 name: ssl-tidy-guards
-description: Step 2 of 5 of the SSL cleanup sequence. Removes guards for states that cannot happen, repeated validation, and catches that cannot act from one SSL file, using the context note from ssl-tidy-context. Use only when the user invokes it on a file.
+description: Step 2 of 6 of the SSL cleanup sequence. Removes guards for states that cannot happen, repeated validation, and catches that cannot act from one SSL file, using the context note from ssl-tidy-context. Use only when the user invokes it on a file.
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
 ---
 
-# SSL cleanup, step 2 of 5: guards
+# SSL cleanup, step 2 of 6: guards
 
 ## Before you start
 
@@ -26,11 +26,19 @@ The ones this step applies: `no_guard_for_impossible_state`,
 `trust_query_result_shape`, `trust_built_context_shape`,
 `catch_only_to_act`.
 
+## Decide ownership first
+
+For each check the note shows made both here and in a caller, decide which
+file owns it before touching anything. When this file is the one every
+path to the protected work goes through, it owns the check: keep it here,
+and record each caller's copy as a proposal for that file. Only when a
+caller owns it, because it is the single entry and this file is internal
+to it, does this file's copy go.
+
 ## What to remove
 
 - A check on a parameter the note marks as guaranteed.
-- A check the note's "Already checked" section shows every caller in the
-  scope already makes, or makes impossible by how it builds the value.
+- A check this file does not own, per the ownership decision above.
 - A check repeated after the same value was already checked upstream.
 - A check on the column count, column types or fields of rows that the
   procedure's own query selects. Checks for no rows, more rows than
@@ -58,16 +66,23 @@ The ones this step applies: `no_guard_for_impossible_state`,
 - A guarded write's `LimsRecordsAffected()` check.
 - A catch that is part of a public failure contract callers branch on.
 
+## Prove each removal
+
+Before removing a check, trace the guarantee that makes it unneeded on
+every production path to it, in the code itself: open each caller, follow
+each branch, and cite the lines that establish it. The note points you at
+the evidence; it is not the evidence. When a path does not establish the
+guarantee, the check stays. When it holds for a different reason than the
+note gives, cite the real one.
+
+## Tests
+
 Tests are not callers and never keep a check in place. When you remove a
 check, update the tests the note lists for it in the same step: delete a
-test case that only fed the check input production cannot send, or change
-its expected result when the outcome for real input changes.
+test case that only fed the check input production cannot send. A test
+case that also covers behavior that remains is adapted, never deleted.
 
-When the note shows the same check made both here and in a caller, and
-this file is the boundary that should own it (an entry point, or the
-script every caller goes through), keep it here and record the caller's
-copy as a proposal for that file. This step edits only the target and
-its tests.
+This step edits only the target and its tests.
 
 When you are unsure whether a state can happen, keep the code and list it
 as a question.
@@ -82,7 +97,7 @@ unused variable or an empty branch; remove those too.
 Append to the note's change log, one line per removal:
 
 ```text
-guards: removed <what> at <procedure> - <reason, citing the note>
+guards: removed <what> at <procedure> - <guarantee, with the file:line on each path>
 tests: <test file> - <test case removed or changed> - <for which removal>
 ```
 

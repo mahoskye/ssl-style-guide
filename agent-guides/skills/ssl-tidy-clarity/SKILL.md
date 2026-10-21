@@ -1,0 +1,69 @@
+---
+name: ssl-tidy-clarity
+description: Step 4 of 6 of the SSL cleanup sequence. Makes one SSL file read better without changing what it does - names positional values, returns early instead of nesting, names long conditions - using the ssl-tidy-context note. Use only when the user invokes it on a file.
+argument-hint: "<file-path>"
+user-invocable: true
+disable-model-invocation: true
+---
+
+# SSL cleanup, step 4 of 6: clarity
+
+## Before you start
+
+Use the file named in the argument, or the one open in the editor. Read its
+context note, `design/<name>.tidy.md` (the file name without its
+extension), including the change log. If there is no note, stop and ask the
+user to run `ssl-tidy-context` first.
+
+Read the target whole before judging it. A file read stops at a size cap
+(about 50 KB, roughly 1,300 lines of SSL), so keep reading from the next
+offset until the tool reports the end of the file. Your report names the
+line range you read.
+
+## What to change
+
+The goal is code a maintainer reads once and understands. Each change keeps
+behavior exactly as it is.
+
+- **Positional values.** Where a procedure reads the same array position
+  more than once, or a position whose meaning is not obvious
+  (`aRow[10]`, `aCandidate[5]`), assign it once to a named local
+  (`nResultId := aRow[10];`) and use the name. Declare the local with the
+  others, following the file's Hungarian prefixes.
+- **Nesting.** Turn an `:IF` that wraps the rest of a procedure into an
+  early `:RETURN` for the other case. Merge nested `:IF`s that only combine
+  conditions.
+- **Long conditions.** Give a condition of more than three clauses a named
+  local (`bIsCurrentPlate := ...;`) or, when it is reused, a small
+  predicate procedure, stating the business rule in its name.
+- **Repetition.** The same expression computed several times in one
+  procedure becomes one local.
+
+## What stays
+
+- Anything that crosses a procedure boundary: parameters, the order and
+  shape of arrays passed to or returned from other procedures, and
+  procedures called from outside. A tuple whose positions would read
+  better as named properties is a proposal, naming the procedures that
+  build and read it.
+- The file's formatting style: indentation, line breaks, keyword case.
+  Do not reformat code you did not change.
+- Order of evaluation. Naming a value must not move a read before a check
+  that guards it, or a query before a lock.
+
+## How to edit
+
+One change at a time, in place. After the last edit, run `ssl_diagnose`:
+zero errors and no warning that was not in the baseline. A new local must
+pass `ssl_validate_naming`.
+
+Append to the note's change log, one line per change:
+
+```text
+clarity: <what changed> at <procedure> - <how it reads better>
+```
+
+## Finish
+
+Report the changes, the proposals, and lines before and after. Then:
+"Review the diff, then run `ssl-tidy-comments`."

@@ -1,12 +1,12 @@
 ---
 name: ssl-tidy-context
-description: Step 1 of 5 of the SSL cleanup sequence. Maps how one SSL file fits the project (its callers and what they already check, what they read back, work duplicated elsewhere, and the file's responsibilities) and writes a context note the later steps rely on. Changes no code. Use only when the user invokes it on a file.
+description: Step 1 of 6 of the SSL cleanup sequence. Maps how one SSL file fits the project (its callers and what they already check, what they read back, work duplicated elsewhere, and the file's responsibilities) and writes a context note the later steps rely on. Changes no code. Use only when the user invokes it on a file.
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
 ---
 
-# SSL cleanup, step 1 of 5: context
+# SSL cleanup, step 1 of 6: context
 
 The cleanup sequence makes one SSL file simpler without changing what its
 callers see. Each step does one kind of change, so you can review it in the
@@ -15,8 +15,9 @@ diff before running the next:
 1. `ssl-tidy-context`: map the file's place in the project (this step).
 2. `ssl-tidy-guards`: remove checks and catches that cannot matter.
 3. `ssl-tidy-structure`: remove structure nothing needs.
-4. `ssl-tidy-comments`: cut comments to what the code cannot say.
-5. `ssl-tidy-verify`: validate, summarize every change for review, and
+4. `ssl-tidy-clarity`: name values, flatten nesting, name conditions.
+5. `ssl-tidy-comments`: cut comments to what the code cannot say.
+6. `ssl-tidy-verify`: re-prove every change, check the tests, and
    propose a split when the file does several jobs.
 
 The later steps can only remove what this note shows is unneeded, so its
