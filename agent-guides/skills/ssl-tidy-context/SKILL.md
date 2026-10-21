@@ -40,6 +40,10 @@ The exception is an entry point the platform reaches without a script
 calling it: a web service, a form or client event, a scheduled job. Its
 inputs stay untrusted at the entry, and only there.
 
+Tests are not callers. A test shows the code works; what it passes says
+nothing about what production sends, and it is never a reason to keep
+code. Record the tests separately, so the later steps can update them.
+
 ## What to find
 
 Read the whole file once: a file read stops at a size cap (about 50 KB,
@@ -71,8 +75,10 @@ search):
   the answer: questions in the note are for facts about the project, not
   the language.
 - **Local procedures.** For each: its callers inside the file, and whether
-  anything outside calls it by a three-part name. A test that calls it
-  counts as a caller.
+  anything outside calls it by a three-part name. Calls from tests do not
+  count; list them under Tests.
+- **Tests.** The test procedures that call this file or its procedures,
+  with file and line, and which check or result each one covers.
 - **Work done elsewhere.** The same lookup (same table and key), the same
   validation or the same helper existing in another file in the scope.
   Record both places: one of them should own it.
@@ -113,6 +119,9 @@ Not searched: <places you could not see, or "none">
 
 ## Local procedures
 <name> - <callers in file> - <called from outside: file:line, or no>
+
+## Tests
+<test file:line> - calls <script or procedure> - covers <check or result>
 
 ## Duplicated elsewhere
 <work> - here at <procedure> and at <file:line>

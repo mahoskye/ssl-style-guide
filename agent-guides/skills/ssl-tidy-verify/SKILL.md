@@ -30,10 +30,14 @@ names the line range you read.
    note.
 3. **Public surface.** The file's `:PARAMETERS` and return shape match the
    baseline, unless the user approved a change.
-4. **Read it whole**, top to bottom, as the next maintainer would. Name
+4. **Tests.** Every test the note lists for a removed or changed check or
+   procedure was updated, per the `tests:` lines in the log. A test that
+   still feeds a removed check is fixed by changing the test, never by
+   restoring the check.
+5. **Read it whole**, top to bottom, as the next maintainer would. Name
    anything still unclear, and anything the earlier steps made worse, such
    as a procedure now too long to follow.
-5. **Separation of concerns.** Use the note's "Responsibilities" section,
+6. **Separation of concerns.** Use the note's "Responsibilities" section,
    updated for what the earlier steps removed, and the rules
    `script_size_review` and `procedure_length_review`. When the file has
    more than about 400 code lines or 12 procedures, or a procedure over 80

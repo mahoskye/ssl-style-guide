@@ -29,7 +29,8 @@ The ones this step applies: `return_what_callers_use`,
 
 Inside the file, for procedures whose callers, per the note, are all in
 the file. A procedure the note shows no caller for anywhere in the searched
-scope is unused and goes.
+scope is unused and goes, with the tests that call only it. Tests that call
+a changed procedure change with it.
 
 - **Envelopes nobody branches on.** A local procedure that never returns
   `.F.`, or whose callers never check the flag, returns its value directly;
@@ -50,7 +51,8 @@ shape, and any procedure the note shows called from outside. When the note
 shows one of these unused or unread, list it as a proposal naming the
 callers that would change. Likewise for work the note lists under
 "Duplicated elsewhere": propose which file should own it and what the
-other one calls instead. This step edits only the target.
+other one calls instead. This step edits only the target and its
+tests.
 
 ## How to edit
 
@@ -64,6 +66,7 @@ Append to the note's change log, one line per change:
 
 ```text
 structure: <what changed> at <procedure> - <reason, citing the note>
+tests: <test file> - <test case removed or changed> - <for which change>
 ```
 
 ## Finish

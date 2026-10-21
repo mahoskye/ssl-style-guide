@@ -58,14 +58,16 @@ The ones this step applies: `no_guard_for_impossible_state`,
 - A guarded write's `LimsRecordsAffected()` check.
 - A catch that is part of a public failure contract callers branch on.
 
-A test that calls a procedure directly is one of its callers. When a test
-exercises a check, removing the check means changing the test, so list it
-as a proposal naming the test instead of removing it.
+Tests are not callers and never keep a check in place. When you remove a
+check, update the tests the note lists for it in the same step: delete a
+test case that only fed the check input production cannot send, or change
+its expected result when the outcome for real input changes.
 
 When the note shows the same check made both here and in a caller, and
 this file is the boundary that should own it (an entry point, or the
 script every caller goes through), keep it here and record the caller's
-copy as a proposal for that file. This step edits only the target.
+copy as a proposal for that file. This step edits only the target and
+its tests.
 
 When you are unsure whether a state can happen, keep the code and list it
 as a question.
@@ -81,6 +83,7 @@ Append to the note's change log, one line per removal:
 
 ```text
 guards: removed <what> at <procedure> - <reason, citing the note>
+tests: <test file> - <test case removed or changed> - <for which removal>
 ```
 
 ## Finish
