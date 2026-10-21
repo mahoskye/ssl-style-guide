@@ -50,7 +50,8 @@ list it as a proposal with the callers that would change. Do not change it.
 
 ## How to edit
 
-One change at a time, in place, matching the file's style. Do not reformat
+One change at a time, in place, matching the file's style. Keep the file's
+line endings: in a CRLF file, every line you write ends in CRLF too. Do not reformat
 the file. Keep each procedure's behavior for every input the note says
 callers can send. After the last edit, run `ssl_diagnose`: zero errors and no
 warning that was not in the baseline. Check that every `DoProc` still names a

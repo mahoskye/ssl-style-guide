@@ -53,7 +53,8 @@ except to add one `Modified` line if the project's banners use them.
 
 ## How to edit
 
-Comment edits only, no code changes, in place. Every comment still ends at
+Comment edits only, no code changes, in place. Keep the file's
+line endings: in a CRLF file, every line you write ends in CRLF too. Every comment still ends at
 its first `;`, so never leave a semicolon inside comment text. Run
 `ssl_diagnose` after the last edit: zero errors and no warning that was not
 in the baseline.
