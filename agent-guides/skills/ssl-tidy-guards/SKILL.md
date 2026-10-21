@@ -51,7 +51,9 @@ to it, does this file's copy go.
   input: a loop over an empty array, `LSearch` with a fallback.
 - A `:TRY` / `:CATCH` whose catch only replaces the error with a vaguer
   failure, or logs and carries on as if nothing happened, when nothing in
-  the procedure can recover.
+  the procedure can recover. Re-check each catch after your other removals:
+  one whose body can now fail only on input production cannot send goes
+  too, unless a caller branches on its failure.
 
 ## What stays
 

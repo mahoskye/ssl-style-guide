@@ -42,8 +42,11 @@ names the line range you read.
 5. **Tests.** Every test the note lists for a removed or changed check or
    procedure was updated, per the `tests:` lines in the log. For each test
    case deleted, name the behavior it covered and confirm that behavior is
-   gone; a deleted case whose behavior remains is brought back, adapted to
-   the new code. A test that still feeds a removed check is fixed by
+   gone; a deleted case whose behavior remains for input production can
+   send is brought back, adapted to the new code. Never add or keep a case
+   that feeds input no production caller can send, such as a row shape
+   the procedure's own query cannot return: that pins the removed
+   defense back in place. A test that still feeds a removed check is fixed by
    changing the test, never by restoring the check. Log each as
    `tests: <test file> - <case changed> - <for which removal>`.
 6. **Readability.** Read the file whole, top to bottom, as the next
