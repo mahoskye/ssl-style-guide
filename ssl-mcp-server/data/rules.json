@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 292,
+  "count": 294,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -4289,6 +4289,54 @@
       "source": "rules/server-scripts/no_control_exit_in_finally.md"
     },
     {
+      "id": "trust_query_result_shape",
+      "title": "Trust the shape your own query defines",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not check the column count, the column types or the presence of fields that your own query selects; check only what the database can vary: no rows, more rows than the code assumes, and NULL in a nullable column.",
+      "rationale": "The SELECT list fixes how many columns each row has and what they hold. A\ncheck that a row from `SELECT plate_id FROM ...` has one column checks the\nquery against itself. What the database decides at run time is how many rows\ncome back and whether a nullable column holds a value; those are worth\nhandling.",
+      "exceptions": "A result whose columns are not fixed by the code that reads it, such as\n`SELECT *` or a query built elsewhere and passed in, is input from outside\nand is checked once where it is received.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE LoadPlateIds;\n\t:PARAMETERS nRunId;\n\t:DECLARE aIds, aRows, i;\n\n\taRows := SQLExecute(\"SELECT plate_id FROM run_plates WHERE run_id = ?nRunId?\");\n\taIds := {};\n\n\t:FOR i := 1 :TO ALen(aRows);\n\t\tAAdd(aIds, aRows[i, 1]);\n\t:NEXT;\n\n\t:RETURN aIds;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE LoadPlateIds;\n\t:PARAMETERS nRunId;\n\t:DECLARE aIds, aRows, i;\n\n\taRows := SQLExecute(\"SELECT plate_id FROM run_plates WHERE run_id = ?nRunId?\");\n\taIds := {};\n\n\t:IF LimsTypeEx(aRows) != \"ARRAY\";\n\t\t:RETURN aIds;\n\t:ENDIF;\n\n\t:FOR i := 1 :TO ALen(aRows);\n\t\t:IF LimsTypeEx(aRows[i]) == \"ARRAY\" .AND. ALen(aRows[i]) >= 1;\n\t\t\tAAdd(aIds, aRows[i, 1]);\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN aIds;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "database"
+      ],
+      "related_elements": [
+        "SQLExecute",
+        "LSearch",
+        "LSelect",
+        "GetDataSet",
+        "ALen",
+        "LimsTypeEx"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/trust_query_result_shape.md"
+    },
+    {
       "id": "try_around_transactional_work",
       "title": "Protect transactional work with :TRY",
       "domain": "server-scripts",
@@ -5193,6 +5241,51 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/state_object_for_multistep.md"
+    },
+    {
+      "id": "trust_built_context_shape",
+      "title": "Check a context object's shape once, where it is built",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Check a context object's shape once, in the procedure that builds it or where it is reloaded from storage or parsed from text; procedures that receive it later in the same flow use its properties without re-checking them.",
+      "rationale": "A builder that sets every property and checks its inputs establishes the\nobject's shape. Re-checking `HasProperty` and `LimsTypeEx` in every\nprocedure that receives it repeats that work, hides which procedure owns the\nshape, and drifts when the builder changes.",
+      "exceptions": "Checking identity or freshness is not checking shape: a context reloaded\nfrom a queue or a saved record may be stale or belong to another attempt, and\na check that it still matches the current run stays. A context saved and\nreloaded, or carried as JSON text, has its shape checked once where it is\nreloaded or parsed.",
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "BuildRunContext checks nRunId and sets runId, flowcellId and assayType.\nLoadSamples and WriteSheet read oContext:runId and oContext:assayType directly.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "LoadSamples and WriteSheet each begin with\n:IF !HasProperty(oContext, \"runId\") .OR. LimsTypeEx(oContext:runId) != \"NUMERIC\";\nalthough BuildRunContext, their only source of oContext, set and checked it.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "objects"
+      ],
+      "related_elements": [
+        "CreateUdObject",
+        "HasProperty",
+        "LimsTypeEx"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/trust_built_context_shape.md"
     },
     {
       "id": "parameters_first",

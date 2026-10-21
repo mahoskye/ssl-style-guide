@@ -11,6 +11,8 @@
   "must_follow": [
     "Assign each invariant to one authoritative boundary; repeat a check downstream only when it protects a distinct local use, enforces a stronger invariant, receives independently supplied data, or defends an independently deployed public contract.",
     "Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.",
+    "Do not check the column count, the column types or the presence of fields that your own query selects; check only what the database can vary: no rows, more rows than the code assumes, and NULL in a nullable column.",
+    "Check a context object's shape once, in the procedure that builds it or where it is reloaded from storage or parsed from text; procedures that receive it later in the same flow use its properties without re-checking them.",
     "Catch an error only to roll back or finish work, to return a failure result a caller branches on, or to add context the error lacks; otherwise let it propagate to the boundary that owns it.",
     "Return the plain value when callers only use the value; use a success/failure envelope only when a caller branches on the outcome, and add no result field that no caller reads.",
     "Inline a local procedure that has one caller and hides less than its call costs to read; extract a procedure when it names a real step of the work or has a second caller.",

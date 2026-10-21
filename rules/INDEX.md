@@ -97,7 +97,7 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`parenthesize_mixed_logical`](language/parenthesize_mixed_logical.md) | style_only | warning | `lsp:diag.parenthesize_mixed_logical` | Parenthesize an expression that mixes `.AND.` and `.OR.`: `.AND.` binds tighter, so `bA .OR. bB .AND. bC` means `bA .OR. (bB .AND. bC)`. |
 | [`script_size_review`](language/script_size_review.md) | advisory | info | `lsp:diag.script_size_review` | Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned. |
 
-## server-scripts (107)
+## server-scripts (109)
 
 | Id | Level | Severity | Enforced by | Rule |
 |---|---|---|---|---|
@@ -107,6 +107,7 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`no_duplicate_case_branches`](server-scripts/no_duplicate_case_branches.md) | style_only | info | `reviewer` | Do not duplicate identical outcome branches; keep separate branches only when their behavior differs. |
 | [`prefer_linear_success_path`](server-scripts/prefer_linear_success_path.md) | style_only | info | `reviewer` | Prefer a linear success path over nested `:IF` chains. |
 | [`no_control_exit_in_finally`](server-scripts/no_control_exit_in_finally.md) | authoritative | error | `lsp:diag.return_in_finally`, `lsp:diag.exitfor_in_finally`, `lsp:diag.exitwhile_in_finally`, `lsp:diag.loop_in_finally` | Do not use `:RETURN`, `:EXITFOR`, `:EXITWHILE`, or `:LOOP` inside `:FINALLY`. |
+| [`trust_query_result_shape`](server-scripts/trust_query_result_shape.md) | style_only | warning | `reviewer` | Do not check the column count, the column types or the presence of fields that your own query selects; check only what the database can vary: no rows, more rows than the code assumes, and NULL in a nullable column. |
 | [`try_around_transactional_work`](server-scripts/try_around_transactional_work.md) | style_only | warning | `reviewer` | Use `:TRY`/`:CATCH` around multi-step transactional database work. |
 | [`get_last_ssl_error_in_catch`](server-scripts/get_last_ssl_error_in_catch.md) | authoritative | info | `reviewer` | Use `GetLastSSLError()` inside `:CATCH` to retrieve error details. |
 | [`explicit_rollback_for_partial_writes`](server-scripts/explicit_rollback_for_partial_writes.md) | style_only | warning | `reviewer` | Make rollback behavior explicit for write operations that can partially fail. |
@@ -128,6 +129,7 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`execfunction_not_class_file`](server-scripts/execfunction_not_class_file.md) | authoritative | error | `reviewer` | Point `ExecFunction` at a script entry point or script procedure, never at a class file; create class instances with `CreateUdObject` and call their methods. |
 | [`visibility_annotations_script_only`](server-scripts/visibility_annotations_script_only.md) | authoritative | warning | `lsp:diag.visibility_annotation` | Do not put `/*@private;` or `/*@protected;` on class methods; they affect script procedures only, and class methods are always public. |
 | [`state_object_for_multistep`](server-scripts/state_object_for_multistep.md) | style_only | info | `reviewer` | When the steps of a multi-step operation share more state than a few parameters carry, create one descriptive UDObject, initialize every property during request construction, and pass it through the steps; a short linear script keeps plain locals. |
+| [`trust_built_context_shape`](server-scripts/trust_built_context_shape.md) | style_only | warning | `reviewer` | Check a context object's shape once, in the procedure that builds it or where it is reloaded from storage or parsed from text; procedures that receive it later in the same flow use its properties without re-checking them. |
 | [`parameters_first`](server-scripts/parameters_first.md) | authoritative | error | `lsp:diag.parameters_first` | `:PARAMETERS` must appear before any other statements in a script or procedure body. |
 | [`default_after_parameters`](server-scripts/default_after_parameters.md) | authoritative | error | `lsp:diag.default_after_parameters` | `:DEFAULT` must immediately follow `:PARAMETERS`. |
 | [`doproc_for_same_file_procedures`](server-scripts/doproc_for_same_file_procedures.md) | authoritative | error | `reviewer` | Use `DoProc("ProcName", {args})` for same-file script procedures. |
