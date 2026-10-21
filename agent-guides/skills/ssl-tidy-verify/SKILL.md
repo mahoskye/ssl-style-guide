@@ -47,7 +47,9 @@ Diagnostics: <final result, verbatim>, <new findings vs baseline, or none>
 
 Behavior changes to review:
   <each change from the log that alters what happens on some input,
-   the input, and why the note says no caller sends it>
+   the input, and why the note says no caller sends it. A removed check
+   whose failure is still reported later counts when other work now runs
+   first: name what runs and which failure the caller now sees first.>
 
 Safe changes:
   <count by step: guards n, structure n, comments n>

@@ -36,6 +36,8 @@ Load `comments_explain_why` and `document_real_outcomes_only` with
   rambles. When such a comment is also stale (an "add work here" note
   where work now exists), rewrite the stale part and keep the
   requirement.
+- **Keep** an open `TODO` and every ticket reference (`SL-810-12`) word
+  for word: they point at tracked work the code cannot describe.
 - **Banner and doc blocks** keep the project's template, including the
   `Procedure:` line, and state what the code now does. `Returns` names
   only the outcomes the code produces: after step 3 an envelope may be
