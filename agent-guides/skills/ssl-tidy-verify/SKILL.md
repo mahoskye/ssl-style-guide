@@ -67,6 +67,12 @@ Do not reformat the file as part of this step. Running `ssl_format` over a
 file that already existed rewrites lines nobody changed; offer it as a
 separate step if the user wants it.
 
+## Files and the note
+
+Write nothing except the target, the tests the note lists, and the
+note. The change log holds only the one-line entries this step
+defines; your reasoning goes in your report, not the note.
+
 ## Report
 
 ```text

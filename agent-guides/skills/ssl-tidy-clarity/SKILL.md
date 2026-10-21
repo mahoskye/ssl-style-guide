@@ -33,9 +33,11 @@ behavior exactly as it is.
 - **Nesting.** Turn an `:IF` that wraps the rest of a procedure into an
   early `:RETURN` for the other case. Merge nested `:IF`s that only combine
   conditions.
-- **Long conditions.** Give a condition of more than three clauses a named
-  local (`bIsCurrentPlate := ...;`) or, when it is reused, a small
-  predicate procedure, stating the business rule in its name.
+- **Long conditions.** Name a condition only when the name says something
+  the clauses do not: the business rule behind them, used in more than one
+  place or buried inside a larger expression. An `:IF` whose whole
+  condition you would lift into a boolean used once, on the next line,
+  gains nothing: leave it, or break its clauses one per line instead.
 - **Repetition.** The same expression computed several times in one
   procedure becomes one local.
 
@@ -47,7 +49,11 @@ behavior exactly as it is.
   better as named properties is a proposal, naming the procedures that
   build and read it.
 - The file's formatting style: indentation, line breaks, keyword case.
-  Do not reformat code you did not change.
+  Do not reformat code you did not change. Lines you write stay within
+  the file's width (90 columns unless the file is wider): break a long
+  expression one clause per line, continuation indented as the file does.
+  A new local joins the existing `:DECLARE` line of its group, in the
+  group's order, rather than starting another `:DECLARE`.
 - Order of evaluation. Naming a value must not move a read before a check
   that guards it, or a query before a lock.
 
@@ -62,6 +68,12 @@ Append to the note's change log, one line per change:
 ```text
 clarity: <what changed> at <procedure> - <how it reads better>
 ```
+
+## Files and the note
+
+Write nothing except the target, the tests the note lists, and the
+note. The change log holds only the one-line entries this step
+defines; your reasoning goes in your report, not the note.
 
 ## Finish
 

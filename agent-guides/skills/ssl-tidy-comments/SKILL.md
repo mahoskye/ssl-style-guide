@@ -51,6 +51,10 @@ Load `comments_explain_why` and `document_real_outcomes_only` with
   codes or statuses, and leave out how the code arrives at them (which
   checks run, case handling, what is trimmed). A block that grows when
   you correct it has picked up detail that belongs in the code.
+- **Width.** A procedure doc block's `Returns:` stays on one line, for
+  hover. Every other comment line stays within the file's width (90
+  columns): a banner field that runs long continues on aligned lines, as
+  the template does.
 - **Region comments** (`/* region ...;`) stay when they group a long file;
   in a short one they go.
 
@@ -69,6 +73,12 @@ Append one line to the note's change log:
 ```text
 comments: removed <n>, rewrote <n> (banner/doc blocks: <what changed>)
 ```
+
+## Files and the note
+
+Write nothing except the target, the tests the note lists, and the
+note. The change log holds only the one-line entries this step
+defines; your reasoning goes in your report, not the note.
 
 ## Finish
 

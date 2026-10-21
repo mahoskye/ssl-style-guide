@@ -72,6 +72,12 @@ structure: <what changed> at <procedure> - <reason, citing the note>
 tests: <test file> - <test case removed or changed> - <for which change>
 ```
 
+## Files and the note
+
+Write nothing except the target, the tests the note lists, and the
+note. The change log holds only the one-line entries this step
+defines; your reasoning goes in your report, not the note.
+
 ## Finish
 
 Report the changes, the public-surface proposals, and lines before and

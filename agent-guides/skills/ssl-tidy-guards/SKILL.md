@@ -101,6 +101,12 @@ guards: removed <what> at <procedure> - <guarantee, with the file:line on each p
 tests: <test file> - <test case removed or changed> - <for which removal>
 ```
 
+## Files and the note
+
+Write nothing except the target, the tests the note lists, and the
+note. The change log holds only the one-line entries this step
+defines; your reasoning goes in your report, not the note.
+
 ## Finish
 
 Report the removals, the questions you left, and lines before and after.

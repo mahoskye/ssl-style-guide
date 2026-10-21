@@ -143,6 +143,12 @@ The later steps treat the scope you searched as complete. Anything you
 could not search goes under "Not searched", and what depends on it stays
 as it is.
 
+## Files and the note
+
+Write nothing except the target, the tests the note lists, and the
+note. The change log holds only the one-line entries this step
+defines; your reasoning goes in your report, not the note.
+
 ## Finish
 
 Report the entry point, the inputs you could establish as guaranteed, the
