@@ -33,7 +33,8 @@ names the line range you read.
 4. **Tests.** Every test the note lists for a removed or changed check or
    procedure was updated, per the `tests:` lines in the log. A test that
    still feeds a removed check is fixed by changing the test, never by
-   restoring the check.
+   restoring the check; log it in the note as
+   `tests: <test file> - <case changed> - <for which removal>`.
 5. **Read it whole**, top to bottom, as the next maintainer would. Name
    anything still unclear, and anything the earlier steps made worse, such
    as a procedure now too long to follow.
