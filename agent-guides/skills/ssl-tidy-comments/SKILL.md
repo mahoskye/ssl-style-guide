@@ -45,8 +45,9 @@ Load `comments_explain_why` and `document_real_outcomes_only` with
   doc block only from a procedure of a few lines whose name and
   parameters already say everything it would; a procedure with several
   parameters keeps its block.
-- **Short doc blocks.** `Description` is one sentence saying what the
-  procedure does. Each parameter is a few words. `Returns` names the shape
+- **Short doc blocks.** Keep the template's field shapes, including
+  `Returns: <name> - <outcomes>`. `Description` is one sentence saying
+  what the procedure does. Each parameter is a few words. `Returns` names the shape
   and its outcomes in one plain sentence on one line: list the outcome
   codes or statuses, and leave out how the code arrives at them (which
   checks run, case handling, what is trimmed). A block that grows when

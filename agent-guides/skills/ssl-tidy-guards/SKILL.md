@@ -80,7 +80,9 @@ note gives, cite the real one.
 Tests are not callers and never keep a check in place. When you remove a
 check, update the tests the note lists for it in the same step: delete a
 test case that only fed the check input production cannot send. A test
-case that also covers behavior that remains is adapted, never deleted.
+case that also covers behavior that remains is adapted to reach that
+behavior where it now lives, unless another test already covers it there;
+then the case goes, and the log names the test that covers it.
 
 This step edits only the target and its tests.
 
@@ -90,7 +92,8 @@ as a question.
 ## How to edit
 
 One change at a time, in place, matching the file's existing style. Do not
-reformat the file. After the last edit, run `ssl_diagnose`: zero errors and
+reformat the file. When a removal unwraps a block, move its body out one
+level and re-align any continuation lines inside it to their new position. After the last edit, run `ssl_diagnose`: zero errors and
 no warning that was not in the baseline. A removed guard often leaves an
 unused variable or an empty branch; remove those too.
 

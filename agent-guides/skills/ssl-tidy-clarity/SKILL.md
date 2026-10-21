@@ -23,7 +23,8 @@ line range you read.
 ## What to change
 
 The goal is code a maintainer reads once and understands. Each change keeps
-behavior exactly as it is.
+behavior exactly as it is. Work through every procedure, top to bottom,
+and report the ones you looked at and left as they were.
 
 - **Positional values.** Where a procedure reads the same array position
   more than once, or a position whose meaning is not obvious
@@ -31,8 +32,8 @@ behavior exactly as it is.
   (`nResultId := aRow[10];`) and use the name. Declare the local with the
   others, following the file's Hungarian prefixes.
 - **Nesting.** Turn an `:IF` that wraps the rest of a procedure into an
-  early `:RETURN` for the other case. Merge nested `:IF`s that only combine
-  conditions.
+  early `:RETURN` for the other case. Merge an `:IF` whose only statement
+  is another `:IF` into one condition, clauses one per line.
 - **Long conditions.** Name a condition only when the name says something
   the clauses do not: the business rule behind them, used in more than one
   place or buried inside a larger expression. An `:IF` whose whole

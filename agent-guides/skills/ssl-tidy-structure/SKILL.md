@@ -60,7 +60,8 @@ tests.
 ## How to edit
 
 One change at a time, in place, matching the file's style. Do not reformat
-the file. Keep each procedure's behavior for every input the note says
+the file. When a change unwraps a block, move its body out one level and
+re-align any continuation lines inside it. Keep each procedure's behavior for every input the note says
 callers can send. After the last edit, run `ssl_diagnose`: zero errors and no
 warning that was not in the baseline. Check that every `DoProc` still names a
 procedure that exists.
