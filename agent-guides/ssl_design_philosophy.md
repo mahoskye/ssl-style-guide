@@ -81,6 +81,11 @@ Do not invent failure modes to fill the template.
 **Nothing for later.** No parameters, options or branches for a need nobody has
 stated.
 
+**Tests follow the code.** A test shows that the code does what it should; it
+is never the reason code exists. When a check is removed because nothing can
+fail it, the test that fed it impossible input changes or goes in the same
+change. What a test passes says nothing about what production callers send.
+
 None of this removes a guard that protects something real: data that can be
 empty, input you do not control, a write that must be verified, a transaction
 that must finish. The goal is fewer things, each of which matters.

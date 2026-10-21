@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 19
+version: 20
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
