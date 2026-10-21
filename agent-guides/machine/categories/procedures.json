@@ -11,7 +11,9 @@
     ":PARAMETERS must appear before any other statements in a script or procedure body.",
     ":DEFAULT must immediately follow :PARAMETERS.",
     "Use DoProc(\"ProcName\", {args}) for same-file script procedures.",
-    "Use ExecFunction(\"Category.Script\", {args}) or ExecFunction(\"Category.Script.Proc\", {args}) for external script entry points."
+    "Use ExecFunction(\"Category.Script\", {args}) or ExecFunction(\"Category.Script.Proc\", {args}) for external script entry points.",
+    "Return the plain value when callers only use the value; use a success/failure envelope only when a caller branches on the outcome, and add no result field that no caller reads.",
+    "Inline a local procedure that has one caller and hides less than its call costs to read; extract a procedure when it names a real step of the work or has a second caller."
   ],
   "avoid": [
     "Do not call custom script procedures directly as MyProc().",

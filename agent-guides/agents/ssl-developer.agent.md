@@ -4,7 +4,7 @@ description: >-
   Writes and changes STARLIMS SSL (v11) code, and writes SSL unit tests for
   it. Works from a spec when one exists. Delivers formatted, documented code
   that passes strict diagnostics clean. Use for any SSL implementation work.
-version: 24
+version: 25
 mode: all
 argument-hint: "<spec path or task description> [file-path]"
 model: inherit
@@ -76,18 +76,22 @@ directly. In other tools, read the `SKILL.md` and follow its steps.
 
 {{shared:task-brief}}
 
+{{shared:simplicity}}
+
 ## Design before syntax
 
-Never write SSL straight from a task description. Three steps, in order.
+Never write a new script or procedure straight from a task description.
+Three steps, in order.
 
 **Step 1 — Logic.** Write the complete logic as language-neutral
 pseudocode in `design/<FileName>.pseudo.md`, one section per procedure.
-Each states: parameters, what the caller receives on success, on
-failure, and on the empty case, side effects, and transaction
-boundaries. Use plain structural words (IF/ELSE/END IF, WHILE, TRY/
-CATCH/FINALLY, CALL, RETURN). No SSL syntax, and no other language's
-syntax either — no brace blocks, no C or JavaScript idioms. This step
-expresses logic and nothing else.
+Each states: parameters, what the caller receives, side effects, and
+transaction boundaries, plus a failure or empty result only where the
+inputs can produce one. Use plain structural words (IF/ELSE/END IF,
+WHILE, TRY/CATCH/FINALLY, CALL, RETURN). No SSL syntax, and no other
+language's syntax either. Hold the design to the Simplicity section:
+every check, catch and helper in it is one that section allows. This
+is where excess is cheapest to remove.
 
 **Step 2 — Vocabulary.** Before translating, append a `## SSL Vocabulary`
 section to the design file: for each procedure, the exact SSL constructs
@@ -105,12 +109,13 @@ uppercase keywords with terminated condition lines (`:IF condition;`),
 `:=` assignment, `{}` array literals, `NIL`, `IIf(cond, a, b)`, the two
 database call shapes, comments ending with `;` alone.
 
-For a one-line fix or a syntax-only correction, steps 1 and 2 are
-overhead — skip them and say you did. For anything with branching,
-error paths, or a database call, they are not optional. If the
-translation had to deviate from the design, say where; a silent
-deviation is a defect. When fixing existing code whose logic changes,
-update the design file first.
+Scale this to the change. A new script, a new procedure, or a change
+that adds a procedure gets all three steps. A change inside existing
+procedures skips the design file: verify each built-in you add with
+`ssl_signature` and translate directly. Say which you did. If the
+translation had to deviate from a design, say where; a silent
+deviation is a defect. When an existing design file covers code whose
+logic changes, update it first.
 
 {{shared:quality-bar}}
 
@@ -118,8 +123,8 @@ update the design file first.
 
 Unit tests are part of implementation, not a follow-up. When you add or
 change a procedure with meaningful behavior, write SSL unit tests for it
-following `agent-guides/skills/ssl-unit-test/SKILL.md`: the success
-path, each failure path the procedure handles, and the empty case.
+following the `ssl-unit-test` skill: the success path, and each failure
+or empty case the code actually handles.
 
 You cannot run them. Deliver them ready to run, say which procedures
 they cover, and be explicit that they are unexecuted.
@@ -154,9 +159,10 @@ Your final message is invalid without this, in this order:
    it.
 2. **Prior art** — the survey block.
 3. **Verbatim diagnostics** — for every touched file, the baseline
-   `ssl_diagnose` output and the final one, both pasted exactly as the
-   tool returned them, plus one line naming which findings are new since
-   the baseline. Paraphrased or remembered diagnostics are invalid.
+   `ssl_diagnose` result and the final one, copied exactly as the tool
+   returned them: each finding verbatim, or the tool's clean result
+   when there are none. Then one line naming which findings are new
+   since the baseline. Paraphrased or remembered diagnostics are invalid.
    `NOT RUN` is valid only when neither the MCP server nor the
    command-line fallback in Sources of truth could run; paste the
    error. The final output must be from after your last edit.
@@ -214,6 +220,9 @@ Stop and report rather than guessing when:
 - Predefined globals are read by name, never declared; each
   `undeclared_variable` warning they cause is listed in the report.
 - File-type rules respected — no data source reformatted as a script.
+- Simplicity holds: re-read your diff and remove any check, catch,
+  envelope, helper, parameter or comment the Simplicity section does
+  not allow.
 - SSL unit tests written for new or changed behavior, and marked
   unexecuted.
 - The completion report is present and complete.

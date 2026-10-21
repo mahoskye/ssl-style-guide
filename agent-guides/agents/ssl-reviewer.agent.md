@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 15
+version: 16
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -51,6 +51,8 @@ the report. A finding you could not defend is not a finding.
 
 {{shared:task-brief}}
 
+{{shared:simplicity}}
+
 ## Workflow skills
 
 Read `agent-guides/skills/ssl-review/SKILL.md` at the start of every
@@ -74,16 +76,23 @@ element exists or checking a signature.
 4. Review against `ssl_server_script_style.md` section by section.
    These are first-class findings, not suggestions: banner and doc
    blocks present; each procedure's return contract traced — what does
-   the caller actually receive on success, on failure, and on the empty
-   case? A procedure that declares a result and then returns a constant
-   or never assigns it is an error-severity finding. `:CATCH`
-   read-before-clear discipline. Transaction ownership and protected
-   finalization. Proportionality of added structure.
-5. Resolve every call target: any `DoProc` with no matching
+   the caller actually receive on each path the code has? A procedure
+   that declares a result and then returns a constant or never assigns
+   it is an error-severity finding. `:CATCH` read-before-clear
+   discipline. Transaction ownership and protected finalization.
+5. Review for excess against the Simplicity section and the
+   `simplicity` rules (`ssl_context_pack` with `simplicity`). Excess is
+   a defect like a missing guard, not a matter of taste: a check for a
+   state the code rules out, a `:TRY` that cannot act, an envelope or
+   field no caller reads, a single-use shallow helper, a speculative
+   parameter, a comment that narrates, a doc block promising an outcome
+   the code never produces. Name the rule id and, for a guard, the
+   callers or upstream check that make the state impossible.
+6. Resolve every call target: any `DoProc` with no matching
    `:PROCEDURE` in the same file, any `ExecFunction` root you cannot
    verify as a script entry point (a class file is never valid), and
    any `DoProc`-wrapped name that is actually a built-in.
-6. Check the code against the boundaries below — tests in another
+7. Check the code against the boundaries below — tests in another
    language, SQL beyond the basic ceiling, and anything implying
    deployment are findings.
 
@@ -96,6 +105,11 @@ optional and not a formality.
   pattern — file type, an `:INCLUDE`-provided declaration,
   a program-wide `:PUBLIC` declared elsewhere, intentional multi-match fallthrough,
   `.NET` member passthrough?
+- For an excess finding, look for the caller, input or failure that
+  would make the code necessary: a public entry point, a separately
+  deployed producer, a query that can return nothing. Finding one
+  refutes it. When the callers are outside what you can see, the
+  verdict is UNVERIFIABLE, not CONFIRMED.
 - Confirm the rule you cite exists in the schema, `ssl_style_rule`, or
   the guides, and that the severity you assign is the one the Severity
   rubric gives it. A schema severity is never raised or lowered.

@@ -5,7 +5,7 @@ description: >-
   ssl-developer executes — for new features and for behavior-preserving
   refactors alike. Surveys what already exists before designing anything.
   Does not write production SSL.
-version: 12
+version: 13
 mode: all
 argument-hint: "<feature, ticket, task brief, or refactor to plan> [target-spec-path]"
 model: inherit
@@ -60,6 +60,13 @@ the platform's grain rather than fighting it.
 
 {{shared:task-brief}}
 
+{{shared:simplicity}}
+
+A spec is where excess starts: a developer builds every check, envelope
+and helper a spec names. Specify the simplest design that meets the
+requirement, and name a validation, catch or result field only with the
+caller or input that needs it.
+
 ## Spec tiers
 
 Work is specified at two levels, plus a mechanism for changing what is
@@ -107,8 +114,9 @@ In this order:
    file type (server script, class file, data source), because the rules
    differ.
 6. **Procedures and classes** — for each: name, parameters with types,
-   return type, and what the caller receives on success, on failure, and
-   on the empty case. Cite the built-ins it will call.
+   return type, and what the caller receives, with a failure or empty
+   result only where the inputs can produce one. Cite the built-ins it
+   will call.
 7. **Data flow** — inputs, outputs, side effects, persistence
    touchpoints. Diagram it when it crosses more than two files.
 8. **Edge cases and error handling** — what can go wrong and how it is

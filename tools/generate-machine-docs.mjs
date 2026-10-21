@@ -31,6 +31,7 @@ const SOURCE_PATHS = {
   schema: 'ssl-style-guide/ssl-style-guide.schema.yaml',
   agentInstructions: 'agent-guides/ssl_agent_instructions.md',
   refactoringGuide: 'agent-guides/ssl_refactoring_guide.md',
+  philosophy: 'agent-guides/ssl_design_philosophy.md',
   elementReference: 'ssl-style-guide/ssl-element-reference.json',
   elementMeta: 'ssl-style-guide/ssl-element-meta.json',
 };
@@ -377,6 +378,16 @@ const CATEGORY_DEFS = [
     // must_follow / avoid come from the rule records (rules/categories.yaml).
     related: ['procedures', 'classes', 'data-sources'],
     sourcePaths: [SOURCE_PATHS.schema, SOURCE_PATHS.agentInstructions],
+  },
+  {
+    id: 'simplicity',
+    label: 'Simplicity',
+    aliases: ['over-engineering', 'defensive code', 'design philosophy', 'clarity'],
+    summary: 'What to leave out: guards for impossible states, catches that cannot act, unused envelopes, shallow helpers, speculative options.',
+    elements: ['TRY', 'CATCH', 'LimsTypeEx', 'CreateUdObject', 'DoProc'],
+    // must_follow / avoid come from the rule records (rules/categories.yaml).
+    related: ['error-handling', 'procedures', 'module-structure'],
+    sourcePaths: [SOURCE_PATHS.philosophy],
   },
 ];
 

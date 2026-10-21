@@ -1,0 +1,64 @@
+{
+  "id": "simplicity",
+  "label": "Simplicity",
+  "aliases": [
+    "over-engineering",
+    "defensive code",
+    "design philosophy",
+    "clarity"
+  ],
+  "summary": "What to leave out: guards for impossible states, catches that cannot act, unused envelopes, shallow helpers, speculative options.",
+  "must_follow": [
+    "Assign each invariant to one authoritative boundary; repeat a check downstream only when it protects a distinct local use, enforces a stronger invariant, receives independently supplied data, or defends an independently deployed public contract.",
+    "Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.",
+    "Catch an error only to roll back or finish work, to return a failure result a caller branches on, or to add context the error lacks; otherwise let it propagate to the boundary that owns it.",
+    "Return the plain value when callers only use the value; use a success/failure envelope only when a caller branches on the outcome, and add no result field that no caller reads.",
+    "Inline a local procedure that has one caller and hides less than its call costs to read; extract a procedure when it names a real step of the work or has a second caller.",
+    "In a banner or doc block, describe a failure result or an empty case only when the code produces one; do not add outcomes to fill the template.",
+    "Comments explain purpose, ownership, safety consequences, replay behavior, or a non-obvious ordering requirement; do not narrate assignments or restate syntax."
+  ],
+  "avoid": [
+    "Do not check for a state the code already rules out: a parameter every caller passes, a type SSL or the producer guarantees, a value already checked upstream, or the result of a procedure in the same file.",
+    "Add no parameter, option, branch or result field for a need that no caller, requirement or task has stated."
+  ],
+  "elements": [
+    {
+      "name": "TRY",
+      "type": "keyword",
+      "syntax": ":TRY;\n    try_statements;\n:CATCH;\n    catch_statements;\n:ENDTRY;",
+      "summary": "Starts a protected block that can transfer control to :CATCH, :FINALLY, or both when errors occur."
+    },
+    {
+      "name": "CATCH",
+      "type": "keyword",
+      "syntax": ":CATCH;",
+      "summary": "Handles errors raised in the immediately preceding :TRY block."
+    },
+    {
+      "name": "LimsTypeEx",
+      "type": "function",
+      "syntax": "LimsTypeEx(vSource)",
+      "summary": "Returns the public SSL type name for a value."
+    },
+    {
+      "name": "CreateUdObject",
+      "type": "function",
+      "syntax": "CreateUdObject()",
+      "summary": "Creates a dynamic object or instantiates a user-defined class."
+    },
+    {
+      "name": "DoProc",
+      "type": "function",
+      "syntax": "DoProc(sProcedureName, [aArguments])",
+      "summary": "Calls a local or scripted procedure by name with an optional argument array."
+    }
+  ],
+  "related_categories": [
+    "error-handling",
+    "procedures",
+    "module-structure"
+  ],
+  "source_paths": [
+    "agent-guides/ssl_design_philosophy.md"
+  ]
+}

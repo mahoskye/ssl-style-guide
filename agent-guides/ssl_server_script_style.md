@@ -21,6 +21,8 @@ before relying on them.
 
 Use this guide as the shared baseline for STARLIMS SSL server scripts. Preserve each script's public contract and business behavior unless the task explicitly changes them. More narrowly scoped instruction files may add domain-specific contracts and preferred reference implementations.
 
+The patterns below (envelopes, state objects, shape checks, failure capture) are tools for scripts that need them, not a template for every script. `ssl_design_philosophy.md` sets the priorities: a short linear script with one check at its entry point is the default, and each pattern here has to earn its place.
+
 ## Necessity And Proportionality
 
 For every nontrivial procedure, result field, validation layer, side effect, or external dependency added during implementation or review, answer these questions before editing:
@@ -209,7 +211,7 @@ Use these exact `LimsTypeEx` return values when validating runtime types:
 Contract rules for results that cross a boundary:
 
 <!-- rules: id=validate_results_before_access,propagate_or_replace_downstream_failure,success_envelope_without_data,no_raw_diagnostics_in_caller_failures -->
-- At every procedure or service boundary, validate an outer array, its required length and its success flag before reading an envelope payload, and validate the payload's shape and field types before indexing arrays or accessing object properties.
+- Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.
 - When propagating a failure envelope, preserve a valid downstream stable code and sanitized message, and replace a malformed downstream result with a stable contract-failure code owned by the caller.
 - Use `{.T., NIL}` for internal command steps that use a standard envelope but have no success data.
 - Never return raw SSL diagnostics, exception descriptions, credentials, or payload bodies through caller-safe failures; return a stable code and a sanitized message.
@@ -217,7 +219,7 @@ Contract rules for results that cross a boundary:
 
 <!-- rule: envelope_one_line -->Keep a variable-only envelope such as `{.F., {sCode, sMessage}}` on one physical line when it fits.<!-- /rule --> Split an envelope when inline literal text, additional payload fields, or the line-length limit benefits from clearer grouping.
 
-<!-- rule: state_object_for_multistep -->For a multi-step operation, create one descriptive UDObject, initialize every property during request construction, and pass that object through cohesive steps rather than growing long positional parameter lists.<!-- /rule --> Its properties include flags, IDs, counters, the stable failure code and the sanitized failure message.
+<!-- rule: state_object_for_multistep -->When the steps of a multi-step operation share more state than a few parameters carry, create one descriptive UDObject, initialize every property during request construction, and pass it through the steps; a short linear script keeps plain locals.<!-- /rule --> Its properties include flags, IDs, counters, the stable failure code and the sanitized failure message.
 
 <!-- rule: pipeline_failure_capture -->Use a pipeline-specific failure-capture helper when several sequential steps return standard envelopes, and keep one contract within the pipeline: either return a boolean or return `{success, state}` consistently.<!-- /rule -->
 
@@ -444,7 +446,8 @@ Before finishing an edit, verify:
 - The public parameters and result shapes are documented and preserved.
 - The top-level path reads as business orchestration rather than mechanical validation.
 - Dense shape checks have descriptive helpers, while trivial checks remain local.
-- Every external result is validated before payload access.
+- Every envelope's success flag is checked before payload access; shape checks appear only for producers outside the caller's control.
+- Nothing was added that the code already rules out: no guard for an impossible state, no catch that cannot act, no envelope or result field that no caller reads.
 - Caller-safe failures contain stable codes and sanitized messages where the public contract uses them.
 - Logging contains useful bounded context without becoming persisted workflow state.
 - SQL uses local substitutions, default-connection conventions, and guarded mutation checks.

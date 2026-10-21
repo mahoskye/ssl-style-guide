@@ -12,6 +12,29 @@ Entries before this file existed are reconstructed from the release commits.
 
 ## [Unreleased]
 
+### Added
+- `agent-guides/ssl_design_philosophy.md`: the rationale layer above the
+  rules, with a worked before-and-after example. Clarity and simplicity come
+  before product style (program decision 0002).
+- A `simplicity` rule category and machine pack, with six reviewer-enforced
+  records: `no_guard_for_impossible_state`, `catch_only_to_act`,
+  `return_what_callers_use`, `no_shallow_single_use_procedure`,
+  `document_real_outcomes_only` and `no_speculative_options`.
+- A shared `simplicity` partial in the developer, planner, reviewer and
+  handoff agents. The reviewer reports excess as findings and refutes them
+  by looking for the caller that would need the code.
+
+### Changed
+- `validate_results_before_access` now asks for a success-flag check
+  always and a shape check only for producers outside the caller's control.
+- `state_object_for_multistep` applies only when shared state outgrows a few
+  parameters.
+- Doc blocks, specs, designs and tests describe a failure or empty result
+  only when the code produces one, instead of for every procedure.
+- `ssl-developer` writes a design file for new scripts and procedures only;
+  changes inside existing procedures verify signatures and translate
+  directly.
+
 ## MCP 1.17.2 — 2026-10-15
 
 ### Changed

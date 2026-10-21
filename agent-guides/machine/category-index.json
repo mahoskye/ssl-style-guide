@@ -5,6 +5,7 @@
     "ssl-style-guide/ssl-style-guide.schema.yaml",
     "agent-guides/ssl_agent_instructions.md",
     "agent-guides/ssl_refactoring_guide.md",
+    "agent-guides/ssl_design_philosophy.md",
     "ssl-style-guide/ssl-element-reference.json",
     "ssl-style-guide/ssl-element-meta.json",
     "../ssl-docs/content/guides/sql-queries.md",
@@ -691,6 +692,33 @@
       "source_paths": [
         "ssl-style-guide/ssl-style-guide.schema.yaml",
         "agent-guides/ssl_agent_instructions.md"
+      ]
+    },
+    {
+      "id": "simplicity",
+      "label": "Simplicity",
+      "aliases": [
+        "over-engineering",
+        "defensive code",
+        "design philosophy",
+        "clarity"
+      ],
+      "summary": "What to leave out: guards for impossible states, catches that cannot act, unused envelopes, shallow helpers, speculative options.",
+      "element_names": [
+        "TRY",
+        "CATCH",
+        "LimsTypeEx",
+        "CreateUdObject",
+        "DoProc"
+      ],
+      "related_categories": [
+        "error-handling",
+        "procedures",
+        "module-structure"
+      ],
+      "pack": "categories/simplicity.json",
+      "source_paths": [
+        "agent-guides/ssl_design_philosophy.md"
       ]
     }
   ]

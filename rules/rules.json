@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 286,
+  "count": 292,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -5162,7 +5162,7 @@
         "server_script",
         "class"
       ],
-      "rule": "For a multi-step operation, create one descriptive UDObject, initialize every property during request construction, and pass that object through cohesive steps rather than growing long positional parameter lists.",
+      "rule": "When the steps of a multi-step operation share more state than a few parameters carry, create one descriptive UDObject, initialize every property during request construction, and pass it through the steps; a short linear script keeps plain locals.",
       "rationale": "Every step sees the same named state, and a new piece of state is a new\nproperty, not a new parameter on every procedure.",
       "exceptions": null,
       "examples": {
@@ -5183,7 +5183,8 @@
         "reviewer"
       ],
       "categories": [
-        "objects"
+        "objects",
+        "simplicity"
       ],
       "related_elements": [
         "CreateUdObject"
@@ -6088,6 +6089,91 @@
       "source": "rules/server-scripts/guard_optional_globals.md"
     },
     {
+      "id": "return_what_callers_use",
+      "title": "Return what the callers use",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Return the plain value when callers only use the value; use a success/failure envelope only when a caller branches on the outcome, and add no result field that no caller reads.",
+      "rationale": "An envelope makes every caller unpack and check it. When no caller does\nanything different on failure, that is ceremony at every call site, and the\nfailure branch is code nobody runs.",
+      "exceptions": "A public script whose callers are not all known, such as a web service entry\npoint, keeps its documented envelope.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SampleOwner;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN LSearch(\"SELECT owner FROM samples WHERE sample_id = ?\", \"\",,\n\t                {sSampleId});\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SampleOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE sOwner;\n\n\tsOwner := LSearch(\"SELECT owner FROM samples WHERE sample_id = ?\", \"\",,\n\t                  {sSampleId});\n\n\t:RETURN {.T., sOwner};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "procedures"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/return_what_callers_use.md"
+    },
+    {
+      "id": "no_shallow_single_use_procedure",
+      "title": "No shallow procedure with a single caller",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Inline a local procedure that has one caller and hides less than its call costs to read; extract a procedure when it names a real step of the work or has a second caller.",
+      "rationale": "Each `DoProc` sends the reader to another place in the file. That jump pays\noff when the procedure hides real work behind a clear name, and costs more\nthan it saves when the body is two or three lines the caller could show\ndirectly.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Main reads the request, then calls DoProc(\"ApplyStatusChange\", {...}), a\n40-line procedure that locks the row, checks the transition and writes it.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Main calls DoProc(\"IsBlank\", {sValue}), a procedure whose body is\n:RETURN Empty(AllTrim(sValue)); and which nothing else calls.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "procedures"
+      ],
+      "related_elements": [
+        "DoProc",
+        "PROCEDURE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_shallow_single_use_procedure.md"
+    },
+    {
       "id": "prefer_try_over_error_resume",
       "title": "Prefer :TRY over legacy :ERROR/:RESUME",
       "domain": "server-scripts",
@@ -6861,14 +6947,14 @@
         "server_script",
         "class"
       ],
-      "rule": "At every procedure or service boundary, validate an outer array, its required length and its success flag before reading an envelope payload, and validate the payload's shape and field types before indexing arrays or accessing object properties.",
-      "rationale": "Indexing a value that is not an array, or reading a property an object does\nnot have, raises at run time. Checking the shape first turns a malformed\nresult into a handled contract failure instead of an error deep in the\ncaller.",
+      "rule": "Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.",
+      "rationale": "A failed result is a real outcome, so its flag is always checked. A malformed\nresult is not: a procedure in the same file, or a script whose contract is\ndocumented, returns the shape it promises. Shape checks belong only where the\nproducer is outside the caller's control, where indexing a value that is not\nan array would raise deep in the caller.",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE LoadOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.Load\", {sSampleId});\n\n\t:IF LimsTypeEx(aResult) != \"ARRAY\" .OR. ALen(aResult) < 2;\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:IF !aResult[1];\n\t\t:RETURN aResult;\n\t:ENDIF;\n\n\t:IF LimsTypeEx(aResult[2]) != \"OBJECT\";\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:RETURN {.T., aResult[2]:Owner};\n:ENDPROC;\n"
+            "code": ":PROCEDURE LoadOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.Load\", {sSampleId});\n\n\t:IF !aResult[1];\n\t\t:RETURN aResult;\n\t:ENDIF;\n\n\t:RETURN {.T., aResult[2]:Owner};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6882,7 +6968,8 @@
         "reviewer"
       ],
       "categories": [
-        "error-handling"
+        "error-handling",
+        "simplicity"
       ],
       "related_elements": [
         "LimsTypeEx",
@@ -7049,7 +7136,8 @@
         "reviewer"
       ],
       "categories": [
-        "error-handling"
+        "error-handling",
+        "simplicity"
       ],
       "related_elements": [],
       "schema_paths": [],
@@ -7098,6 +7186,97 @@
       "source": "rules/server-scripts/pipeline_failure_capture.md"
     },
     {
+      "id": "no_guard_for_impossible_state",
+      "title": "No guard for a state that cannot happen",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not check for a state the code already rules out: a parameter every caller passes, a type SSL or the producer guarantees, a value already checked upstream, or the result of a procedure in the same file.",
+      "rationale": "A guard is a claim that the state it checks can occur. When it cannot, the\nguard costs a branch, a failure result nobody will see, and a reader who now\nbelieves the state is possible and goes looking for where it comes from.",
+      "exceptions": "Keep a check on input the code does not control: a request from a form or web\nservice, a result from a script deployed separately without a documented\ncontract, a query that can return no rows.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountOpenTests;\n\t:PARAMETERS aTests;\n\t:DECLARE nOpen, i;\n\n\tnOpen := 0;\n\n\t:FOR i := 1 :TO ALen(aTests);\n\t\t:IF aTests[i, 2] == \"OPEN\";\n\t\t\tnOpen += 1;\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN nOpen;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountOpenTests;\n\t:PARAMETERS aTests;\n\t:DECLARE nOpen, i;\n\n\t:IF LimsTypeEx(aTests) != \"ARRAY\";\n\t\t:RETURN 0;\n\t:ENDIF;\n\n\t:IF ALen(aTests) == 0;\n\t\t:RETURN 0;\n\t:ENDIF;\n\n\tnOpen := 0;\n\n\t:FOR i := 1 :TO ALen(aTests);\n\t\t:IF aTests[i, 2] == \"OPEN\";\n\t\t\tnOpen += 1;\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN nOpen;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "error-handling"
+      ],
+      "related_elements": [
+        "LimsTypeEx",
+        "Empty",
+        "ALen",
+        "HasProperty"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_guard_for_impossible_state.md"
+    },
+    {
+      "id": "catch_only_to_act",
+      "title": "Catch an error only to act on it",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Catch an error only to roll back or finish work, to return a failure result a caller branches on, or to add context the error lacks; otherwise let it propagate to the boundary that owns it.",
+      "rationale": "A `:TRY` that turns one failure into a vaguer one hides the detail the\nmaintainer needs and adds a block that does nothing useful. An error that\nreaches the owning boundary intact is easier to diagnose than one translated\nat every layer.",
+      "exceptions": "Transaction finalization is real work: keep the `:TRY` / `:FINALLY` that\nends a transaction the procedure started.",
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "LoadOwner calls LSearch with no :TRY. A database error reaches the entry\npoint, whose one :CATCH logs it and returns the service's failure envelope.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "LoadOwner wraps LSearch in :TRY, and its :CATCH returns\n{.F., {\"DB_ERROR\", \"Could not load the owner.\"}}, discarding the error text.\nIts caller wraps the call in another :TRY that does the same.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "error-handling"
+      ],
+      "related_elements": [
+        "TRY",
+        "CATCH",
+        "GetLastSSLError"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/catch_only_to_act.md"
+    },
+    {
       "id": "comments_explain_why",
       "title": "Comments explain why, not what",
       "domain": "server-scripts",
@@ -7129,7 +7308,8 @@
         "reviewer"
       ],
       "categories": [
-        "formatting"
+        "formatting",
+        "simplicity"
       ],
       "related_elements": [],
       "schema_paths": [
@@ -7345,6 +7525,47 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/envelope_one_line.md"
+    },
+    {
+      "id": "document_real_outcomes_only",
+      "title": "Document only outcomes the code produces",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "In a banner or doc block, describe a failure result or an empty case only when the code produces one; do not add outcomes to fill the template.",
+      "rationale": "The doc block is the contract a maintainer trusts without reading the body. A\nfailure result it promises but the code never returns is a false contract, and\na template that demands one invites code written to produce it.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Returns...... : The owner's user name, or \"\" when the sample has none\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Returns...... : {.T., sOwner} on success\n                {.F., {sCode, sMessage}} on failure\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/document_real_outcomes_only.md"
     },
     {
       "id": "limstypeex_numeric_not_number",
@@ -8256,6 +8477,46 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/banner_descriptions_operational.md"
+    },
+    {
+      "id": "no_speculative_options",
+      "title": "Nothing for a need nobody has stated",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Add no parameter, option, branch or result field for a need that no caller, requirement or task has stated.",
+      "rationale": "Speculative options have to be read, documented and kept working, and they\nrarely match the need when it finally arrives. Adding a parameter later, when\na caller needs it, costs one change.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": ":PARAMETERS sSampleId; for a script whose callers all look up one sample.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PARAMETERS sSampleId, bIncludeHistory, sSortOrder, nMaxRows; with defaults,\nfor a script whose callers all pass only sSampleId.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_speculative_options.md"
     },
     {
       "id": "no_hardcoded_credentials",
