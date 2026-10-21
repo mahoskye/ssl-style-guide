@@ -16,10 +16,13 @@ Entries before this file existed are reconstructed from the release commits.
 - `agent-guides/ssl_design_philosophy.md`: the rationale layer above the
   rules, with a worked before-and-after example. Clarity and simplicity come
   before product style (program decision 0002).
-- A `simplicity` rule category and machine pack, with six reviewer-enforced
+- A `simplicity` rule category and machine pack, with eight reviewer-enforced
   records: `no_guard_for_impossible_state`, `catch_only_to_act`,
   `return_what_callers_use`, `no_shallow_single_use_procedure`,
-  `document_real_outcomes_only` and `no_speculative_options`.
+  `document_real_outcomes_only` and `no_speculative_options`; and
+  `trust_query_result_shape` and `trust_built_context_shape`, which stop
+  re-checking the rows a procedure's own query selects and the shape of a
+  context object an earlier step built.
 - A shared `simplicity` partial in the developer, planner, reviewer and
   handoff agents. The reviewer reports excess as findings and refutes them
   by looking for the caller that would need the code.

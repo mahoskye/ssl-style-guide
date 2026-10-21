@@ -4,7 +4,7 @@ description: >-
   Writes and changes STARLIMS SSL (v11) code, and writes SSL unit tests for
   it. Works from a spec when one exists. Delivers formatted, documented code
   that passes strict diagnostics clean. Use for any SSL implementation work.
-version: 25
+version: 26
 mode: all
 argument-hint: "<spec path or task description> [file-path]"
 model: inherit

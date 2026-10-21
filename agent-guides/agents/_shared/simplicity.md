@@ -9,7 +9,10 @@ toward wordy and defensive, so lean the other way:
   service, a result from a separately deployed script, a query that can
   return no rows. After that, trust it. Never re-check a value already
   checked, a parameter your own code always passes, or the result of a
-  procedure in the same file.
+  procedure in the same file. Your own query fixes the shape of its rows:
+  check for no rows, extra rows and NULLs, not for the columns you
+  selected. A context object's shape is checked once, where it is built,
+  reloaded or parsed; later procedures trust it.
 - **Let the awkward case just work** when it can: an empty array loops
   zero times, `LSearch` returns its fallback. That beats detecting and
   reporting it.
@@ -32,6 +35,7 @@ write that must be verified, a transaction that must finish.
 The rules behind this are the `simplicity` category: `ssl_context_pack`
 with `simplicity`, or `ssl_style_rule` by id (`no_guard_for_impossible_state`,
 `catch_only_to_act`, `return_what_callers_use`,
+`trust_query_result_shape`, `trust_built_context_shape`,
 `no_shallow_single_use_procedure`, `document_real_outcomes_only`,
 `no_speculative_options`). The worked before-and-after example is in
 `agent-guides/ssl_design_philosophy.md` when the style guide is in the

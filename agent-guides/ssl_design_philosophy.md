@@ -43,6 +43,14 @@ can return nothing. After that, the value is known. Do not check it again in
 each procedure it passes through, and do not check results of your own
 procedures in the same file.
 
+Two cases come up constantly. A query's SELECT list fixes the shape of its
+rows, so check what the database decides (no rows, more rows than you
+expect, a NULL) and not the columns you selected. A context object has its
+shape checked once, where it is built, reloaded or parsed from text; the
+procedures that receive it later trust its properties. Checking that a
+reloaded context still belongs to the current run is a different check, and
+it stays.
+
 **Do not check for states that cannot happen.** A parameter your own code
 always passes, a type SSL already guarantees, an array you just built: none of
 these need a guard. A guard for an impossible state is not safety. It is a
