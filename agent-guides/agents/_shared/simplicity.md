@@ -28,6 +28,8 @@ toward wordy and defensive, so lean the other way:
 - **Document the real contract.** Describe a failure or empty result only
   when the code produces one. Comment only what the code cannot say.
 - **Build only what was asked.** No options or branches for later.
+- **Tests follow the code.** A test is never a reason to keep code. When
+  a check goes, the test that covered it changes or goes with it.
 
 A real guard stays: data that can be empty, input you do not control, a
 write that must be verified, a transaction that must finish.
