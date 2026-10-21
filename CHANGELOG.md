@@ -34,6 +34,18 @@ Entries before this file existed are reconstructed from the release commits.
 - `ssl-developer` writes a design file for new scripts and procedures only;
   changes inside existing procedures verify signatures and translate
   directly.
+- Agents reach rules through the `ssl-reference` MCP tools and skills by
+  name, so they work in a workspace without this repository; its narrative
+  guides are optional depth when it is open.
+- `tools/deploy-skills.mjs` also installs the skills to `~/.claude/skills/`,
+  which VS Code Copilot, opencode and Claude Code all read.
+
+### Added (cleanup sequence)
+- Five user-invoked skills that clean up one SSL file a step at a time:
+  `ssl-tidy-context` (maps callers and inputs into a context note),
+  `ssl-tidy-guards`, `ssl-tidy-structure`, `ssl-tidy-comments` and
+  `ssl-tidy-verify`. They set `disable-model-invocation`, so they run only
+  when invoked.
 
 ## MCP 1.17.2 — 2026-10-15
 

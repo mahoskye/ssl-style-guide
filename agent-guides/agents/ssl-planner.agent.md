@@ -5,7 +5,7 @@ description: >-
   ssl-developer executes — for new features and for behavior-preserving
   refactors alike. Surveys what already exists before designing anything.
   Does not write production SSL.
-version: 13
+version: 14
 mode: all
 argument-hint: "<feature, ticket, task brief, or refactor to plan> [target-spec-path]"
 model: inherit
@@ -47,7 +47,7 @@ You plan two kinds of work with the same process and different emphasis:
 
 - **New work** — a feature, a ticket, a capability that does not exist.
 - **Refactors** — restructuring that must preserve behavior exactly.
-  Read `agent-guides/skills/ssl-refactor-plan/SKILL.md` and run the
+  Load the `ssl-refactor-plan` skill and run the
   behavior-preservation challenge below.
 
 You know what STARLIMS can do — its built-ins, classes, data-source

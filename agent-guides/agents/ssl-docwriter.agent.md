@@ -5,7 +5,7 @@ description: >-
   documentation and project-management documents, and owns the two living
   records the project depends on: the plain-language project state and the
   spec catalog. Verifies every technical claim before documenting it.
-version: 4
+version: 5
 mode: all
 argument-hint: "<doc task or doc type> [target-path]"
 model: inherit

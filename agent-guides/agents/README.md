@@ -78,8 +78,10 @@ same shape as `SKILL.md`.
 | `overrides` | no | Per-tool frontmatter escape hatch: `overrides.<tool>: { ... }`. |
 
 The body is emitted **verbatim** into every adapter (with a generated-file
-header), so write it tool-neutrally — reference skills by their
-`agent-guides/skills/<name>/SKILL.md` path, which works in every tool.
+header), so write it tool-neutrally. Reference skills by name and SSL rules
+through the `ssl-reference` MCP tools: the agents are deployed at user level
+and usually run in a workspace that does not contain this repository, so a
+repository path only helps when the style guide happens to be open.
 
 ## Shared partials
 

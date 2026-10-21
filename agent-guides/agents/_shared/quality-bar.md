@@ -23,7 +23,7 @@ The formatter also lays out embedded SQL. It re-indents a multi-line SQL
 string and breaks an over-long one into clauses, uppercasing SQL
 keywords as it goes. A SQL string that fits on one line is left exactly
 as written, keyword case included. So check every SQL string against
-canonical-compact style per `agent-guides/skills/ssl-format/SKILL.md`:
+canonical-compact style per the `ssl-format` skill:
 correct what the formatter produced and finish by hand what it left.
 Treat all of its output as a draft: read what it changed and correct
 decisions that hurt readability or contradict the schema.

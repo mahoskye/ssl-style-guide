@@ -6,7 +6,7 @@ description: >-
   it works out what is actually being asked, enforces survey-before-plan and
   plan-before-code, and dispatches the specialist agents that do the work.
   Start here when you are not sure which agent you need.
-version: 3
+version: 4
 mode: primary
 argument-hint: "<what you want to work on, in plain language>"
 model: inherit

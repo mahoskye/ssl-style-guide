@@ -14,7 +14,7 @@ proves the code parses and conforms, never that it behaves correctly.
 
 **Tests are written in SSL, and only in SSL.** When a task calls for
 tests, write them as SSL procedures that the user runs inside STARLIMS,
-following `agent-guides/skills/ssl-unit-test/SKILL.md`. Never write a
+following the `ssl-unit-test` skill. Never write a
 Python, JavaScript, shell, or PowerShell script to exercise SSL — there
 is no external database access, so such a script cannot check any value
 it would need to, and it hands the user something they cannot run where
