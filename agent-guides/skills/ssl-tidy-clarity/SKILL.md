@@ -30,7 +30,10 @@ and report the ones you looked at and left as they were.
   more than once, or a position whose meaning is not obvious
   (`aRow[10]`, `aCandidate[5]`), assign it once to a named local
   (`nResultId := aRow[10];`) and use the name. Declare the local with the
-  others, following the file's Hungarian prefixes.
+  others, following the file's Hungarian prefixes. Name a position the
+  code compares, tests or computes with; a value only copied from one
+  tuple into another keeps its index, since a name used once to rebuild
+  the same structure adds lines without explaining anything.
 - **Nesting.** Turn an `:IF` that wraps the rest of a procedure into an
   early `:RETURN` for the other case. Merge an `:IF` whose only statement
   is another `:IF` into one condition, clauses one per line.

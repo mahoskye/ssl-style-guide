@@ -95,7 +95,10 @@ as a question.
 
 One change at a time, in place, matching the file's existing style. Do not
 reformat the file. When a removal unwraps a block, move its body out one
-level and re-align any continuation lines inside it to their new position. After the last edit, run `ssl_diagnose`: zero errors and
+level and re-align any continuation lines inside it to their new position.
+When a removal leaves a `:DEFAULT` that only supplied the value the removed
+check handled (a `NIL` the code no longer accepts), remove the default
+too. After the last edit, run `ssl_diagnose`: zero errors and
 no warning that was not in the baseline. A removed guard often leaves an
 unused variable or an empty branch; remove those too.
 
