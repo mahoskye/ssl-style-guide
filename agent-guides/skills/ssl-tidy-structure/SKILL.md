@@ -27,7 +27,9 @@ The ones this step applies: `return_what_callers_use`,
 
 ## What to change
 
-Inside the file, where every caller is in the file:
+Inside the file, for procedures whose callers, per the note, are all in
+the file. A procedure the note shows no caller for anywhere in the searched
+scope is unused and goes.
 
 - **Envelopes nobody branches on.** A local procedure that never returns
   `.F.`, or whose callers never check the flag, returns its value directly;
@@ -43,10 +45,12 @@ Inside the file, where every caller is in the file:
 
 ## What only gets flagged
 
-The file's public surface is a contract with callers you may not see: its
-`:PARAMETERS`, its return shape, and any procedure called from outside. When
-the note shows a public parameter unused or a public result field unread,
-list it as a proposal with the callers that would change. Do not change it.
+Changes that reach other files: the file's `:PARAMETERS`, its return
+shape, and any procedure the note shows called from outside. When the note
+shows one of these unused or unread, list it as a proposal naming the
+callers that would change. Likewise for work the note lists under
+"Duplicated elsewhere": propose which file should own it and what the
+other one calls instead. This step edits only the target.
 
 ## How to edit
 

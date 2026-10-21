@@ -1,6 +1,6 @@
 ---
 name: ssl-tidy-verify
-description: Step 5 of 5 of the SSL cleanup sequence. Validates one cleaned-up SSL file against its baseline, re-reads it whole, and summarizes every change and its risk for the user's review. Read-only unless a check fails. Use only when the user invokes it on a file.
+description: Step 5 of 5 of the SSL cleanup sequence. Validates one cleaned-up SSL file against its baseline, re-reads it whole, checks that its concerns are separated, and summarizes every change and its risk for the user's review. Read-only unless a check fails. Use only when the user invokes it on a file.
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
@@ -33,6 +33,17 @@ names the line range you read.
 4. **Read it whole**, top to bottom, as the next maintainer would. Name
    anything still unclear, and anything the earlier steps made worse, such
    as a procedure now too long to follow.
+5. **Separation of concerns.** Use the note's "Responsibilities" section,
+   updated for what the earlier steps removed, and the rules
+   `script_size_review` and `procedure_length_review`. When the file has
+   more than about 400 code lines or 12 procedures, or a procedure over 80
+   code lines, and does more than one job, propose a split: which
+   responsibilities move, to a new script or to the file the note shows
+   already doing that work, which procedures go with each, and which
+   callers' three-part names change. A long file with one job, or a long
+   procedure that is one step, gets a sentence saying so. Propose only:
+   moving procedures changes names other files call, so the split is a
+   plan for `ssl-planner`, not an edit here.
 
 Do not reformat the file as part of this step. Running `ssl_format` over a
 file that already existed rewrites lines nobody changed; offer it as a
@@ -55,7 +66,12 @@ Safe changes:
   <count by step: guards n, structure n, comments n>
 
 Left as proposals:
-  <public-surface changes and open questions from steps 2-3>
+  <public-surface changes, cross-file duplicates and open questions
+   from steps 2-3>
+
+Separation of concerns:
+  <code lines, procedures, procedures over 80 code lines; then the
+   proposed split, or why the file is one job>
 ```
 
 Then suggest unit tests for the behavior changes (the `ssl-unit-test` skill),

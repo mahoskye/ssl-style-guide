@@ -49,6 +49,12 @@ Entries before this file existed are reconstructed from the release commits.
   `ssl-tidy-guards`, `ssl-tidy-structure`, `ssl-tidy-comments` and
   `ssl-tidy-verify`. They set `disable-model-invocation`, so they run only
   when invoked.
+- The context step searches the project, and the wider codebase when asked,
+  and treats the callers it finds as the callers. It records which checks
+  callers already make, work duplicated in other files, and the file's
+  responsibilities. Guards and structure act on that, proposing changes
+  that reach other files, and verify proposes a split when a file past the
+  size triggers does more than one job.
 
 ## MCP 1.17.2 — 2026-10-15
 
