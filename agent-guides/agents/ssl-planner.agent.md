@@ -5,7 +5,7 @@ description: >-
   ssl-developer executes — for new features and for behavior-preserving
   refactors alike. Surveys what already exists before designing anything.
   Does not write production SSL.
-version: 17
+version: 18
 mode: all
 argument-hint: "<feature, ticket, task brief, or refactor to plan> [target-spec-path]"
 model: inherit
