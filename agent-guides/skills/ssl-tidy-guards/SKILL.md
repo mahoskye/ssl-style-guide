@@ -47,17 +47,12 @@ The ones this step applies: `no_guard_for_impossible_state`,
 - A guarded write's `LimsRecordsAffected()` check.
 - A catch that is part of a public failure contract callers branch on.
 
-A test that calls a procedure directly is one of its callers. When a test
-exercises a check, removing the check means changing the test, so list it
-as a proposal naming the test instead of removing it.
-
 When you are unsure whether a state can happen, keep the code and list it
 as a question.
 
 ## How to edit
 
-One change at a time, in place, matching the file's existing style. Keep the file's
-line endings: in a CRLF file, every line you write ends in CRLF too. Do not
+One change at a time, in place, matching the file's existing style. Do not
 reformat the file. After the last edit, run `ssl_diagnose`: zero errors and
 no warning that was not in the baseline. A removed guard often leaves an
 unused variable or an empty branch; remove those too.
