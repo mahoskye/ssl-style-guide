@@ -47,6 +47,10 @@ The ones this step applies: `no_guard_for_impossible_state`,
 - A guarded write's `LimsRecordsAffected()` check.
 - A catch that is part of a public failure contract callers branch on.
 
+A test that calls a procedure directly is one of its callers. When a test
+exercises a check, removing the check means changing the test, so list it
+as a proposal naming the test instead of removing it.
+
 When you are unsure whether a state can happen, keep the code and list it
 as a question.
 
