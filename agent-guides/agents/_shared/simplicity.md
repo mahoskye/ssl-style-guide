@@ -28,8 +28,15 @@ toward wordy and defensive, so lean the other way:
 - **Document the real contract.** Describe a failure or empty result only
   when the code produces one. Comment only what the code cannot say.
 - **Build only what was asked.** No options or branches for later.
-- **Tests follow the code.** A test is never a reason to keep code. When
-  a check goes, the test that covered it changes or goes with it.
+- **One check, in the shared file.** When several scripts call one
+  script with the same values, that script owns the check; callers drop
+  their copies.
+- **Tests follow the code.** A test is never a reason to keep code. A test
+  case for removed behavior goes; a test of behavior that remains is
+  adapted, never deleted.
+- **Say what it means.** Name positional values when first read
+  (`nResultId := aRow[10]`), return early instead of nesting, name long
+  conditions, keep doc blocks to a sentence per part.
 
 A real guard stays: data that can be empty, input you do not control, a
 write that must be verified, a transaction that must finish.

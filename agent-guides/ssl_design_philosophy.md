@@ -51,6 +51,11 @@ procedures that receive it later trust its properties. Checking that a
 reloaded context still belongs to the current run is a different check, and
 it stays.
 
+**One check, in the file every path goes through.** When several scripts call a
+shared script with the same values, the check belongs in the shared script,
+once. The callers drop their copies, unless a caller needs the answer earlier to
+choose what to do.
+
 **Do not check for states that cannot happen.** A parameter your own code
 always passes, a type SSL already guarantees, an array you just built: none of
 these need a guard. A guard for an impossible state is not safety. It is a
@@ -83,8 +88,14 @@ stated.
 
 **Tests follow the code.** A test shows that the code does what it should; it
 is never the reason code exists. When a check is removed because nothing can
-fail it, the test that fed it impossible input changes or goes in the same
-change. What a test passes says nothing about what production callers send.
+fail it, the test case that fed it impossible input goes in the same change.
+A test of behavior that still exists is adapted to the new code, never deleted.
+What a test passes says nothing about what production callers send.
+
+**Make the code say what it means.** Name a position the first time you read
+it (`nResultId := aRow[10]`) instead of indexing it again three lines later.
+Return early instead of nesting. Give a long condition a name. Keep doc blocks
+short: what the procedure does and what the caller gets, a sentence each.
 
 None of this removes a guard that protects something real: data that can be
 empty, input you do not control, a write that must be verified, a transaction
