@@ -33,7 +33,10 @@ third route (for example, driving the MCP server by hand over stdio).
 
 1. **Diagnostics and formatting: the `starlims-lsp` command line**, on
    `PATH` or in the style guide's `ssl-mcp-server/bin/lsp/`. The MCP
-   tools are thin wrappers around it, so it gives the same answers.
+   tools are thin wrappers around it, so it gives the same answers. An
+   old build reads `--strict` as a file name: if the output names a
+   file called `--strict`, the binary is too old, and diagnostics count
+   as NOT RUN.
    - In place of `ssl_diagnose`:
      `starlims-lsp --validate --strict --info --hungarian-types <file>`.
      It prints JSON, one result per file, and exits 1 when any error is
