@@ -4,9 +4,6 @@ description: Step 5 of 5 of the SSL cleanup sequence. Validates one cleaned-up S
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
-metadata:
-  opencode/slash: "true"
-  opencode/autoinvoke: "false"
 ---
 
 # SSL cleanup, step 5 of 5: verify

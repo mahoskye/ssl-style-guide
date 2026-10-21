@@ -4,9 +4,6 @@ description: Step 3 of 5 of the SSL cleanup sequence. Removes structure nothing 
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
-metadata:
-  opencode/slash: "true"
-  opencode/autoinvoke: "false"
 ---
 
 # SSL cleanup, step 3 of 5: structure

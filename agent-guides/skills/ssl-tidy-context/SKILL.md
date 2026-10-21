@@ -4,9 +4,6 @@ description: Step 1 of 5 of the SSL cleanup sequence. Maps how one SSL file fits
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
-metadata:
-  opencode/slash: "true"
-  opencode/autoinvoke: "false"
 ---
 
 # SSL cleanup, step 1 of 5: context

@@ -4,9 +4,6 @@ description: Step 2 of 5 of the SSL cleanup sequence. Removes guards for states 
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
-metadata:
-  opencode/slash: "true"
-  opencode/autoinvoke: "false"
 ---
 
 # SSL cleanup, step 2 of 5: guards

@@ -4,9 +4,6 @@ description: Step 4 of 5 of the SSL cleanup sequence. Cuts comments in one SSL f
 argument-hint: "<file-path>"
 user-invocable: true
 disable-model-invocation: true
-metadata:
-  opencode/slash: "true"
-  opencode/autoinvoke: "false"
 ---
 
 # SSL cleanup, step 4 of 5: comments
