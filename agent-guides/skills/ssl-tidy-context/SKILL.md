@@ -43,7 +43,11 @@ SSL folders (stop at about ten searches, and say what you did not search):
   fields or array positions do they use? A field no caller reads is a
   candidate for step 3.
 - **What it calls.** Each `ExecFunction` target: in this workspace (its
-  contract is readable) or not. Each query: can it return no rows?
+  contract is readable) or not. Each query: can it return no rows? For a
+  built-in's behavior, such as what `LSearch` returns when nothing
+  matches, look it up with `ssl_lookup` or `ssl_signature` and record
+  the answer: questions in the note are for facts about the project, not
+  the language.
 - **Local procedures.** For each: its callers inside the file, and whether
   anything outside calls it by a three-part name.
 
