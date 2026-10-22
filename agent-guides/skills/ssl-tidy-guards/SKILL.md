@@ -94,13 +94,23 @@ as a question.
 ## How to edit
 
 One change at a time, in place, matching the file's existing style. Do not
-reformat the file. When a removal unwraps a block, move its body out one
-level and re-align any continuation lines inside it to their new position.
-When a removal leaves a `:DEFAULT` that only supplied the value the removed
-check handled (a `NIL` the code no longer accepts), remove the default
-too. After the last edit, run `ssl_diagnose`: zero errors and
-no warning that was not in the baseline. A removed guard often leaves an
-unused variable or an empty branch; remove those too.
+reformat the file; format only what you changed, as below. When a removal
+unwraps a block, move its body out one level and re-align any continuation
+lines inside it to their new position. When a removal leaves a `:DEFAULT`
+that only supplied the value the removed check handled (a `NIL` the code
+no longer accepts), remove the default too. After the last edit, run
+`ssl_diagnose`: zero errors and no warning that was not in the baseline. A
+removed guard often leaves an unused variable or an empty branch; remove
+those too.
+
+**Format what you changed.** For each procedure you edited, pass it to
+`ssl_format` as `code` (the whole procedure, from its doc block through
+`:ENDPROC;`; for the script's top-level code, from `:PARAMETERS` to the
+first procedure) and read how the formatter lays out the lines you
+changed. Make those lines match it: indentation, wrapping, spacing,
+continuation alignment. Leave every line you did not change as it is,
+even where the formatter would change it. Never write the formatter's
+output over the file.
 
 Append to the note's change log, one line per removal:
 

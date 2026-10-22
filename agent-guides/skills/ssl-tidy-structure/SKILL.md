@@ -60,14 +60,23 @@ tests.
 ## How to edit
 
 One change at a time, in place, matching the file's style. Do not reformat
-the file. When a change unwraps a block, move its body out one level and
-re-align any continuation lines inside it. Code you move, such as an
-inlined procedure body, counts as code you write: wrap it to the file's
-width (90 columns), with argument spacing as the file's other calls have
-it. Keep each procedure's behavior for every input the note says
-callers can send. After the last edit, run `ssl_diagnose`: zero errors and no
-warning that was not in the baseline. Check that every `DoProc` still names a
-procedure that exists.
+the file; format only what you changed, as below. When a change unwraps a
+block, move its body out one level and re-align any continuation lines
+inside it. Code you move, such as an inlined procedure body, counts as
+code you write: wrap it to the file's width (90 columns), with argument
+spacing as the file's other calls have it. Keep each procedure's behavior
+for every input the note says callers can send. After the last edit, run
+`ssl_diagnose`: zero errors and no warning that was not in the baseline.
+Check that every `DoProc` still names a procedure that exists.
+
+**Format what you changed.** For each procedure you edited, pass it to
+`ssl_format` as `code` (the whole procedure, from its doc block through
+`:ENDPROC;`; for the script's top-level code, from `:PARAMETERS` to the
+first procedure) and read how the formatter lays out the lines you
+changed. Make those lines match it: indentation, wrapping, spacing,
+continuation alignment. Leave every line you did not change as it is,
+even where the formatter would change it. Never write the formatter's
+output over the file.
 
 Append to the note's change log, one line per change:
 

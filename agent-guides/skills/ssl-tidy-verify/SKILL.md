@@ -49,12 +49,20 @@ names the line range you read.
    defense back in place. A test that still feeds a removed check is fixed by
    changing the test, never by restoring the check. Log each as
    `tests: <test file> - <case changed> - <for which removal>`.
-6. **Readability.** Read the file whole, top to bottom, as the next
+6. **Formatting.** For each procedure the log shows changed, run
+   `ssl_format` on it as `code` and compare the lines the steps changed
+   with the formatter's layout. A changed line laid out differently is
+   fixed to match, with the smallest edit, and logged as
+   `verify: formatted <what> at <procedure>`. Lines no step changed stay
+   as they are; the formatter's view of them is not this cleanup's
+   concern. The aim is that the cleanup never adds a line the formatter
+   would change.
+7. **Readability.** Read the file whole, top to bottom, as the next
    maintainer would, and compare it with the baseline. Name what reads
    better, anything still unclear, and anything the earlier steps made
    worse, such as a procedure now too long to follow or a doc block that
    grew.
-7. **Separation of concerns.** Use the note's "Responsibilities" section,
+8. **Separation of concerns.** Use the note's "Responsibilities" section,
    updated for what the earlier steps removed, and the rules
    `script_size_review` and `procedure_length_review`. When the file has
    more than about 400 code lines or 12 procedures, or a procedure over 80
@@ -95,6 +103,9 @@ Re-proved:
 Tests:
   <cases changed, cases deleted with the behavior each covered, cases
    brought back>
+
+Formatting:
+  <changed lines checked against ssl_format, and any fixed>
 
 Readability:
   <what reads better than the baseline, what is still unclear>

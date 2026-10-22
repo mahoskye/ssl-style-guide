@@ -67,6 +67,15 @@ One change at a time, in place. After the last edit, run `ssl_diagnose`:
 zero errors and no warning that was not in the baseline. A new local must
 pass `ssl_validate_naming`.
 
+**Format what you changed.** For each procedure you edited, pass it to
+`ssl_format` as `code` (the whole procedure, from its doc block through
+`:ENDPROC;`; for the script's top-level code, from `:PARAMETERS` to the
+first procedure) and read how the formatter lays out the lines you
+changed. Make those lines match it: indentation, wrapping, spacing,
+continuation alignment. Leave every line you did not change as it is,
+even where the formatter would change it. Never write the formatter's
+output over the file.
+
 Append to the note's change log, one line per change:
 
 ```text
