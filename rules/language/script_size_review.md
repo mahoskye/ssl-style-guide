@@ -1,17 +1,15 @@
 ---
 id: script_size_review
-title: A large server script is a prompt to check its responsibilities
+title: Aim for server scripts of about 400 code lines
 domain: language
 status: active
-level: advisory
+level: style_only
 severity: info
 applies_to: [server_script]
 rule: >-
-  Aim for server scripts of up to about 200 code lines with at most one local
-  procedure; treat a server script with more than 400 code lines or more than 12 local
-  procedures as a prompt to check its responsibilities: organize it into
-  responsibility-based regions first, and move a responsibility to a separate
-  script only when it is reusable on its own or independently owned.
+  Aim for server scripts of about 400 code lines; past 400 code lines or 12
+  local procedures, check its responsibilities and move each one that stands
+  alone into its own script.
 categories: [module-structure]
 related_elements: [REGION, DoProc, ExecFunction]
 enforced_by: [lsp:diag.script_size_review]
@@ -21,8 +19,6 @@ schema:
     value:
       max_code_lines: 400
       max_local_procedures: 12
-      ideal_code_lines: 200
-      ideal_local_procedures: 1
 verification:
   basis: observed
   note: >-
@@ -42,56 +38,53 @@ verification:
     already organized into regions, like the Good example; how to organize
     the script, and the 200-line ideal, stay a reviewer's judgment. The
     examples stay text, since a fence large enough to draw the diagnostic
-    would bury the point.
+    would bury the point. Revised 2026-10-22 under program decision 0006:
+    the 400-line target replaces the 200-line ideal, splitting a
+    responsibility out no longer waits for reuse, and the hard limit is
+    script_size_ceiling.
 ---
 
 ## Rationale
 
-Most server scripts are small. In STARLIMS 12's own base layer the median
-script has 21 code lines, the 95th percentile about 200, and most scripts have
-no local procedures at all; the few large scripts are nearly always broken
-into procedures. That shape, up to about 200 code lines with zero or one local
-procedure, is the one to aim for. Code written on top of the product tends to
-run larger, so the review trigger is deliberately generous: a script past 400
-code lines or 12 local procedures is well beyond the product's own top of
-normal and likely holds more than one responsibility. Regions that group related
-procedures by responsibility make such a script navigable without changing how
-it runs. Moving a responsibility to its own script has a cost: a call through
-`ExecFunction` resolves its string target at run time and crosses into a
-separate deployment unit, where a local `DoProc` stays inside the file. Pay
-that cost only for a responsibility that is reusable on its own or owned
-independently.
+Size costs time in STARLIMS whenever a script has to be loaded. The server
+compiles the whole script, `:INCLUDE`d code and all, even when a caller
+needs one procedure. Once loaded it stays in memory, so the cost falls on
+the first use after a start, on every script after a check-in in production
+mode, which resets the application, and on every save while developing,
+which recompiles the saved script. A small script loads and recompiles
+quickly; a 200 KB one makes every one of those moments slow.
+
+Size also limits the agents that write and review the code: their reads
+stop at about 50 KB, so a larger script is never seen whole at once, and a
+review of part of a file misses what the rest depends on.
+
+Most of STARLIMS 12's own scripts are small: the median has 21 code lines
+and the 95th percentile about 200. A script past 400 code lines or 12 local
+procedures usually holds more than one responsibility. Moving one into its
+own script costs one `ExecFunction` per call, which is small once both
+scripts are loaded, against a smaller unit to load, recompile and read.
 
 ## Exceptions
 
-The 200-line, one-procedure shape is a target, and the 400-line,
-12-procedure numbers are review triggers; neither is a limit. Never split a script only to get
-under them, and never collapse distinct responsibilities or remove
-demonstrated guards to shorten it.
+The 400-line target is a target; `script_size_ceiling` sets the limit. Split by
+responsibility, not by line count: do not scatter one flow across many tiny
+scripts called in a loop, and never collapse distinct responsibilities or
+remove demonstrated guards to get under a number.
 
 ## Examples
 
 ### Good
 
 ```text
-/* 520 code lines, 15 local procedures, grouped by responsibility;
-:REGION Main;
-	...
-:ENDREGION;
-:REGION Validation;    /* 4 procedures;
-	...
-:ENDREGION;
-:REGION Persistence;    /* 5 procedures;
-	...
-:ENDREGION;
-:REGION Notification;    /* 6 procedures;
-	...
-:ENDREGION;
+/* QCCRunContext: 380 code lines, 9 procedures, 31 KB; one job: building
+   and authenticating the run context. Its callers load only this;
 ```
 
 ### Bad
 
 ```text
-/* 520 code lines and 15 local procedures in call order, with validation,
-   persistence and notification procedures interleaved and no regions;
+/* subrouter_qcc: 6,249 lines, 123 procedures, 225 KB; routing, primer
+   ordering, ingest, fetch, run context, branch submission and target
+   inventory in one script. A 9-line path check other scripts call loads
+   all of it;
 ```

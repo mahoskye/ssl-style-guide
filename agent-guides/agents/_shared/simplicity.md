@@ -25,6 +25,10 @@ toward wordy and defensive, so lean the other way:
 - **Add structure when it pays**: a state object when shared state
   outgrows a few parameters, a helper when it names a real step or has a
   second caller. A short script stays linear.
+- **Keep scripts small**: under 50 KB, aiming for about 400 code lines,
+  split by responsibility. A procedure other scripts call lives in a
+  small script, not a large one. Banner history keeps its latest three
+  entries.
 - **Document the real contract.** Describe a failure or empty result only
   when the code produces one. Comment only what the code cannot say.
 - **Build only what was asked.** No options or branches for later.

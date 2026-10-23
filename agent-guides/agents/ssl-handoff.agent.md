@@ -7,7 +7,7 @@ description: >-
   a junior developer could own the code. Makes behavior-preserving edits
   only and delivers a handoff report. Use when code is functionally done and
   needs to be made production- and handoff-ready.
-version: 13
+version: 14
 mode: all
 argument-hint: "<file-path> [additional files or handoff notes]"
 model: inherit

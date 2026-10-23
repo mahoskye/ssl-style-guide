@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 294,
+  "count": 297,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -3989,28 +3989,28 @@
     },
     {
       "id": "script_size_review",
-      "title": "A large server script is a prompt to check its responsibilities",
+      "title": "Aim for server scripts of about 400 code lines",
       "domain": "language",
       "status": "active",
-      "level": "advisory",
+      "level": "style_only",
       "severity": "info",
       "applies_to": [
         "server_script"
       ],
-      "rule": "Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.",
-      "rationale": "Most server scripts are small. In STARLIMS 12's own base layer the median\nscript has 21 code lines, the 95th percentile about 200, and most scripts have\nno local procedures at all; the few large scripts are nearly always broken\ninto procedures. That shape, up to about 200 code lines with zero or one local\nprocedure, is the one to aim for. Code written on top of the product tends to\nrun larger, so the review trigger is deliberately generous: a script past 400\ncode lines or 12 local procedures is well beyond the product's own top of\nnormal and likely holds more than one responsibility. Regions that group related\nprocedures by responsibility make such a script navigable without changing how\nit runs. Moving a responsibility to its own script has a cost: a call through\n`ExecFunction` resolves its string target at run time and crosses into a\nseparate deployment unit, where a local `DoProc` stays inside the file. Pay\nthat cost only for a responsibility that is reusable on its own or owned\nindependently.",
-      "exceptions": "The 200-line, one-procedure shape is a target, and the 400-line,\n12-procedure numbers are review triggers; neither is a limit. Never split a script only to get\nunder them, and never collapse distinct responsibilities or remove\ndemonstrated guards to shorten it.",
+      "rule": "Aim for server scripts of about 400 code lines; past 400 code lines or 12 local procedures, check its responsibilities and move each one that stands alone into its own script.",
+      "rationale": "Size costs time in STARLIMS whenever a script has to be loaded. The server\ncompiles the whole script, `:INCLUDE`d code and all, even when a caller\nneeds one procedure. Once loaded it stays in memory, so the cost falls on\nthe first use after a start, on every script after a check-in in production\nmode, which resets the application, and on every save while developing,\nwhich recompiles the saved script. A small script loads and recompiles\nquickly; a 200 KB one makes every one of those moments slow.\n\nSize also limits the agents that write and review the code: their reads\nstop at about 50 KB, so a larger script is never seen whole at once, and a\nreview of part of a file misses what the rest depends on.\n\nMost of STARLIMS 12's own scripts are small: the median has 21 code lines\nand the 95th percentile about 200. A script past 400 code lines or 12 local\nprocedures usually holds more than one responsibility. Moving one into its\nown script costs one `ExecFunction` per call, which is small once both\nscripts are loaded, against a smaller unit to load, recompile and read.",
+      "exceptions": "The 400-line target is a target; `script_size_ceiling` sets the limit. Split by\nresponsibility, not by line count: do not scatter one flow across many tiny\nscripts called in a loop, and never collapse distinct responsibilities or\nremove demonstrated guards to get under a number.",
       "examples": {
         "good": [
           {
             "lang": "text",
-            "code": "/* 520 code lines, 15 local procedures, grouped by responsibility;\n:REGION Main;\n\t...\n:ENDREGION;\n:REGION Validation;    /* 4 procedures;\n\t...\n:ENDREGION;\n:REGION Persistence;    /* 5 procedures;\n\t...\n:ENDREGION;\n:REGION Notification;    /* 6 procedures;\n\t...\n:ENDREGION;\n"
+            "code": "/* QCCRunContext: 380 code lines, 9 procedures, 31 KB; one job: building\n   and authenticating the run context. Its callers load only this;\n"
           }
         ],
         "bad": [
           {
             "lang": "text",
-            "code": "/* 520 code lines and 15 local procedures in call order, with validation,\n   persistence and notification procedures interleaved and no regions;\n"
+            "code": "/* subrouter_qcc: 6,249 lines, 123 procedures, 225 KB; routing, primer\n   ordering, ingest, fetch, run context, branch submission and target\n   inventory in one script. A 9-line path check other scripts call loads\n   all of it;\n"
           }
         ]
       },
@@ -4031,6 +4031,51 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/script_size_review.md"
+    },
+    {
+      "id": "script_size_ceiling",
+      "title": "Keep every script under 50 KB",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source",
+        "sql_data_source"
+      ],
+      "rule": "Keep every server script, class and data source under 50 KB, test scripts included; split a larger one by responsibility until each part fits.",
+      "rationale": "STARLIMS compiles a script as one unit, with its `:INCLUDE`d code, even when\na caller needs a single procedure. A loaded script stays in memory, so the\nsize shows up whenever it must be loaded again: the first use after a start,\nevery script after a check-in in production mode, which resets the\napplication, and the saved script on every save during development. A large\nscript makes each of those slow. The agents that write and review SSL read\nat most about 50 KB at a time, so a larger script is never seen whole, and a\nchange judged from part of a file can break what the rest depends on.",
+      "exceptions": "None for size alone. A script that is large because it repeats code another\nscript has shrinks by moving that code to its owner first; one that is large\nbecause it does several jobs splits by job.",
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "subrouter_qcc split by job: routing and stage handlers 70 KB -> 45 KB after\ncleanup; run context 31 KB; branch submission 14 KB; primer ordering 22 KB.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "subrouter_qcc: 225 KB in one script; every production check-in makes the\nnext QCC job load and compile all of it.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [
+        "ExecFunction",
+        "INCLUDE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/script_size_ceiling.md"
     },
     {
       "id": "return_early_on_invalid",
@@ -8570,6 +8615,92 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/banner_descriptions_operational.md"
+    },
+    {
+      "id": "shared_helpers_in_small_scripts",
+      "title": "Procedures other scripts call live in small scripts",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Put a procedure that other scripts call in a script small enough for that use; never make callers load a large script to run a few lines, and move a shared helper out of a large script into a small one of its own.",
+      "rationale": "Calling `ExecFunction(\"Category.Script.Procedure\")` loads and compiles the\nwhole script, however small the procedure. A helper other scripts use is a\nreason for them to load its script, so its script should be no bigger than\nwhat callers need.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "IsRunPathComponent (9 lines) lives in QCCPaths (40 lines), which\nQCCPrepareIngestionSource and subrouter_qcc both call.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "QCCPrepareIngestionSource calls subrouter_qcc.IsRunPathComponent, a 9-line\ncheck inside a 6,249-line script.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure",
+        "simplicity"
+      ],
+      "related_elements": [
+        "ExecFunction",
+        "DoProc"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/shared_helpers_in_small_scripts.md"
+    },
+    {
+      "id": "banner_history_three_entries",
+      "title": "Keep the three most recent modification entries",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source",
+        "sql_data_source"
+      ],
+      "rule": "Keep the banner's modification history to the three most recent entries; delete older entries rather than rewriting them, since source control keeps the full history.",
+      "rationale": "A change history in the banner grows with every edit and is loaded with the\nscript each time it loads. The latest few entries tell a maintainer what\nchanged recently; the rest belongs in source control.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "The banner's three latest modification blocks (ticket, change, author,\ndate), newest last.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "A banner with 30 modification blocks covering three years of changes.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_history_three_entries.md"
     },
     {
       "id": "no_speculative_options",
