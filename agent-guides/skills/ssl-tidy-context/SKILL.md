@@ -85,8 +85,10 @@ search):
   Record both places: one of them should own it.
 - **Responsibilities.** The separate jobs the file does, one line each,
   with the procedures that do each. Count its code lines (blank and comment
-  lines excluded) and procedures, and name every procedure over 80 code
-  lines.
+  lines excluded) and procedures, give its size in KB, and name every
+  procedure over 80 code lines. List the procedures other scripts call,
+  with their length: a short helper others load a large script for is a
+  candidate to move into a small script.
 
 Run `ssl_diagnose` on the file and keep the result as the baseline. Record
 its line count.
@@ -128,7 +130,8 @@ Not searched: <places you could not see, or "none">
 <work> - here at <procedure> and at <file:line>
 
 ## Responsibilities
-Code lines: <n>  Procedures: <n>  Over 80 code lines: <names, or none>
+Code lines: <n>  Procedures: <n>  Size: <n> KB  Over 80 code lines: <names, or none>
+Called from other scripts: <procedure> (<n> lines) - <callers>
 <responsibility> - <procedures>
 
 ## Baseline

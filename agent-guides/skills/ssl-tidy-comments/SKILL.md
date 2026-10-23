@@ -59,8 +59,10 @@ Load `comments_explain_why` and `document_real_outcomes_only` with
 - **Region comments** (`/* region ...;`) stay when they group a long file;
   in a short one they go.
 
-Do not add comments. Do not touch the `Author`, `Date` or `Modified` lines,
-except to add one `Modified` line if the project's banners use them.
+Do not add comments. Keep the banner's modification history to its three
+most recent entries (`banner_history_three_entries`): delete older entries
+whole and never rewrite one. Leave the remaining entries' `Author` and
+`Date` lines as they are.
 
 ## How to edit
 

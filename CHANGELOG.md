@@ -60,6 +60,10 @@ Entries before this file existed are reconstructed from the release commits.
   `ssl-tidy-comments` and `ssl-tidy-verify` (re-proves every change against
   the code and checks tests and readability against the baseline). They set `disable-model-invocation`, so they run only
   when invoked.
+- The cleanup sequence follows decision 0006: the context step records each
+  file's size and the procedures other scripts call, the comments step keeps
+  the latest three history entries, and verify proposes a split for any file
+  over 50 KB and a move for shared helpers inside large files.
 - The context step searches the project, and the wider codebase when asked,
   and treats the callers it finds as the callers. It records which checks
   callers already make, work duplicated in other files, and the file's

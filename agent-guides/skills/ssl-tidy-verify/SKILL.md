@@ -64,9 +64,13 @@ names the line range you read.
    grew.
 8. **Separation of concerns.** Use the note's "Responsibilities" section,
    updated for what the earlier steps removed, and the rules
-   `script_size_review` and `procedure_length_review`. When the file has
-   more than about 400 code lines or 12 procedures, or a procedure over 80
-   code lines, and does more than one job, propose a split: which
+   `script_size_ceiling`, `script_size_review`, `procedure_length_review`
+   and `shared_helpers_in_small_scripts`. A file over 50 KB always gets a
+   split proposal. A short helper other scripts call that lives in a file
+   past about 400 code lines gets a proposal to move it into a small
+   script. When the file has more than about 400 code lines or 12
+   procedures, or a procedure over 80 code lines, and does more than one
+   job, propose a split: which
    responsibilities move, to a new script or to the file the note shows
    already doing that work, which procedures go with each, and which
    callers' three-part names change. A long file with one job, or a long
