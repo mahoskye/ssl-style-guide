@@ -397,6 +397,9 @@ categories:
       - banner_success_failure_labels
       - banner_special_result_first
       - banner_descriptions_operational
+      - script_size_ceiling
+      - shared_helpers_in_small_scripts
+      - banner_history_three_entries
   - id: simplicity
     lists_from_rules: true
     order:
@@ -412,3 +415,5 @@ categories:
       - no_speculative_options
       - document_real_outcomes_only
       - comments_explain_why
+
+      - shared_helpers_in_small_scripts

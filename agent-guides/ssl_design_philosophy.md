@@ -79,6 +79,16 @@ positional parameters or repeated checks are the bigger cost. A short script
 stays a short linear script. Wait for the second real use before extracting a
 shared helper, and the third before generalising it.
 
+**Keep scripts small.** STARLIMS loads and compiles a script whole: on first
+use, for every script after a check-in in production mode, and on every save
+while developing. A large script makes each of those slow, and the agents
+that write and review SSL read at most about 50 KB at a time. Keep every
+script under 50 KB and aim for about 400 code lines; split a script by
+responsibility when it grows past that. A procedure other scripts call lives
+in a script sized for that use, never inside a large one callers must load
+for a few lines. Keep only the latest three entries of the banner's change
+history.
+
 **Document the real contract.** The banner and doc block state what the caller
 gets. Describe a failure result or an empty case only when the code has one.
 Do not invent failure modes to fill the template.

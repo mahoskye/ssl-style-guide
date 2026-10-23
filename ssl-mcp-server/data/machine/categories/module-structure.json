@@ -11,7 +11,8 @@
     "One file should represent either a class definition, a script, or a data source.",
     "Place :INCLUDE early — it textually includes the referenced source before the script runs.",
     "Recommended script order is :PARAMETERS, :DEFAULT, :INCLUDE, :PUBLIC, :DECLARE.",
-    ":PARAMETERS must appear before any other statements in a script or procedure body."
+    ":PARAMETERS must appear before any other statements in a script or procedure body.",
+    "Put a procedure that other scripts call in a script small enough for that use; never make callers load a large script to run a few lines, and move a shared helper out of a large script into a small one of its own."
   ],
   "avoid": [],
   "elements": [

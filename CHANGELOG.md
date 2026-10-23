@@ -28,6 +28,15 @@ Entries before this file existed are reconstructed from the release commits.
   by looking for the caller that would need the code.
 
 ### Changed
+- Script size is a limit, not only a review trigger (program decision 0006):
+  new `script_size_ceiling` keeps every script, class and data source under
+  50 KB; `script_size_review` aims for about 400 code lines and no longer
+  waits for reuse before splitting a responsibility out; new
+  `shared_helpers_in_small_scripts` and `banner_history_three_entries`. The
+  philosophy page and the agents' simplicity section carry the rule, and the
+  reviewer reports oversized scripts. STARLIMS compiles a script whole, so
+  size costs time on first use, after every production check-in, and on
+  every development save.
 - `validate_results_before_access` now asks for a success-flag check
   always and a shape check only for producers outside the caller's control.
 - `state_object_for_multistep` applies only when shared state outgrows a few

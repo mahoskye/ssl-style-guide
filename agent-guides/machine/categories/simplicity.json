@@ -17,7 +17,8 @@
     "Return the plain value when callers only use the value; use a success/failure envelope only when a caller branches on the outcome, and add no result field that no caller reads.",
     "Inline a local procedure that has one caller and hides less than its call costs to read; extract a procedure when it names a real step of the work or has a second caller.",
     "In a banner or doc block, describe a failure result or an empty case only when the code produces one; do not add outcomes to fill the template.",
-    "Comments explain purpose, ownership, safety consequences, replay behavior, or a non-obvious ordering requirement; do not narrate assignments or restate syntax."
+    "Comments explain purpose, ownership, safety consequences, replay behavior, or a non-obvious ordering requirement; do not narrate assignments or restate syntax.",
+    "Put a procedure that other scripts call in a script small enough for that use; never make callers load a large script to run a few lines, and move a shared helper out of a large script into a small one of its own."
   ],
   "avoid": [
     "Do not check for a state the code already rules out: a parameter every caller passes, a type SSL or the producer guarantees, a value already checked upstream, or the result of a procedure in the same file.",

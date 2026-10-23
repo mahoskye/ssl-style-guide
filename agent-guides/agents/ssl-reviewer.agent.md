@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 21
+version: 22
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -86,7 +86,8 @@ element exists or checking a signature.
    state the code rules out, a `:TRY` that cannot act, an envelope or
    field no caller reads, a single-use shallow helper, a speculative
    parameter, a comment that narrates, a doc block promising an outcome
-   the code never produces. Name the rule id and, for a guard, the
+   the code never produces, a script over 50 KB, a helper other scripts
+   call that lives in a large script. Name the rule id and, for a guard, the
    callers or upstream check that make the state impossible.
 6. Resolve every call target: any `DoProc` with no matching
    `:PROCEDURE` in the same file, any `ExecFunction` root you cannot
