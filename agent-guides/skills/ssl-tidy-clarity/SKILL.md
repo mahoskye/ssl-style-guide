@@ -36,7 +36,9 @@ and report the ones you looked at and left as they were.
   the same structure adds lines without explaining anything.
 - **Nesting.** Turn an `:IF` that wraps the rest of a procedure into an
   early `:RETURN` for the other case. Merge an `:IF` whose only statement
-  is another `:IF` into one condition, clauses one per line.
+  is another `:IF` into one condition, clauses one per line. Both only
+  when no `:ELSE` is involved: an `:ELSE` on either `:IF` changes which
+  branch runs, so leave that shape as it is.
 - **Long conditions.** Name a condition only when the name says something
   the clauses do not: the business rule behind them, used in more than one
   place or buried inside a larger expression. An `:IF` whose whole
