@@ -46,6 +46,31 @@ Entries before this file existed are reconstructed from the release commits.
 - `ssl-developer` writes a design file for new scripts and procedures only;
   changes inside existing procedures verify signatures and translate
   directly.
+- Agents reach rules through the `ssl-reference` MCP tools and skills by
+  name, so they work in a workspace without this repository; its narrative
+  guides are optional depth when it is open.
+- `tools/deploy-skills.mjs` also installs the skills to `~/.claude/skills/`,
+  which VS Code Copilot, opencode and Claude Code all read.
+
+### Added (cleanup sequence)
+- Six user-invoked skills that clean up one SSL file a step at a time:
+  `ssl-tidy-context` (maps callers and inputs into a context note),
+  `ssl-tidy-guards`, `ssl-tidy-structure`, `ssl-tidy-clarity` (names
+  positional values, flattens nesting where no `:ELSE` is involved, names
+  long conditions),
+  `ssl-tidy-comments` and `ssl-tidy-verify` (re-proves every change against
+  the code and checks tests and readability against the baseline). They set `disable-model-invocation`, so they run only
+  when invoked.
+- The cleanup sequence follows decision 0006: the context step records each
+  file's size and the procedures other scripts call, the comments step keeps
+  the latest three history entries, and verify proposes a split for any file
+  over 50 KB and a move for shared helpers inside large files.
+- The context step searches the project, and the wider codebase when asked,
+  and treats the callers it finds as the callers. It records which checks
+  callers already make, work duplicated in other files, and the file's
+  responsibilities. Guards and structure act on that, proposing changes
+  that reach other files, and verify proposes a split when a file past the
+  size triggers does more than one job.
 
 ## MCP 1.17.2 — 2026-10-15
 

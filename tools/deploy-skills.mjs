@@ -5,6 +5,12 @@
  * directories where each tool discovers them:
  *   - .claude/skills/    Claude Code — and opencode, via its Claude-compat
  *                        discovery, which is the ONLY opencode path we use.
+ *   - ~/.claude/skills/  The same, at user level, so the skills load in any
+ *                        workspace. VS Code Copilot reads it as a personal
+ *                        skills folder; opencode 1.19.3 loads it as an
+ *                        external skill folder (verified with
+ *                        `opencode debug skill`, 2026-10-21). Only skills
+ *                        named in agent-guides/skills/ are replaced there.
  *
  * Do NOT deploy to .opencode/skills/: with opencode 1.18.14 its presence
  * hangs every `opencode run --agent` session before first output
@@ -17,6 +23,7 @@
  */
 
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'fs';
+import { homedir } from 'os';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -25,6 +32,7 @@ const REPO_ROOT = resolve(__dirname, '..');
 const CANONICAL = resolve(REPO_ROOT, 'agent-guides/skills');
 const TARGETS = [
   resolve(REPO_ROOT, '.claude/skills'),
+  resolve(homedir(), '.claude/skills'),
 ];
 const CHECK_ONLY = process.argv.includes('--check');
 

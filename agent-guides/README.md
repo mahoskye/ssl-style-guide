@@ -49,7 +49,7 @@ The MCP server also bundles these files and exposes them through
 
 ## Skills
 
-`skills/` contains nine SSL workflow skills, each a `SKILL.md` with frontmatter
+`skills/` contains fifteen SSL workflow skills, each a `SKILL.md` with frontmatter
 plus step-by-step instructions:
 
 - `ssl-lookup` — look up a function signature, class member, or keyword
@@ -61,11 +61,14 @@ plus step-by-step instructions:
 - `ssl-new-class` — scaffold a new SSL class
 - `ssl-new-datasource` — scaffold a new SSL or SQL data source
 - `ssl-unit-test` — write unit tests as SSL procedures the user runs in STARLIMS
+- `ssl-tidy-context` → `ssl-tidy-guards` → `ssl-tidy-structure` →
+  `ssl-tidy-clarity` → `ssl-tidy-comments` → `ssl-tidy-verify` — a cleanup sequence for one file,
+  invoked by the user one step at a time. Step 1 writes a context note
+  (`design/<FileName>.tidy.md`) that the later steps rely on.
 
-In Claude Code and opencode these are registered skills an agent can invoke
-directly (`bun tools/deploy-skills.mjs` installs them into `.claude/skills/`,
-which both discover); in other tools they are Markdown files an agent reads and
-follows. `bun tools/check-skill-examples.mjs` checks that every SSL example in a
+`bun tools/deploy-skills.mjs` installs them into `.claude/skills/` and
+`~/.claude/skills/`. VS Code Copilot, opencode and Claude Code all discover the
+user-level copy, so the skills load in any workspace, not only this one. `bun tools/check-skill-examples.mjs` checks that every SSL example in a
 skill is formatted and validates clean under the strict agent profile.
 
 ## Agents

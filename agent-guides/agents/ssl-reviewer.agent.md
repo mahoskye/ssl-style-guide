@@ -5,7 +5,7 @@ description: >-
   server-script baseline, and language rules, then adversarially verifies
   its own findings before reporting them. Read-only — never modifies files.
   Use to review, lint, or check SSL code quality.
-version: 20
+version: 22
 mode: all
 argument-hint: "<file-path> [focus]"
 model: inherit
@@ -55,7 +55,7 @@ the report. A finding you could not defend is not a finding.
 
 ## Workflow skills
 
-Read `agent-guides/skills/ssl-review/SKILL.md` at the start of every
+Load the `ssl-review` skill at the start of every
 review and follow it — it defines the check categories, file-type
 handling, output format, and the **Severity rubric** that sets the
 severity of every finding. Read `ssl-lookup` before confirming any

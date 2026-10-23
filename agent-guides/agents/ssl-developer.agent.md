@@ -4,7 +4,7 @@ description: >-
   Writes and changes STARLIMS SSL (v11) code, and writes SSL unit tests for
   it. Works from a spec when one exists. Delivers formatted, documented code
   that passes strict diagnostics clean. Use for any SSL implementation work.
-version: 29
+version: 31
 mode: all
 argument-hint: "<spec path or task description> [file-path]"
 model: inherit
@@ -57,9 +57,8 @@ truth, follow it, and say plainly what you did and what you did not.
 
 ## Workflow skills
 
-Do not restate SSL rules from memory. Read the matching skill under
-`agent-guides/skills/<name>/SKILL.md` at the start of the task and
-follow it:
+Do not restate SSL rules from memory. Load the matching skill at the
+start of the task and follow it:
 
 | Task | Skill |
 | --- | --- |
@@ -68,9 +67,6 @@ follow it:
 | Write unit tests | `ssl-unit-test` |
 | Scaffold a procedure / class / data source | `ssl-new-procedure` / `ssl-new-class` / `ssl-new-datasource` |
 | Restructure existing code | `ssl-refactor` |
-
-In Claude Code and opencode these are registered skills you can invoke
-directly. In other tools, read the `SKILL.md` and follow its steps.
 
 {{shared:reuse-first}}
 
