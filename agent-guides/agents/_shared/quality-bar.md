@@ -6,20 +6,15 @@ lines and invalidates the line numbers in an earlier run.
 
 **1. Formatted — scoped to what you wrote.**
 
-`ssl_format` is whole-file, and on legacy SSL that is not a small
-change: across 298 real files, 93% changed under the formatter and 72%
-had more than half their lines rewritten. So the rule depends on what
-you touched:
+`ssl_format` is whole-file, and on legacy SSL it rewrites most lines.
+So the rule depends on what you touched:
 
 - **A file you created**: run `ssl_format` on it. Unformatted new code
-  is an unfinished task. Copy the formatter's shape — tab-indented
-  procedure bodies — rather than handing back a flat block.
+  is an unfinished task.
 - **A file that already existed**: do **not** reformat it wholesale as a
-  side effect of a small change. A one-line fix inside a thousand-line
-  reformat is a change nobody can review, and it is the same
-  unreadable-diff problem as handing back a regenerated file. Match the
-  surrounding style by hand, and say in your report that you did not
-  reformat.
+  side effect of a small change; nobody can review a one-line fix inside
+  a thousand-line reformat. Match the surrounding style by hand, and say
+  in your report that you did not reformat.
 - **Reformatting is its own task.** When the job actually is to format a
   file — a handoff pass, or the user asking for it — run the formatter
   over the whole file and say so plainly, so the diff is expected.
@@ -44,13 +39,13 @@ you deliberately did not reformat an existing file. "Formatted the file"
 with nothing behind it does not satisfy this condition.
 
 **2. Documented.** <!-- rule: file_banner_required -->Open every server script and class file with the standard file banner, using the dot-leader fields `Description`, `Parameters`, `Returns`, `Author` and `Date`.<!-- /rule -->
-Every procedure carries a doc block stating purpose, parameters, and
-what the caller receives on success, on failure, and on the empty case.
-Inside the body, comment the *why* wherever the logic is non-obvious —
-especially at SSL traps a reader will misread (`=` versus `==` string
-semantics, `:BEGINCASE` fallthrough, `Me:` field qualification,
-transaction ownership). Write the comments a careful developer leaves
-behind, not a restatement of the line below. Comment syntax:
+Every nontrivial procedure carries a doc block stating purpose,
+parameters, and what the caller receives, including a failure or empty
+result only when the code produces one. Inside the body, comment the
+*why* only where the logic is non-obvious, such as an SSL trap a reader
+will misread (`=` versus `==` string semantics, `:BEGINCASE`
+fallthrough, `Me:` field qualification, transaction ownership). Code
+that reads clearly gets no comment. Comment syntax:
 
 <!-- rules: id=no_c_style_comment_closer,no_semicolon_in_comment_text wrap=72 -->
 - `*/` comment closers: an SSL comment opens with `/*` and ends at the
@@ -63,12 +58,9 @@ behind, not a restatement of the line below. Comment syntax:
 **3. Diagnostically clean — against a baseline.**
 
 Run `ssl_diagnose` on each target file **before you edit it** and keep
-that output. That is the baseline. Most real files carry pre-existing
-findings: across a 1,923-file corpus, 23% of the files with no errors
-still reported at least one warning, the worst of them 40. Fixing
-unrelated findings in a file you were asked to make one change to is
-scope creep, and scope creep in code you have not read is how behavior
-breaks.
+that output. That is the baseline. Many real files carry pre-existing
+warnings, and fixing unrelated findings in code you have not read is
+scope creep that breaks behavior.
 
 So the bar is:
 

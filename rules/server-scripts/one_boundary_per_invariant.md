@@ -11,7 +11,8 @@ rule: >-
   downstream only when it protects a distinct local use, enforces a stronger
   invariant, receives independently supplied data, or defends an
   independently deployed public contract.
-categories: [error-handling]
+categories: [error-handling, simplicity]
+machine: { list: must_follow }
 enforced_by: [reviewer]
 verification:
   basis: convention

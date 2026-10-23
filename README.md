@@ -98,6 +98,9 @@ adopted.
 
 ## Canonical Sources
 
+- `agent-guides/ssl_design_philosophy.md`
+  Why the rules are what they are, and which wins when two conflict: clarity
+  and simplicity first, product style second. Read it before the rules.
 - `ssl-style-guide/ssl-style-guide.schema.yaml`
   Main machine-readable style guide. It distinguishes authoritative language
   behavior from style guidance and advisory guidance.

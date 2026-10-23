@@ -21,6 +21,8 @@ before relying on them.
 
 Use this guide as the shared baseline for STARLIMS SSL server scripts. Preserve each script's public contract and business behavior unless the task explicitly changes them. More narrowly scoped instruction files may add domain-specific contracts and preferred reference implementations.
 
+The patterns below (envelopes, state objects, shape checks, failure capture) are tools for scripts that need them, not a template for every script. `ssl_design_philosophy.md` sets the priorities: a short linear script with one check at its entry point is the default, and each pattern here has to earn its place.
+
 ## Necessity And Proportionality
 
 For every nontrivial procedure, result field, validation layer, side effect, or external dependency added during implementation or review, answer these questions before editing:
@@ -34,7 +36,7 @@ A valid finding does not automatically justify a new abstraction in the file whe
 
 Do not validate merely because another predicate can be added. For each validation, identify the unsafe operation, demonstrated failure, or explicit contract it protects and the first authoritative boundary that can establish the invariant. Before repeating a check downstream, ask whether the same value has already been validated and whether it can change, be bypassed, arrive through another entry point, or require a stronger local invariant. Remove the repeated check when none applies. Independently deployed consumers may validate another script's public result contract, but they should not duplicate that script's internal input validation.
 
-Treat material growth in responsibilities, public result shapes, local procedures, or dependencies as a signal to stop and reassess ownership. Compare the proposed design with the nearest working implementation and explain which required behavior justifies each added concern. Line count and procedure count are review triggers, not acceptance limits. <!-- rule: procedure_length_review -->Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.<!-- /rule --> <!-- rule: script_size_review -->Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.<!-- /rule --> Calling across scripts with `ExecFunction` costs more than a local `DoProc`: the string target is resolved at run time and the callee is a separate deployment unit. Do not remove demonstrated guards or collapse distinct responsibilities merely to make a file shorter.
+Treat material growth in responsibilities, public result shapes, local procedures, or dependencies as a signal to stop and reassess ownership. Compare the proposed design with the nearest working implementation and explain which required behavior justifies each added concern. Line count and procedure count are review triggers, not acceptance limits. <!-- rule: procedure_length_review -->Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.<!-- /rule --> <!-- rule: script_size_review -->Aim for server scripts of about 400 code lines; past 400 code lines or 12 local procedures, check its responsibilities and move each one that stands alone into its own script.<!-- /rule --> <!-- rule: script_size_ceiling -->Keep every server script, class and data source under 50 KB, test scripts included; split a larger one by responsibility until each part fits.<!-- /rule --> <!-- rule: shared_helpers_in_small_scripts -->Put a procedure that other scripts call in a script small enough for that use; never make callers load a large script to run a few lines, and move a shared helper out of a large script into a small one of its own.<!-- /rule --> Calling across scripts with `ExecFunction` adds a lookup per call, which is small once both scripts are loaded; a large script costs more, because STARLIMS loads and compiles a script whole on first use, after every production check-in and on every development save. Do not remove demonstrated guards or collapse distinct responsibilities merely to make a file shorter.
 
 When reducing an expanded implementation, establish characterization checks first. Classify each concern as keep, move, remove, or defer, and preserve the behavior required by current callers while moving policy and workflow-specific validation to their owning services.
 
@@ -74,9 +76,10 @@ Date......... : 2026-10-13
 ********************************************************************************;
 ```
 
-<!-- rules: id=file_banner_continuation_alignment,file_banner_modified_entries,generated_banner_omits_author,no_semicolon_in_comment_text -->
+<!-- rules: id=file_banner_continuation_alignment,file_banner_modified_entries,banner_history_three_entries,generated_banner_omits_author,no_semicolon_in_comment_text -->
 - Continuation lines align under the first character after `: `.
 - Record later changes as new lines below `Date`, in the same style: `Modified..... : YYYY-MM-DD ABC - <what changed and why>`.
+- Keep the banner's modification history to the three most recent entries; delete older entries rather than rewriting them, since source control keeps the full history.
 - Code generated by a tool or agent omits the `Author` line rather than inventing initials. A banner without `Author` is complete in that case, and a review does not report it.
 - Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.
 <!-- /rules -->
@@ -209,7 +212,7 @@ Use these exact `LimsTypeEx` return values when validating runtime types:
 Contract rules for results that cross a boundary:
 
 <!-- rules: id=validate_results_before_access,propagate_or_replace_downstream_failure,success_envelope_without_data,no_raw_diagnostics_in_caller_failures -->
-- At every procedure or service boundary, validate an outer array, its required length and its success flag before reading an envelope payload, and validate the payload's shape and field types before indexing arrays or accessing object properties.
+- Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.
 - When propagating a failure envelope, preserve a valid downstream stable code and sanitized message, and replace a malformed downstream result with a stable contract-failure code owned by the caller.
 - Use `{.T., NIL}` for internal command steps that use a standard envelope but have no success data.
 - Never return raw SSL diagnostics, exception descriptions, credentials, or payload bodies through caller-safe failures; return a stable code and a sanitized message.
@@ -217,7 +220,7 @@ Contract rules for results that cross a boundary:
 
 <!-- rule: envelope_one_line -->Keep a variable-only envelope such as `{.F., {sCode, sMessage}}` on one physical line when it fits.<!-- /rule --> Split an envelope when inline literal text, additional payload fields, or the line-length limit benefits from clearer grouping.
 
-<!-- rule: state_object_for_multistep -->For a multi-step operation, create one descriptive UDObject, initialize every property during request construction, and pass that object through cohesive steps rather than growing long positional parameter lists.<!-- /rule --> Its properties include flags, IDs, counters, the stable failure code and the sanitized failure message.
+<!-- rule: state_object_for_multistep -->When the steps of a multi-step operation share more state than a few parameters carry, create one descriptive UDObject, initialize every property during request construction, and pass it through the steps; a short linear script keeps plain locals.<!-- /rule --> Its properties include flags, IDs, counters, the stable failure code and the sanitized failure message.
 
 <!-- rule: pipeline_failure_capture -->Use a pipeline-specific failure-capture helper when several sequential steps return standard envelopes, and keep one contract within the pipeline: either return a boolean or return `{success, state}` consistently.<!-- /rule -->
 
@@ -444,7 +447,8 @@ Before finishing an edit, verify:
 - The public parameters and result shapes are documented and preserved.
 - The top-level path reads as business orchestration rather than mechanical validation.
 - Dense shape checks have descriptive helpers, while trivial checks remain local.
-- Every external result is validated before payload access.
+- Every envelope's success flag is checked before payload access; shape checks appear only for producers outside the caller's control.
+- Nothing was added that the code already rules out: no guard for an impossible state, no catch that cannot act, no envelope or result field that no caller reads.
 - Caller-safe failures contain stable codes and sanitized messages where the public contract uses them.
 - Logging contains useful bounded context without becoming persisted workflow state.
 - SQL uses local substitutions, default-connection conventions, and guarded mutation checks.

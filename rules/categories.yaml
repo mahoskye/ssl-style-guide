@@ -63,6 +63,7 @@ categories:
       - empty_in_array_fallback
       - omit_default_connection_argument
       - guarded_write_verification
+      - trust_query_result_shape
   - id: sql
     lists_from_rules: true
     order:
@@ -181,6 +182,7 @@ categories:
       - no_createudobject_for_builtins
       - dot_property_access
       - state_object_for_multistep
+      - trust_built_context_shape
   - id: procedures
     lists_from_rules: true
     order:
@@ -218,6 +220,8 @@ categories:
       - read_globals_undeclared
       - global_assignment
       - guard_optional_globals
+      - return_what_callers_use
+      - no_shallow_single_use_procedure
   - id: data-sources
     lists_from_rules: true
     order:
@@ -267,6 +271,8 @@ categories:
       - success_envelope_without_data
       - one_boundary_per_invariant
       - pipeline_failure_capture
+      - no_guard_for_impossible_state
+      - catch_only_to_act
   - id: files
   - id: email
   - id: security
@@ -306,6 +312,7 @@ categories:
       - bracket_contents_align
       - continuation_indent_shows_structure
       - envelope_one_line
+      - document_real_outcomes_only
   - id: naming
     lists_from_rules: true
     order:
@@ -390,3 +397,23 @@ categories:
       - banner_success_failure_labels
       - banner_special_result_first
       - banner_descriptions_operational
+      - script_size_ceiling
+      - shared_helpers_in_small_scripts
+      - banner_history_three_entries
+  - id: simplicity
+    lists_from_rules: true
+    order:
+      - no_guard_for_impossible_state
+      - one_boundary_per_invariant
+      - validate_results_before_access
+      - trust_query_result_shape
+      - trust_built_context_shape
+      - catch_only_to_act
+      - return_what_callers_use
+      - no_shallow_single_use_procedure
+      - state_object_for_multistep
+      - no_speculative_options
+      - document_real_outcomes_only
+      - comments_explain_why
+
+      - shared_helpers_in_small_scripts
