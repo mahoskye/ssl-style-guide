@@ -46,6 +46,15 @@ Entries before this file existed are reconstructed from the release commits.
 - `ssl-developer` writes a design file for new scripts and procedures only;
   changes inside existing procedures verify signatures and translate
   directly.
+- The MCP server pins starlims-lsp v0.29.0. `ssl_diagnose` reports the new
+  `script_size_ceiling` warning: a file over 50 KB (51,200 bytes, line
+  endings included) is past the limit the style guide sets. Every file type
+  is measured, data sources included, and it reports once on line 1.
+  `script_size_review` (info) now says to check the script's
+  responsibilities and move each one that stands alone into its own script;
+  its thresholds are unchanged. The CLI flags and the formatter output are
+  unchanged. The LSP also gains two custom requests for editor clients
+  (`ssl/syntaxTree`, `ssl/callGraph`), which the MCP server does not use.
 
 ## MCP 1.17.2 — 2026-10-15
 
