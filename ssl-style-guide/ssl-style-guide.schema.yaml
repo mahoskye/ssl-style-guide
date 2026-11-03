@@ -1554,6 +1554,8 @@ ssl_style_guide:
       script_size_review:
         max_code_lines: 400
         max_local_procedures: 12
+      script_size_ceiling:
+        max_script_bytes: 51200
       require_else_for_if: false
     # END GENERATED lints.style_rules
     # BEGIN GENERATED lints.hungarian_notation: edit rules/ and run bun tools/generate-rules.mjs

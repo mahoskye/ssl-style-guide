@@ -4063,7 +4063,7 @@
         ]
       },
       "enforced_by": [
-        "reviewer"
+        "lsp:diag.script_size_ceiling"
       ],
       "categories": [
         "module-structure"
@@ -4072,7 +4072,9 @@
         "ExecFunction",
         "INCLUDE"
       ],
-      "schema_paths": [],
+      "schema_paths": [
+        "lints.style_rules.script_size_ceiling"
+      ],
       "aliases": [],
       "issues": [],
       "source": "rules/language/script_size_ceiling.md"

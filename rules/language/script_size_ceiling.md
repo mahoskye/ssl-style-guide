@@ -11,7 +11,12 @@ rule: >-
   included; split a larger one by responsibility until each part fits.
 categories: [module-structure]
 related_elements: [ExecFunction, INCLUDE]
-enforced_by: [reviewer]
+enforced_by: [lsp:diag.script_size_ceiling]
+schema:
+  - path: lints.style_rules.script_size_ceiling
+    form: value
+    value:
+      max_script_bytes: 51200
 verification:
   basis: observed
   note: >-
@@ -19,8 +24,13 @@ verification:
     whole and keeps it loaded; the cost falls on first use, on every script
     after a production check-in resets the application, and on every save
     during development. The 50 KB figure matches the agents' read limit.
-    The language server measures code lines but not bytes, so the reviewer
-    checks this.
+    starlims-lsp v0.29.0 reports a file over ssl.diagnostics.maxScriptBytes
+    bytes (default 51,200, which is 50 KB; 0 disables the check) as
+    script_size_ceiling (warning), once per file on line 1. Every file type
+    is measured, data sources included, as the server receives it with its
+    line endings, so a CRLF file counts one byte more per line than the same
+    file with LF. How to split a file that is over the limit stays a
+    reviewer's judgment.
 ---
 
 ## Rationale

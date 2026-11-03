@@ -55,6 +55,11 @@ Entries before this file existed are reconstructed from the release commits.
   its thresholds are unchanged. The CLI flags and the formatter output are
   unchanged. The LSP also gains two custom requests for editor clients
   (`ssl/syntaxTree`, `ssl/callGraph`), which the MCP server does not use.
+- `script_size_ceiling` is now enforced by the LSP diagnostic of the same
+  name instead of the reviewer: the record cites
+  `lsp:diag.script_size_ceiling`, and the schema gains
+  `lints.style_rules.script_size_ceiling` with `max_script_bytes: 51200`,
+  which the LSP catalog entry refers to.
 
 ## MCP 1.17.2 — 2026-10-15
 
