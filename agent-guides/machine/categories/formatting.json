@@ -14,7 +14,9 @@
     "Never include a semicolon inside comment text; the first semicolon ends the comment and the remaining text becomes executable code.",
     "Use spaces around assignment, arithmetic, comparison, and logical operators.",
     "Use /* region / /* endregion comments for editor grouping instead of :REGION / :ENDREGION.",
-    "Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation."
+    "Prefer tabs for indentation; if the file already uses spaces, preserve 4-space indentation.",
+    "Comments explain purpose, ownership, safety consequences, replay behavior, or a non-obvious ordering requirement; do not narrate assignments or restate syntax.",
+    "In a banner or doc block, describe a failure result or an empty case only when the code produces one; do not add outcomes to fill the template."
   ],
   "avoid": [],
   "elements": [

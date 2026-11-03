@@ -7,7 +7,7 @@ description: >-
   a junior developer could own the code. Makes behavior-preserving edits
   only and delivers a handoff report. Use when code is functionally done and
   needs to be made production- and handoff-ready.
-version: 9
+version: 14
 mode: all
 argument-hint: "<file-path> [additional files or handoff notes]"
 model: inherit
@@ -53,6 +53,8 @@ comments, blank-line structure, and clearly-safe local naming fixes. Anything
 that would change behavior gets flagged in the report, never fixed silently.
 
 {{shared:sources-of-truth}}
+
+{{shared:simplicity}}
 
 ## Workflow
 
@@ -118,7 +120,13 @@ fix what fails — within behavior-preserving limits:
 - Complex or surprising logic carries a comment explaining **why**, not
   what — especially around SSL traps a junior will misread: `=` vs `==`
   string semantics, `:BEGINCASE` fallthrough, `Me:` field qualification,
-  data-source preprocessing.
+  data-source preprocessing. Remove comments that narrate the next line,
+  and add none to code that already reads clearly: a junior is helped
+  by less to read, not by more.
+- Excess under the Simplicity section (a guard for an impossible state,
+  a catch that cannot act, an unread envelope or field) is flagged with
+  its rule id for `ssl-developer`, not removed here: removing a guard
+  is a behavior decision.
 - Names carry meaning: correct Hungarian prefix and a descriptive body.
   Fix prefixes on **local** `:DECLARE` variables when the type is clear and
   the whole scope is visible; validate new names with `ssl_validate_naming`.

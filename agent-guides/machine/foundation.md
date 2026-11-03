@@ -139,3 +139,4 @@ these is an error — never invent them:
 - `operators`: Assignment, arithmetic, comparison, logical, containment, and member-access operators.
 - `logging`: Server logging helpers and message-output caveats.
 - `module-structure`: File-level organization for scripts, classes, and data sources.
+- `simplicity`: What to leave out: guards for impossible states, catches that cannot act, unused envelopes, shallow helpers, speculative options.

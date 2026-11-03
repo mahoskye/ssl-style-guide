@@ -16,6 +16,8 @@ set. When sources disagree, prefer the schema and the checked-in code.
 
 ## Guidance documents
 
+- `ssl_design_philosophy.md` — the rationale layer above the rules: the
+  order of priorities, what simple looks like in SSL, and a worked example.
 - `ssl_agent_instructions.md` — the most detailed SSL language reference:
   validated behavior, semantics, and common pitfalls.
 - `ssl_refactoring_guide.md` — refactoring workflow, code structure, naming, and

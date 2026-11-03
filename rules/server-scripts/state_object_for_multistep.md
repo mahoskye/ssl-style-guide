@@ -7,10 +7,11 @@ level: style_only
 severity: info
 applies_to: [server_script, class]
 rule: >-
-  For a multi-step operation, create one descriptive UDObject, initialize
-  every property during request construction, and pass that object through
-  cohesive steps rather than growing long positional parameter lists.
-categories: [objects]
+  When the steps of a multi-step operation share more state than a few
+  parameters carry, create one descriptive UDObject, initialize every
+  property during request construction, and pass it through the steps; a
+  short linear script keeps plain locals.
+categories: [objects, simplicity]
 related_elements: [CreateUdObject]
 enforced_by: [reviewer]
 verification:
@@ -19,7 +20,9 @@ verification:
     Kept from the server-script baseline ("Validation And Boundary
     Contracts"), which lists the properties to initialize: flags, IDs,
     counters, stable failure code and sanitized failure message. The
-    refactoring guide's state object pattern shows the same.
+    refactoring guide's state object pattern shows the same. Narrowed
+    2026-10-21 under program decision 0002: the baseline already says not
+    to force state objects into a short linear service.
 ---
 
 ## Rationale

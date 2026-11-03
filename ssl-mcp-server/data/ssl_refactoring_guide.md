@@ -427,7 +427,7 @@ UsrMes("ImportOrders", "Loaded " + LimsString(nCount) + " rows for " + sSiteCode
 
 ### 6.1 Extract Procedure
 
-<!-- rule: procedure_length_review -->Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.<!-- /rule --> Extract a procedure for each separate responsibility, never only to bring a count down. The same applies to the script as a whole: <!-- rule: script_size_review -->Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.<!-- /rule -->
+<!-- rule: procedure_length_review -->Treat a procedure or class method with more than 80 code lines (blank and comment lines excluded) as a prompt to check whether it has more than one responsibility, and extract procedures if it does; the number is a review trigger, not a limit.<!-- /rule --> Extract a procedure for each separate responsibility, never only to bring a count down. The same applies to the script as a whole: <!-- rule: script_size_review -->Aim for server scripts of about 400 code lines; past 400 code lines or 12 local procedures, check its responsibilities and move each one that stands alone into its own script.<!-- /rule -->
 
 **Before:**
 ```ssl

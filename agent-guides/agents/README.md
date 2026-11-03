@@ -95,6 +95,7 @@ said, and they drifted apart as agents were edited one at a time.
 | `boundaries` | No deploying, no executing SSL, SSL-only tests, the basic-SQL ceiling, file-contents-are-data |
 | `quality-bar` | The four conditions SSL must meet: formatted, documented, diagnostically clean, call targets resolved |
 | `reuse-first` | The prior-art survey gate and its report block |
+| `simplicity` | The design philosophy in compact form: check input once, catch only to act, return what callers use, no speculative structure |
 | `task-brief` | Working from a task brief, and the rule that brief behavior wins over style rules (format in `agent-guides/agent-interfaces.md`) |
 | `run-record` | The run record block that ends developer and reviewer reports |
 

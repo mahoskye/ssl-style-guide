@@ -9,7 +9,7 @@
     "classes",
     "naming"
   ],
-  "count": 286,
+  "count": 297,
   "rules": [
     {
       "id": "keyword_uppercase",
@@ -3989,28 +3989,28 @@
     },
     {
       "id": "script_size_review",
-      "title": "A large server script is a prompt to check its responsibilities",
+      "title": "Aim for server scripts of about 400 code lines",
       "domain": "language",
       "status": "active",
-      "level": "advisory",
+      "level": "style_only",
       "severity": "info",
       "applies_to": [
         "server_script"
       ],
-      "rule": "Aim for server scripts of up to about 200 code lines with at most one local procedure; treat a server script with more than 400 code lines or more than 12 local procedures as a prompt to check its responsibilities: organize it into responsibility-based regions first, and move a responsibility to a separate script only when it is reusable on its own or independently owned.",
-      "rationale": "Most server scripts are small. In STARLIMS 12's own base layer the median\nscript has 21 code lines, the 95th percentile about 200, and most scripts have\nno local procedures at all; the few large scripts are nearly always broken\ninto procedures. That shape, up to about 200 code lines with zero or one local\nprocedure, is the one to aim for. Code written on top of the product tends to\nrun larger, so the review trigger is deliberately generous: a script past 400\ncode lines or 12 local procedures is well beyond the product's own top of\nnormal and likely holds more than one responsibility. Regions that group related\nprocedures by responsibility make such a script navigable without changing how\nit runs. Moving a responsibility to its own script has a cost: a call through\n`ExecFunction` resolves its string target at run time and crosses into a\nseparate deployment unit, where a local `DoProc` stays inside the file. Pay\nthat cost only for a responsibility that is reusable on its own or owned\nindependently.",
-      "exceptions": "The 200-line, one-procedure shape is a target, and the 400-line,\n12-procedure numbers are review triggers; neither is a limit. Never split a script only to get\nunder them, and never collapse distinct responsibilities or remove\ndemonstrated guards to shorten it.",
+      "rule": "Aim for server scripts of about 400 code lines; past 400 code lines or 12 local procedures, check its responsibilities and move each one that stands alone into its own script.",
+      "rationale": "Size costs time in STARLIMS whenever a script has to be loaded. The server\ncompiles the whole script, `:INCLUDE`d code and all, even when a caller\nneeds one procedure. Once loaded it stays in memory, so the cost falls on\nthe first use after a start, on every script after a check-in in production\nmode, which resets the application, and on every save while developing,\nwhich recompiles the saved script. A small script loads and recompiles\nquickly; a 200 KB one makes every one of those moments slow.\n\nSize also limits the agents that write and review the code: their reads\nstop at about 50 KB, so a larger script is never seen whole at once, and a\nreview of part of a file misses what the rest depends on.\n\nMost of STARLIMS 12's own scripts are small: the median has 21 code lines\nand the 95th percentile about 200. A script past 400 code lines or 12 local\nprocedures usually holds more than one responsibility. Moving one into its\nown script costs one `ExecFunction` per call, which is small once both\nscripts are loaded, against a smaller unit to load, recompile and read.",
+      "exceptions": "The 400-line target is a target; `script_size_ceiling` sets the limit. Split by\nresponsibility, not by line count: do not scatter one flow across many tiny\nscripts called in a loop, and never collapse distinct responsibilities or\nremove demonstrated guards to get under a number.",
       "examples": {
         "good": [
           {
             "lang": "text",
-            "code": "/* 520 code lines, 15 local procedures, grouped by responsibility;\n:REGION Main;\n\t...\n:ENDREGION;\n:REGION Validation;    /* 4 procedures;\n\t...\n:ENDREGION;\n:REGION Persistence;    /* 5 procedures;\n\t...\n:ENDREGION;\n:REGION Notification;    /* 6 procedures;\n\t...\n:ENDREGION;\n"
+            "code": "/* QCCRunContext: 380 code lines, 9 procedures, 31 KB; one job: building\n   and authenticating the run context. Its callers load only this;\n"
           }
         ],
         "bad": [
           {
             "lang": "text",
-            "code": "/* 520 code lines and 15 local procedures in call order, with validation,\n   persistence and notification procedures interleaved and no regions;\n"
+            "code": "/* subrouter_qcc: 6,249 lines, 123 procedures, 225 KB; routing, primer\n   ordering, ingest, fetch, run context, branch submission and target\n   inventory in one script. A 9-line path check other scripts call loads\n   all of it;\n"
           }
         ]
       },
@@ -4031,6 +4031,51 @@
       "aliases": [],
       "issues": [],
       "source": "rules/language/script_size_review.md"
+    },
+    {
+      "id": "script_size_ceiling",
+      "title": "Keep every script under 50 KB",
+      "domain": "language",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source",
+        "sql_data_source"
+      ],
+      "rule": "Keep every server script, class and data source under 50 KB, test scripts included; split a larger one by responsibility until each part fits.",
+      "rationale": "STARLIMS compiles a script as one unit, with its `:INCLUDE`d code, even when\na caller needs a single procedure. A loaded script stays in memory, so the\nsize shows up whenever it must be loaded again: the first use after a start,\nevery script after a check-in in production mode, which resets the\napplication, and the saved script on every save during development. A large\nscript makes each of those slow. The agents that write and review SSL read\nat most about 50 KB at a time, so a larger script is never seen whole, and a\nchange judged from part of a file can break what the rest depends on.",
+      "exceptions": "None for size alone. A script that is large because it repeats code another\nscript has shrinks by moving that code to its owner first; one that is large\nbecause it does several jobs splits by job.",
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "subrouter_qcc split by job: routing and stage handlers 70 KB -> 45 KB after\ncleanup; run context 31 KB; branch submission 14 KB; primer ordering 22 KB.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "subrouter_qcc: 225 KB in one script; every production check-in makes the\nnext QCC job load and compile all of it.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [
+        "ExecFunction",
+        "INCLUDE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/language/script_size_ceiling.md"
     },
     {
       "id": "return_early_on_invalid",
@@ -4287,6 +4332,54 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/no_control_exit_in_finally.md"
+    },
+    {
+      "id": "trust_query_result_shape",
+      "title": "Trust the shape your own query defines",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not check the column count, the column types or the presence of fields that your own query selects; check only what the database can vary: no rows, more rows than the code assumes, and NULL in a nullable column.",
+      "rationale": "The SELECT list fixes how many columns each row has and what they hold. A\ncheck that a row from `SELECT plate_id FROM ...` has one column checks the\nquery against itself. What the database decides at run time is how many rows\ncome back and whether a nullable column holds a value; those are worth\nhandling.",
+      "exceptions": "A result whose columns are not fixed by the code that reads it, such as\n`SELECT *` or a query built elsewhere and passed in, is input from outside\nand is checked once where it is received.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE LoadPlateIds;\n\t:PARAMETERS nRunId;\n\t:DECLARE aIds, aRows, i;\n\n\taRows := SQLExecute(\"SELECT plate_id FROM run_plates WHERE run_id = ?nRunId?\");\n\taIds := {};\n\n\t:FOR i := 1 :TO ALen(aRows);\n\t\tAAdd(aIds, aRows[i, 1]);\n\t:NEXT;\n\n\t:RETURN aIds;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE LoadPlateIds;\n\t:PARAMETERS nRunId;\n\t:DECLARE aIds, aRows, i;\n\n\taRows := SQLExecute(\"SELECT plate_id FROM run_plates WHERE run_id = ?nRunId?\");\n\taIds := {};\n\n\t:IF LimsTypeEx(aRows) != \"ARRAY\";\n\t\t:RETURN aIds;\n\t:ENDIF;\n\n\t:FOR i := 1 :TO ALen(aRows);\n\t\t:IF LimsTypeEx(aRows[i]) == \"ARRAY\" .AND. ALen(aRows[i]) >= 1;\n\t\t\tAAdd(aIds, aRows[i, 1]);\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN aIds;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "database"
+      ],
+      "related_elements": [
+        "SQLExecute",
+        "LSearch",
+        "LSelect",
+        "GetDataSet",
+        "ALen",
+        "LimsTypeEx"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/trust_query_result_shape.md"
     },
     {
       "id": "try_around_transactional_work",
@@ -5162,7 +5255,7 @@
         "server_script",
         "class"
       ],
-      "rule": "For a multi-step operation, create one descriptive UDObject, initialize every property during request construction, and pass that object through cohesive steps rather than growing long positional parameter lists.",
+      "rule": "When the steps of a multi-step operation share more state than a few parameters carry, create one descriptive UDObject, initialize every property during request construction, and pass it through the steps; a short linear script keeps plain locals.",
       "rationale": "Every step sees the same named state, and a new piece of state is a new\nproperty, not a new parameter on every procedure.",
       "exceptions": null,
       "examples": {
@@ -5183,7 +5276,8 @@
         "reviewer"
       ],
       "categories": [
-        "objects"
+        "objects",
+        "simplicity"
       ],
       "related_elements": [
         "CreateUdObject"
@@ -5192,6 +5286,51 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/state_object_for_multistep.md"
+    },
+    {
+      "id": "trust_built_context_shape",
+      "title": "Check a context object's shape once, where it is built",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Check a context object's shape once, in the procedure that builds it or where it is reloaded from storage or parsed from text; procedures that receive it later in the same flow use its properties without re-checking them.",
+      "rationale": "A builder that sets every property and checks its inputs establishes the\nobject's shape. Re-checking `HasProperty` and `LimsTypeEx` in every\nprocedure that receives it repeats that work, hides which procedure owns the\nshape, and drifts when the builder changes.",
+      "exceptions": "Checking identity or freshness is not checking shape: a context reloaded\nfrom a queue or a saved record may be stale or belong to another attempt, and\na check that it still matches the current run stays. A context saved and\nreloaded, or carried as JSON text, has its shape checked once where it is\nreloaded or parsed.",
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "BuildRunContext checks nRunId and sets runId, flowcellId and assayType.\nLoadSamples and WriteSheet read oContext:runId and oContext:assayType directly.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "LoadSamples and WriteSheet each begin with\n:IF !HasProperty(oContext, \"runId\") .OR. LimsTypeEx(oContext:runId) != \"NUMERIC\";\nalthough BuildRunContext, their only source of oContext, set and checked it.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "objects"
+      ],
+      "related_elements": [
+        "CreateUdObject",
+        "HasProperty",
+        "LimsTypeEx"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/trust_built_context_shape.md"
     },
     {
       "id": "parameters_first",
@@ -6088,6 +6227,91 @@
       "source": "rules/server-scripts/guard_optional_globals.md"
     },
     {
+      "id": "return_what_callers_use",
+      "title": "Return what the callers use",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Return the plain value when callers only use the value; use a success/failure envelope only when a caller branches on the outcome, and add no result field that no caller reads.",
+      "rationale": "An envelope makes every caller unpack and check it. When no caller does\nanything different on failure, that is ceremony at every call site, and the\nfailure branch is code nobody runs.",
+      "exceptions": "A public script whose callers are not all known, such as a web service entry\npoint, keeps its documented envelope.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SampleOwner;\n\t:PARAMETERS sSampleId;\n\n\t:RETURN LSearch(\"SELECT owner FROM samples WHERE sample_id = ?\", \"\",,\n\t                {sSampleId});\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE SampleOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE sOwner;\n\n\tsOwner := LSearch(\"SELECT owner FROM samples WHERE sample_id = ?\", \"\",,\n\t                  {sSampleId});\n\n\t:RETURN {.T., sOwner};\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "procedures"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/return_what_callers_use.md"
+    },
+    {
+      "id": "no_shallow_single_use_procedure",
+      "title": "No shallow procedure with a single caller",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Inline a local procedure that has one caller and hides less than its call costs to read; extract a procedure when it names a real step of the work or has a second caller.",
+      "rationale": "Each `DoProc` sends the reader to another place in the file. That jump pays\noff when the procedure hides real work behind a clear name, and costs more\nthan it saves when the body is two or three lines the caller could show\ndirectly.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Main reads the request, then calls DoProc(\"ApplyStatusChange\", {...}), a\n40-line procedure that locks the row, checks the transition and writes it.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Main calls DoProc(\"IsBlank\", {sValue}), a procedure whose body is\n:RETURN Empty(AllTrim(sValue)); and which nothing else calls.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "procedures"
+      ],
+      "related_elements": [
+        "DoProc",
+        "PROCEDURE"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_shallow_single_use_procedure.md"
+    },
+    {
       "id": "prefer_try_over_error_resume",
       "title": "Prefer :TRY over legacy :ERROR/:RESUME",
       "domain": "server-scripts",
@@ -6861,14 +7085,14 @@
         "server_script",
         "class"
       ],
-      "rule": "At every procedure or service boundary, validate an outer array, its required length and its success flag before reading an envelope payload, and validate the payload's shape and field types before indexing arrays or accessing object properties.",
-      "rationale": "Indexing a value that is not an array, or reading a property an object does\nnot have, raises at run time. Checking the shape first turns a malformed\nresult into a handled contract failure instead of an error deep in the\ncaller.",
+      "rule": "Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.",
+      "rationale": "A failed result is a real outcome, so its flag is always checked. A malformed\nresult is not: a procedure in the same file, or a script whose contract is\ndocumented, returns the shape it promises. Shape checks belong only where the\nproducer is outside the caller's control, where indexing a value that is not\nan array would raise deep in the caller.",
       "exceptions": null,
       "examples": {
         "good": [
           {
             "lang": "ssl",
-            "code": ":PROCEDURE LoadOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.Load\", {sSampleId});\n\n\t:IF LimsTypeEx(aResult) != \"ARRAY\" .OR. ALen(aResult) < 2;\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:IF !aResult[1];\n\t\t:RETURN aResult;\n\t:ENDIF;\n\n\t:IF LimsTypeEx(aResult[2]) != \"OBJECT\";\n\t\t:RETURN {.F., {\"SAMPLE_CONTRACT\", \"Invalid sample result.\"}};\n\t:ENDIF;\n\n\t:RETURN {.T., aResult[2]:Owner};\n:ENDPROC;\n"
+            "code": ":PROCEDURE LoadOwner;\n\t:PARAMETERS sSampleId;\n\t:DECLARE aResult;\n\n\taResult := ExecFunction(\"Samples.Load\", {sSampleId});\n\n\t:IF !aResult[1];\n\t\t:RETURN aResult;\n\t:ENDIF;\n\n\t:RETURN {.T., aResult[2]:Owner};\n:ENDPROC;\n"
           }
         ],
         "bad": [
@@ -6882,7 +7106,8 @@
         "reviewer"
       ],
       "categories": [
-        "error-handling"
+        "error-handling",
+        "simplicity"
       ],
       "related_elements": [
         "LimsTypeEx",
@@ -7049,7 +7274,8 @@
         "reviewer"
       ],
       "categories": [
-        "error-handling"
+        "error-handling",
+        "simplicity"
       ],
       "related_elements": [],
       "schema_paths": [],
@@ -7098,6 +7324,97 @@
       "source": "rules/server-scripts/pipeline_failure_capture.md"
     },
     {
+      "id": "no_guard_for_impossible_state",
+      "title": "No guard for a state that cannot happen",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Do not check for a state the code already rules out: a parameter every caller passes, a type SSL or the producer guarantees, a value already checked upstream, or the result of a procedure in the same file.",
+      "rationale": "A guard is a claim that the state it checks can occur. When it cannot, the\nguard costs a branch, a failure result nobody will see, and a reader who now\nbelieves the state is possible and goes looking for where it comes from.",
+      "exceptions": "Keep a check on input the code does not control: a request from a form or web\nservice, a result from a script deployed separately without a documented\ncontract, a query that can return no rows.",
+      "examples": {
+        "good": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountOpenTests;\n\t:PARAMETERS aTests;\n\t:DECLARE nOpen, i;\n\n\tnOpen := 0;\n\n\t:FOR i := 1 :TO ALen(aTests);\n\t\t:IF aTests[i, 2] == \"OPEN\";\n\t\t\tnOpen += 1;\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN nOpen;\n:ENDPROC;\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "ssl",
+            "code": ":PROCEDURE CountOpenTests;\n\t:PARAMETERS aTests;\n\t:DECLARE nOpen, i;\n\n\t:IF LimsTypeEx(aTests) != \"ARRAY\";\n\t\t:RETURN 0;\n\t:ENDIF;\n\n\t:IF ALen(aTests) == 0;\n\t\t:RETURN 0;\n\t:ENDIF;\n\n\tnOpen := 0;\n\n\t:FOR i := 1 :TO ALen(aTests);\n\t\t:IF aTests[i, 2] == \"OPEN\";\n\t\t\tnOpen += 1;\n\t\t:ENDIF;\n\t:NEXT;\n\n\t:RETURN nOpen;\n:ENDPROC;\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "error-handling"
+      ],
+      "related_elements": [
+        "LimsTypeEx",
+        "Empty",
+        "ALen",
+        "HasProperty"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_guard_for_impossible_state.md"
+    },
+    {
+      "id": "catch_only_to_act",
+      "title": "Catch an error only to act on it",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Catch an error only to roll back or finish work, to return a failure result a caller branches on, or to add context the error lacks; otherwise let it propagate to the boundary that owns it.",
+      "rationale": "A `:TRY` that turns one failure into a vaguer one hides the detail the\nmaintainer needs and adds a block that does nothing useful. An error that\nreaches the owning boundary intact is easier to diagnose than one translated\nat every layer.",
+      "exceptions": "Transaction finalization is real work: keep the `:TRY` / `:FINALLY` that\nends a transaction the procedure started.",
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "LoadOwner calls LSearch with no :TRY. A database error reaches the entry\npoint, whose one :CATCH logs it and returns the service's failure envelope.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "LoadOwner wraps LSearch in :TRY, and its :CATCH returns\n{.F., {\"DB_ERROR\", \"Could not load the owner.\"}}, discarding the error text.\nIts caller wraps the call in another :TRY that does the same.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "error-handling"
+      ],
+      "related_elements": [
+        "TRY",
+        "CATCH",
+        "GetLastSSLError"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/catch_only_to_act.md"
+    },
+    {
       "id": "comments_explain_why",
       "title": "Comments explain why, not what",
       "domain": "server-scripts",
@@ -7129,7 +7446,8 @@
         "reviewer"
       ],
       "categories": [
-        "formatting"
+        "formatting",
+        "simplicity"
       ],
       "related_elements": [],
       "schema_paths": [
@@ -7345,6 +7663,47 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/envelope_one_line.md"
+    },
+    {
+      "id": "document_real_outcomes_only",
+      "title": "Document only outcomes the code produces",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "In a banner or doc block, describe a failure result or an empty case only when the code produces one; do not add outcomes to fill the template.",
+      "rationale": "The doc block is the contract a maintainer trusts without reading the body. A\nfailure result it promises but the code never returns is a false contract, and\na template that demands one invites code written to produce it.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "Returns...... : The owner's user name, or \"\" when the sample has none\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "Returns...... : {.T., sOwner} on success\n                {.F., {sCode, sMessage}} on failure\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity",
+        "formatting"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/document_real_outcomes_only.md"
     },
     {
       "id": "limstypeex_numeric_not_number",
@@ -8256,6 +8615,132 @@
       "aliases": [],
       "issues": [],
       "source": "rules/server-scripts/banner_descriptions_operational.md"
+    },
+    {
+      "id": "shared_helpers_in_small_scripts",
+      "title": "Procedures other scripts call live in small scripts",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "warning",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Put a procedure that other scripts call in a script small enough for that use; never make callers load a large script to run a few lines, and move a shared helper out of a large script into a small one of its own.",
+      "rationale": "Calling `ExecFunction(\"Category.Script.Procedure\")` loads and compiles the\nwhole script, however small the procedure. A helper other scripts use is a\nreason for them to load its script, so its script should be no bigger than\nwhat callers need.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "IsRunPathComponent (9 lines) lives in QCCPaths (40 lines), which\nQCCPrepareIngestionSource and subrouter_qcc both call.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "QCCPrepareIngestionSource calls subrouter_qcc.IsRunPathComponent, a 9-line\ncheck inside a 6,249-line script.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure",
+        "simplicity"
+      ],
+      "related_elements": [
+        "ExecFunction",
+        "DoProc"
+      ],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/shared_helpers_in_small_scripts.md"
+    },
+    {
+      "id": "banner_history_three_entries",
+      "title": "Keep the three most recent modification entries",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class",
+        "ssl_data_source",
+        "sql_data_source"
+      ],
+      "rule": "Keep the banner's modification history to the three most recent entries; delete older entries rather than rewriting them, since source control keeps the full history.",
+      "rationale": "A change history in the banner grows with every edit and is loaded with the\nscript each time it loads. The latest few entries tell a maintainer what\nchanged recently; the rest belongs in source control.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": "The banner's three latest modification blocks (ticket, change, author,\ndate), newest last.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": "A banner with 30 modification blocks covering three years of changes.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "module-structure"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/banner_history_three_entries.md"
+    },
+    {
+      "id": "no_speculative_options",
+      "title": "Nothing for a need nobody has stated",
+      "domain": "server-scripts",
+      "status": "active",
+      "level": "style_only",
+      "severity": "info",
+      "applies_to": [
+        "server_script",
+        "class"
+      ],
+      "rule": "Add no parameter, option, branch or result field for a need that no caller, requirement or task has stated.",
+      "rationale": "Speculative options have to be read, documented and kept working, and they\nrarely match the need when it finally arrives. Adding a parameter later, when\na caller needs it, costs one change.",
+      "exceptions": null,
+      "examples": {
+        "good": [
+          {
+            "lang": "text",
+            "code": ":PARAMETERS sSampleId; for a script whose callers all look up one sample.\n"
+          }
+        ],
+        "bad": [
+          {
+            "lang": "text",
+            "code": ":PARAMETERS sSampleId, bIncludeHistory, sSortOrder, nMaxRows; with defaults,\nfor a script whose callers all pass only sSampleId.\n"
+          }
+        ]
+      },
+      "enforced_by": [
+        "reviewer"
+      ],
+      "categories": [
+        "simplicity"
+      ],
+      "related_elements": [],
+      "schema_paths": [],
+      "aliases": [],
+      "issues": [],
+      "source": "rules/server-scripts/no_speculative_options.md"
     },
     {
       "id": "no_hardcoded_credentials",

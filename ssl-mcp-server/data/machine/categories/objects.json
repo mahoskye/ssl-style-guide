@@ -11,7 +11,8 @@
   "must_follow": [
     "Use field for :DECLARE slots on classes, and reserve property for dynamic-object members, SSLExpando members, and AddProperty-created members.",
     "Instantiate directly creatable built-in classes with curly braces, for example Email{}.",
-    "Prefer no spaces around : in member access even though SSL accepts spaced forms."
+    "Prefer no spaces around : in member access even though SSL accepts spaced forms.",
+    "Check a context object's shape once, in the procedure that builds it or where it is reloaded from storage or parsed from text; procedures that receive it later in the same flow use its properties without re-checking them."
   ],
   "avoid": [
     "Do not instantiate built-in classes with CreateUdObject."

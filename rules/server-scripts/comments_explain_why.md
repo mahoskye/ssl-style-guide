@@ -10,7 +10,8 @@ rule: >-
   Comments explain purpose, ownership, safety consequences, replay behavior,
   or a non-obvious ordering requirement; do not narrate assignments or
   restate syntax.
-categories: [formatting]
+categories: [formatting, simplicity]
+machine: { list: must_follow }
 enforced_by: [reviewer]
 schema:
   - path: documentation.code_comments.rules

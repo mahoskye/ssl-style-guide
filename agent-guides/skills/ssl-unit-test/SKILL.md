@@ -58,10 +58,10 @@ For each procedure under test, cover:
 - **Each failure path the procedure handles** — one test per `:CATCH`
   or validation branch. If a procedure is documented to return `NIL` on
   a bad ID, test that it does.
-- **The empty case** — no rows, empty string, empty array. This is the
-  case SSL code most often gets wrong, because a procedure that returns
-  a declared-but-never-assigned variable looks correct until nothing
-  matches.
+- **The empty case**, when the inputs can produce one — no rows, empty
+  string, empty array. This is the case SSL code most often gets wrong,
+  because a procedure that returns a declared-but-never-assigned
+  variable looks correct until nothing matches.
 
 Test the **return contract**, not the implementation. Assert what the
 caller receives; do not reach into internals.

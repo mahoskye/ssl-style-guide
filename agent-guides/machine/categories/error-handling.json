@@ -12,10 +12,14 @@
     "Prefer :TRY/:CATCH/:FINALLY over legacy :ERROR/:RESUME.",
     ":TRY requires at least one of :CATCH or :FINALLY; a bare :TRY ... :ENDTRY is invalid.",
     "Use GetLastSSLError() inside :CATCH to retrieve error details.",
-    "Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY."
+    "Do not use :RETURN, :EXITFOR, :EXITWHILE, or :LOOP inside :FINALLY.",
+    "Check an envelope's success flag before reading its payload; validate the envelope's shape and the payload's field types only when the result comes from a separately deployed script or service without a documented contract, never for a procedure in the same file.",
+    "Assign each invariant to one authoritative boundary; repeat a check downstream only when it protects a distinct local use, enforces a stronger invariant, receives independently supplied data, or defends an independently deployed public contract.",
+    "Catch an error only to roll back or finish work, to return a failure result a caller branches on, or to add context the error lacks; otherwise let it propagate to the boundary that owns it."
   ],
   "avoid": [
-    "Do not assume UsrMes, ErrorMes, or InfoMes displays messages to users; they are server log functions."
+    "Do not assume UsrMes, ErrorMes, or InfoMes displays messages to users; they are server log functions.",
+    "Do not check for a state the code already rules out: a parameter every caller passes, a type SSL or the producer guarantees, a value already checked upstream, or the result of a procedure in the same file."
   ],
   "elements": [
     {
