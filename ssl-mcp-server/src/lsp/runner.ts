@@ -153,6 +153,10 @@ export type SslInput = ({ code: string } | { file: string }) & {
  * increment_as_statement, one_assignment_per_statement and
  * prefer_explicit_trim_concat. prefer_explicit_trim_concat reads
  * s-prefixed names as strings only under --hungarian-types.
+ * From v0.29.0 script_size_ceiling is a warning, not an advisory: a file
+ * over 50 KB (51,200 bytes, line endings included), every file type
+ * measured, is past the limit the style guide sets; it reports once on
+ * line 1.
  * hungarian_type_mismatch reports a name whose prefix promises one type
  * over an expression producing another. --strict adds the three checks
  * an editor withholds because a human mid-edit has names that are

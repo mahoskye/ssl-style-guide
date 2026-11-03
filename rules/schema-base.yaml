@@ -35,6 +35,7 @@ lints:
     max_params_per_procedure: !rule max_params_warning
     procedure_length_review: !rule procedure_length_review
     script_size_review: !rule script_size_review
+    script_size_ceiling: !rule script_size_ceiling
     require_else_for_if: false
   hungarian_notation:
     enabled: true

@@ -96,7 +96,7 @@ directory. Do not edit by hand; see [README.md](README.md).
 | [`parenthesize_negated_comparison`](language/parenthesize_negated_comparison.md) | authoritative | warning | `lsp:diag.parenthesize_negated_comparison` | Write a negated comparison as `.NOT. (a = b)`: `.NOT.` binds before the comparison operators, so `.NOT. a = b` negates `a` alone. |
 | [`parenthesize_mixed_logical`](language/parenthesize_mixed_logical.md) | style_only | warning | `lsp:diag.parenthesize_mixed_logical` | Parenthesize an expression that mixes `.AND.` and `.OR.`: `.AND.` binds tighter, so `bA .OR. bB .AND. bC` means `bA .OR. (bB .AND. bC)`. |
 | [`script_size_review`](language/script_size_review.md) | style_only | info | `lsp:diag.script_size_review` | Aim for server scripts of about 400 code lines; past 400 code lines or 12 local procedures, check its responsibilities and move each one that stands alone into its own script. |
-| [`script_size_ceiling`](language/script_size_ceiling.md) | style_only | warning | `reviewer` | Keep every server script, class and data source under 50 KB, test scripts included; split a larger one by responsibility until each part fits. |
+| [`script_size_ceiling`](language/script_size_ceiling.md) | style_only | warning | `lsp:diag.script_size_ceiling` | Keep every server script, class and data source under 50 KB, test scripts included; split a larger one by responsibility until each part fits. |
 
 ## server-scripts (111)
 
