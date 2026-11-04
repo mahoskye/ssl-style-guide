@@ -49,13 +49,14 @@ The MCP server also bundles these files and exposes them through
 
 ## Skills
 
-`skills/` contains nine SSL workflow skills, each a `SKILL.md` with frontmatter
+`skills/` contains ten SSL workflow skills, each a `SKILL.md` with frontmatter
 plus step-by-step instructions:
 
 - `ssl-lookup` — look up a function signature, class member, or keyword
 - `ssl-review` — review SSL code against the style guide and language rules
 - `ssl-refactor` — refactor SSL code following the refactoring guide
 - `ssl-refactor-plan` — plan behavior-preserving refactors for implementation
+- `ssl-plan` — plan new work for an agent with no tools, its context in the prompt
 - `ssl-format` — format SSL code and embedded SQL in canonical compact style
 - `ssl-new-procedure` — scaffold a new SSL procedure
 - `ssl-new-class` — scaffold a new SSL class

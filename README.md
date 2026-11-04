@@ -240,11 +240,12 @@ only as a rule proposal and an explicit decision. See
 
 ## Agent Skills
 
-`agent-guides/skills/` contains nine SSL workflow skills:
+`agent-guides/skills/` contains ten SSL workflow skills:
 
 - `ssl-review`
 - `ssl-refactor`
 - `ssl-refactor-plan`
+- `ssl-plan`
 - `ssl-lookup`
 - `ssl-format`
 - `ssl-new-procedure`

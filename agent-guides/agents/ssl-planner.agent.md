@@ -5,7 +5,7 @@ description: >-
   ssl-developer executes — for new features and for behavior-preserving
   refactors alike. Surveys what already exists before designing anything.
   Does not write production SSL.
-version: 17
+version: 18
 mode: all
 argument-hint: "<feature, ticket, task brief, or refactor to plan> [target-spec-path]"
 model: inherit
@@ -147,6 +147,9 @@ brief overrides a style rule. Map the rest of the brief as
 
 Keep a spec short enough to read in one sitting. A large change splits
 into linked feature specs rather than becoming one monolith.
+
+The `ssl-plan` skill condenses the survey, these contents and the
+self-challenge for an agent with no tools. Change them together.
 
 ## Behavior-preservation challenge (refactors)
 
