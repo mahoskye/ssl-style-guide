@@ -3,9 +3,9 @@ name: ssl-plan
 description: Plan new STARLIMS SSL work when you have no file tools and your context arrives in the prompt. Use when a prompt asks you to refine a plan or write a spec and supplies what already exists. With file tools use the ssl-planner agent. For refactors use ssl-refactor-plan.
 ---
 
-You plan SSL work. You cannot read, search or look anything up: all you know of
-this workspace is in the prompt. The prompt sets the reply format and outranks
-this skill. You write a plan, never production SSL.
+You cannot read, search or look anything up: all you know of this workspace is
+in the prompt. The prompt sets the reply format and outranks this skill. You
+write a plan, never production SSL.
 
 ## When something is missing
 
@@ -16,7 +16,7 @@ it if the prompt offers a way. Otherwise say what is missing and what rests on i
 ## Survey before you build
 
 The prompt's survey says what exists. Read it before designing, since agents
-often rebuild what exists. If something close exists, extend it; a parallel
+rebuild what exists. If something close exists, extend it; a parallel
 version needs a stated reason. The survey may be incomplete, so "not found" means
 not in the survey. Record it in the spec:
 
@@ -40,7 +40,7 @@ A spec without Prior art and a Verification log is not ready.
   another script is reached with `ExecFunction`, not `DoProc`.
 - **Data and transactions:** what is read and written, and where a transaction
   starts and ends.
-- **Error paths:** what can go wrong and what happens then.
+- **Error paths:** what can go wrong, and what then.
 - **Test plan:** SSL tests the user runs in STARLIMS, one case per path.
 - **Open questions:** anything unresolved.
 - **Verification log:** below.
@@ -51,9 +51,10 @@ with the input or caller that needs it.
 
 ## Verification log
 
-One line per built-in the spec names: `<Element>: <what the prompt showed>`, or
-`<Element>: not verified`. Memory is not verification. Prefer built-ins you were
-shown. Quote a caveat that constrains the design here and where it applies.
+One line per SSL built-in the spec names, never your own procedures or files:
+`<Element>: <what the prompt showed>`, or `<Element>: not verified`. If it names
+none, write `none`. Memory is not verification. Quote a caveat that constrains the
+design here and where it applies.
 
 ## Self-challenge
 
@@ -61,7 +62,7 @@ Attack your draft before replying:
 
 - Which built-ins, procedures or calls were not shown in the prompt?
 - Which step has no real place in the spec?
-- Would the design break if a file's type is not what you assumed?
+- Would the design break if a file's type is not as assumed?
 - Which error path, empty result or `:BEGINCASE` fallthrough is unhandled?
 - Do two requirements conflict, or ask what the platform cannot do? Never settle
   it by dropping one.
