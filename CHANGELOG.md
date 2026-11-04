@@ -13,6 +13,10 @@ Entries before this file existed are reconstructed from the release commits.
 ## [Unreleased]
 
 ### Added
+- `ssl-plan` skill: `ssl-planner`'s survey, spec contents, verification log and
+  self-challenge for an agent with no tools that receives its context in the
+  prompt, as SSL Studio's planning mode does. Kept under 3 KB for local models
+  with small contexts; `check-agent-wiring` enforces the budget and the sections.
 - `agent-guides/ssl_design_philosophy.md`: the rationale layer above the
   rules, with a worked before-and-after example. Clarity and simplicity come
   before product style (program decision 0002).

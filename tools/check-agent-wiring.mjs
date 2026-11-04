@@ -185,6 +185,32 @@ if (primaries.length !== 1) {
   fail(`expected exactly one mode:primary entry point, found ${primaries.length}: ${primaries.join(', ') || 'none'}`);
 }
 
+// 10. ssl-plan is the planner's rules for an agent with no tools, on a
+//     model that may silently lose a long prompt. Skills have no partials,
+//     so this is what stops the copy growing, naming a tool the agent
+//     cannot call, or drifting from the planner.
+const SSL_PLAN_MAX_BYTES = 3072;
+const sslPlanRaw = readFileSync(resolve(ROOT, 'agent-guides/skills/ssl-plan/SKILL.md'), 'utf8');
+const { fm: sslPlan, body: sslPlanBody } = parse(sslPlanRaw);
+const planner = frontmatter(resolve(CANON, 'ssl-planner.agent.md')).body;
+const sslPlanBytes = Buffer.byteLength(sslPlanRaw, 'utf8');
+if (sslPlanBytes > SSL_PLAN_MAX_BYTES) {
+  fail(`ssl-plan: ${sslPlanBytes} bytes, over its budget of ${SSL_PLAN_MAX_BYTES}`);
+}
+if (sslPlan?.['allowed-tools'] !== undefined) {
+  fail('ssl-plan: declares allowed-tools, but its agent has none');
+}
+const namedTools = sslPlanBody.match(/\bssl_[a-z_]+\b|\bmcp__\w+|docs\/specs|`(Read|Write|Edit|Grep|Glob|Bash)`/g);
+if (namedTools) fail(`ssl-plan: names what its agent cannot use: ${namedTools.join(', ')}`);
+for (const section of ['Survey before you build', 'What a spec holds', 'Verification log', 'Self-challenge']) {
+  if (!sslPlanBody.includes(`## ${section}\n`)) fail(`ssl-plan: lost its '${section}' section`);
+}
+for (const term of ['Prior art', 'Test plan', 'Open questions', 'Verification log', 'Self-challenge']) {
+  if (!sslPlanBody.includes(term)) fail(`ssl-plan: no longer names '${term}'`);
+  if (!planner.includes(term)) fail(`ssl-planner: no longer names '${term}', which ssl-plan condenses`);
+}
+if (!planner.includes('`ssl-plan`')) fail('ssl-planner: no longer points at the ssl-plan skill');
+
 if (failures.length > 0) {
   console.error(`\n${failures.length} agent wiring failure(s):`);
   for (const f of failures) console.error(`  - ${f}`);
@@ -193,5 +219,6 @@ if (failures.length > 0) {
 console.log(
   `Agent wiring holds for ${names.length} agents ` +
     `(${names.length * 3} adapters): partials expanded, edit protocols present, ` +
-    `delegation wired, read-only boundaries enforced, one entry point.`
+    `delegation wired, read-only boundaries enforced, one entry point, ` +
+    `ssl-plan in budget (${sslPlanBytes}/${SSL_PLAN_MAX_BYTES} bytes).`
 );

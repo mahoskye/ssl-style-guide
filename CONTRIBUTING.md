@@ -72,7 +72,7 @@ bun run check              # TypeScript
 bun run check:consistency  # data mirror + rules + machine docs + agent adapters
 cd ..
 bun tools/check-reference-drift.mjs   # inventory vs. reference repo (comparisons skip without ../ssl-docs)
-bun tools/check-agent-wiring.mjs      # delegation, read-only allowlists, editing protocols
+bun tools/check-agent-wiring.mjs      # delegation, read-only allowlists, editing protocols, ssl-plan's budget
 bun tools/check-skill-examples.mjs    # skill and rule examples: formatted, validate clean (needs the LSP binary)
 bun tools/generate-rules.mjs --check --lsp-catalog ../starlims-lsp/catalog --strict-severity  # enforced_by and severity vs. LSP catalog
 ```
